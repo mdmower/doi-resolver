@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>QR Generator</title>
+<meta charset="utf-8"/>
+<style type="text/css">
+body {
+	padding:4px;
+	font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+
+#heading {
+	width: 400px;
+	text-align: center;
+	font-size: 1.2em;
+}
+
+#mainForm {
+	float: left;
+	border: 1px solid black;
+	border-radius: 4px;
+	width: 390px;
+	margin: 0 5px;
+	padding: 4px;
+}
+
+#doiInputLabel,
+#sizeInputLabel,
+#pxLabel {
+	float:left;
+	margin: 4px;	
+}
+
+#doiInput {
+	width:340px;
+	float:left;
+}
+
+#sizeInput {
+	width:40px;
+	float:left;
+}
+
+#submitButton {
+	float: right;
+}
+
+#qrDiv {
+	clear:both;
+	margin: 8px 5px;
+	display: none;
+}
+
+#notifyDiv {
+	clear: both;
+	width: 384px;
+	float:left;
+	margin: 8px 5px;
+	padding: 8px;
+	display: none;
+	border: 1px solid black;
+	border-radius: 4px;
+}
+
+#notifyDiv .heading {
+	color: #008000;
+}
+
+#notifyDiv .highlight {
+	background-color: #FFE87C;
+}
+
+</style>
+
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="jquery.qrcode.min.js"></script>
+<script type="text/javascript" src="qr.js"></script>
+
+</head>
+<body>
+<div id="containerDiv">
+	<div id="heading">QR Code Generator</div>
+	<form name="doiForm" id="doiForm" style="margin:0;">
+	<div id="mainForm">
+		<label for="doiInput" id="doiInputLabel">DOI</label>
+		<input type="text" id="doiInput" value="" autofocus />
+		<div style="clear:both;"></div>
+		<label for="sizeInput" id="sizeInputLabel"></label>
+		<input type="text" id="sizeInput" value="250" />
+		<div id="pxLabel">px</div>
+		<div style="clear:both; margin-bottom: 4px;"></div>
+		<input type="checkbox" id="qrTitle" /> <label id="qrTitleLabel" for="qrTitle"></label>
+		<div style="clear:both; margin-bottom: 4px;"></div>
+		<input type="radio" name="imageType" id="imageTypePNG" value="png" checked /><label for="imageTypePNG" id="imageTypePNGLabel">PNG</label> 
+		<input type="radio" name="imageType" id="imageTypeJPG" value="jpg" /><label for="imageTypeJPG" id="imageTypeJPGLabel">JPG</label> 
+		<input type="submit" id="submitButton" value="Submit" />
+	</div>
+	</form>
+	<div style="clear:both;"></div>
+	<div id="notifyDiv"></div>
+	<div id="qrDiv"></div>
+</div>
+</body>
+</html>

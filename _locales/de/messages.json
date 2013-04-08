@@ -1,0 +1,130 @@
+﻿{
+	"appName": {
+		"description": "(1) The title of the application",
+		"message": "DOI Auflöser"
+	},
+	"appDesc": {
+		"description": "(2) A description of what the application does. This extension is used to...",
+		"message": "DOI Codes auflösen"
+	},
+	"iconHover": {
+		"description": "(3) The tooltip message displayed to a user when the mouse hovers on the extension's icon",
+		"message": "DOI Code auflösen"
+	},
+	"optionsTitle": {
+		"description": "(4) The title of options page",
+		"message": "DOI Auflöser Optionen"
+	},
+	"optionContextMenu": {
+		"description": "(5) A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
+		"message": "Rechts-Klick Kontextmenu für markierten Text aktivieren"
+	},
+	"optionMetaButtons": {
+		"description": "(6) A setting to enable additional buttons in the popup",
+		"message": "Zusätzliche Optionen im Kontextmenü aktivieren"
+	},
+	"optionCustomResolver": {
+		"description": "(7) A setting to enable custom entry of DOI and ShortDOI resolvers",
+		"message": "Benutzerdefinierten DOI Auflöser angeben"
+	},
+	"textDoiResolverInput": {
+		"description": "(8) Label for text box where a URL will be entered for DOIs",
+		"message": "Adresse des DOI Auflösers:"
+	},
+	"textShortDoiResolverInput": {
+		"description": "(9) Label for text box where a URL will be entered for ShortDOIs",
+		"message": "Adresse des ShortDOI Auflösers:"
+	},
+	"doiOutputUrlExample": {
+		"description": "(10) Label for the currently set resolver URL",
+		"message": "zum Beispiel:"
+	},
+	"optionAutoLink": {
+		"description": "(11) A setting to enable the extension to scan every page visited by the user and convert DOI codes into clickable links.",
+		"message": "Automatisch DOI Codes auf Webseiten in Links umwandeln"
+	},
+	"autoLinkInfo": {
+		"description": "(12) Cautionary remarks about the auto-link feature",
+		"message": "Die Auto-Link Option benötigt die Erlaubnis auf Webseiten zuzugreifen und diese zu verändern.<br>Möglicherweise ist ein Neustart von Chrome nötig. "
+	},
+	"optionsDescription": {
+		"description": "(13) Notice about external services used by the extension and where to submit bug reports",
+		"message": "Diese Erweiterung benutzt <a href=\"http://dx.doi.org\">dx.doi.org</a> und <a href=\"http://search.labs.crossref.org\">crossref.org</a> um Links aufzulösen und Metadaten zu laden.<br>Fehlerberichte bitte an <a href=\"http://code.google.com/p/doi-resolver/issues/list\">code.google.com/p/doi-resolver/issues/list</a> senden."
+	},
+	"resolveSubmit": {
+		"description": "(14) The text that appears on the button to submit a DOI code for resolving",
+		"message": "Senden"
+	},
+	"citeSubmit": {
+		"description": "(15) The text that appears on the button to start the citation generator",
+		"message": "Citation"
+	},
+	"contextText": {
+		"description": "(16) When a user highlights a DOI on a webpage and right clicks on the highlighted text, this entry appears in the context menu to resolve the DOI",
+		"message": "DOI auflösen"
+	},
+	"invalidDoiAlert": {
+		"description": "(17) A warning presented to user if the DOI code is not valid",
+		"message": "DOI Code nicht gültig"
+	},
+	"citeTitle": {
+		"description": "(18) The title on the citation generator page",
+		"message": "Referenzengenerator"
+	},
+	"citeStyle": {
+		"description": "(19) A label next to the style chooser for formatted citations",
+		"message": "Format"
+	},
+	"citeLocale": {
+		"description": "(20) A label next to the locale chooser for formatted citations",
+		"message": "Lokalisierung"
+	},
+	"loading": {
+		"description": "(21) A temporary message while resources load",
+		"message": "Laden..."
+	},
+	"noCitationFound": {
+		"description": "(22) A notice to the user that a citation could not be found",
+		"message": "Referenz nich gefunden"
+	},
+	"needCitationPerm": {
+		"description": "(23) A notice to the user that additional permissions must be accepted for the citation generator to work",
+		"message": "Referenzen werden über data.crossref.org und dx.doi.org abgefragt. Diese Genehmigung muss erteilt werden, damit der Referenzengenerator funktioniert."
+	},
+	"qrTitleLabel": {
+		"description": "(24) A setting to include the title of the reference in a generated QR code.",
+		"message": "Titel der Referenz in QR Code integrieren"
+	},
+	"qrSize": {
+		"description": "(25) A label for the dimension of the QR image",
+		"message": "Größ"
+	},
+	"invalidQrSizeAlert": {
+		"description": "(26) A warning presented to user if the QR image size entered is too large or too small",
+		"message": "Ungültige Größ"
+	},
+	"qrDisabled": {
+		"description": "(27) A notice that QR title retrieval is not enabled",
+		"message": "Funktion nicht aktiviert"
+	},
+	"qrTitleStatus": {
+		"description": "(28) Label for status of title retrieval for QR encoding",
+		"message": "Titelanfrage: "
+	},
+	"qrTitleSuccess": {
+		"description": "(29) Successful status of title retrieval for QR encoding",
+		"message": "Gefunden"
+	},
+	"qrTitleFailure": {
+		"description": "(30) Failing status of title retrieval for QR encoding",
+		"message": "Titel nicht gefunden"
+	},
+	"qrMessageEncoded": {
+		"description": "(31) Label for message encoded in QR code",
+		"message": "Verschlüsselte Information: "
+	},
+	"qrSave": {
+		"description": "(32) Instructions on how to save QR image",
+		"message": "Zum Speichern Bild anklicken"
+	}
+}

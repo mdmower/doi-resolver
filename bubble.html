@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>DOI Resolver</title>
+
+<style type="text/css">
+body {
+	font-family: Trebuchet MS, Verdana, sans-serif;
+	margin: 3px;
+	padding: 0;
+	min-width: 260px;
+	min-height: 26px;
+	overflow-x: hidden;
+}
+
+#mainForm {
+	padding-left: 30px;   /* LC width, will be overwritten in the DOM */
+	padding-right: 30px;  /* RC width, will be overwritten in the DOM */
+}
+
+#mainForm .column {
+	position: relative;
+	float: left;
+}
+
+#textInputContainer {
+	width: 100%;
+}
+
+#formDoiLabel {
+	margin-left: -100%;
+}
+
+#submitButtonContainer {
+	width: 30px; /* RC width, will be overwritten in the DOM */
+	margin-right: -30px;  /* RC width, will be overwritten in the DOM */
+}
+
+#metaButtons {
+	position: relative;
+	display:none;
+	clear:both;
+	min-height: 1.5em;
+}
+
+#citeSubmit,
+#qrSubmit {
+	float: right;
+}
+
+#optionsLink {
+	float: left;
+	font-size: 0.8em;
+	position: absolute;
+	bottom: 0;
+}
+
+#textInput {
+	width: 96%;
+}
+
+#messageDiv {
+	text-align: center;
+}
+</style>
+
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="bubble.js"></script>
+
+</head>
+
+<body>
+<div id="containerDiv">
+	<form name="doiForm" id="doiForm" style="margin:0">
+	<div id="mainForm" style="position:relative;">
+		<input type="hidden" id="hiddenButtonInput" value="" />
+		<div id="formDoiLabel" class="column"><label for="textInput">DOI&nbsp;</label></div>
+		<div id="textInputContainer" class="column"><input type="text" id="textInput" autofocus /></div>
+		<div id="submitButtonContainer" class="column" ><input type="submit" id="resolveSubmit" value="" /></div>
+	</div>
+	<br>
+	<div id="metaButtons">
+		<div id="optionsLink"><a href="options.html" title="Options" target="_blank">Options</a></div>	
+		<input type="submit" id="citeSubmit" value="" />
+		<input type="submit" id="qrSubmit" value="QR Code" />
+	</div>
+	<div id="messageDiv" style="display:none; text-align:center; clear:both; margin-top:4px;"></div>
+	</form>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Citation Generator</title>
+<meta charset="utf-8"/>
+<style type="text/css">
+body {
+	padding:4px;
+	font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+
+#heading {
+	width: 400px;
+	text-align: center;
+	font-size: 1.2em;
+}
+
+#mainForm {
+	float: left;
+	border: 1px solid black;
+	border-radius: 4px;
+	width: 390px;
+	margin: 0 5px;
+	padding: 4px;
+}
+
+#sideForm {
+	display: none;
+	float: left;
+	width: 390px;
+	margin: 0 5px;
+	padding: 4px;
+}
+
+#doiInputLabel {
+	float:left;
+	margin: 2px 4px 4px 0px;
+}
+
+#doiInput {
+	width:340px;
+	float:left;
+}
+#citeStyleLabel,
+#citeLocaleLabel {
+	float:left;
+	margin: 4px;	
+}
+
+
+#citeStyleInput,
+#citeLocaleInput {
+	float:left;
+	margin: 5px 18px 5px 0px;
+}
+
+#submitButton {
+	float: right;
+}
+
+#citeDiv,
+#notifyDiv {
+	clear: both;
+	float:left;
+	margin: 8px 5px;
+	padding: 8px;
+	display: none;
+	border: 1px solid black;
+	border-radius: 4px;
+}
+
+#citeDiv {
+	width: 790px;
+}
+
+#notifyDiv {
+	width: 384px;
+}
+
+#citeOutput {
+	width: 766px;
+	padding: 10px;
+}
+
+#copyButton {
+	clear: both;
+	float: right;
+}
+
+</style>
+
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="cite_locale.js"></script>
+<script type="text/javascript" src="citation.js"></script>
+
+</head>
+<body>
+<div id="containerDiv">
+	<div id="heading"></div>
+	<form name="citeForm" id="citeForm">
+	<div id="mainForm">
+		<label for="doiInput" id="doiInputLabel">DOI</label>
+		<input type="text" id="doiInput" value="" autofocus />
+		<div style="clear:both;"></div>
+		<label for="citeStyle" id="citeStyleLabel"></label>
+		<select id="citeStyleInput"></select>
+		<div style="clear:both;"></div>
+		<label for="citeLocale" id="citeLocaleLabel"></label>
+		<select id="citeLocaleInput"></select>
+		<input type="submit" id="submitButton" value="Submit" />
+	</div>
+	<div id="sideForm">
+		<select id="styleList" size="5"></select>
+	</div>
+	</form>
+	<div style="clear:both;"></div>
+	<div id="notifyDiv"></div>
+	<div id="citeDiv">
+		<textarea id="citeOutput" rows="6" readonly></textarea>
+		<button id="copyButton" type="button" />Copy</button>
+	</div>
+</div>
+</body>
+</html>

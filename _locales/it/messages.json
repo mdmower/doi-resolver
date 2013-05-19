@@ -36,7 +36,7 @@
 		"message": "La funzionalità di auto-link necessita della tua autorizzazione per accedere e modificare le pagine che stai visualizzando.<br>Potrebbe essere necessario riavviare Chrome affinché questa opzione abbia effetto."
 	},
 	"optionsDescription": {
-		"message": "Questa estensione utilizza <a href=\"http://dx.doi.org\">dx.doi.org</a> e <a href=\"http://search.labs.crossref.org\">crossref.org</a> per risolvere i links e ottenere i metadata.<br>Si prega di inviare le segnalazioni di bug a <a href=\"http://code.google.com/p/doi-resolver/issues/list\">code.google.com/p/doi-resolver/issues/list</a>."
+		"message": "Questa estensione utilizza <a href=\"http://dx.doi.org\">dx.doi.org</a>, <a href=\"http://www.datacite.org\">datacite.org</a>, e <a href=\"http://www.crossref.org\">crossref.org</a> per risolvere i links e ottenere i metadata."
 	},
 	"resolveSubmit": {
 		"message": "Vai"

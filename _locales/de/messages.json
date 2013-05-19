@@ -49,7 +49,7 @@
 	},
 	"optionsDescription": {
 		"description": "(13) Notice about external services used by the extension and where to submit bug reports",
-		"message": "Diese Erweiterung benutzt <a href=\"http://dx.doi.org\">dx.doi.org</a> und <a href=\"http://search.labs.crossref.org\">crossref.org</a> um Links aufzulösen und Metadaten zu laden.<br>Fehlerberichte bitte an <a href=\"http://code.google.com/p/doi-resolver/issues/list\">code.google.com/p/doi-resolver/issues/list</a> senden."
+		"message": "Diese Erweiterung benutzt <a href=\"http://dx.doi.org\">dx.doi.org</a>, <a href=\"http://www.datacite.org\">datacite.org</a>, und <a href=\"http://www.crossref.org\">crossref.org</a> um Links aufzulösen und Metadaten zu laden."
 	},
 	"resolveSubmit": {
 		"description": "(14) The text that appears on the button to submit a DOI code for resolving",

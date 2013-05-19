@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 	getLocalMessages();
-	getUrlVariables();	
+	getUrlVariables();
 	restoreQrTitleState();
 	startListeners();
 }, false);
@@ -10,7 +10,7 @@ function startListeners() {
 		formSubmitHandler();
 		return false;
 	});
-	
+
 	document.getElementById("qrTitle").addEventListener("click", setCrossrefPermission, false);
 }
 
@@ -24,7 +24,7 @@ function getUrlVariables() {
 		vars.push(hash[0]);
 		vars[hash[0]] = hash[1];
 	}
-	
+
 	var initDOI = vars["doi"];
 	if(initDOI) document.getElementById("doiInput").value = initDOI;
 }
@@ -51,10 +51,10 @@ function checkValidDoi(doiInput) {
 function resetSpace() {
 	var notifyElm = document.getElementById("notifyDiv");
 	var qrElm = document.getElementById("qrDiv");
-	
+
 	notifyElm.innerHTML = "";
 	qrElm.innerHTML = "";
-	
+
 	notifyElm.style.display = "none";
 	notifyElm.style.width = "384px";
 	qrElm.style.display = "none";
@@ -62,7 +62,7 @@ function resetSpace() {
 
 function notification(message) {
 	resetSpace();
-	
+
 	var notifyElm = document.getElementById("notifyDiv");
 	notifyElm.innerHTML = message;
 	notifyElm.style.display = "block";
@@ -70,7 +70,7 @@ function notification(message) {
 
 function setCrossrefPermission() {
 	var perm = document.getElementById("qrTitle").checked;
-	
+
 	if(perm) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
@@ -111,13 +111,13 @@ function formSubmitHandler() {
 	var actionType = jQuery('input[name=imageType]:checked').val();
 	var doiInput = escape(trim(jQuery('#doiInput').val()));
 	var size = parseInt(escape(jQuery('#sizeInput').val()));
-	
+
 	if(!doiInput || !size || !checkValidDoi(doiInput)) return;
 	if(size < 80) {
 		notification(chrome.i18n.getMessage("invalidQrSizeAlert"));
 		return;
 	}
-	
+
 	switch(actionType) {
 	case 'submit':
 	case 'png':
@@ -133,15 +133,15 @@ function formSubmitHandler() {
 
 function insertQr(doiInput,size,outputType) {
 	resetSpace();
-	
+
 	var stringToEncode = "";
 	var jsonUrl = "http://dx.doi.org/" + doiInput;
-		
+
 	if(doiInput.match(/^10\./)) stringToEncode = "http://dx.doi.org/" + doiInput;
 	else if(doiInput.match(/^10\//)) stringToEncode = "http://doi.org/" + doiInput.replace(/^10\//,"");
-	
+
 	notification("Loading...");
-	
+
 	if(localStorage["qr_title"] == "true") {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
@@ -185,7 +185,7 @@ function outputImg(size,outputType,stringToEncode,titleRetrieval) {
 	var sizeString = (size + "px").toString();
 	var titleNotice = "";
 	var statusMessage = "";
-	
+
 	switch(titleRetrieval) {
 	case "found":
 		titleNotice = chrome.i18n.getMessage("qrTitleSuccess");
@@ -200,7 +200,7 @@ function outputImg(size,outputType,stringToEncode,titleRetrieval) {
 		titleNotice = chrome.i18n.getMessage("qrDisabled");
 		break;
 	}
-	
+
 	if(canvas) {
 		var img = document.createElement('img');
 		img.setAttribute('width', sizeString);
@@ -209,7 +209,7 @@ function outputImg(size,outputType,stringToEncode,titleRetrieval) {
 		img.setAttribute('id', 'qrImage');
 		if(outputType == 'png')	img.setAttribute('src', canvas.toDataURL("image/png"));
 		if(outputType == 'jpg')	img.setAttribute('src', canvas.toDataURL("image/jpeg"));
-		
+
 		var saveLink = document.createElement('a');
 		saveLink.setAttribute('id', 'qrImageSaveLink');
 		if(outputType == 'png')	{
@@ -220,7 +220,7 @@ function outputImg(size,outputType,stringToEncode,titleRetrieval) {
 			saveLink.setAttribute('href', canvas.toDataURL("image/jpeg"));
 			saveLink.setAttribute('download', 'qrImage.jpg');
 		}
-		
+
 		statusMessage = "<span class=\"heading\">"
 			+chrome.i18n.getMessage("qrTitleStatus")
 			+"</span>"
@@ -235,7 +235,7 @@ function outputImg(size,outputType,stringToEncode,titleRetrieval) {
 		
 		notification(statusMessage);
 		notifyElm.style.width = "790px";
-		
+
 		qrElm.appendChild(img);
 		jQuery('#qrImage').wrap(saveLink);
 		qrElm.style.display = "block";

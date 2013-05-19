@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
 	var initDOI = getUrlVars()["doi"];
 	if(initDOI) document.getElementById("doiInput").setAttribute("value",initDOI);
-	
+
 	getLocalMessages()
 	buildSelections();
 	startListeners();
@@ -12,10 +12,10 @@ function startListeners() {
 		formSubmitHandler();
 		return false;
 	});
-	jQuery('#copyButton').click(function() {   
+	jQuery('#copyButton').click(function() {
 		copyCitation()
 	});
-	
+
 	document.getElementById('citeStyleInput').addEventListener('change', otherField, false);
 }
 
@@ -38,12 +38,12 @@ function buildSelections() {
 	// LOCALES
 	var storedLocale = localStorage["cite_locale"];
 	var allLocales = ["sk-SK","uk-UA","de-AT","el-GR","th-TH","tr-TR","cs-CZ","hu-HU","sr-RS","fi-FI","ko-KR","lt-LT","vi-VN","bg-BG","en-US","he-IL","et-EE","zh-TW","de-CH","pt-BR","it-IT","sv-SE","is-IS","nb-NO","eu","af-ZA","ja-JP","hr-HR","ar-AR","sl-SI","ca-AD","ro-RO","nn-NO","fa-IR","de-DE","mn-MN","da-DK","es-ES","ru-RU","en-GB","pl-PL","nl-NL","km-KH","fr-FR","zh-CN","fr-CA","pt-PT"];
-	
+
 	if(allLocales.indexOf(storedLocale) < 0) {
 		storedLocale = "en-US";
 		localStorage["cite_locale"] = "en-US";
 	}
-	
+
 	var readableLocales = [];
 	for(var i=0; i < allLocales.length; i++) {
 		readableLocales[i] = [allLocales[i], localeCodeToEnglish(allLocales[i])];
@@ -52,7 +52,7 @@ function buildSelections() {
 		if ( a[1] == b[1] ) return 0;
 		return a[1] < b[1] ? -1 : 1;
 	});
-	
+
 	var localeHtmlOptions = "";
 	for(var i=0; i < allLocales.length; i++) {
 		if(readableLocales[i][0] != storedLocale) {
@@ -62,7 +62,7 @@ function buildSelections() {
 		}
 	}
 	document.getElementById('citeLocaleInput').innerHTML = localeHtmlOptions;
-	
+
 	// SHORT STYLES LIST
 	var storedStyle = localStorage["cite_style"];
 	var baseStyles = ["apa","bibtex","chicago-author-date","ieee","mla","nature","other"];
@@ -72,7 +72,7 @@ function buildSelections() {
 		storedStyle = "bibtex";
 		localStorage["cite_style"] = "bibtex";
 	}
-	
+
 	var styleHtmlOptions = "";
 	for(var i=0; i < baseStyles.length; i++) {
 		if(baseStyles[i] != storedStyle) {
@@ -110,7 +110,7 @@ function otherField() {
 	var elm = document.getElementById('citeStyleInput');
 	var style = elm.options[elm.selectedIndex].value;
 	var sideFormElm = document.getElementById('sideForm');
-	
+
 	if(style == "other") sideFormElm.style.display = "block";
 	else sideFormElm.style.display = "none";
 }
@@ -122,7 +122,7 @@ function trim(stringToTrim) {
 function formSubmitHandler() {
 	var doi = escape(trim(document.getElementById("doiInput").value));
 	if(!doi || !checkValidDoi(doi)) return;
-	
+
 	saveSelections();
 	getCitation(doi);
 }
@@ -151,10 +151,10 @@ function resetSpace() {
 	var notifyElm = document.getElementById("notifyDiv");
 	var citeElm = document.getElementById("citeDiv");
 	var citeOutElm = document.getElementById("citeOutput");
-	
+
 	notifyElm.innerHTML = "";
 	citeOutElm.innerHTML = "";
-	
+
 	notifyElm.style.display = "none";
 	citeElm.style.display = "none";
 }
@@ -169,10 +169,10 @@ function notification(message) {
 
 function outputCitation(message) {
 	resetSpace();
-	
+
 	var citeElm = document.getElementById("citeDiv");
 	var citeOutElm = document.getElementById("citeOutput");
-	
+
 	citeElm.style.display = "block";
 	citeOutElm.innerHTML = message;
 }
@@ -197,17 +197,17 @@ function getCitation(doi) {
 	var style = styleElm.options[styleElm.selectedIndex].value;
 	var localeElm = document.getElementById("citeLocaleInput");
 	var locale = localeElm.options[localeElm.selectedIndex].value;
-	
+
 	if(style == "other") {
 		var otherStyleElm = document.getElementById("styleList");
 		style = otherStyleElm.options[otherStyleElm.selectedIndex].value;
 	}
-	
+
 	var resolveUrl = "http://dx.doi.org/" + doi;
 	var content = "text/x-bibliography; style=" + style + "; locale=" + locale;
-	
+
 	notification(chrome.i18n.getMessage("loading"));
-	
+
 	chrome.permissions.request({
 		origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 	}, function(granted) {

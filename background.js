@@ -64,7 +64,7 @@ function checkForSettings() {
 	if(typeof localStorage["doi_resolver"] == 'undefined') setDefaultOption('dr');
 	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sr');
 	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
-	
+
 	// Set elsewhere
 	if(typeof localStorage["qr_title"] == 'undefined') setDefaultOption('qrTitle');
 	if(typeof localStorage["cite_style"] == 'undefined') setDefaultOption('cs');
@@ -103,7 +103,7 @@ function resolveURL(doi) {
 	else if(doi.match(/^10\./) && cr != "true") return "http://dx.doi.org/" + doi;
 	else if(doi.match(/^10\//) && cr == "true") return sr + doi.replace(/^10\//,"");
 	else if(doi.match(/^10\//) && cr != "true") return "http://doi.org/" + doi.replace(/^10\//,"");
-	
+
 	return "";
 }
 

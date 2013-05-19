@@ -6,16 +6,15 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 function startListeners() {
-	jQuery("#resolveSubmit").click(function() {   
+	jQuery("#resolveSubmit").click(function() {
 		jQuery("#hiddenButtonInput").val("doi");
 	});
-	jQuery("#citeSubmit").click(function() {   
+	jQuery("#citeSubmit").click(function() {
 		jQuery("#hiddenButtonInput").val("cite");
 	});
-	jQuery("#qrSubmit").click(function() {   
+	jQuery("#qrSubmit").click(function() {
 		jQuery("#hiddenButtonInput").val("qr");
 	});
-	
 	jQuery('#doiForm').submit(function () {
 		formSubmitHandler();
 		return false;
@@ -37,7 +36,7 @@ function setTextBoxWidth() {
 	var negDoiLabelWidth = ("-" + document.getElementById("formDoiLabel").offsetWidth + "px").toString();
 	var submitButtonWidth = (document.getElementById("resolveSubmit").offsetWidth + "px").toString();
 	var negSubmitButtonWidth = ("-" + document.getElementById("resolveSubmit").offsetWidth + "px").toString();
-		
+
 	document.getElementById("mainForm").style.paddingLeft = doiLabelWidth;
 	document.getElementById("mainForm").style.paddingRight = submitButtonWidth;
 	document.getElementById("formDoiLabel").style.width = doiLabelWidth;
@@ -67,7 +66,7 @@ function checkValidDoi(doiInput) {
 // Clear message space in bubble and reset height
 function resetMessageSpace() {
 	var messageElement = document.getElementById("messageDiv");
-	
+
 	while (messageElement.firstChild) messageElement.removeChild(messageElement.firstChild);
 	messageElement.style.display = "none";
 	resetBubbleHeight();
@@ -76,7 +75,7 @@ function resetMessageSpace() {
 // General messaging area in bubble
 function bubbleMessage(message) {
 	resetMessageSpace();
-	
+
 	var messageElement = document.getElementById("messageDiv");
 	messageElement.style.display = "block";
 	messageElement.style.height = "60px";
@@ -87,7 +86,7 @@ function bubbleMessage(message) {
 function formSubmitHandler() {
 	var actionType = jQuery("#hiddenButtonInput").val();
 	var doiInput = escape(trim(jQuery('#textInput').val()));
-	
+
 	switch(actionType) {
 	case "qr":
 		qrGen(doiInput);
@@ -115,7 +114,7 @@ function resolveURL(doi) {
 	else if(doi.match(/^10\./) && cr != "true") return "http://dx.doi.org/" + doi;
 	else if(doi.match(/^10\//) && cr == "true") return sr + doi.replace(/^10\//,"");
 	else if(doi.match(/^10\//) && cr != "true") return "http://doi.org/" + doi.replace(/^10\//,"");
-	
+
 	return "";
 }
 
@@ -136,7 +135,7 @@ function qrGen(doiInput) {
 // Show or hide additional buttons in bubble
 function showHideMetaButtons() {
 	var meta = localStorage["meta_buttons"];
-	
+
 	if(meta == "true") {
 		document.getElementById("metaButtons").style.display="block";
 	} else {

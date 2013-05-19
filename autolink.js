@@ -12,7 +12,6 @@ function replaceDOIsWithLinks() {
 		link.appendChild(document.createTextNode(match[0]));
 		return link;
 	});
-	
 }
 
 function replaceInElement(element, find, replace) {
@@ -28,6 +27,7 @@ function replaceInElement(element, find, replace) {
         }
     }
 }
+
 function replaceInText(text, find, replace) {
     var match;
     var matches = [];

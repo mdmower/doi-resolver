@@ -9,7 +9,7 @@ function startListeners() {
 	document.getElementById("meta").addEventListener("click", saveOptions, false);
 	document.getElementById("autoLink").addEventListener("click", saveOptions, false);
 	document.getElementById("customResolver").addEventListener("click", saveOptions, false);
-	
+
 	document.getElementById("doiResolverInputSave").addEventListener("click", saveOptions, false);
 	document.getElementById("shortDoiResolverInputSave").addEventListener("click", saveOptions, false);
 	document.getElementById("doiResolverInputReset").addEventListener("click", function() {
@@ -20,7 +20,7 @@ function startListeners() {
 		document.getElementById("shortDoiResolverInput").value = "http://doi.org/";
 		saveOptions();
 	}, false);
-	
+
 	document.getElementById("img_context_off").addEventListener("click", function() {
 		document.getElementById("context").checked = false;
 		saveOptions();
@@ -37,7 +37,7 @@ function startListeners() {
 		document.getElementById("meta").checked = true;
 		saveOptions();
 	}, false);
-	
+
 	jQuery("#optionAutoLink").hover(function(){
 		$("#autoLinkInfo").css("color","#500000");
 		},function(){
@@ -58,7 +58,7 @@ function saveOptions() {
 	localStorage["doi_resolver"] = document.getElementById("doiResolverInput").value;
 	localStorage["shortdoi_resolver"] = document.getElementById("shortDoiResolverInput").value;
 	localStorage["auto_link"] = document.getElementById("autoLink").checked;
-	
+
 	restoreOptions(false);
 }
 
@@ -70,15 +70,15 @@ function restoreOptions(pageOpen) {
 	var drOp = localStorage["doi_resolver"];
 	var srOp = localStorage["shortdoi_resolver"];
 	var alOp = localStorage["auto_link"];
-	
+
 	document.getElementById("doiResolverInput").value = drOp;
 	document.getElementById("shortDoiResolverInput").value = srOp;
-	
+
 	var cmBox = document.getElementById("context");
 	var metaBox = document.getElementById("meta");
 	var crBox = document.getElementById("customResolver");
 	var alBox = document.getElementById("autoLink");
-	
+
 	if(cmOp == "true") {
 		cmBox.checked = true;
 		document.getElementById("img_context_on").style.borderColor="#404040";
@@ -90,7 +90,7 @@ function restoreOptions(pageOpen) {
 		document.getElementById("img_context_off").style.borderColor="#404040";
 		chrome.extension.sendRequest({cmd: "disable_context"});
 	}
-	
+
 	if(metaOp == "true") {
 		metaBox.checked = true;
 		document.getElementById("img_bubblemeta_on").style.borderColor="#404040";
@@ -100,7 +100,7 @@ function restoreOptions(pageOpen) {
 		document.getElementById("img_bubblemeta_on").style.borderColor="white";
 		document.getElementById("img_bubblemeta_off").style.borderColor="#404040";
 	}
-	
+
 	if(crOp == "true") {
 		crBox.checked = true;
 		document.getElementById("customResolverFields").style.display = "block";
@@ -110,7 +110,7 @@ function restoreOptions(pageOpen) {
 		crBox.checked = false;
 		document.getElementById("customResolverFields").style.display = "none";
 	}
-	
+
 	if(pageOpen == true) { //change to CHECK permission instead of assuming ok
 		if(alOp == "true") alBox.checked = true;
 		else alBox.checked = false;
@@ -118,13 +118,12 @@ function restoreOptions(pageOpen) {
 		setAutoLinkPermission();
 		addRemoveAutoLinkListener();
 	}
-	
 }
 
 function setAutoLinkPermission() {
 	var alOp = localStorage["auto_link"];
 	var alBox = document.getElementById("autoLink");
-	
+
 	if(alOp == "true") {
 		chrome.permissions.request({
 			permissions: [ 'tabs' ],

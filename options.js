@@ -26,9 +26,9 @@ function startListeners() {
 	document.getElementById("autoLink").addEventListener("click", saveOptions, false);
 	document.getElementById("customResolver").addEventListener("click", saveOptions, false);
 	$("input[name='crRadio']").on("click", saveOptions);
+	$("#doiResolverInput").on("change input", saveOptions);
+	$("#shortDoiResolverInput").on("change input", saveOptions);
 
-	document.getElementById("doiResolverInputSave").addEventListener("click", saveOptions, false);
-	document.getElementById("shortDoiResolverInputSave").addEventListener("click", saveOptions, false);
 	document.getElementById("doiResolverInputReset").addEventListener("click", function() {
 		document.getElementById("doiResolverInput").value = "http://dx.doi.org/";
 		saveOptions();
@@ -77,7 +77,7 @@ function saveOptions() {
 	localStorage["shortdoi_resolver"] = document.getElementById("shortDoiResolverInput").value;
 	localStorage["auto_link"] = document.getElementById("autoLink").checked;
 
-	restoreOptions(false);
+	minimalOptionsRefresh(false);
 }
 
 // Restores options from localStorage
@@ -136,7 +136,53 @@ function restoreOptions(pageOpen) {
 		$("#crRadioAlways").prop("checked", true);
 	}
 
-	if(pageOpen == true) { //change to CHECK permission instead of assuming ok
+	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
+		if(alOp == "true") alBox.checked = true;
+		else alBox.checked = false;
+	} else {
+		setAutoLinkPermission();
+		addRemoveAutoLinkListener();
+	}
+}
+
+// Only refresh fields that need updating after save
+function minimalOptionsRefresh(pageOpen) {
+	var cmOp = localStorage["context_menu"];
+	var metaOp = localStorage["meta_buttons"];
+	var crOp = localStorage["custom_resolver"];
+	var drOp = localStorage["doi_resolver"];
+	var srOp = localStorage["shortdoi_resolver"];
+	var alOp = localStorage["auto_link"];
+
+	var alBox = document.getElementById("autoLink");
+
+	if(cmOp == "true") {
+		document.getElementById("img_context_on").style.borderColor="#404040";
+		document.getElementById("img_context_off").style.borderColor="white";
+		chrome.extension.sendRequest({cmd: "enable_context"});
+	} else {
+		document.getElementById("img_context_on").style.borderColor="white";
+		document.getElementById("img_context_off").style.borderColor="#404040";
+		chrome.extension.sendRequest({cmd: "disable_context"});
+	}
+
+	if(metaOp == "true") {
+		document.getElementById("img_bubblemeta_on").style.borderColor="#404040";
+		document.getElementById("img_bubblemeta_off").style.borderColor="white";
+	} else {
+		document.getElementById("img_bubblemeta_on").style.borderColor="white";
+		document.getElementById("img_bubblemeta_off").style.borderColor="#404040";
+	}
+
+	if(crOp == "true") {
+		document.getElementById("customResolverFields").style.display = "block";
+		document.getElementById("doiResolverOutput").innerHTML = drOp + "10.1000/182";
+		document.getElementById("shortDoiResolverOutput").innerHTML = srOp + "dws9sz";
+	} else {
+		document.getElementById("customResolverFields").style.display = "none";
+	}
+
+	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
 		if(alOp == "true") alBox.checked = true;
 		else alBox.checked = false;
 	} else {

@@ -228,5 +228,4 @@ function getLocalMessages() {
 	document.getElementById("autoLinkInfo").innerHTML = message;
 	message = chrome.i18n.getMessage("optionsDescription");
 	document.getElementById("optionsDescription").innerHTML = message;
-	message = "";
 }

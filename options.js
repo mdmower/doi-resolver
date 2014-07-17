@@ -21,61 +21,61 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 function startListeners() {
-	document.getElementById("context").addEventListener("click", saveOptions, false);
-	document.getElementById("meta").addEventListener("click", saveOptions, false);
-	document.getElementById("autoLink").addEventListener("click", saveOptions, false);
-	document.getElementById("customResolver").addEventListener("click", saveOptions, false);
+	$("#context").on("click", saveOptions);
+	$("#meta").on("click", saveOptions);
+	$("#autoLink").on("click", saveOptions);
+	$("#customResolver").on("click", saveOptions);
 	$("input[name='crRadio']").on("click", saveOptions);
 	$("#doiResolverInput").on("change input", saveOptions);
 	$("#shortDoiResolverInput").on("change input", saveOptions);
 
-	document.getElementById("doiResolverInputReset").addEventListener("click", function() {
-		document.getElementById("doiResolverInput").value = "http://dx.doi.org/";
+	$("#doiResolverInputReset").on("click", function() {
+		$("#doiResolverInput").val("http://dx.doi.org/");
 		saveOptions();
-	}, false);
-	document.getElementById("shortDoiResolverInputReset").addEventListener("click", function() {
-		document.getElementById("shortDoiResolverInput").value = "http://doi.org/";
+	});
+	$("#shortDoiResolverInputReset").on("click", function() {
+		$("#shortDoiResolverInput").val("http://doi.org/");
 		saveOptions();
-	}, false);
+	});
 
-	document.getElementById("img_context_off").addEventListener("click", function() {
-		document.getElementById("context").checked = false;
+	$("#img_context_off").on("click", function() {
+		$("#context").prop("checked", false);
 		saveOptions();
-	}, false);
-	document.getElementById("img_context_on").addEventListener("click", function() {
-		document.getElementById("context").checked = true;
+	});
+	$("#img_context_on").on("click", function() {
+		$("#context").prop("checked", true);
 		saveOptions();
-	}, false);
-	document.getElementById("img_bubblemeta_off").addEventListener("click", function() {
-		document.getElementById("meta").checked = false;
+	});
+	$("#img_bubblemeta_off").on("click", function() {
+		$("#meta").prop("checked", false);
 		saveOptions();
-	}, false);
-	document.getElementById("img_bubblemeta_on").addEventListener("click", function() {
-		document.getElementById("meta").checked = true;
+	});
+	$("#img_bubblemeta_on").on("click", function() {
+		$("#meta").prop("checked", true);
 		saveOptions();
-	}, false);
+	});
 
-	jQuery("#optionAutoLink").hover(function(){
+	$("#optionAutoLink").hover(function() {
 		$("#autoLinkInfo").css("color","#500000");
-		},function(){
+		}, function() {
 		$("#autoLinkInfo").css("color","white");
 	});
-	jQuery("#autoLink").hover(function(){
+	$("#autoLink").hover(function() {
 		$("#autoLinkInfo").css("color","#500000");
-		},function(){
+		}, function() {
 		$("#autoLinkInfo").css("color","white");
 	});
 }
 
 // Saves options to localStorage
 function saveOptions() {
-	localStorage["context_menu"] = document.getElementById("context").checked;
-	localStorage["meta_buttons"] = document.getElementById("meta").checked;
-	localStorage["custom_resolver"] = document.getElementById("customResolver").checked;
+	localStorage["context_menu"] = $("#context").is(":checked");
+	localStorage["meta_buttons"] = $("#meta").is(":checked");
+	localStorage["custom_resolver"] = $("#customResolver").is(":checked");
 	localStorage["cr_always"] = $('input[name="crRadio"]:checked').val();
-	localStorage["doi_resolver"] = document.getElementById("doiResolverInput").value;
-	localStorage["shortdoi_resolver"] = document.getElementById("shortDoiResolverInput").value;
-	localStorage["auto_link"] = document.getElementById("autoLink").checked;
+	localStorage["doi_resolver"] = $("#doiResolverInput").val();
+	localStorage["shortdoi_resolver"] = $("#shortDoiResolverInput").val();
+	localStorage["auto_link"] = $("#autoLink").is(":checked");
 
 	minimalOptionsRefresh(false);
 }
@@ -90,44 +90,39 @@ function restoreOptions(pageOpen) {
 	var srOp = localStorage["shortdoi_resolver"];
 	var alOp = localStorage["auto_link"];
 
-	document.getElementById("doiResolverInput").value = drOp;
-	document.getElementById("shortDoiResolverInput").value = srOp;
-
-	var cmBox = document.getElementById("context");
-	var metaBox = document.getElementById("meta");
-	var crBox = document.getElementById("customResolver");
-	var alBox = document.getElementById("autoLink");
+	$("#doiResolverInput").val(drOp);
+	$("#shortDoiResolverInput").val(srOp);
 
 	if(cmOp == "true") {
-		cmBox.checked = true;
-		document.getElementById("img_context_on").style.borderColor="#404040";
-		document.getElementById("img_context_off").style.borderColor="white";
+		$("#context").prop("checked", true);
+		$("#img_context_on").css("border-color", "#404040");
+		$("#img_context_off").css("border-color", "white");
 		chrome.extension.sendRequest({cmd: "enable_context"});
 	} else {
-		cmBox.checked = false;
-		document.getElementById("img_context_on").style.borderColor="white";
-		document.getElementById("img_context_off").style.borderColor="#404040";
+		$("#context").prop("checked", false);
+		$("#img_context_on").css("border-color", "white");
+		$("#img_context_off").css("border-color", "#404040");
 		chrome.extension.sendRequest({cmd: "disable_context"});
 	}
 
 	if(metaOp == "true") {
-		metaBox.checked = true;
-		document.getElementById("img_bubblemeta_on").style.borderColor="#404040";
-		document.getElementById("img_bubblemeta_off").style.borderColor="white";
+		$("#meta").prop("checked", true);
+		$("#img_bubblemeta_on").css("border-color", "#404040");
+		$("#img_bubblemeta_off").css("border-color", "white");
 	} else {
-		metaBox.checked = false;
-		document.getElementById("img_bubblemeta_on").style.borderColor="white";
-		document.getElementById("img_bubblemeta_off").style.borderColor="#404040";
+		$("#meta").prop("checked", false);
+		$("#img_bubblemeta_on").css("border-color", "white");
+		$("#img_bubblemeta_off").css("border-color", "#404040");
 	}
 
 	if(crOp == "true") {
-		crBox.checked = true;
-		document.getElementById("customResolverFields").style.display = "block";
-		document.getElementById("doiResolverOutput").innerHTML = drOp + "10.1000/182";
-		document.getElementById("shortDoiResolverOutput").innerHTML = srOp + "dws9sz";
+		$("#customResolver").prop("checked", true);
+		$("#customResolverFields").css("display", "block");
+		$("#doiResolverOutput").html(drOp + "10.1000/182");
+		$("#shortDoiResolverOutput").html(srOp + "dws9sz");
 	} else {
-		crBox.checked = false;
-		document.getElementById("customResolverFields").style.display = "none";
+		$("#customResolver").prop("checked", false);
+		$("#customResolverFields").css("display", "none");
 	}
 
 	if(craOp == "optional") {
@@ -137,8 +132,11 @@ function restoreOptions(pageOpen) {
 	}
 
 	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
-		if(alOp == "true") alBox.checked = true;
-		else alBox.checked = false;
+		if(alOp == "true") {
+			$("#autoLink").prop("checked", true);
+		} else {
+			$("#autoLink").prop("checked", false);
+		}
 	} else {
 		setAutoLinkPermission();
 		addRemoveAutoLinkListener();
@@ -154,37 +152,38 @@ function minimalOptionsRefresh(pageOpen) {
 	var srOp = localStorage["shortdoi_resolver"];
 	var alOp = localStorage["auto_link"];
 
-	var alBox = document.getElementById("autoLink");
-
 	if(cmOp == "true") {
-		document.getElementById("img_context_on").style.borderColor="#404040";
-		document.getElementById("img_context_off").style.borderColor="white";
+		$("#img_context_on").css("border-color", "#404040");
+		$("#img_context_off").css("border-color", "white");
 		chrome.extension.sendRequest({cmd: "enable_context"});
 	} else {
-		document.getElementById("img_context_on").style.borderColor="white";
-		document.getElementById("img_context_off").style.borderColor="#404040";
+		$("#img_context_on").css("border-color", "white");
+		$("#img_context_off").css("border-color", "#404040");
 		chrome.extension.sendRequest({cmd: "disable_context"});
 	}
 
 	if(metaOp == "true") {
-		document.getElementById("img_bubblemeta_on").style.borderColor="#404040";
-		document.getElementById("img_bubblemeta_off").style.borderColor="white";
+		$("#img_bubblemeta_on").css("border-color", "#404040");
+		$("#img_bubblemeta_off").css("border-color", "white");
 	} else {
-		document.getElementById("img_bubblemeta_on").style.borderColor="white";
-		document.getElementById("img_bubblemeta_off").style.borderColor="#404040";
+		$("#img_bubblemeta_on").css("border-color", "white");
+		$("#img_bubblemeta_off").css("border-color", "#404040");
 	}
 
 	if(crOp == "true") {
-		document.getElementById("customResolverFields").style.display = "block";
-		document.getElementById("doiResolverOutput").innerHTML = drOp + "10.1000/182";
-		document.getElementById("shortDoiResolverOutput").innerHTML = srOp + "dws9sz";
+		$("#customResolverFields").css("display", "block");
+		$("#doiResolverOutput").html(drOp + "10.1000/182");
+		$("#shortDoiResolverOutput").html(srOp + "dws9sz");
 	} else {
-		document.getElementById("customResolverFields").style.display = "none";
+		$("#customResolverFields").css("display", "none");
 	}
 
 	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
-		if(alOp == "true") alBox.checked = true;
-		else alBox.checked = false;
+		if(alOp == "true") {
+			$("#autoLink").prop("checked", true);
+		} else {
+			$("#autoLink").prop("checked", false);
+		}
 	} else {
 		setAutoLinkPermission();
 		addRemoveAutoLinkListener();
@@ -193,7 +192,6 @@ function minimalOptionsRefresh(pageOpen) {
 
 function setAutoLinkPermission() {
 	var alOp = localStorage["auto_link"];
-	var alBox = document.getElementById("autoLink");
 
 	if(alOp == "true") {
 		chrome.permissions.request({
@@ -202,10 +200,10 @@ function setAutoLinkPermission() {
 		}, function(granted) {
 			if(granted) {
 				localStorage["auto_link"] = true;
-				alBox.checked = true;
+				$("#autoLink").prop("checked", true);
 			} else {
 				localStorage["auto_link"] = false;
-				alBox.checked = false;
+				$("#autoLink").prop("checked", false);
 			}
 		});
 	} else {
@@ -215,10 +213,10 @@ function setAutoLinkPermission() {
 		}, function(removed) {
 			if(removed) {
 				localStorage["auto_link"] = false;
-				alBox.checked = false;
+				$("#autoLink").prop("checked", false);
 			} else {
 				localStorage["auto_link"] = true;
-				alBox.checked = true;
+				$("#autoLink").prop("checked", true);
 			}
 		});
 	}
@@ -247,31 +245,31 @@ function getLocalMessages() {
 	var message = chrome.i18n.getMessage("optionsTitle");
 	document.title = message;
 	message = chrome.i18n.getMessage("optionsTitle");
-	document.getElementById("optionsTitle").innerHTML = message;
+	$("#optionsTitle").html(message);
 	message = chrome.i18n.getMessage("optionContextMenu");
-	document.getElementById("optionContextMenu").innerHTML = message;
+	$("#optionContextMenu").html(message);
 	message = chrome.i18n.getMessage("optionMetaButtons");
-	document.getElementById("optionMetaButtons").innerHTML = message;
+	$("#optionMetaButtons").html(message);
 	message = chrome.i18n.getMessage("optionCustomResolver");
-	document.getElementById("optionCustomResolver").innerHTML = message;
+	$("#optionCustomResolver").html(message);
 	message = chrome.i18n.getMessage("optionCustomResolverRadio");
-	document.getElementById("optionCustomResolverRadio").innerHTML = message;
+	$("#optionCustomResolverRadio").html(message);
 	message = chrome.i18n.getMessage("optionCrRadioAlways");
-	document.getElementById("optionCrRadioAlways").innerHTML = message;
+	$("#optionCrRadioAlways").html(message);
 	message = chrome.i18n.getMessage("optionCrRadioOptional");
-	document.getElementById("optionCrRadioOptional").innerHTML = message;
+	$("#optionCrRadioOptional").html(message);
 	message = chrome.i18n.getMessage("textDoiResolverInput");
-	document.getElementById("textDoiResolverInput").innerHTML = message;
+	$("#textDoiResolverInput").html(message);
 	message = chrome.i18n.getMessage("textShortDoiResolverInput");
-	document.getElementById("textShortDoiResolverInput").innerHTML = message;
+	$("#textShortDoiResolverInput").html(message);
 	message = chrome.i18n.getMessage("doiOutputUrlExample");
-	document.getElementById("doiOutputUrlExample").innerHTML = message;
+	$("#doiOutputUrlExample").html(message);
 	message = chrome.i18n.getMessage("doiOutputUrlExample");
-	document.getElementById("shortDoiOutputUrlExample").innerHTML = message;
+	$("#shortDoiOutputUrlExample").html(message);
 	message = chrome.i18n.getMessage("optionAutoLink");
-	document.getElementById("optionAutoLink").innerHTML = message;
+	$("#optionAutoLink").html(message);
 	message = chrome.i18n.getMessage("autoLinkInfo");
-	document.getElementById("autoLinkInfo").innerHTML = message;
+	$("#autoLinkInfo").html(message);
 	message = chrome.i18n.getMessage("optionsDescription");
-	document.getElementById("optionsDescription").innerHTML = message;
+	$("#optionsDescription").html(message);
 }

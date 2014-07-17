@@ -6,12 +6,12 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 function startListeners() {
-	jQuery('#doiForm').submit(function () {
+	$("#doiForm").submit(function () {
 		formSubmitHandler();
 		return false;
 	});
 
-	document.getElementById("qrTitle").addEventListener("click", setCrossrefPermission, false);
+	$("#qrTitle").on("click", setCrossrefPermission);
 }
 
 // Read a page's GET URL variables and return them as an associative array.
@@ -26,11 +26,15 @@ function getUrlVariables() {
 	}
 
 	var initDOI = vars["doi"];
-	if(initDOI) document.getElementById("doiInput").value = initDOI;
+	if(initDOI) {
+		$("#doiInput").val(initDOI);
+	}
 }
 
 function restoreQrTitleState() {
-	if(localStorage["qr_title"] == "true") document.getElementById("qrTitle").checked = true;
+	if(localStorage["qr_title"] == "true") {
+		$("#qrTitle").prop("checked", true);
+	}
 }
 
 function trim(stringToTrim) {
@@ -43,33 +47,35 @@ function checkValidDoi(doiInput) {
 	} else if(doiInput.match(/^10\//)) {
 		return true;
 	} else {
-		notification(chrome.i18n.getMessage("invalidDoiAlert"));
+		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
 		return false;
 	}
 }
 
 function resetSpace() {
-	var notifyElm = document.getElementById("notifyDiv");
-	var qrElm = document.getElementById("qrDiv");
-
-	notifyElm.innerHTML = "";
-	qrElm.innerHTML = "";
-
-	notifyElm.style.display = "none";
-	notifyElm.style.width = "384px";
-	qrElm.style.display = "none";
+	$("#notifyDiv").html("");
+	$("#notifyDiv").css({"display": "none", "width": "384px"});
+	$("#qrDiv").html("");
+	$("#qrDiv").css("display", "none");
 }
 
-function notification(message) {
+function simpleNotification(message) {
 	resetSpace();
+	$("#notifyDiv").html(message);
+	$("#notifyDiv").css("display", "block");
+}
 
-	var notifyElm = document.getElementById("notifyDiv");
-	notifyElm.innerHTML = message;
-	notifyElm.style.display = "block";
+function notification(elms, size) {
+	resetSpace();
+	for(var i = 0; i < elms.length; i++) {
+		elms[i].appendTo($("#notifyDiv"));
+	}
+	$("#notifyDiv").css("width", size);
+	$("#notifyDiv").css("display", "block");
 }
 
 function setCrossrefPermission() {
-	var perm = document.getElementById("qrTitle").checked;
+	var perm = $("#qrTitle").is(":checked");
 
 	if(perm) {
 		chrome.permissions.request({
@@ -77,10 +83,10 @@ function setCrossrefPermission() {
 		}, function(granted) {
 			if(granted) {
 				localStorage["qr_title"] = true;
-				document.getElementById("qrTitle").checked = true;
+				$("#qrTitle").prop("checked", true);
 			} else {
 				localStorage["qr_title"] = false;
-				document.getElementById("qrTitle").checked = false;
+				$("#qrTitle").prop("checked", false);
 			}
 		});
 	} else {
@@ -89,10 +95,10 @@ function setCrossrefPermission() {
 		}, function(removed) {
 			if(removed) {
 				localStorage["qr_title"] = false;
-				document.getElementById("qrTitle").checked = false;
+				$("#qrTitle").prop("checked", false);
 			} else {
 				localStorage["qr_title"] = true;
-				document.getElementById("qrTitle").checked = true;
+				$("#qrTitle").prop("checked", true);
 			}
 		});
 	}
@@ -108,13 +114,13 @@ function htmlEscape(str) {
 }
 
 function formSubmitHandler() {
-	var actionType = jQuery('input[name=imageType]:checked').val();
-	var doiInput = escape(trim(jQuery('#doiInput').val()));
-	var size = parseInt(escape(jQuery('#sizeInput').val()));
+	var actionType = $('input[name="imageType"]:checked').val();
+	var doiInput = escape(trim($("#doiInput").val()));
+	var size = parseInt(escape($("#sizeInput").val()));
 
 	if(!doiInput || !size || !checkValidDoi(doiInput)) return;
 	if(size < 80) {
-		notification(chrome.i18n.getMessage("invalidQrSizeAlert"));
+		simpleNotification(chrome.i18n.getMessage("invalidQrSizeAlert"));
 		return;
 	}
 
@@ -137,17 +143,20 @@ function insertQr(doiInput,size,outputType) {
 	var stringToEncode = "";
 	var jsonUrl = "http://dx.doi.org/" + doiInput;
 
-	if(doiInput.match(/^10\./)) stringToEncode = "http://dx.doi.org/" + doiInput;
-	else if(doiInput.match(/^10\//)) stringToEncode = "http://doi.org/" + doiInput.replace(/^10\//,"");
+	if(doiInput.match(/^10\./)) {
+		stringToEncode = "http://dx.doi.org/" + doiInput;
+	} else if(doiInput.match(/^10\//)) {
+		stringToEncode = "http://doi.org/" + doiInput.replace(/^10\//,"");
+	}
 
-	notification("Loading...");
+	simpleNotification("Loading...");
 
 	if(localStorage["qr_title"] == "true") {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(granted) {
 			if(granted) {
-				var jqxhr = jQuery.ajax({
+				var jqxhr = $.ajax({
 					url: jsonUrl,
 					headers: { Accept: "application/citeproc+json" },
 					dataType: "text",
@@ -160,28 +169,26 @@ function insertQr(doiInput,size,outputType) {
 					doiTitle = doiTitle.replace(/<alt-title>(.*)<\/alt-title>/,"");
 					doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/,"$1");
 					stringToEncode = doiTitle + "\n" + stringToEncode;
-					jQuery('#qrDiv').qrcode({width:size, height:size, text:stringToEncode});
-					outputImg(size,outputType,stringToEncode,"found");
+					$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
+					outputImg(size, outputType, stringToEncode, "found");
 				});
 				jqxhr.error(function() {
-					jQuery('#qrDiv').qrcode({width:size, height:size, text:stringToEncode});
-					outputImg(size,outputType,stringToEncode,"missing");
+					$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
+					outputImg(size, outputType, stringToEncode, "missing");
 				});
 			} else {
-				jQuery('#qrDiv').qrcode({width:size, height:size, text:stringToEncode});
-				outputImg(size,outputType,stringToEncode,"disabled");
+				$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
+				outputImg(size, outputType, stringToEncode, "disabled");
 			}
 		});
 	} else {
-		jQuery('#qrDiv').qrcode({width:size, height:size, text:stringToEncode});
-		outputImg(size,outputType,stringToEncode,"disabled");
+		$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
+		outputImg(size, outputType, stringToEncode, "disabled");
 	}
 }
 
-function outputImg(size,outputType,stringToEncode,titleRetrieval) {
-	var qrElm = document.getElementById("qrDiv");
-	var notifyElm = document.getElementById("notifyDiv");
-	var canvas = qrElm.firstChild;
+function outputImg(size, outputType, stringToEncode, titleRetrieval) {
+	var canvas = document.getElementById("qrDiv").firstChild;
 	var sizeString = (size + "px").toString();
 	var titleNotice = "";
 	var statusMessage = "";
@@ -202,67 +209,56 @@ function outputImg(size,outputType,stringToEncode,titleRetrieval) {
 	}
 
 	if(canvas) {
-		var img = document.createElement('img');
-		img.setAttribute('width', sizeString);
-		img.setAttribute('height', sizeString);
-		img.setAttribute('alt', 'QR Code');
-		img.setAttribute('id', 'qrImage');
-		if(outputType == 'png')	img.setAttribute('src', canvas.toDataURL("image/png"));
-		if(outputType == 'jpg')	img.setAttribute('src', canvas.toDataURL("image/jpeg"));
-
-		var saveLink = document.createElement('a');
-		saveLink.setAttribute('id', 'qrImageSaveLink');
-		if(outputType == 'png')	{
-			saveLink.setAttribute('href', canvas.toDataURL("image/png"));
-			saveLink.setAttribute('download', 'qrImage.png');
-		}
-		if(outputType == 'jpg')	{
-			saveLink.setAttribute('href', canvas.toDataURL("image/jpeg"));
-			saveLink.setAttribute('download', 'qrImage.jpg');
+		var img = $('<img>');
+		img.attr("width", sizeString);
+		img.attr("height", sizeString);
+		img.attr("alt", "QR Code");
+		img.attr("id", "qrImage");
+		if(outputType == "png") {
+			img.attr("src", canvas.toDataURL("image/png"));
+		} else if(outputType == "jpg")	{
+			img.attr("src", canvas.toDataURL("image/jpeg"));
 		}
 
-		statusMessage = "<span class=\"heading\">"
-			+chrome.i18n.getMessage("qrTitleStatus")
-			+"</span>"
-			+titleNotice
-			+"<br><span class=\"heading\">"
-			+chrome.i18n.getMessage("qrMessageEncoded")
-			+"</span>"
-			+htmlEscape(stringToEncode)
-			+"<br><span class=\"highlight\">\&nbsp;"
-			+chrome.i18n.getMessage("qrSave")
-			+"\&nbsp;</span>";
-		
-		notification(statusMessage);
-		notifyElm.style.width = "790px";
+		var saveLink = $('<a>').attr("id", "qrImageSaveLink");
+		if(outputType == "png")	{
+			saveLink.attr("href", canvas.toDataURL("image/png"));
+			saveLink.attr("download", "qrImage.png");
+		} else if(outputType == "jpg")	{
+			saveLink.attr("href", canvas.toDataURL("image/jpeg"));
+			saveLink.attr("download", "qrImage.jpg");
+		}
 
-		qrElm.appendChild(img);
-		jQuery('#qrImage').wrap(saveLink);
-		qrElm.style.display = "block";
-		qrElm.style.height = (size + "px").toString();
-		qrElm.style.lineHeight = (size + "px").toString();
+		var statusMessage = [];
+		var tmp = $('<span>').attr("class", "heading");
+		tmp.html(chrome.i18n.getMessage("qrTitleStatus"));
+		statusMessage.push(tmp);
+		tmp = $('<span>').html(titleNotice);
+		statusMessage.push(tmp);
+		tmp = $('<br>');
+		statusMessage.push(tmp);
+		tmp = $('<span>').attr("class", "heading");
+		tmp.html(chrome.i18n.getMessage("qrMessageEncoded"));
+		statusMessage.push(tmp);
+		tmp = $('<span>').html(htmlEscape(stringToEncode));
+		statusMessage.push(tmp);
+		tmp = $('<br>');
+		statusMessage.push(tmp);
+		tmp = $('<span>').attr("class", "highlight");
+		tmp.html("&nbsp;" + chrome.i18n.getMessage("qrSave") + "&nbsp;");
+		statusMessage.push(tmp);
+
+		notification(statusMessage, "790px");
+
+		img.appendTo($("#qrDiv"));
+		$("#qrImage").wrap(saveLink);
+		$("#qrDiv").css({"display": "block", "height": (size + "px"), "line-height": (size + "px")});
 	}
-}
-
-function saveImage(imageType) {
-	var imgSrc = document.getElementById("qrImage").getAttribute("src");
-	var dataUrl = imgSrc;
-	// var dataUrl = imgSrc.replace("image/png", "image/octet-stream");
-	download(dataUrl,"QR-Code.png");
-}
-
-function download(url, filename) {
-	var link = document.createElement('a');
-	link.setAttribute('href',url);
-	link.setAttribute('download',filename);
-	var event = document.createEvent('Event');
-	event.initEvent("click", true, true);
-	link.dispatchEvent(event);
 }
 
 function getLocalMessages() {
 	var message = chrome.i18n.getMessage("qrSize");
-	document.getElementById("sizeInputLabel").innerHTML = message;
+	$("#sizeInputLabel").html(message);
 	message = chrome.i18n.getMessage("qrTitleLabel");
-	document.getElementById("qrTitleLabel").innerHTML = message;
+	$("#qrTitleLabel").html(message);
 }

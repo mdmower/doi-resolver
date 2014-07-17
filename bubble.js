@@ -23,16 +23,16 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 function startListeners() {
-	jQuery("#resolveSubmit").click(function() {
-		jQuery("#hiddenButtonInput").val("doi");
+	$("#resolveSubmit").click(function() {
+		$("#hiddenButtonInput").val("doi");
 	});
-	jQuery("#citeSubmit").click(function() {
-		jQuery("#hiddenButtonInput").val("cite");
+	$("#citeSubmit").click(function() {
+		$("#hiddenButtonInput").val("cite");
 	});
-	jQuery("#qrSubmit").click(function() {
-		jQuery("#hiddenButtonInput").val("qr");
+	$("#qrSubmit").click(function() {
+		$("#hiddenButtonInput").val("qr");
 	});
-	jQuery('#doiForm').submit(function () {
+	$('#doiForm').submit(function () {
 		formSubmitHandler();
 		return false;
 	});
@@ -58,7 +58,7 @@ function restoreOptions() {
 // Dynamically adjust bubble height when content changes
 function resetBubbleHeight() {
 	var bubbleHeight = document.getElementById("containerDiv").offsetHeight;
-	document.body.style.height = (bubbleHeight + "px").toString();
+	$("body").css("height", bubbleHeight + "px");
 }
 
 // Set text box width to fill all space between label and button
@@ -66,18 +66,21 @@ function setTextBoxWidth() {
 	// Read: http://www.alistapart.com/articles/holygrail
 	// DOI label doesn't align right when following guide exactly
 
-	var doiLabelWidth = (document.getElementById("formDoiLabel").offsetWidth + "px").toString();
-	var negDoiLabelWidth = ("-" + document.getElementById("formDoiLabel").offsetWidth + "px").toString();
-	var submitButtonWidth = (document.getElementById("resolveSubmit").offsetWidth + "px").toString();
-	var negSubmitButtonWidth = ("-" + document.getElementById("resolveSubmit").offsetWidth + "px").toString();
+	var doiLabelWidth = $("#formDoiLabel").outerWidth() + "px";
+	var negDoiLabelWidth = "-" + doiLabelWidth;
+	var submitButtonWidth = $("#resolveSubmit").outerWidth() + "px";
+	var negSubmitButtonWidth = "-" + submitButtonWidth;
 
-	document.getElementById("mainForm").style.paddingLeft = doiLabelWidth;
-	document.getElementById("mainForm").style.paddingRight = submitButtonWidth;
-	document.getElementById("formDoiLabel").style.width = doiLabelWidth;
-	document.getElementById("formDoiLabel").style.right = "0";
-	document.getElementById("formDoiLabel").style.marginLeft = negDoiLabelWidth;
-	document.getElementById("submitButtonContainer").style.width = submitButtonWidth;
-	document.getElementById("submitButtonContainer").style.marginRight = negSubmitButtonWidth;
+	$("#mainForm").css("padding-left", doiLabelWidth);
+	$("#mainForm").css("padding-right", submitButtonWidth);
+	$("#formDoiLabel").css("width", doiLabelWidth);
+	$("#formDoiLabel").css("right", "0");
+	$("#formDoiLabel").css("margin-left", negDoiLabelWidth);
+	$("#submitButtonContainer").css("width", submitButtonWidth);
+	$("#submitButtonContainer").css("margin-right", negSubmitButtonWidth);
+
+	var textInputWidth = ($("#doiForm").outerWidth() - $("#formDoiLabel").outerWidth() - $("#resolveSubmit").outerWidth()) + "px";
+	$("#textInputContainer").css("width", textInputWidth);
 }
 
 // Remove spaces and punctuation from beginning and end of input
@@ -99,10 +102,8 @@ function checkValidDoi(doiInput) {
 
 // Clear message space in bubble and reset height
 function resetMessageSpace() {
-	var messageElement = document.getElementById("messageDiv");
-
-	while (messageElement.firstChild) messageElement.removeChild(messageElement.firstChild);
-	messageElement.style.display = "none";
+	$("#messageDiv").empty();
+	$("#messageDiv").css("display", "none");
 	resetBubbleHeight();
 }
 
@@ -110,16 +111,15 @@ function resetMessageSpace() {
 function bubbleMessage(message) {
 	resetMessageSpace();
 
-	var messageElement = document.getElementById("messageDiv");
-	messageElement.style.display = "block";
-	messageElement.style.height = "60px";
-	messageElement.innerHTML = "<div style=\"line-height:60px\">" + message + "</div>";
+	$("#messageDiv").css("display", "block");
+	$("#messageDiv").css("height", "60px");
+	$("<div>").html(message).appendTo($("#messageDiv"));
 }
 
 // Process the form
 function formSubmitHandler() {
-	var actionType = jQuery("#hiddenButtonInput").val();
-	var doiInput = escape(trim(jQuery('#textInput').val()));
+	var actionType = $("#hiddenButtonInput").val();
+	var doiInput = escape(trim($("#textInput").val()));
 
 	switch(actionType) {
 	case "qr":
@@ -184,27 +184,27 @@ function showHideOptionalElms() {
 	var craOp = localStorage["cr_always"];
 
 	if(meta == "true") {
-		document.getElementById("metaButtons").style.display="block";
+		$("#metaButtons").css("display", "block");
 	} else {
-		document.getElementById("metaButtons").style.display="none";
+		$("#metaButtons").css("display", "none");
 	}
 
 	if(craOp == 'optional') {
-		document.getElementById("crRadios").style.display="block";
+		$("#crRadios").css("display", "block");
 	} else {
-		document.getElementById("crRadios").style.display="none";
+		$("#crRadios").css("display", "none");
 	}
 }
 
 function getLocalMessages() {
 	var message = chrome.i18n.getMessage("resolveSubmit");
-	document.getElementById("resolveSubmit").setAttribute("value",message);
+	$("#resolveSubmit").attr("value", message);
 	message = chrome.i18n.getMessage("citeSubmit");
-	document.getElementById("citeSubmit").setAttribute("value",message);
+	$("#citeSubmit").attr("value", message);
 	message = chrome.i18n.getMessage("optionCrRadioBubble");
-	document.getElementById("optionCrRadioBubble").innerHTML = message;
+	$("#optionCrRadioBubble").html(message);
 	message = chrome.i18n.getMessage("optionCrRadioBubbleCustom");
-	document.getElementById("optionCrRadioBubbleCustom").innerHTML = message;
+	$("#optionCrRadioBubbleCustom").html(message);
 	message = chrome.i18n.getMessage("optionCrRadioBubbleDefault");
-	document.getElementById("optionCrRadioBubbleDefault").innerHTML = message;
+	$("#optionCrRadioBubbleDefault").html(message);
 }

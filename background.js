@@ -27,7 +27,7 @@ function setDefaultOption(opt) {
 			localStorage["context_menu"] = localStorage["doi_context_enable"];
 			localStorage.removeItem("doi_context_enable");
 		} else {
-		localStorage["context_menu"] = true;
+			localStorage["context_menu"] = true;
 		}
 		break;
 	case 'meta':
@@ -35,7 +35,7 @@ function setDefaultOption(opt) {
 			localStorage["meta_buttons"] = localStorage["doi_metabuttons_enable"];
 			localStorage.removeItem("doi_metabuttons_enable");
 		} else {
-		localStorage["meta_buttons"] = true;
+			localStorage["meta_buttons"] = true;
 		}
 		break;
 	case 'cr':

@@ -16,7 +16,9 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 	var initDOI = getUrlVars()["doi"];
-	if(initDOI) document.getElementById("doiInput").setAttribute("value",initDOI);
+	if(initDOI) {
+		$("#doiInput").attr("value", initDOI);
+	}
 
 	getLocalMessages()
 	buildSelections();
@@ -24,30 +26,25 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 function startListeners() {
-	jQuery('#citeForm').submit(function () {
+	$('#citeForm').submit(function () {
 		formSubmitHandler();
 		return false;
 	});
-	jQuery('#copyButton').click(function() {
-		copyCitation()
-	});
-
-	document.getElementById('citeStyleInput').addEventListener('change', otherField, false);
+	$('#copyButton').on("click", copyCitation);
+	$("#citeStyleInput").on("change", otherField);
 }
 
 // Read a page's GET URL variables and return them as an associative array.
 // http://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
-function getUrlVars()
-{
-    var vars = [], hash;
-    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-    for(var i = 0; i < hashes.length; i++)
-    {
-        hash = hashes[i].split('=');
-        vars.push(hash[0]);
-        vars[hash[0]] = hash[1];
-    }
-    return vars;
+function getUrlVars() {
+	var vars = [], hash;
+	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+	for(var i = 0; i < hashes.length; i++) {
+		hash = hashes[i].split('=');
+		vars.push(hash[0]);
+		vars[hash[0]] = hash[1];
+	}
+	return vars;
 }
 
 function buildSelections() {
@@ -61,23 +58,24 @@ function buildSelections() {
 	}
 
 	var readableLocales = [];
-	for(var i=0; i < allLocales.length; i++) {
+	for(var i = 0; i < allLocales.length; i++) {
 		readableLocales[i] = [allLocales[i], localeCodeToEnglish(allLocales[i])];
 	}
 	readableLocales.sort( function( a, b ) {
-		if ( a[1] == b[1] ) return 0;
+		if (a[1] == b[1]) {
+			return 0;
+		}
 		return a[1] < b[1] ? -1 : 1;
 	});
 
-	var localeHtmlOptions = "";
-	for(var i=0; i < allLocales.length; i++) {
-		if(readableLocales[i][0] != storedLocale) {
-			localeHtmlOptions += '<option value="' + readableLocales[i][0] + '">' + readableLocales[i][1] + '</option>';
-		} else {
-			localeHtmlOptions += '<option selected="selected" value="' + readableLocales[i][0] + '">' + readableLocales[i][1] + '</option>';
+	var localeHtmlOptions;
+	for(var i = 0; i < allLocales.length; i++) {
+		localeHtmlOptions = $('<option>').attr("value", readableLocales[i][0]).html(readableLocales[i][1]);
+		if(readableLocales[i][0] == storedLocale) {
+			localeHtmlOptions.attr("selected", "selected");
 		}
+		localeHtmlOptions.appendTo("#citeLocaleInput");
 	}
-	document.getElementById('citeLocaleInput').innerHTML = localeHtmlOptions;
 
 	// SHORT STYLES LIST
 	var storedStyle = localStorage["cite_style"];
@@ -89,15 +87,14 @@ function buildSelections() {
 		localStorage["cite_style"] = "bibtex";
 	}
 
-	var styleHtmlOptions = "";
-	for(var i=0; i < baseStyles.length; i++) {
-		if(baseStyles[i] != storedStyle) {
-			styleHtmlOptions += '<option value="' + baseStyles[i] + '">' + readableStyles[i] + '</option>';
-		} else {
-			styleHtmlOptions += '<option selected="selected" value="' + baseStyles[i] + '">' + readableStyles[i] + '</option>';
+	var styleHtmlOptions;
+	for(var i = 0; i < baseStyles.length; i++) {
+		styleHtmlOptions = $('<option>').attr("value", baseStyles[i]).html(readableStyles[i]);
+		if(baseStyles[i] == storedStyle) {
+			styleHtmlOptions.attr("selected", "selected");
 		}
+		styleHtmlOptions.appendTo("#citeStyleInput");
 	}
-	document.getElementById('citeStyleInput').innerHTML = styleHtmlOptions;
 
 	// FULL STYLES LIST
 	var otherStoredStyle = localStorage["cite_other_style"];
@@ -108,27 +105,27 @@ function buildSelections() {
 		localStorage["cite_other_style"] = "bibtex";
 	}
 
-	var otherStyleHtmlOptions = "";
-	for(var i=0; i < allStyles.length; i++) {
-		if(allStyles[i] != otherStoredStyle) {
-			otherStyleHtmlOptions += '<option value="' + allStyles[i] + '">' + allStyles[i] + '</option>';
-		} else {
-			otherStyleHtmlOptions += '<option selected="selected" value="' + allStyles[i] + '">' + allStyles[i] + '</option>';
+	var otherStyleHtmlOptions;
+	for(var i = 0; i < allStyles.length; i++) {
+		otherStyleHtmlOptions = $('<option>').attr("value", allStyles[i]).html(allStyles[i]);
+		if(allStyles[i] == otherStoredStyle) {
+			otherStyleHtmlOptions.attr("selected", "selected");
 		}
+		otherStyleHtmlOptions.appendTo("#styleList");
 	}
-	document.getElementById('styleList').innerHTML = otherStyleHtmlOptions;
 
-	var sideFormElm = document.getElementById('sideForm');
-	if(storedStyle == "other") sideFormElm.style.display = "block";
+	if(storedStyle == "other") {
+		$("#sideForm").css("display", "block");
+	}
 }
 
 function otherField() {
-	var elm = document.getElementById('citeStyleInput');
-	var style = elm.options[elm.selectedIndex].value;
-	var sideFormElm = document.getElementById('sideForm');
-
-	if(style == "other") sideFormElm.style.display = "block";
-	else sideFormElm.style.display = "none";
+	var style = $("#citeStyleInput option:selected").val();
+	if(style == "other") {
+		$("#sideForm").css("display", "block");
+	} else {
+		$("#sideForm").css("display", "none");
+	}
 }
 
 function trim(stringToTrim) {
@@ -144,12 +141,9 @@ function formSubmitHandler() {
 }
 
 function saveSelections() {
-	var citeStyle = document.getElementById("citeStyleInput");
-	localStorage["cite_style"] = citeStyle.options[citeStyle.selectedIndex].value;
-	var citeLocale = document.getElementById("citeLocaleInput");
-	localStorage["cite_locale"] = citeLocale.options[citeLocale.selectedIndex].value;
-	var otherStyleElm = document.getElementById("styleList");
-	localStorage["cite_other_style"] = otherStyleElm.options[otherStyleElm.selectedIndex].value;
+	localStorage["cite_style"] = $("#citeStyleInput option:selected").val();
+	localStorage["cite_locale"] = $("#citeLocaleInput option:selected").val();
+	localStorage["cite_other_style"] = $("#styleList option:selected").val();
 }
 
 function checkValidDoi(doiInput) {
@@ -158,45 +152,34 @@ function checkValidDoi(doiInput) {
 	} else if(doiInput.match(/^10\//)) {
 		return true;
 	} else {
-		notification(chrome.i18n.getMessage("invalidDoiAlert"));
+		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
 		return false;
 	}
 }
 
 function resetSpace() {
-	var notifyElm = document.getElementById("notifyDiv");
-	var citeElm = document.getElementById("citeDiv");
-	var citeOutElm = document.getElementById("citeOutput");
-
-	notifyElm.innerHTML = "";
-	citeOutElm.innerHTML = "";
-
-	notifyElm.style.display = "none";
-	citeElm.style.display = "none";
+	$("#notifyDiv").html("");
+	$("#notifyDiv").css("display", "none");
+	$("#citeOutput").html("");
+	$("#citeDiv").css("display", "none");
 }
 
-function notification(message) {
+function simpleNotification(message) {
 	resetSpace();
-
-	var notifyElm = document.getElementById("notifyDiv");
-	notifyElm.style.display = "block";
-	notifyElm.innerHTML = message;
+	$("#notifyDiv").html(message);
+	$("#notifyDiv").css("display", "block");
 }
 
 function outputCitation(message) {
 	resetSpace();
-
-	var citeElm = document.getElementById("citeDiv");
-	var citeOutElm = document.getElementById("citeOutput");
-
-	citeElm.style.display = "block";
-	citeOutElm.innerHTML = message;
+	$("#citeOutput").html(message);
+	$("#citeDiv").css("display", "block");
 }
 
 function copyCitation() {
-	jQuery("#citeOutput").select();
-    document.execCommand('copy');
-	jQuery("#citeOutput").select();
+	$("#citeOutput").select();
+	document.execCommand('copy');
+	$("#citeOutput").select();
 }
 
 function htmlEscape(str) {
@@ -209,26 +192,23 @@ function htmlEscape(str) {
 }
 
 function getCitation(doi) {
-	var styleElm = document.getElementById("citeStyleInput");
-	var style = styleElm.options[styleElm.selectedIndex].value;
-	var localeElm = document.getElementById("citeLocaleInput");
-	var locale = localeElm.options[localeElm.selectedIndex].value;
+	var style = $("#citeStyleInput option:selected").val();
+	var locale = $("#citeLocaleInput option:selected").val();
 
 	if(style == "other") {
-		var otherStyleElm = document.getElementById("styleList");
-		style = otherStyleElm.options[otherStyleElm.selectedIndex].value;
+		style = $("#styleList option:selected").val();
 	}
 
 	var resolveUrl = "http://dx.doi.org/" + doi;
 	var content = "text/x-bibliography; style=" + style + "; locale=" + locale;
 
-	notification(chrome.i18n.getMessage("loading"));
+	simpleNotification(chrome.i18n.getMessage("loading"));
 
 	chrome.permissions.request({
 		origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 	}, function(granted) {
 		if(granted) {
-			var jqxhr = jQuery.ajax({
+			var jqxhr = $.ajax({
 				url: resolveUrl,
 				headers: { Accept: content },
 				dataType: "text",
@@ -236,23 +216,26 @@ function getCitation(doi) {
 				cache: false
 			});
 			jqxhr.done(function() {
-				if(jqxhr.responseText != "") outputCitation(htmlEscape(jqxhr.responseText));
-				else notification(chrome.i18n.getMessage("noCitationFound"));
+				if(jqxhr.responseText != "") {
+					outputCitation(htmlEscape(jqxhr.responseText));
+				} else {
+					simpleNotification(chrome.i18n.getMessage("noCitationFound"));
+				}
 			});
 			jqxhr.error(function() {
-				notification(chrome.i18n.getMessage("noCitationFound"));
+				simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 			});
 		} else {
-			notification(chrome.i18n.getMessage("needCitationPerm"));
+			simpleNotification(chrome.i18n.getMessage("needCitationPerm"));
 		}
 	});
 }
 
 function getLocalMessages() {
 	var message = chrome.i18n.getMessage("citeTitle");
-	document.getElementById("heading").innerHTML = message;
+	$("#heading").html(message);
 	message = chrome.i18n.getMessage("citeStyle");
-	document.getElementById("citeStyleLabel").innerHTML = message;
+	$("#citeStyleLabel").html(message);
 	message = chrome.i18n.getMessage("citeLocale");
-	document.getElementById("citeLocaleLabel").innerHTML = message;
+	$("#citeLocaleLabel").html(message);
 }

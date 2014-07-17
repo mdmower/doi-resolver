@@ -72,6 +72,10 @@
 	margin: 2px 0px 2px 26px;
 }
 
+#customResolverRadio {
+	margin: 2px 0px 6px 0px;
+}
+
 #doiResolverInput,
 #shortDoiResolverInput {
 	width: 300px;
@@ -117,6 +121,11 @@
 		<div style="clear:both;"><br></div>
 		<input type="checkbox" id="customResolver" /> <label id="optionCustomResolver" for="customResolver"></label><br>
 		<div id="customResolverFields" style="display:none;">
+			<div id="customResolverRadio">
+				<span id="optionCustomResolverRadio"></span>
+				<input type="radio" id="crRadioAlways" name="crRadio" value="always" /> <label id="optionCrRadioAlways" for="crRadioAlways"></label>
+				<input type="radio" id="crRadioOptional" name="crRadio" value="optional" /> <label id="optionCrRadioOptional" for="crRadioOptional"></label>
+			</div>
 			<label id="textDoiResolverInput" for="doiResolverInput"></label>
 			<input type="text" id="doiResolverInput" value="" />
 			<input type="submit" id="doiResolverInputSave" value="Save" />

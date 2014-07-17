@@ -15,8 +15,9 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
+	restoreOptions();
 	getLocalMessages();
-	showHideMetaButtons();
+	showHideOptionalElms();
 	setTextBoxWidth();
 	startListeners();
 }, false);
@@ -35,6 +36,23 @@ function startListeners() {
 		formSubmitHandler();
 		return false;
 	});
+	$("input[name='crRadio']").on("click", saveOptions);
+}
+
+// Saves options to localStorage
+function saveOptions() {
+	localStorage["cr_last"] = $('input[name="crRadio"]:checked').val();
+}
+
+// Restores options from localStorage
+function restoreOptions() {
+	var crlOp = localStorage["cr_last"];
+
+	if(crlOp == "custom") {
+		$("#crRadioBubbleCustom").prop("checked", true);
+	} else {
+		$("#crRadioBubbleDefault").prop("checked", true);
+	}
 }
 
 // Dynamically adjust bubble height when content changes
@@ -123,13 +141,25 @@ function formSubmitHandler() {
 // Build URL based on custom resolver settings
 function resolveURL(doi) {
 	var cr = localStorage["custom_resolver"];
+	var cra = localStorage["cr_always"];
+	var crl = localStorage["cr_last"];
 	var dr = localStorage["doi_resolver"];
 	var sr = localStorage["shortdoi_resolver"];
+	var useDefaultResolver = true;
 
-	if(doi.match(/^10\./) && cr == "true") return dr + doi;
-	else if(doi.match(/^10\./) && cr != "true") return "http://dx.doi.org/" + doi;
-	else if(doi.match(/^10\//) && cr == "true") return sr + doi.replace(/^10\//,"");
-	else if(doi.match(/^10\//) && cr != "true") return "http://doi.org/" + doi.replace(/^10\//,"");
+	if(cr == "true" && cra == 'always') {
+		useDefaultResolver = false;
+	} else if (cr == "true" && cra == 'optional' && crl == 'custom') {
+		useDefaultResolver = false;
+	}
+
+	if(useDefaultResolver) {
+		if(doi.match(/^10\./)) return "http://dx.doi.org/" + doi;
+		else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");	
+	} else {
+		if(doi.match(/^10\./)) return dr + doi;
+		else if(doi.match(/^10\//)) return sr + doi.replace(/^10\//,"");
+	}
 
 	return "";
 }
@@ -149,13 +179,20 @@ function qrGen(doiInput) {
 }
 
 // Show or hide additional buttons in bubble
-function showHideMetaButtons() {
+function showHideOptionalElms() {
 	var meta = localStorage["meta_buttons"];
+	var craOp = localStorage["cr_always"];
 
 	if(meta == "true") {
 		document.getElementById("metaButtons").style.display="block";
 	} else {
 		document.getElementById("metaButtons").style.display="none";
+	}
+
+	if(craOp == 'optional') {
+		document.getElementById("crRadios").style.display="block";
+	} else {
+		document.getElementById("crRadios").style.display="none";
 	}
 }
 
@@ -164,4 +201,10 @@ function getLocalMessages() {
 	document.getElementById("resolveSubmit").setAttribute("value",message);
 	message = chrome.i18n.getMessage("citeSubmit");
 	document.getElementById("citeSubmit").setAttribute("value",message);
+	message = chrome.i18n.getMessage("optionCrRadioBubble");
+	document.getElementById("optionCrRadioBubble").innerHTML = message;
+	message = chrome.i18n.getMessage("optionCrRadioBubbleCustom");
+	document.getElementById("optionCrRadioBubbleCustom").innerHTML = message;
+	message = chrome.i18n.getMessage("optionCrRadioBubbleDefault");
+	document.getElementById("optionCrRadioBubbleDefault").innerHTML = message;
 }

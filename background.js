@@ -41,6 +41,12 @@ function setDefaultOption(opt) {
 	case 'cr':
 		localStorage["custom_resolver"] = false;
 		break;
+	case 'cra':
+		localStorage["cr_always"] = "always";
+		break;
+	case 'crl':
+		localStorage["cr_last"] = "custom";
+		break;
 	case 'dr':
 		localStorage["doi_resolver"] = "http://dx.doi.org/";
 		break;
@@ -77,6 +83,8 @@ function checkForSettings() {
 	if(typeof localStorage["context_menu"] == 'undefined') setDefaultOption('cm');
 	if(typeof localStorage["meta_buttons"] == 'undefined') setDefaultOption('meta');
 	if(typeof localStorage["custom_resolver"] == 'undefined') setDefaultOption('cr');
+	if(typeof localStorage["cr_always"] == 'undefined') setDefaultOption('cra');
+	if(typeof localStorage["cr_last"] == 'undefined') setDefaultOption('crl');
 	if(typeof localStorage["doi_resolver"] == 'undefined') setDefaultOption('dr');
 	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sr');
 	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');

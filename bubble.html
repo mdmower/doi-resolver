@@ -52,6 +52,13 @@ body {
 	margin-right: -30px;  /* RC width, will be overwritten in the DOM */
 }
 
+#crRadios {
+	display:none;
+	clear:both;
+	min-height: 1.5em;
+	font-size: 0.9em;
+}
+
 #metaButtons {
 	position: relative;
 	display:none;
@@ -95,6 +102,11 @@ body {
 		<div id="submitButtonContainer" class="column" ><input type="submit" id="resolveSubmit" value="" /></div>
 	</div>
 	<br>
+	<div id="crRadios">
+		<span id="optionCrRadioBubble"></span>
+		<input type="radio" id="crRadioBubbleCustom" name="crRadio" value="custom" /> <label id="optionCrRadioBubbleCustom" for="crRadioBubbleCustom"></label>
+		<input type="radio" id="crRadioBubbleDefault" name="crRadio" value="default" /> <label id="optionCrRadioBubbleDefault" for="crRadioBubbleDefault"></label>
+	</div>
 	<div id="metaButtons">
 		<div id="optionsLink"><a href="options.html" title="Options" target="_blank">Options</a></div>	
 		<input type="submit" id="citeSubmit" value="" />

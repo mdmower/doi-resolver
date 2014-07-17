@@ -126,5 +126,29 @@
 	"qrSave": {
 		"description": "(32) Instructions on how to save QR image",
 		"message": "Click on the image to save it"
+	},
+	"optionCustomResolverRadio": {
+		"description": "(33) A setting to allow choice of default or custom resolver in bubble",
+		"message": "Always use custom resolver? "
+	},
+	"optionCrRadioAlways": {
+		"description": "(34) Always use custom resolver if it is defined",
+		"message": "Yes"
+	},
+	"optionCrRadioOptional": {
+		"description": "(35) Enable setting to allow choice of default or custom resolver in bubble",
+		"message": "Let me choose resolver in bubble"
+	},
+	"optionCrRadioBubble": {
+		"description": "(36) Label for choice of custom or default resolver",
+		"message": "Resolver: "
+	},
+	"optionCrRadioBubbleCustom": {
+		"description": "(37) Label for custom resolver",
+		"message": "Custom"
+	},
+	"optionCrRadioBubbleDefault": {
+		"description": "(38) Label for default resolver",
+		"message": "Default"
 	}
 }

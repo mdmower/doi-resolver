@@ -25,6 +25,7 @@ function startListeners() {
 	document.getElementById("meta").addEventListener("click", saveOptions, false);
 	document.getElementById("autoLink").addEventListener("click", saveOptions, false);
 	document.getElementById("customResolver").addEventListener("click", saveOptions, false);
+	$("input[name='crRadio']").on("click", saveOptions);
 
 	document.getElementById("doiResolverInputSave").addEventListener("click", saveOptions, false);
 	document.getElementById("shortDoiResolverInputSave").addEventListener("click", saveOptions, false);
@@ -71,6 +72,7 @@ function saveOptions() {
 	localStorage["context_menu"] = document.getElementById("context").checked;
 	localStorage["meta_buttons"] = document.getElementById("meta").checked;
 	localStorage["custom_resolver"] = document.getElementById("customResolver").checked;
+	localStorage["cr_always"] = $('input[name="crRadio"]:checked').val();
 	localStorage["doi_resolver"] = document.getElementById("doiResolverInput").value;
 	localStorage["shortdoi_resolver"] = document.getElementById("shortDoiResolverInput").value;
 	localStorage["auto_link"] = document.getElementById("autoLink").checked;
@@ -83,6 +85,7 @@ function restoreOptions(pageOpen) {
 	var cmOp = localStorage["context_menu"];
 	var metaOp = localStorage["meta_buttons"];
 	var crOp = localStorage["custom_resolver"];
+	var craOp = localStorage["cr_always"];
 	var drOp = localStorage["doi_resolver"];
 	var srOp = localStorage["shortdoi_resolver"];
 	var alOp = localStorage["auto_link"];
@@ -125,6 +128,12 @@ function restoreOptions(pageOpen) {
 	} else {
 		crBox.checked = false;
 		document.getElementById("customResolverFields").style.display = "none";
+	}
+
+	if(craOp == "optional") {
+		$("#crRadioOptional").prop("checked", true);
+	} else {
+		$("#crRadioAlways").prop("checked", true);
 	}
 
 	if(pageOpen == true) { //change to CHECK permission instead of assuming ok
@@ -199,6 +208,12 @@ function getLocalMessages() {
 	document.getElementById("optionMetaButtons").innerHTML = message;
 	message = chrome.i18n.getMessage("optionCustomResolver");
 	document.getElementById("optionCustomResolver").innerHTML = message;
+	message = chrome.i18n.getMessage("optionCustomResolverRadio");
+	document.getElementById("optionCustomResolverRadio").innerHTML = message;
+	message = chrome.i18n.getMessage("optionCrRadioAlways");
+	document.getElementById("optionCrRadioAlways").innerHTML = message;
+	message = chrome.i18n.getMessage("optionCrRadioOptional");
+	document.getElementById("optionCrRadioOptional").innerHTML = message;
 	message = chrome.i18n.getMessage("textDoiResolverInput");
 	document.getElementById("textDoiResolverInput").innerHTML = message;
 	message = chrome.i18n.getMessage("textShortDoiResolverInput");

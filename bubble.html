@@ -27,35 +27,21 @@
 
 body {
 	font-family: "Droid Sans", "Trebuchet MS", sans-serif;
-	margin: 3px;
-	padding: 0;
-	min-width: 260px;
+	margin: 0;
+	padding: 3px;
+	min-width: 250px;
 	min-height: 26px;
 	overflow-x: hidden;
 }
 
-#mainForm {
-	padding-left: 30px;   /* LC width, will be overwritten in the DOM */
-	padding-right: 30px;  /* RC width, will be overwritten in the DOM */
-}
-
-#mainForm .column {
-	position: relative;
+#textInput {
+	display: block;
 	float: left;
 }
 
-#textInputContainer {
-	width: 100%;
-	text-align: center;
-}
-
-#formDoiLabel {
-	margin-left: -100%;
-}
-
-#submitButtonContainer {
-	width: 30px; /* RC width, will be overwritten in the DOM */
-	margin-right: -30px;  /* RC width, will be overwritten in the DOM */
+#resolveSubmit {
+	display: block;
+	float: right;
 }
 
 #crRadios {
@@ -66,7 +52,6 @@ body {
 }
 
 #metaButtons {
-	position: relative;
 	display:none;
 	clear:both;
 	min-height: 1.5em;
@@ -82,10 +67,6 @@ body {
 	font-size: 0.8em;
 	position: absolute;
 	bottom: 0;
-}
-
-#textInput {
-	width: 96%;
 }
 
 #messageDiv {
@@ -105,14 +86,12 @@ body {
 
 <body>
 <div id="containerDiv">
-	<form name="doiForm" id="doiForm" style="margin:0">
-	<div id="mainForm" style="position:relative;">
-		<input type="hidden" id="hiddenButtonInput" value="" />
-		<div id="formDoiLabel" class="column"><label for="textInput">DOI&nbsp;</label></div>
-		<div id="textInputContainer" class="column"><input type="text" id="textInput" autofocus /></div>
-		<div id="submitButtonContainer" class="column" ><input type="submit" id="resolveSubmit" value="" /></div>
+	<form name="doiForm" id="doiForm">
+	<div id="mainForm">
+		<input type="hidden" id="hiddenButtonInput" />
+		<input type="text" id="textInput" autofocus placeholder="DOI"/>
+		<input type="submit" id="resolveSubmit" />
 	</div>
-	<br>
 	<div id="crRadios">
 		<span id="optionCrRadioBubble"></span>
 		<input type="radio" id="crRadioBubbleCustom" name="crRadio" value="custom" /> <label id="optionCrRadioBubbleCustom" for="crRadioBubbleCustom"></label>
@@ -120,7 +99,7 @@ body {
 	</div>
 	<div id="metaButtons">
 		<div id="optionsLink"><a href="options.html" title="Options" target="_blank">Options</a></div>	
-		<input type="submit" id="citeSubmit" value="" />
+		<input type="submit" id="citeSubmit" />
 		<input type="submit" id="qrSubmit" value="QR Code" />
 	</div>
 	<div id="messageDiv" style="display:none; text-align:center; clear:both; margin-top:4px;"></div>

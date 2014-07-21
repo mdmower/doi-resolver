@@ -61,26 +61,11 @@ function resetBubbleHeight() {
 	$("body").css("height", bubbleHeight + "px");
 }
 
-// Set text box width to fill all space between label and button
 function setTextBoxWidth() {
-	// Read: http://www.alistapart.com/articles/holygrail
-	// DOI label doesn't align right when following guide exactly
-
-	var doiLabelWidth = $("#formDoiLabel").outerWidth() + "px";
-	var negDoiLabelWidth = "-" + doiLabelWidth;
-	var submitButtonWidth = $("#resolveSubmit").outerWidth() + "px";
-	var negSubmitButtonWidth = "-" + submitButtonWidth;
-
-	$("#mainForm").css("padding-left", doiLabelWidth);
-	$("#mainForm").css("padding-right", submitButtonWidth);
-	$("#formDoiLabel").css("width", doiLabelWidth);
-	$("#formDoiLabel").css("right", "0");
-	$("#formDoiLabel").css("margin-left", negDoiLabelWidth);
-	$("#submitButtonContainer").css("width", submitButtonWidth);
-	$("#submitButtonContainer").css("margin-right", negSubmitButtonWidth);
-
-	var textInputWidth = ($("#doiForm").outerWidth() - $("#formDoiLabel").outerWidth() - $("#resolveSubmit").outerWidth()) + "px";
-	$("#textInputContainer").css("width", textInputWidth);
+	var buttonWidth = $("#resolveSubmit").outerWidth();
+	var containerWidth = $("#mainForm").outerWidth();
+	textInputWidth = (containerWidth - buttonWidth - 10) + "px";
+	$("#textInput").css("width", textInputWidth);
 }
 
 // Remove spaces and punctuation from beginning and end of input

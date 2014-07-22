@@ -27,6 +27,11 @@
 
 body {
 	font-family: "Droid Sans", "Trebuchet MS", sans-serif;
+	min-width: 850px;
+}
+
+.row {
+	white-space: nowrap;
 }
 
 #extLogo {
@@ -85,19 +90,52 @@ body {
 	margin: 2px 0px 6px 0px;
 }
 
+#customResolverLeft,
+#customResolverRight {
+	vertical-align: top;
+	display: none;
+	padding-top: 5px;
+	white-space: normal;
+}
+
+#customResolverLeft {
+	width: 500px;
+}
+
+#customResolverRight {
+	width: 300px;
+}
+
+.crLabels {
+	margin-left: 10px;
+}
+
+.crSelections {
+	width: 100px;
+}
+
 #doiResolverInput,
 #shortDoiResolverInput {
-	width: 300px;
+	width: 350px;
 }
 
 .urlExample {
 	margin-left: 20px;
 	margin-bottom: 8px;
+    overflow-x: scroll;
+    white-space: nowrap;
+    width: 334px;
+}
+
+#doiOutputUrlExample,
+#shortDoiOutputUrlExample {
+    font-size: 0.9em;
 }
 
 #doiResolverOutput,
 #shortDoiResolverOutput {
-	color: #006400;
+    font-family: monospace;
+	color: #444;
 }
 
 #autoLinkInfo {
@@ -122,33 +160,57 @@ body {
 	<img id="extLogo" src="icons/icon128.png" /><h1 id="optionsTitle"></h1>
 	<div style="clear:both;">
 		<input type="checkbox" id="context" /> <label id="optionContextMenu" for="context"></label><br>
-		<div id="img_context_off"></div>
-		<div id="img_context_on"></div>
+		<div class="row">
+			<div id="img_context_off"></div>
+			<div id="img_context_on"></div>
+		</div>
 		<div style="clear:both;"><br></div>
 		<input type="checkbox" id="meta" /> <label id="optionMetaButtons" for="meta"></label><br>
-		<div id="img_bubblemeta_off"></div>
-		<div id="img_bubblemeta_on"></div>
+		<div class="row">
+			<div id="img_bubblemeta_off"></div>
+			<div id="img_bubblemeta_on"></div>
+		</div>
 		<div style="clear:both;"><br></div>
 		<input type="checkbox" id="customResolver" /> <label id="optionCustomResolver" for="customResolver"></label><br>
-		<div id="customResolverFields" style="display:none;">
-			<div id="customResolverRadio">
-				<span id="optionCustomResolverRadio"></span>
-				<input type="radio" id="crRadioAlways" name="crRadio" value="always" /> <label id="optionCrRadioAlways" for="crRadioAlways"></label>
-				<input type="radio" id="crRadioOptional" name="crRadio" value="optional" /> <label id="optionCrRadioOptional" for="crRadioOptional"></label>
+		<div class="row">
+			<div id="customResolverLeft">
+				<div id="customResolverFields">
+					<label id="textDoiResolverInput" for="doiResolverInput"></label><br>
+					<input type="text" id="doiResolverInput" value="" />
+					<input type="submit" id="doiResolverInputReset" value="Reset" /><br>
+					<div class="urlExample">
+						<span id="doiOutputUrlExample"></span> <span id="doiResolverOutput"></span>
+					</div>
+					<label id="textShortDoiResolverInput" for="shortDoiResolverInput"></label><br>
+					<input type="text" id="shortDoiResolverInput" value="" />
+					<input type="submit" id="shortDoiResolverInputReset" value="Reset" /><br>
+					<div class="urlExample">
+						<span id="shortDoiOutputUrlExample"></span> <span id="shortDoiResolverOutput"></span>
+					</div>
+				</div>
 			</div>
-			<label id="textDoiResolverInput" for="doiResolverInput"></label>
-			<input type="text" id="doiResolverInput" value="" />
-			<input type="submit" id="doiResolverInputReset" value="Reset" /><br>
-			<div class="urlExample">
-				<span id="doiOutputUrlExample"></span> <span id="doiResolverOutput"></span>
-			</div>
-			<label id="textShortDoiResolverInput" for="shortDoiResolverInput"></label>
-			<input type="text" id="shortDoiResolverInput" value="" />
-			<input type="submit" id="shortDoiResolverInputReset" value="Reset" /><br>
-			<div class="urlExample">
-				<span id="shortDoiOutputUrlExample"></span> <span id="shortDoiResolverOutput"></span>
+			<div id="customResolverRight">
+				<div id="optionCustomResolverSelection"></div>
+				<select type="selection" id="crAutolink" class="crSelections">
+					<option class="optionCrCustom" value="custom"></option>
+					<option class="optionCrDefault" value="default"></option>
+				</select><span id="optionCrAutolink" class="crLabels"></span><br>
+				<select type="selection" id="crBubble" class="crSelections">
+					<option class="optionCrCustom" value="custom"></option>
+					<option class="optionCrDefault" value="default"></option>
+					<option class="optionCrSelectable" value="selectable"></option>
+				</select><span id="optionCrBubble" class="crLabels"></span><br>
+				<select type="selection" id="crContext" class="crSelections">
+					<option class="optionCrCustom" value="custom"></option>
+					<option class="optionCrDefault" value="default"></option>
+				</select><span id="optionCrContext" class="crLabels"></span><br>
+				<select type="selection" id="crOmnibox" class="crSelections">
+					<option class="optionCrCustom" value="custom"></option>
+					<option class="optionCrDefault" value="default"></option>
+				</select><span id="optionCrOmnibox" class="crLabels"></span>
 			</div>
 		</div>
+		<div style="clear:both;"><br></div>
 		<input type="checkbox" id="autoLink" /> <label id="optionAutoLink" for="autoLink"></label>
 		<div id="autoLinkInfo"></div>
 		<div id="optionsDescription"></div>

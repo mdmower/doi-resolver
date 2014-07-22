@@ -25,7 +25,7 @@ function startListeners() {
 	$("#meta").on("click", saveOptions);
 	$("#autoLink").on("click", saveOptions);
 	$("#customResolver").on("click", saveOptions);
-	$("input[name='crRadio']").on("click", saveOptions);
+	$(".crSelections").on("change", saveOptions);
 	$("#doiResolverInput").on("change input", saveOptions);
 	$("#shortDoiResolverInput").on("change input", saveOptions);
 
@@ -72,7 +72,10 @@ function saveOptions() {
 	localStorage["context_menu"] = $("#context").is(":checked");
 	localStorage["meta_buttons"] = $("#meta").is(":checked");
 	localStorage["custom_resolver"] = $("#customResolver").is(":checked");
-	localStorage["cr_always"] = $('input[name="crRadio"]:checked').val();
+	localStorage["cr_autolink"] = $("#crAutolink option:selected").val();
+	localStorage["cr_bubble"] = $("#crBubble option:selected").val();
+	localStorage["cr_context"] = $("#crContext option:selected").val();
+	localStorage["cr_omnibox"] = $("#crOmnibox option:selected").val();
 	localStorage["doi_resolver"] = $("#doiResolverInput").val();
 	localStorage["shortdoi_resolver"] = $("#shortDoiResolverInput").val();
 	localStorage["auto_link"] = $("#autoLink").is(":checked");
@@ -85,7 +88,10 @@ function restoreOptions(pageOpen) {
 	var cmOp = localStorage["context_menu"];
 	var metaOp = localStorage["meta_buttons"];
 	var crOp = localStorage["custom_resolver"];
-	var craOp = localStorage["cr_always"];
+	var craOp = localStorage["cr_autolink"];
+	var crbOp = localStorage["cr_bubble"];
+	var crcOp = localStorage["cr_context"];
+	var croOp = localStorage["cr_omnibox"];
 	var drOp = localStorage["doi_resolver"];
 	var srOp = localStorage["shortdoi_resolver"];
 	var alOp = localStorage["auto_link"];
@@ -117,19 +123,20 @@ function restoreOptions(pageOpen) {
 
 	if(crOp == "true") {
 		$("#customResolver").prop("checked", true);
-		$("#customResolverFields").css("display", "block");
+		$("#customResolverLeft").css("display", "inline-block");
+		$("#customResolverRight").css("display", "inline-block");
 		$("#doiResolverOutput").html(drOp + "10.1000/182");
 		$("#shortDoiResolverOutput").html(srOp + "dws9sz");
 	} else {
 		$("#customResolver").prop("checked", false);
-		$("#customResolverFields").css("display", "none");
+		$("#customResolverLeft").css("display", "none");
+		$("#customResolverRight").css("display", "none");
 	}
 
-	if(craOp == "optional") {
-		$("#crRadioOptional").prop("checked", true);
-	} else {
-		$("#crRadioAlways").prop("checked", true);
-	}
+	$("#crAutolink").val(craOp);
+	$("#crBubble").val(crbOp);
+	$("#crContext").val(crcOp);
+	$("#crOmnibox").val(croOp);
 
 	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
 		if(alOp == "true") {
@@ -171,11 +178,13 @@ function minimalOptionsRefresh(pageOpen) {
 	}
 
 	if(crOp == "true") {
-		$("#customResolverFields").css("display", "block");
+		$("#customResolverLeft").css("display", "inline-block");
+		$("#customResolverRight").css("display", "inline-block");
 		$("#doiResolverOutput").html(drOp + "10.1000/182");
 		$("#shortDoiResolverOutput").html(srOp + "dws9sz");
 	} else {
-		$("#customResolverFields").css("display", "none");
+		$("#customResolverLeft").css("display", "none");
+		$("#customResolverRight").css("display", "none");
 	}
 
 	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
@@ -252,12 +261,22 @@ function getLocalMessages() {
 	$("#optionMetaButtons").html(message);
 	message = chrome.i18n.getMessage("optionCustomResolver");
 	$("#optionCustomResolver").html(message);
-	message = chrome.i18n.getMessage("optionCustomResolverRadio");
-	$("#optionCustomResolverRadio").html(message);
-	message = chrome.i18n.getMessage("optionCrRadioAlways");
-	$("#optionCrRadioAlways").html(message);
-	message = chrome.i18n.getMessage("optionCrRadioOptional");
-	$("#optionCrRadioOptional").html(message);
+	message = chrome.i18n.getMessage("optionCustomResolverSelection");
+	$("#optionCustomResolverSelection").html(message);
+	message = chrome.i18n.getMessage("optionCrAutolink");
+	$("#optionCrAutolink").html(message);
+	message = chrome.i18n.getMessage("optionCrBubble");
+	$("#optionCrBubble").html(message);
+	message = chrome.i18n.getMessage("optionCrContext");
+	$("#optionCrContext").html(message);
+	message = chrome.i18n.getMessage("optionCrOmnibox");
+	$("#optionCrOmnibox").html(message);
+	message = chrome.i18n.getMessage("optionCrCustom");
+	$(".optionCrCustom").html(message);
+	message = chrome.i18n.getMessage("optionCrDefault");
+	$(".optionCrDefault").html(message);
+	message = chrome.i18n.getMessage("optionCrSelectable");
+	$(".optionCrSelectable").html(message);
 	message = chrome.i18n.getMessage("textDoiResolverInput");
 	$("#textDoiResolverInput").html(message);
 	message = chrome.i18n.getMessage("textShortDoiResolverInput");

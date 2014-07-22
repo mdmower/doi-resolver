@@ -42,10 +42,17 @@ function setDefaultOption(opt) {
 		localStorage["custom_resolver"] = false;
 		break;
 	case 'cra':
-		localStorage["cr_always"] = "always";
+		localStorage["cr_autolink"] = "custom";
 		break;
-	case 'crl':
-		localStorage["cr_last"] = "custom";
+	case 'crb':
+		localStorage["cr_bubble"] = "custom";
+		localStorage["cr_bubble_last"] = "custom";
+		break;
+	case 'crc':
+		localStorage["cr_context"] = "custom";
+		break;
+	case 'cro':
+		localStorage["cr_omnibox"] = "custom";
 		break;
 	case 'dr':
 		localStorage["doi_resolver"] = "http://dx.doi.org/";
@@ -83,8 +90,10 @@ function checkForSettings() {
 	if(typeof localStorage["context_menu"] == 'undefined') setDefaultOption('cm');
 	if(typeof localStorage["meta_buttons"] == 'undefined') setDefaultOption('meta');
 	if(typeof localStorage["custom_resolver"] == 'undefined') setDefaultOption('cr');
-	if(typeof localStorage["cr_always"] == 'undefined') setDefaultOption('cra');
-	if(typeof localStorage["cr_last"] == 'undefined') setDefaultOption('crl');
+	if(typeof localStorage["cr_autolink"] == 'undefined') setDefaultOption('cra');
+	if(typeof localStorage["cr_bubble"] == 'undefined') setDefaultOption('crb');
+	if(typeof localStorage["cr_context"] == 'undefined') setDefaultOption('crc');
+	if(typeof localStorage["cr_omnibox"] == 'undefined') setDefaultOption('cro');
 	if(typeof localStorage["doi_resolver"] == 'undefined') setDefaultOption('dr');
 	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sr');
 	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
@@ -93,6 +102,7 @@ function checkForSettings() {
 	if(typeof localStorage["qr_title"] == 'undefined') setDefaultOption('qrTitle');
 	if(typeof localStorage["cite_style"] == 'undefined') setDefaultOption('cs');
 	if(typeof localStorage["cite_locale"] == 'undefined') setDefaultOption('cl');
+	if(typeof localStorage["cr_bubble_last"] == 'undefined') setDefaultOption('crb');
 }
 
 function startFeatures() {
@@ -118,15 +128,34 @@ function checkValidDoi(doiInput) {
 }
 
 // Build URL based on custom resolver settings
-function resolveURL(doi) {
+function resolveURL(doi, source) {
 	var cr = localStorage["custom_resolver"];
+	var crc = localStorage["cr_context"];
+	var cro = localStorage["cr_omnibox"];
 	var dr = localStorage["doi_resolver"];
 	var sr = localStorage["shortdoi_resolver"];
+	var useDefaultResolver = true;
 
-	if(doi.match(/^10\./) && cr == "true") return dr + doi;
-	else if(doi.match(/^10\./) && cr != "true") return "http://dx.doi.org/" + doi;
-	else if(doi.match(/^10\//) && cr == "true") return sr + doi.replace(/^10\//,"");
-	else if(doi.match(/^10\//) && cr != "true") return "http://doi.org/" + doi.replace(/^10\//,"");
+	switch(source) {
+		case "context":
+			if(cr == "true" && crc == "custom") {
+				useDefaultResolver = false;
+			}
+			break;
+		case "omnibox":
+			if(cr == "true" && cro == "custom") {
+				useDefaultResolver = false;
+			}
+			break;
+	}
+
+	if(useDefaultResolver) {
+		if(doi.match(/^10\./)) return "http://dx.doi.org/" + doi;
+		else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");	
+	} else {
+		if(doi.match(/^10\./)) return dr + doi;
+		else if(doi.match(/^10\//)) return sr + doi.replace(/^10\//,"");
+	}
 
 	return "";
 }
@@ -144,7 +173,9 @@ function contextMenuMaker() {
 // Context menu resolve doi
 function cmResolve(info) {
 	var doiInput = escape(trim(info.selectionText));
-	if(checkValidDoi(doiInput)) chrome.tabs.create({url:resolveURL(doiInput)});
+	if(checkValidDoi(doiInput)) {
+		chrome.tabs.create({url:resolveURL(doiInput, "context")});
+	}
 }
 
 // Context menu request handler
@@ -176,9 +207,14 @@ function autoLinkDOIs() {
 
 // Auto-link message passing
 chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
-    if(request.cmd == "resolve_url") {
+    if(request.cmd == "al_resolve_url") {
+		var cr = localStorage["custom_resolver"];
+		var cra = localStorage["cr_autolink"];
 		var urlPrefix = "http://dx.doi.org/";
-		if(localStorage["custom_resolver"] == "true") urlPrefix = localStorage["doi_resolver"];
+
+		if(cr == "true" && cra == "custom") {
+			urlPrefix = localStorage["doi_resolver"];
+		}
 		sendResponse({cmd: urlPrefix});
 	}
 });
@@ -187,5 +223,5 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
 chrome.omnibox.onInputEntered.addListener( function (text) {
 	console.log('inputEntered: ' + text);
 	var doiInput = escape(trim(text));
-	chrome.tabs.create({url:resolveURL(doiInput)});
+	chrome.tabs.create({url:resolveURL(doiInput, "omnibox")});
 });

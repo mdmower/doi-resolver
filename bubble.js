@@ -41,14 +41,14 @@ function startListeners() {
 
 // Saves options to localStorage
 function saveOptions() {
-	localStorage["cr_last"] = $('input[name="crRadio"]:checked').val();
+	localStorage["cr_bubble_last"] = $('input[name="crRadio"]:checked').val();
 }
 
 // Restores options from localStorage
 function restoreOptions() {
-	var crlOp = localStorage["cr_last"];
+	var crblOp = localStorage["cr_bubble_last"];
 
-	if(crlOp == "custom") {
+	if(crblOp == "custom") {
 		$("#crRadioBubbleCustom").prop("checked", true);
 	} else {
 		$("#crRadioBubbleDefault").prop("checked", true);
@@ -126,15 +126,15 @@ function formSubmitHandler() {
 // Build URL based on custom resolver settings
 function resolveURL(doi) {
 	var cr = localStorage["custom_resolver"];
-	var cra = localStorage["cr_always"];
-	var crl = localStorage["cr_last"];
+	var crb = localStorage["cr_bubble"];
+	var crbl = localStorage["cr_bubble_last"];
 	var dr = localStorage["doi_resolver"];
 	var sr = localStorage["shortdoi_resolver"];
 	var useDefaultResolver = true;
 
-	if(cr == "true" && cra == 'always') {
+	if(cr == "true" && crb == "custom") {
 		useDefaultResolver = false;
-	} else if (cr == "true" && cra == 'optional' && crl == 'custom') {
+	} else if(cr == "true" && crb == 'selectable' && crbl == 'custom') {
 		useDefaultResolver = false;
 	}
 
@@ -166,7 +166,7 @@ function qrGen(doiInput) {
 // Show or hide additional buttons in bubble
 function showHideOptionalElms() {
 	var meta = localStorage["meta_buttons"];
-	var craOp = localStorage["cr_always"];
+	var crbOp = localStorage["cr_bubble"];
 
 	if(meta == "true") {
 		$("#metaButtons").css("display", "block");
@@ -174,7 +174,7 @@ function showHideOptionalElms() {
 		$("#metaButtons").css("display", "none");
 	}
 
-	if(craOp == 'optional') {
+	if(crbOp == 'selectable') {
 		$("#crRadios").css("display", "block");
 	} else {
 		$("#crRadios").css("display", "none");
@@ -186,10 +186,10 @@ function getLocalMessages() {
 	$("#resolveSubmit").attr("value", message);
 	message = chrome.i18n.getMessage("citeSubmit");
 	$("#citeSubmit").attr("value", message);
-	message = chrome.i18n.getMessage("optionCrRadioBubble");
-	$("#optionCrRadioBubble").html(message);
-	message = chrome.i18n.getMessage("optionCrRadioBubbleCustom");
-	$("#optionCrRadioBubbleCustom").html(message);
-	message = chrome.i18n.getMessage("optionCrRadioBubbleDefault");
-	$("#optionCrRadioBubbleDefault").html(message);
+	message = chrome.i18n.getMessage("optionCrLabelBubble");
+	$("#optionCrLabelBubble").html(message);
+	message = chrome.i18n.getMessage("optionCrCustom");
+	$("#optionCrCustom").html(message);
+	message = chrome.i18n.getMessage("optionCrDefault");
+	$("#optionCrDefault").html(message);
 }

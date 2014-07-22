@@ -164,13 +164,18 @@ function insertQr(doiInput,size,outputType) {
 					cache: false
 				});
 				jqxhr.done(function() {
-					var doiTitle = JSON.parse(jqxhr.responseText).title;
-					doiTitle = doiTitle.replace(/<subtitle>(.*)<\/subtitle>/," - $1");
-					doiTitle = doiTitle.replace(/<alt-title>(.*)<\/alt-title>/,"");
-					doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/,"$1");
-					stringToEncode = doiTitle + "\n" + stringToEncode;
-					$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
-					outputImg(size, outputType, stringToEncode, "found");
+					try {
+						var doiTitle = JSON.parse(jqxhr.responseText).title;
+						doiTitle = doiTitle.replace(/<subtitle>(.*)<\/subtitle>/," - $1");
+						doiTitle = doiTitle.replace(/<alt-title>(.*)<\/alt-title>/,"");
+						doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/,"$1");
+						stringToEncode = doiTitle + "\n" + stringToEncode;
+						$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
+						outputImg(size, outputType, stringToEncode, "found");
+					} catch(e) {
+						$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
+						outputImg(size, outputType, stringToEncode, "missing");
+					}
 				});
 				jqxhr.error(function() {
 					$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});

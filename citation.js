@@ -216,7 +216,7 @@ function getCitation(doi) {
 				cache: false
 			});
 			jqxhr.done(function() {
-				if(jqxhr.responseText != "") {
+				if(jqxhr.responseText != "" && jqxhr.responseText.charAt(0) != '<') {
 					outputCitation(htmlEscape(jqxhr.responseText));
 				} else {
 					simpleNotification(chrome.i18n.getMessage("noCitationFound"));

@@ -80,7 +80,12 @@ function saveOptions() {
 	localStorage["doi_resolver"] = $("#doiResolverInput").val();
 	localStorage["shortdoi_resolver"] = $("#shortDoiResolverInput").val();
 	localStorage["omnibox_tab"] = $("#omniboxOpento option:selected").val();
-	localStorage["auto_link"] = $("#autoLink").is(":checked");
+
+	// Lots of permissions checking here, only call when this option changes
+	var alBool = (localStorage["auto_link"] == "true");
+	if($("#autoLink").is(":checked") != alBool) {
+		setAutoLinkPermission();
+	}
 
 	minimalOptionsRefresh(false);
 }
@@ -142,15 +147,10 @@ function restoreOptions(pageOpen) {
 	$("#crOmnibox").val(croOp);
 	$("#omniboxOpento").val(otOp);
 
-	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
-		if(alOp == "true") {
-			$("#autoLink").prop("checked", true);
-		} else {
-			$("#autoLink").prop("checked", false);
-		}
+	if(alOp == "true") {
+		verifyAutoLinkPermission();
 	} else {
-		setAutoLinkPermission();
-		addRemoveAutoLinkListener();
+		$("#autoLink").prop("checked", false);
 	}
 }
 
@@ -191,31 +191,23 @@ function minimalOptionsRefresh(pageOpen) {
 		$("#customResolverRight").css("display", "none");
 	}
 
-	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
-		if(alOp == "true") {
-			$("#autoLink").prop("checked", true);
-		} else {
-			$("#autoLink").prop("checked", false);
-		}
+	if(alOp == "true") {
+		verifyAutoLinkPermission();
 	} else {
-		setAutoLinkPermission();
-		addRemoveAutoLinkListener();
+		$("#autoLink").prop("checked", false);
 	}
 }
 
 function setAutoLinkPermission() {
-	var alOp = localStorage["auto_link"];
-
-	if(alOp == "true") {
+	if($("#autoLink").is(":checked")) {
 		chrome.permissions.request({
 			permissions: [ 'tabs' ],
 			origins: [ 'http://*/*' ]
 		}, function(granted) {
-			if(granted) {
-				localStorage["auto_link"] = true;
+			chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+			if (granted) {
 				$("#autoLink").prop("checked", true);
 			} else {
-				localStorage["auto_link"] = false;
 				$("#autoLink").prop("checked", false);
 			}
 		});
@@ -224,33 +216,28 @@ function setAutoLinkPermission() {
 			permissions: [ 'tabs' ],
 			origins: [ 'http://*/*' ]
 		}, function(removed) {
-			if(removed) {
-				localStorage["auto_link"] = false;
+			chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+			if (removed) {
 				$("#autoLink").prop("checked", false);
 			} else {
-				localStorage["auto_link"] = true;
 				$("#autoLink").prop("checked", true);
 			}
 		});
 	}
 }
 
-function addRemoveAutoLinkListener() {
+function verifyAutoLinkPermission() {
+	// Assumes localStorage["auto_link"] has already been checked to be true
 	chrome.permissions.contains({
-			permissions: [ 'tabs' ],
-			origins: [ 'http://*/*' ]
+		permissions: [ 'tabs' ],
+		origins: [ 'http://*/*' ]
 	}, function(result) {
-	if(result) {
-		chrome.tabs.onUpdated.addListener(function(tab) {
-			chrome.tabs.executeScript(tab.id, {file: "autolink.js"});
-		});
-		chrome.tabs.onCreated.addListener(function(tab) {
-			chrome.tabs.executeScript(tab.id, {file: "autolink.js"});
-	});
-	} else {
-		chrome.tabs.onUpdated.removeListener();
-		chrome.tabs.onCreated.removeListener();
-	}
+		if(result) {
+			$("#autoLink").prop("checked", true);
+		} else {
+			localStorage["auto_link"] = false;
+			$("#autoLink").prop("checked", false);
+		}
 	});
 }
 

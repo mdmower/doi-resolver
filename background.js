@@ -68,7 +68,7 @@ function setDefaultOption(opt) {
 			localStorage["auto_link"] = localStorage["autoLink_permission"];
 			localStorage.removeItem("autoLink_permission");
 		} else {
-		localStorage["auto_link"] = false;
+			localStorage["auto_link"] = false;
 		}
 		break;
 	case 'qrTitle':
@@ -110,8 +110,12 @@ function checkForSettings() {
 }
 
 function startFeatures() {
-	if(localStorage["context_menu"] == "true") contextMenuMaker();
-	if(localStorage["auto_link"] == "true") autoLinkDOIs();
+	if(localStorage["context_menu"] == "true") {
+		contextMenuMaker();
+	}
+	if(localStorage["auto_link"] == "true") {
+		autoLinkDOIs();
+	}
 }
 
 // Remove spaces and punctuation from beginning and end of input
@@ -194,18 +198,34 @@ chrome.extension.onRequest.addListener(function(request) {
 		contextSetting = "false";
 		chrome.contextMenus.removeAll();
 		break;
+	case "addremove_autolink_listeners":
+		autoLinkDOIs();
+		break;
 	default:
 		break;
 	}
 });
 
 // Auto-link listeners
+function alListener(tab) {
+	chrome.tabs.executeScript(tab.id, {file: "autolink.js"});
+}
+
 function autoLinkDOIs() {
-	chrome.tabs.onUpdated.addListener(function(tab) {
-		chrome.tabs.executeScript(tab.id, {file: "autolink.js"});
-	});
-	chrome.tabs.onCreated.addListener(function(tab) {
-		chrome.tabs.executeScript(tab.id, {file: "autolink.js"});
+	// Assumes localStorage["auto_link"] has already been checked to be true
+	chrome.permissions.contains({
+		permissions: [ 'tabs' ],
+		origins: [ 'http://*/*' ]
+	}, function(result) {
+		if(result) {
+			localStorage["auto_link"] = true;
+			chrome.tabs.onUpdated.addListener(alListener);
+			chrome.tabs.onCreated.addListener(alListener);
+		} else {
+			localStorage["auto_link"] = false;
+			chrome.tabs.onUpdated.removeListener(alListener);
+			chrome.tabs.onCreated.removeListener(alListener);
+		}
 	});
 }
 

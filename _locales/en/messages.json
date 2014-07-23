@@ -162,5 +162,21 @@
 	"optionCrSelectable": {
 		"description": "(41) Label for selectable resolver",
 		"message": "Selectable"
+	},
+	"optionOmniboxOpento": {
+		"description": "(42) Label for selectable option to open omnibox queries in current or new tab",
+		"message": "Omnibox entry should by default open result in:"
+	},
+	"optionOmniboxOpentoCurtab": {
+		"description": "(43) Label for current tab",
+		"message": "Current tab"
+	},
+	"optionOmniboxOpentoNewForetab": {
+		"description": "(44) Label for new foreground tab",
+		"message": "New foreground tab"
+	},
+	"optionOmniboxOpentoNewBacktab": {
+		"description": "(45) Label for new background tab",
+		"message": "New background tab"
 	}
 }

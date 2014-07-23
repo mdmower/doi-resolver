@@ -60,6 +60,9 @@ function setDefaultOption(opt) {
 	case 'sr':
 		localStorage["shortdoi_resolver"] = "http://doi.org/";
 		break;
+	case 'ot':
+		localStorage["omnibox_tab"] = "newfgtab";
+		break;
 	case 'al':
 		if(typeof localStorage["autoLink_permission"] != 'undefined') {
 			localStorage["auto_link"] = localStorage["autoLink_permission"];
@@ -96,6 +99,7 @@ function checkForSettings() {
 	if(typeof localStorage["cr_omnibox"] == 'undefined') setDefaultOption('cro');
 	if(typeof localStorage["doi_resolver"] == 'undefined') setDefaultOption('dr');
 	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sr');
+	if(typeof localStorage["omnibox_tab"] == 'undefined') setDefaultOption('ot');
 	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
 
 	// Set elsewhere
@@ -220,8 +224,31 @@ chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 // Omnibox
-chrome.omnibox.onInputEntered.addListener( function (text) {
+function navigate(url) {
+	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+		chrome.tabs.update(tabs[0].id, {url: url});
+	});
+}
+
+chrome.omnibox.onInputEntered.addListener( function (text, disposition) {
 	console.log('inputEntered: ' + text);
 	var doiInput = escape(trim(text));
-	chrome.tabs.create({url:resolveURL(doiInput, "omnibox")});
+	var ot = localStorage["omnibox_tab"];
+	var tabToUse;
+
+	if (disposition == "currentTab" && ot == "newfgtab") {
+		tabToUse = "newForegroundTab";
+	} else if (disposition == "currentTab" && ot == "newbgtab") {
+		tabToUse = "newBackgroundTab";
+	} else {
+		tabToUse = disposition;
+	}
+
+	if (tabToUse == "newForegroundTab") {
+		chrome.tabs.create({url:resolveURL(doiInput, "omnibox")});
+	} else if (tabToUse == "newBackgroundTab") {
+		chrome.tabs.create({active: false, url:resolveURL(doiInput, "omnibox")});
+	} else {
+		navigate(resolveURL(doiInput, "omnibox"));
+	}
 });

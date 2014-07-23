@@ -28,6 +28,7 @@ function startListeners() {
 	$(".crSelections").on("change", saveOptions);
 	$("#doiResolverInput").on("change input", saveOptions);
 	$("#shortDoiResolverInput").on("change input", saveOptions);
+	$("#omniboxOpento").on("change", saveOptions);
 
 	$("#doiResolverInputReset").on("click", function() {
 		$("#doiResolverInput").val("http://dx.doi.org/");
@@ -78,6 +79,7 @@ function saveOptions() {
 	localStorage["cr_omnibox"] = $("#crOmnibox option:selected").val();
 	localStorage["doi_resolver"] = $("#doiResolverInput").val();
 	localStorage["shortdoi_resolver"] = $("#shortDoiResolverInput").val();
+	localStorage["omnibox_tab"] = $("#omniboxOpento option:selected").val();
 	localStorage["auto_link"] = $("#autoLink").is(":checked");
 
 	minimalOptionsRefresh(false);
@@ -94,6 +96,7 @@ function restoreOptions(pageOpen) {
 	var croOp = localStorage["cr_omnibox"];
 	var drOp = localStorage["doi_resolver"];
 	var srOp = localStorage["shortdoi_resolver"];
+	var otOp = localStorage["omnibox_tab"];
 	var alOp = localStorage["auto_link"];
 
 	$("#doiResolverInput").val(drOp);
@@ -137,6 +140,7 @@ function restoreOptions(pageOpen) {
 	$("#crBubble").val(crbOp);
 	$("#crContext").val(crcOp);
 	$("#crOmnibox").val(croOp);
+	$("#omniboxOpento").val(otOp);
 
 	if(pageOpen == true) { // To do: change to CHECK permission instead of assuming ok
 		if(alOp == "true") {
@@ -287,6 +291,14 @@ function getLocalMessages() {
 	$("#shortDoiOutputUrlExample").html(message);
 	message = chrome.i18n.getMessage("optionAutoLink");
 	$("#optionAutoLink").html(message);
+	message = chrome.i18n.getMessage("optionOmniboxOpento");
+	$("#optionOmniboxOpento").html(message);
+	message = chrome.i18n.getMessage("optionOmniboxOpentoCurtab");
+	$("#optionOmniboxOpentoCurtab").html(message);
+	message = chrome.i18n.getMessage("optionOmniboxOpentoNewForetab");
+	$("#optionOmniboxOpentoNewForetab").html(message);
+	message = chrome.i18n.getMessage("optionOmniboxOpentoNewBacktab");
+	$("#optionOmniboxOpentoNewBacktab").html(message);
 	message = chrome.i18n.getMessage("autoLinkInfo");
 	$("#autoLinkInfo").html(message);
 	message = chrome.i18n.getMessage("optionsDescription");

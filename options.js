@@ -64,6 +64,8 @@ function startListeners() {
 		$("#meta").prop("checked", true);
 		saveOptions();
 	});
+
+	$("#autolinkApplyto").on("change", saveOptions);
 }
 
 // Saves options to localStorage
@@ -80,9 +82,12 @@ function saveOptions() {
 	localStorage["omnibox_tab"] = $("#omniboxOpento option:selected").val();
 
 	// Lots of permissions checking here, only call when this option changes
+	var alCur = $("#autoLink").is(":checked");
+	var alpCur = $("#autolinkApplyto option:selected").val();
 	var alBool = (localStorage["auto_link"] == "true");
-	if($("#autoLink").is(":checked") != alBool) {
-		setAutoLinkPermission();
+	var alpStr = localStorage["al_protocol"];
+	if(alCur != alBool || alpCur != alpStr) {
+		setAutolinkPermission();
 	}
 
 	minimalOptionsRefresh(false);
@@ -100,7 +105,7 @@ function restoreOptions(pageOpen) {
 	var drOp = localStorage["doi_resolver"];
 	var srOp = localStorage["shortdoi_resolver"];
 	var otOp = localStorage["omnibox_tab"];
-	var alOp = localStorage["auto_link"];
+	var alpOp = localStorage["al_protocol"];
 
 	$("#doiResolverInput").val(drOp);
 	$("#shortDoiResolverInput").val(srOp);
@@ -143,12 +148,9 @@ function restoreOptions(pageOpen) {
 	$("#crContext").val(crcOp);
 	$("#crOmnibox").val(croOp);
 	$("#omniboxOpento").val(otOp);
+	$("#autolinkApplyto").val(alpOp);
 
-	if(alOp == "true") {
-		verifyAutoLinkPermission();
-	} else {
-		$("#autoLink").prop("checked", false);
-	}
+	verifyAutolinkPermission();
 }
 
 // Only refresh fields that need updating after save
@@ -156,7 +158,6 @@ function minimalOptionsRefresh(pageOpen) {
 	var cmOp = localStorage["context_menu"];
 	var metaOp = localStorage["meta_buttons"];
 	var crOp = localStorage["custom_resolver"];
-	var alOp = localStorage["auto_link"];
 
 	if(cmOp == "true") {
 		$("#img_context_on").css("border-color", "#404040");
@@ -184,12 +185,6 @@ function minimalOptionsRefresh(pageOpen) {
 		$("#customResolverLeft").css("display", "none");
 		$("#customResolverRight").css("display", "none");
 	}
-
-	if(alOp == "true") {
-		verifyAutoLinkPermission();
-	} else {
-		$("#autoLink").prop("checked", false);
-	}
 }
 
 function setCrPreviews() {
@@ -210,45 +205,114 @@ function setCrPreviews() {
 	$("#shortDoiResolverOutput").html(srPreview);
 }
 
-function setAutoLinkPermission() {
-	if($("#autoLink").is(":checked")) {
+function setAutolinkPermission() {
+	/*
+	 * We only want autolinking for user-enabled protocols, but we also don't
+	 * want to burden the user with many alerts requesting permissions. Go
+	 * ahead and request http+https permission, then remove unselected
+	 * protocols.
+	 *
+	 * Migration note: This function only gets called if one of the autolink
+	 * options changes. Users that enabled autolink previous to https being an
+	 * option will be mostly unaffected. If they opt to include https pages,
+	 * then they will get a new permissions prompt (good). If they disable and
+	 * re-enable autolinking, they will also get a prompt (not ideal, but code
+	 * complexity increases significantly for such a small issue).
+	 */
+
+	var al = $("#autoLink").is(":checked");
+
+	if(al) {
 		chrome.permissions.request({
 			permissions: [ 'tabs' ],
-			origins: [ 'http://*/*' ]
+			origins: [ 'http://*/*', 'https://*/*' ]
 		}, function(granted) {
-			chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
-			if (granted) {
+			if(granted) {
+				autolinkShufflePerms();
 				$("#autoLink").prop("checked", true);
+				$("#alProtocol").css("display", "block");
 			} else {
+				$("#autolinkApplyto").val("http");
 				$("#autoLink").prop("checked", false);
+				$("#alProtocol").css("display", "none");
 			}
 		});
 	} else {
 		chrome.permissions.remove({
 			permissions: [ 'tabs' ],
-			origins: [ 'http://*/*' ]
+			origins: [ 'http://*/*', 'https://*/*' ]
 		}, function(removed) {
-			chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
-			if (removed) {
+			if(removed) {
 				$("#autoLink").prop("checked", false);
+				$("#alProtocol").css("display", "none");
+				chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
 			} else {
 				$("#autoLink").prop("checked", true);
+				$("#alProtocol").css("display", "block");
+				chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
 			}
 		});
 	}
 }
 
-function verifyAutoLinkPermission() {
-	// Assumes localStorage["auto_link"] has already been checked to be true
+function autolinkShufflePerms() {
+	// Only called if permissions have been granted by user
+	var alp = $("#autolinkApplyto option:selected").val();
+
+	if(alp == "http") {
+		chrome.permissions.remove({
+			origins: [ 'https://*/*' ]
+		}, function(removed) {
+			chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+			verifyAutolinkPermission();
+		});
+	} else if(alp == "https") {
+		chrome.permissions.remove({
+			origins: [ 'http://*/*' ]
+		}, function(removed) {
+			chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+			verifyAutolinkPermission();
+		});
+	} else {
+		chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+		verifyAutolinkPermission();
+	}
+}
+
+function verifyAutolinkPermission() {
 	chrome.permissions.contains({
 		permissions: [ 'tabs' ],
-		origins: [ 'http://*/*' ]
+		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
 		if(result) {
+			$("#autolinkApplyto").val("httphttps");
 			$("#autoLink").prop("checked", true);
+			$("#alProtocol").css("display", "block");
 		} else {
-			localStorage["auto_link"] = false;
-			$("#autoLink").prop("checked", false);
+			chrome.permissions.contains({
+				permissions: [ 'tabs' ],
+				origins: [ 'http://*/*' ]
+			}, function(result) {
+				if(result) {
+					$("#autolinkApplyto").val("http");
+					$("#autoLink").prop("checked", true);
+					$("#alProtocol").css("display", "block");
+				} else {
+					chrome.permissions.contains({
+						permissions: [ 'tabs' ],
+						origins: [ 'https://*/*' ]
+					}, function(result) {
+						if(result) {
+							$("#autolinkApplyto").val("https");
+							$("#autoLink").prop("checked", true);
+							$("#alProtocol").css("display", "block");
+						} else {
+							$("#autoLink").prop("checked", false);
+							$("#alProtocol").css("display", "none");
+						}
+					});
+				}
+			});
 		}
 	});
 }
@@ -300,4 +364,6 @@ function getLocalMessages() {
 	$("#optionOmniboxOpentoNewBacktab").html(message);
 	message = chrome.i18n.getMessage("autoLinkInfo");
 	$("#autoLinkInfo").html(message);
+	message = chrome.i18n.getMessage("optionAutolinkApplyto");
+	$("#optionAutolinkApplyto").html(message);
 }

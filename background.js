@@ -71,6 +71,9 @@ function setDefaultOption(opt) {
 			localStorage["auto_link"] = false;
 		}
 		break;
+	case 'alp':
+		localStorage["al_protocol"] = "http";
+		break;
 	case 'qrTitle':
 		if(typeof localStorage["crossref_permission"] != 'undefined') {
 			localStorage.removeItem("crossref_permission");
@@ -101,6 +104,7 @@ function checkForSettings() {
 	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sr');
 	if(typeof localStorage["omnibox_tab"] == 'undefined') setDefaultOption('ot');
 	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
+	if(typeof localStorage["al_protocol"] == 'undefined') setDefaultOption('alp');
 
 	// Set elsewhere
 	if(typeof localStorage["qr_title"] == 'undefined') setDefaultOption('qrTitle');
@@ -212,19 +216,48 @@ function alListener(tab) {
 }
 
 function autoLinkDOIs() {
-	// Assumes localStorage["auto_link"] has already been checked to be true
+	chrome.tabs.onUpdated.removeListener(alListener);
+	chrome.tabs.onCreated.removeListener(alListener);
+
 	chrome.permissions.contains({
 		permissions: [ 'tabs' ],
-		origins: [ 'http://*/*' ]
+		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
 		if(result) {
 			localStorage["auto_link"] = true;
+			localStorage["al_protocol"] = "httphttps";
 			chrome.tabs.onUpdated.addListener(alListener);
 			chrome.tabs.onCreated.addListener(alListener);
+			console.log('autolink listeners enabled for http and https');
 		} else {
-			localStorage["auto_link"] = false;
-			chrome.tabs.onUpdated.removeListener(alListener);
-			chrome.tabs.onCreated.removeListener(alListener);
+			chrome.permissions.contains({
+				permissions: [ 'tabs' ],
+				origins: [ 'http://*/*' ]
+			}, function(result) {
+				if(result) {
+					localStorage["auto_link"] = true;
+					localStorage["al_protocol"] = "http";
+					chrome.tabs.onUpdated.addListener(alListener);
+					chrome.tabs.onCreated.addListener(alListener);
+					console.log('autolink listeners enabled for http');
+				} else {
+					chrome.permissions.contains({
+						permissions: [ 'tabs' ],
+						origins: [ 'https://*/*' ]
+					}, function(result) {
+						if(result) {
+							localStorage["auto_link"] = true;
+							localStorage["al_protocol"] = "https";
+							chrome.tabs.onUpdated.addListener(alListener);
+							chrome.tabs.onCreated.addListener(alListener);
+							console.log('autolink listeners enabled for https');
+						} else {
+							localStorage["auto_link"] = false;
+							console.log('autolink listeners disabled');
+						}
+					});
+				}
+			});
 		}
 	});
 }

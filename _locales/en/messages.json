@@ -178,5 +178,9 @@
 	"optionOmniboxOpentoNewBacktab": {
 		"description": "(45) Label for new background tab",
 		"message": "New background tab"
+	},
+	"optionAutolinkApplyto": {
+		"description": "(46) Label for selection of protocols where autolink should be applied",
+		"message": "&#8618; Apply autolink feature to pages with protocol(s): "
 	}
 }

@@ -133,9 +133,13 @@ ul {
 }
 
 #autoLinkInfo {
-    margin-left: 20px;
     font-size: 0.9em;
     color: #500000;
+    margin-bottom: 4px;
+}
+
+#optionAutolinkApplyto {
+    margin-left: 26px;
 }
 
 #header {

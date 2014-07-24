@@ -112,8 +112,16 @@
 
 		<div class="option_container" id="last_option_container">
 			<h3 class="option_title">Autolink</h3>
-			<input type="checkbox" id="autoLink" /><label id="optionAutoLink" for="autoLink"></label>
 			<div id="autoLinkInfo"></div>
+			<input type="checkbox" id="autoLink" /><label id="optionAutoLink" for="autoLink"></label>
+			<div id="alProtocol">
+				<span id="optionAutolinkApplyto"></span>
+				<select type="selection" id="autolinkApplyto">
+					<option id="optionAutolinkApplytoHttp" value="http">http</option>
+					<option id="optionAutolinkApplytoHttps" value="https">https</option>
+					<option id="optionAutolinkApplytoHttpHttps" value="httphttps">http &amp; https</option>
+				</select>
+			</div>
 		</div>
 	</div>
 

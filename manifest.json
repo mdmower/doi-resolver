@@ -22,5 +22,5 @@
 	"optional_permissions": [ "http://*.doi.org/", "http://*.crossref.org/", "http://*.datacite.org/", "http://*/*", "tabs" ],
 	"options_page": "options.html",
 	"permissions": [ "contextMenus", "clipboardWrite" ],
-	"version": "2.1.0"
+	"version": "2.1.1"
 }

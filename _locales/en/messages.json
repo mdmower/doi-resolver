@@ -25,7 +25,7 @@
 	},
 	"optionCustomResolver": {
 		"description": "(7) A setting to enable custom entry of DOI and ShortDOI resolvers",
-		"message": "Specify a custom DOI resolver"
+		"message": "Use a custom DOI resolver"
 	},
 	"textDoiResolverInput": {
 		"description": "(8) Label for text box where a URL will be entered for DOIs",
@@ -37,15 +37,15 @@
 	},
 	"doiOutputUrlExample": {
 		"description": "(10) Label for the currently set resolver URL",
-		"message": "Preview:"
+		"message": "Preview URL tail:"
 	},
 	"optionAutoLink": {
 		"description": "(11) A setting to enable the extension to scan every page visited by the user and convert DOI codes into clickable links.",
 		"message": "Automatically turn DOI codes on web pages into links"
 	},
 	"autoLinkInfo": {
-		"description": "(12) Cautionary remarks about the auto-link feature",
-		"message": "The auto-link feature requires permission to access and modify pages you are viewing.<br>You may need to restart Chrome for this option to take effect."
+		"description": "(12) Cautionary remarks about the autolink feature",
+		"message": "The autolink feature requires permission to access and modify pages you are viewing.<br>You may need to restart Chrome for this option to take effect."
 	},
 	"optionsDescription": {
 		"description": "(13) Notice about external services used by the extension and where to submit bug reports",

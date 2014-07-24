@@ -19,217 +19,120 @@
 <head>
 <title>DOI Resolver Options</title>
 <meta charset="utf-8"/>
-<style type="text/css">
-@font-face {
-	font-family: "Droid Sans";
-	src: url("fonts/DroidSans.ttf") format("truetype");
-}
-
-body {
-	font-family: "Droid Sans", "Trebuchet MS", sans-serif;
-	min-width: 850px;
-}
-
-.row {
-	white-space: nowrap;
-}
-
-#extLogo {
-	float:left;
-	width:128px;
-	height:128px;
-}
-
-#optionsTitle {
-	padding-top: 24px;
-	margin-left: 20px;
-	float:left;
-}
-
-#img_context_off,
-#img_context_on,
-#img_bubblemeta_off,
-#img_bubblemeta_on {
-	float: left;
-	margin: 2px 0px 2px 26px;
-	border: 2px solid white;
-	background-repeat: no-repeat;
-	background-position:center;
-	padding: 4px;
-}
-
-#img_context_off {
-	background-image: url('img/context_off.png');
-	width:372px;
-	height:99px;
-}
-
-#img_context_on {
-	background-image: url('img/context_on.png');
-	width:379px;
-	height:129px;
-}
-
-#img_bubblemeta_off {
-	background-image: url('img/bubble_minimal.png');
-	width:256px;
-	height:32px;
-}
-
-#img_bubblemeta_on {
-	background-image: url('img/bubble_meta.png');
-	width:256px;
-	height:55px;
-}
-
-#customResolverFields {
-	margin: 2px 0px 2px 26px;
-}
-
-#customResolverRadio {
-	margin: 2px 0px 6px 0px;
-}
-
-#customResolverLeft,
-#customResolverRight {
-	vertical-align: top;
-	display: none;
-	padding-top: 5px;
-	white-space: normal;
-}
-
-#customResolverLeft {
-	width: 500px;
-}
-
-#customResolverRight {
-	width: 300px;
-}
-
-.crLabels {
-	margin-left: 10px;
-}
-
-.crSelections {
-	width: 100px;
-}
-
-#doiResolverInput,
-#shortDoiResolverInput {
-	width: 350px;
-}
-
-.urlExample {
-	margin-left: 20px;
-	margin-bottom: 8px;
-	overflow-x: scroll;
-	white-space: nowrap;
-	width: 334px;
-}
-
-#doiOutputUrlExample,
-#shortDoiOutputUrlExample {
-	font-size: 0.9em;
-}
-
-#doiResolverOutput,
-#shortDoiResolverOutput {
-	font-family: monospace;
-	color: #444;
-}
-
-#autoLinkInfo {
-	margin-left: 40px;
-	font-size: 0.9em;
-	color: white;
-}
-
-#optionsDescription,
-#optionsDisclaimer {
-	margin-top: 1.0em;
-}
-
-</style>
-
+<link rel="stylesheet" type="text/css" href="options.css">
 <script type="text/javascript" src="jquery-2.1.1.min.js"></script>
 <script type="text/javascript" src="options.js"></script>
-
 </head>
 
 <body>
-	<img id="extLogo" src="icons/icon128.png" /><h1 id="optionsTitle"></h1>
-	<div style="clear:both;">
-		<input type="checkbox" id="context" /> <label id="optionContextMenu" for="context"></label><br>
-		<div class="row">
-			<div id="img_context_off"></div>
-			<div id="img_context_on"></div>
+	<div id="header">
+		<h1 id="optionsTitle"></h1>
+		<div id="tabs">
+			<div class="tab" id="options_tab">Options</div>
+			<div class="tab" id="about_tab">About</div>
 		</div>
-		<div style="clear:both;"><br></div>
-		<input type="checkbox" id="meta" /> <label id="optionMetaButtons" for="meta"></label><br>
-		<div class="row">
-			<div id="img_bubblemeta_off"></div>
-			<div id="img_bubblemeta_on"></div>
+		<img id="extLogo" src="icons/icon128.png" />
+	</div>
+
+	<div class="content" id="content_options">
+		<div class="option_container">
+			<h3 class="option_title">Omnibox</h3>
+			<span id="optionOmniboxOpento"></span>
+			<select type="selection" id="omniboxOpento">
+				<option id="optionOmniboxOpentoCurtab" value="curtab"></option>
+				<option id="optionOmniboxOpentoNewForetab" value="newfgtab"></option>
+				<option id="optionOmniboxOpentoNewBacktab" value="newbgtab"></option>
+			</select>
 		</div>
-		<div style="clear:both;"><br></div>
-		<input type="checkbox" id="customResolver" /> <label id="optionCustomResolver" for="customResolver"></label><br>
-		<div class="row">
-			<div id="customResolverLeft">
-				<div id="customResolverFields">
-					<label id="textDoiResolverInput" for="doiResolverInput"></label><br>
-					<input type="text" id="doiResolverInput" value="" />
-					<input type="submit" id="doiResolverInputReset" value="Reset" /><br>
-					<div class="urlExample">
-						<span id="doiOutputUrlExample"></span> <span id="doiResolverOutput"></span>
-					</div>
-					<label id="textShortDoiResolverInput" for="shortDoiResolverInput"></label><br>
-					<input type="text" id="shortDoiResolverInput" value="" />
-					<input type="submit" id="shortDoiResolverInputReset" value="Reset" /><br>
-					<div class="urlExample">
-						<span id="shortDoiOutputUrlExample"></span> <span id="shortDoiResolverOutput"></span>
+
+		<div class="option_container">
+			<h3 class="option_title">Context Menu</h3>
+			<input type="checkbox" id="context" /><label id="optionContextMenu" for="context"></label>
+			<div id="img_context">
+				<div id="img_context_off"></div>
+				<div id="img_context_on"></div>
+			</div>
+		</div>
+
+		<div class="option_container">
+			<h3 class="option_title">QR and Citation Features</h3>
+			<input type="checkbox" id="meta" /><label id="optionMetaButtons" for="meta"></label>
+			<div id="img_bubblemeta">
+				<div id="img_bubblemeta_off"></div>
+				<div id="img_bubblemeta_on"></div>
+			</div>
+		</div>
+
+		<div class="option_container">
+			<h3 class="option_title">Custom DOI Resolver</h3>
+			<input type="checkbox" id="customResolver" /><label id="optionCustomResolver" for="customResolver"></label><br>
+			<div class="row">
+				<div id="customResolverLeft">
+					<div id="customResolverFields">
+						<div class="cr_input_container">
+							<label id="textDoiResolverInput" for="doiResolverInput"></label><br>
+							<input type="text" id="doiResolverInput" value="" />
+							<input type="submit" id="doiResolverInputReset" value="Reset" /><br>
+							<div class="cr_preview">
+								<span id="doiOutputUrlExample"></span> <span id="doiResolverOutput"></span>
+							</div>
+						</div>
+						<div class="cr_input_container">
+							<label id="textShortDoiResolverInput" for="shortDoiResolverInput"></label><br>
+							<input type="text" id="shortDoiResolverInput" value="" />
+							<input type="submit" id="shortDoiResolverInputReset" value="Reset" />
+							<div class="cr_preview">
+								<span id="shortDoiOutputUrlExample"></span> <span id="shortDoiResolverOutput"></span>
+							</div>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div id="customResolverRight">
-				<div id="optionCustomResolverSelection"></div>
-				<select type="selection" id="crAutolink" class="crSelections">
-					<option class="optionCrCustom" value="custom"></option>
-					<option class="optionCrDefault" value="default"></option>
-				</select><span id="optionCrAutolink" class="crLabels"></span><br>
-				<select type="selection" id="crBubble" class="crSelections">
-					<option class="optionCrCustom" value="custom"></option>
-					<option class="optionCrDefault" value="default"></option>
-					<option class="optionCrSelectable" value="selectable"></option>
-				</select><span id="optionCrBubble" class="crLabels"></span><br>
-				<select type="selection" id="crContext" class="crSelections">
-					<option class="optionCrCustom" value="custom"></option>
-					<option class="optionCrDefault" value="default"></option>
-				</select><span id="optionCrContext" class="crLabels"></span><br>
-				<select type="selection" id="crOmnibox" class="crSelections">
-					<option class="optionCrCustom" value="custom"></option>
-					<option class="optionCrDefault" value="default"></option>
-				</select><span id="optionCrOmnibox" class="crLabels"></span>
+				<div id="customResolverRight">
+					<div id="optionCustomResolverSelection"></div>
+					<select type="selection" id="crAutolink" class="crSelections">
+						<option class="optionCrCustom" value="custom"></option>
+						<option class="optionCrDefault" value="default"></option>
+					</select><span id="optionCrAutolink" class="crLabels"></span><br>
+					<select type="selection" id="crBubble" class="crSelections">
+						<option class="optionCrCustom" value="custom"></option>
+						<option class="optionCrDefault" value="default"></option>
+						<option class="optionCrSelectable" value="selectable"></option>
+					</select><span id="optionCrBubble" class="crLabels"></span><br>
+					<select type="selection" id="crContext" class="crSelections">
+						<option class="optionCrCustom" value="custom"></option>
+						<option class="optionCrDefault" value="default"></option>
+					</select><span id="optionCrContext" class="crLabels"></span><br>
+					<select type="selection" id="crOmnibox" class="crSelections">
+						<option class="optionCrCustom" value="custom"></option>
+						<option class="optionCrDefault" value="default"></option>
+					</select><span id="optionCrOmnibox" class="crLabels"></span>
+				</div>
 			</div>
 		</div>
-		<div style="clear:both;"><br></div>
-		<span id="optionOmniboxOpento"></span>
-		<select type="selection" id="omniboxOpento">
-			<option id="optionOmniboxOpentoCurtab" value="curtab"></option>
-			<option id="optionOmniboxOpentoNewForetab" value="newfgtab"></option>
-			<option id="optionOmniboxOpentoNewBacktab" value="newbgtab"></option>
-		</select><br><br>
-		<input type="checkbox" id="autoLink" /> <label id="optionAutoLink" for="autoLink"></label>
-		<div id="autoLinkInfo"></div>
-		<div id="optionsDescription"></div>
-		<div id="optionsDisclaimer">
-			This extension is open source software, licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.<br>
-			Source code is available at <a href="https://github.com/mdmower/doi-resolver-chrome">github.com/mdmower/doi-resolver-chrome</a>.<br><br>
+
+		<div class="option_container" id="last_option_container">
+			<h3 class="option_title">Autolink</h3>
+			<input type="checkbox" id="autoLink" /><label id="optionAutoLink" for="autoLink"></label>
+			<div id="autoLinkInfo"></div>
+		</div>
+	</div>
+
+	<div class="content" id="content_about">
+		<p id="optionsDisclaimer">
+			DOI Resolver is open source software, licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.<br>
+			Source code is available at <a href="https://github.com/mdmower/doi-resolver-chrome">github.com/mdmower/doi-resolver-chrome</a>.
+		</p>
+		<p id="optionsDescription">
+			This extension uses <a href="http://dx.doi.org">dx.doi.org</a>, <a href="http://www.datacite.org">datacite.org</a>, and <a href="http://www.crossref.org">crossref.org</a> to resolve links and obtain metadata.
+		</p>
+		<p id="openSourceDisclaimer">
 			Other open source software included in this extension:
-			<ul>
-				<li><a href="https://www.google.com/fonts/specimen/Droid+Sans">Droid Sans font</a> - <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a></li>
-				<li><a href="http://jquery.com/">jQuery</a> - <a href="https://jquery.org/license/">MIT license</a></li>
-				<li><a href="http://jeromeetienne.github.io/jquery-qrcode/">jquery.qrcode.js</a> - <a href="https://github.com/jeromeetienne/jquery-qrcode/blob/master/MIT-LICENSE.txt">MIT license</a></li>
-			</ul>
-		</div>
+		</p>
+		<ul>
+			<li><a href="https://www.google.com/fonts/specimen/Droid+Sans">Droid Sans font</a> - <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a></li>
+			<li><a href="http://jquery.com/">jQuery</a> - <a href="https://jquery.org/license/">MIT license</a></li>
+			<li><a href="http://jeromeetienne.github.io/jquery-qrcode/">jquery.qrcode.js</a> - <a href="https://github.com/jeromeetienne/jquery-qrcode/blob/master/MIT-LICENSE.txt">MIT license</a></li>
+		</ul>
 	</div>
 </body>
 </html>

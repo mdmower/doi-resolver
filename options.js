@@ -30,6 +30,15 @@ function startListeners() {
 	$("#shortDoiResolverInput").on("change input", saveOptions);
 	$("#omniboxOpento").on("change", saveOptions);
 
+	$("#options_tab").on("click", function() {
+		$("#content_options").css("display", "block");
+		$("#content_about").css("display", "none");
+	})
+	$("#about_tab").on("click", function() {
+		$("#content_options").css("display", "none");
+		$("#content_about").css("display", "block");
+	})
+
 	$("#doiResolverInputReset").on("click", function() {
 		$("#doiResolverInput").val("http://dx.doi.org/");
 		saveOptions();
@@ -54,17 +63,6 @@ function startListeners() {
 	$("#img_bubblemeta_on").on("click", function() {
 		$("#meta").prop("checked", true);
 		saveOptions();
-	});
-
-	$("#optionAutoLink").hover(function() {
-		$("#autoLinkInfo").css("color","#500000");
-		}, function() {
-		$("#autoLinkInfo").css("color","white");
-	});
-	$("#autoLink").hover(function() {
-		$("#autoLinkInfo").css("color","#500000");
-		}, function() {
-		$("#autoLinkInfo").css("color","white");
 	});
 }
 
@@ -133,8 +131,7 @@ function restoreOptions(pageOpen) {
 		$("#customResolver").prop("checked", true);
 		$("#customResolverLeft").css("display", "inline-block");
 		$("#customResolverRight").css("display", "inline-block");
-		$("#doiResolverOutput").html(drOp + "10.1000/182");
-		$("#shortDoiResolverOutput").html(srOp + "dws9sz");
+		setCrPreviews();
 	} else {
 		$("#customResolver").prop("checked", false);
 		$("#customResolverLeft").css("display", "none");
@@ -159,8 +156,6 @@ function minimalOptionsRefresh(pageOpen) {
 	var cmOp = localStorage["context_menu"];
 	var metaOp = localStorage["meta_buttons"];
 	var crOp = localStorage["custom_resolver"];
-	var drOp = localStorage["doi_resolver"];
-	var srOp = localStorage["shortdoi_resolver"];
 	var alOp = localStorage["auto_link"];
 
 	if(cmOp == "true") {
@@ -184,8 +179,7 @@ function minimalOptionsRefresh(pageOpen) {
 	if(crOp == "true") {
 		$("#customResolverLeft").css("display", "inline-block");
 		$("#customResolverRight").css("display", "inline-block");
-		$("#doiResolverOutput").html(drOp + "10.1000/182");
-		$("#shortDoiResolverOutput").html(srOp + "dws9sz");
+		setCrPreviews();
 	} else {
 		$("#customResolverLeft").css("display", "none");
 		$("#customResolverRight").css("display", "none");
@@ -196,6 +190,24 @@ function minimalOptionsRefresh(pageOpen) {
 	} else {
 		$("#autoLink").prop("checked", false);
 	}
+}
+
+function setCrPreviews() {
+	var drOp = localStorage["doi_resolver"];
+	var srOp = localStorage["shortdoi_resolver"];
+	var drPreview = "";
+	var srPreview = "";
+
+	if(drOp.length <= 10) {
+		drPreview = drOp + "10.1000/182";
+		srPreview = srOp + "dws9sz";
+	} else {
+		drPreview = "&hellip;" + drOp.slice(-10, drOp.length) + "10.1000/182";
+		srPreview = "&hellip;" + srOp.slice(-10, srOp.length) + "dws9sz";
+	}
+
+	$("#doiResolverOutput").html(drPreview);
+	$("#shortDoiResolverOutput").html(srPreview);
 }
 
 function setAutoLinkPermission() {
@@ -288,6 +300,4 @@ function getLocalMessages() {
 	$("#optionOmniboxOpentoNewBacktab").html(message);
 	message = chrome.i18n.getMessage("autoLinkInfo");
 	$("#autoLinkInfo").html(message);
-	message = chrome.i18n.getMessage("optionsDescription");
-	$("#optionsDescription").html(message);
 }

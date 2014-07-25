@@ -195,11 +195,14 @@ function setCrPreviews() {
 
 	if(drOp.length <= 10) {
 		drPreview = drOp + "10.1000/182";
-		srPreview = srOp + "dws9sz";
 	} else {
 		drPreview = "&hellip;" + drOp.slice(-10, drOp.length) + "10.1000/182";
-		srPreview = "&hellip;" + srOp.slice(-10, srOp.length) + "dws9sz";
 	}
+    if(srOp.length <= 10) {
+        srPreview = srOp + "dws9sz";
+    } else {
+        srPreview = "&hellip;" + srOp.slice(-10, srOp.length) + "dws9sz";
+    }
 
 	$("#doiResolverOutput").html(drPreview);
 	$("#shortDoiResolverOutput").html(srPreview);

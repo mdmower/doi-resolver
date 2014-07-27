@@ -22,13 +22,13 @@ else
     git pull origin master
 fi
 if [ -f "README.md" ]; then
-	 # remove existing styles
-	sed -i '$ d' ../cite_styles.js
+    # remove existing styles
+    head -n -1 ../cite_styles.js > ../tmp.js && mv ../tmp.js ../cite_styles.js
 #              remove extension     wrap styles in quotes   \n --> ,      last comma --> ];        insert variable name and [       append styles
     ls *.csl | sed 's/\.[^.]*$//' | sed 's/\(.*\)/"\1"/g' | tr '\n' ',' | sed 's/\(.\).$/\1];/g' | sed 's/^/var\ allStyles\ =\ [/g' >> ../cite_styles.js
-	cd ..
-	rm -rf styles    
+    cd ..
+    echo "" >> cite_styles.js
+    rm -rf styles
 else
     echo "Styles repository unavailable"
 fi
-

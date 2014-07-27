@@ -16,6 +16,6 @@ Additional features:
 3.  Specify your own DOI resolver URL (useful if your institution provides a proxy service)
 4.  Generate formatted citations for publications
 
-Languages supported: English, Deutsch, Français, Italiano
+Languages supported: English
 
 Copyright © 2013, Matthew D. Mower

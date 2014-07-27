@@ -1,181 +1,181 @@
 @font-face {
-    font-family: "Droid Sans";
-    src: url("fonts/DroidSans.ttf") format("truetype");
+	font-family: "Droid Sans";
+	src: url("fonts/DroidSans.ttf") format("truetype");
 }
 
 body {
-    font-family: "Droid Sans", "Trebuchet MS", sans-serif;
-    width: 850px;
+	font-family: "Droid Sans", "Trebuchet MS", sans-serif;
+	width: 850px;
 }
 
 p {
-    margin-top: 0;
+	margin-top: 0;
 }
 
 ul {
-    margin: 0;
+	margin: 0;
 }
 
 #openSourceDisclaimer {
-    margin-bottom: 0;
+	margin-bottom: 0;
 }
 
 #extLogo {
-    float: right;
-    width: 128px;
-    height: 128px;
+	float: right;
+	width: 128px;
+	height: 128px;
 }
 
 #optionsTitle {
-    float:left;
-    margin-top: 20px;
+	float:left;
+	margin-top: 20px;
 }
 
 #img_context {
-    height: 145px;
+	height: 145px;
 }
 
 #img_bubblemeta {
-    height: 71px;
+	height: 71px;
 }
 
 #img_context_off,
 #img_context_on,
 #img_bubblemeta_off,
 #img_bubblemeta_on {
-    float: left;
-    margin: 2px 0px 2px 26px;
-    border: 2px solid white;
-    border-radius: 4px;
-    background-repeat: no-repeat;
-    background-position: top;
-    padding: 4px;
+	float: left;
+	margin: 2px 0px 2px 26px;
+	border: 2px solid white;
+	border-radius: 4px;
+	background-repeat: no-repeat;
+	background-position: top;
+	padding: 4px;
 }
 
 #img_context_off {
-    background-image: url('img/context_off.png');
-    width:372px;
-    height:99px;
+	background-image: url('img/context_off.png');
+	width:372px;
+	height:99px;
 }
 
 #img_context_on {
-    background-image: url('img/context_on.png');
-    width:379px;
-    height:129px;
+	background-image: url('img/context_on.png');
+	width:379px;
+	height:129px;
 }
 
 #img_bubblemeta_off {
-    background-image: url('img/bubble_minimal.png');
-    width:256px;
-    height:32px;
+	background-image: url('img/bubble_minimal.png');
+	width:256px;
+	height:32px;
 }
 
 #img_bubblemeta_on {
-    background-image: url('img/bubble_meta.png');
-    width:256px;
-    height:55px;
+	background-image: url('img/bubble_meta.png');
+	width:256px;
+	height:55px;
 }
 
 #customResolverFields {
-    margin: 2px 0px 2px 26px;
+	margin: 2px 0px 2px 26px;
 }
 
 #customResolverRadio {
-    margin: 2px 0px 6px 0px;
+	margin: 2px 0px 6px 0px;
 }
 
 #customResolverLeft,
 #customResolverRight {
-    vertical-align: top;
-    display: none;
-    padding-top: 5px;
-    white-space: normal;
+	vertical-align: top;
+	display: none;
+	padding-top: 5px;
+	white-space: normal;
 }
 
 #customResolverLeft {
-    width: 500px;
+	width: 500px;
 }
 
 #customResolverRight {
-    width: 300px;
+	width: 300px;
 }
 
 .crLabels {
-    margin-left: 10px;
+	margin-left: 10px;
 }
 
 .crSelections {
-    width: 100px;
+	width: 100px;
 }
 
 #doiResolverInput,
 #shortDoiResolverInput {
-    width: 350px;
+	width: 350px;
 }
 
 .cr_preview {
-    width: 334px;
+	width: 334px;
 }
 
 .cr_input_container {
-    margin-bottom: 8px;
+	margin-bottom: 8px;
 }
 
 #doiOutputUrlExample,
 #shortDoiOutputUrlExample {
-    font-size: 0.9em;
+	font-size: 0.9em;
 }
 
 #doiResolverOutput,
 #shortDoiResolverOutput {
-    font-family: monospace;
-    color: #444;
+	font-family: monospace;
+	color: #444;
 }
 
 #autoLinkInfo {
-    font-size: 0.9em;
-    color: #500000;
-    margin-bottom: 4px;
+	font-size: 0.9em;
+	color: #500000;
+	margin-bottom: 4px;
 }
 
 #optionAutolinkApplyto {
-    margin-left: 26px;
+	margin-left: 26px;
 }
 
 #header {
-    position: relative;
-    height: 128px;
+	position: relative;
+	height: 128px;
 }
 
 #tabs {
-    position: absolute;
-    height: 42px;
-    width: 700px;
-    float: left;
-    bottom: 0;
+	position: absolute;
+	height: 42px;
+	width: 700px;
+	float: left;
+	bottom: 0;
 }
 
 .tab {
-    border: 1px solid gray;
-    float: left;
-    width: 80px;
-    line-height: 40px;
-    text-align: center;
-    border-radius: 8px;
-    margin-right: 1px;
-    cursor: pointer;
+	border: 1px solid gray;
+	float: left;
+	width: 80px;
+	line-height: 40px;
+	text-align: center;
+	border-radius: 8px;
+	margin-right: 1px;
+	cursor: pointer;
 }
 
 .tab:hover {
-    background-color: #DDD;
+	background-color: #DDD;
 }
 
 .content {
-    clear: both;
-    padding: 10px;
-    margin-top: 1px;
-    border: 1px solid gray;
-    border-radius: 4px;
+	clear: both;
+	padding: 10px;
+	margin-top: 1px;
+	border: 1px solid gray;
+	border-radius: 4px;
 }
 
 #content_options {
@@ -183,21 +183,21 @@ ul {
 }
 
 #content_about {
-    display: none;
+	display: none;
 }
 
 .option_container {
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid gray;
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+	border-bottom: 1px solid gray;
 }
 
 #last_option_container {
-    padding-bottom: 0;
-    margin-bottom: 0;
-    border: 0;
+	padding-bottom: 0;
+	margin-bottom: 0;
+	border: 0;
 }
 
 .option_title {
-    margin: 0 0 4px 0;
+	margin: 0 0 4px 0;
 }

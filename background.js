@@ -264,7 +264,7 @@ function autoLinkDOIs() {
 
 // Auto-link message passing
 chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
-    if(request.cmd == "al_resolve_url") {
+	if(request.cmd == "al_resolve_url") {
 		var cr = localStorage["custom_resolver"];
 		var cra = localStorage["cr_autolink"];
 		var urlPrefix = "http://dx.doi.org/";

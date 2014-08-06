@@ -23,20 +23,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function setDefaultOption(opt) {
 	switch(opt) {
 	case 'cm':
-		if(typeof localStorage["doi_context_enable"] != 'undefined') {
-			localStorage["context_menu"] = localStorage["doi_context_enable"];
-			localStorage.removeItem("doi_context_enable");
-		} else {
-			localStorage["context_menu"] = true;
-		}
+		localStorage["context_menu"] = true;
 		break;
 	case 'meta':
-		if(typeof localStorage["doi_metabuttons_enable"] != 'undefined') {
-			localStorage["meta_buttons"] = localStorage["doi_metabuttons_enable"];
-			localStorage.removeItem("doi_metabuttons_enable");
-		} else {
-			localStorage["meta_buttons"] = true;
-		}
+		localStorage["meta_buttons"] = true;
 		break;
 	case 'cr':
 		localStorage["custom_resolver"] = false;
@@ -64,20 +54,12 @@ function setDefaultOption(opt) {
 		localStorage["omnibox_tab"] = "newfgtab";
 		break;
 	case 'al':
-		if(typeof localStorage["autoLink_permission"] != 'undefined') {
-			localStorage["auto_link"] = localStorage["autoLink_permission"];
-			localStorage.removeItem("autoLink_permission");
-		} else {
-			localStorage["auto_link"] = false;
-		}
+		localStorage["auto_link"] = false;
 		break;
 	case 'alp':
 		localStorage["al_protocol"] = "http";
 		break;
 	case 'qrTitle':
-		if(typeof localStorage["crossref_permission"] != 'undefined') {
-			localStorage.removeItem("crossref_permission");
-		}
 		localStorage["qr_title"] = false;
 		break;
 	case 'cs':

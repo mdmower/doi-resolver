@@ -15,7 +15,7 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	restoreOptions(true);
+	restoreOptions();
 	getLocalMessages();
 	startListeners();
 }, false);
@@ -90,11 +90,11 @@ function saveOptions() {
 		setAutolinkPermission();
 	}
 
-	minimalOptionsRefresh(false);
+	minimalOptionsRefresh();
 }
 
 // Restores options from localStorage
-function restoreOptions(pageOpen) {
+function restoreOptions() {
 	var cmOp = localStorage["context_menu"];
 	var metaOp = localStorage["meta_buttons"];
 	var crOp = localStorage["custom_resolver"];
@@ -160,12 +160,12 @@ function restoreOptions(pageOpen) {
 }
 
 // Only refresh fields that need updating after save
-function minimalOptionsRefresh(pageOpen) {
-	var cmOp = localStorage["context_menu"];
-	var metaOp = localStorage["meta_buttons"];
-	var crOp = localStorage["custom_resolver"];
+function minimalOptionsRefresh() {
+	var cm = $("#context").is(":checked");
+	var meta = $("#meta").is(":checked");
+	var cr = $("#customResolver").is(":checked");
 
-	if(cmOp == "true") {
+	if(cm) {
 		$("#img_context_on").css("border-color", "#404040");
 		$("#img_context_off").css("border-color", "white");
 		chrome.runtime.sendMessage({
@@ -181,7 +181,7 @@ function minimalOptionsRefresh(pageOpen) {
 		});
 	}
 
-	if(metaOp == "true") {
+	if(meta) {
 		$("#img_bubblemeta_on").css("border-color", "#404040");
 		$("#img_bubblemeta_off").css("border-color", "white");
 	} else {
@@ -189,7 +189,7 @@ function minimalOptionsRefresh(pageOpen) {
 		$("#img_bubblemeta_off").css("border-color", "#404040");
 	}
 
-	if(crOp == "true") {
+	if(cr) {
 		$("#customResolverLeft").css("display", "inline-block");
 		$("#customResolverRight").css("display", "inline-block");
 		setCrPreviews();

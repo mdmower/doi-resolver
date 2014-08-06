@@ -114,12 +114,18 @@ function restoreOptions(pageOpen) {
 		$("#context").prop("checked", true);
 		$("#img_context_on").css("border-color", "#404040");
 		$("#img_context_off").css("border-color", "white");
-		chrome.extension.sendRequest({cmd: "enable_context"});
+		chrome.runtime.sendMessage({
+			cmd: "context_menu",
+			setting: "enable"
+		});
 	} else {
 		$("#context").prop("checked", false);
 		$("#img_context_on").css("border-color", "white");
 		$("#img_context_off").css("border-color", "#404040");
-		chrome.extension.sendRequest({cmd: "disable_context"});
+		chrome.runtime.sendMessage({
+			cmd: "context_menu",
+			setting: "disable"
+		});
 	}
 
 	if(metaOp == "true") {
@@ -162,11 +168,17 @@ function minimalOptionsRefresh(pageOpen) {
 	if(cmOp == "true") {
 		$("#img_context_on").css("border-color", "#404040");
 		$("#img_context_off").css("border-color", "white");
-		chrome.extension.sendRequest({cmd: "enable_context"});
+		chrome.runtime.sendMessage({
+			cmd: "context_menu",
+			setting: "enable"
+		});
 	} else {
 		$("#img_context_on").css("border-color", "white");
 		$("#img_context_off").css("border-color", "#404040");
-		chrome.extension.sendRequest({cmd: "disable_context"});
+		chrome.runtime.sendMessage({
+			cmd: "context_menu",
+			setting: "disable"
+		});
 	}
 
 	if(metaOp == "true") {
@@ -248,11 +260,11 @@ function setAutolinkPermission() {
 			if(removed) {
 				$("#autoLink").prop("checked", false);
 				$("#alProtocol").css("display", "none");
-				chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+				chrome.runtime.sendMessage({cmd: "auto_link"});
 			} else {
 				$("#autoLink").prop("checked", true);
 				$("#alProtocol").css("display", "block");
-				chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+				chrome.runtime.sendMessage({cmd: "auto_link"});
 			}
 		});
 	}
@@ -266,18 +278,18 @@ function autolinkShufflePerms() {
 		chrome.permissions.remove({
 			origins: [ 'https://*/*' ]
 		}, function(removed) {
-			chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+			chrome.runtime.sendMessage({cmd: "auto_link"});
 			verifyAutolinkPermission();
 		});
 	} else if(alp == "https") {
 		chrome.permissions.remove({
 			origins: [ 'http://*/*' ]
 		}, function(removed) {
-			chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+			chrome.runtime.sendMessage({cmd: "auto_link"});
 			verifyAutolinkPermission();
 		});
 	} else {
-		chrome.extension.sendRequest({cmd: "addremove_autolink_listeners"});
+		chrome.runtime.sendMessage({cmd: "auto_link"});
 		verifyAutolinkPermission();
 	}
 }

@@ -22,8 +22,8 @@ replaceDOIsWithLinks();
 function replaceDOIsWithLinks() {
 	replaceInElement(document.body, find, function(match) {
 		var link = document.createElement('a');
-		chrome.extension.sendMessage({cmd: "al_resolve_url"}, function(response) {
-			link.href = response.cmd + match[0];
+		chrome.runtime.sendMessage({cmd: "al_resolve_url"}, function(response) {
+			link.href = response.url + match[0];
 		});
 		link.appendChild(document.createTextNode(match[0]));
 		return link;

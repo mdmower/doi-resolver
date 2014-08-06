@@ -172,23 +172,31 @@ function cmResolve(info) {
 	}
 }
 
-// Context menu request handler
-chrome.extension.onRequest.addListener(function(request) {
+// Message passing
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch(request.cmd) {
-	case "enable_context":
-		contextSetting = "true";
-		chrome.contextMenus.removeAll();
-		contextMenuMaker();
-		break;
-	case "disable_context":
-		contextSetting = "false";
-		chrome.contextMenus.removeAll();
-		break;
-	case "addremove_autolink_listeners":
-		autoLinkDOIs();
-		break;
-	default:
-		break;
+		case "context_menu":
+			if(request.setting == "enable") {
+				chrome.contextMenus.removeAll();
+				contextMenuMaker();
+			} else {
+				chrome.contextMenus.removeAll();
+			}
+			break;
+		case "auto_link":
+			autoLinkDOIs();
+			break;
+		case "al_resolve_url":
+			var cr = localStorage["custom_resolver"];
+			var cra = localStorage["cr_autolink"];
+			var urlPrefix = "http://dx.doi.org/";
+			if(cr == "true" && cra == "custom") {
+				urlPrefix = localStorage["doi_resolver"];
+			}
+			sendResponse({url: urlPrefix});
+			break;
+		default:
+			break;
 	}
 });
 
@@ -243,20 +251,6 @@ function autoLinkDOIs() {
 		}
 	});
 }
-
-// Auto-link message passing
-chrome.extension.onMessage.addListener(function(request, sender, sendResponse) {
-	if(request.cmd == "al_resolve_url") {
-		var cr = localStorage["custom_resolver"];
-		var cra = localStorage["cr_autolink"];
-		var urlPrefix = "http://dx.doi.org/";
-
-		if(cr == "true" && cra == "custom") {
-			urlPrefix = localStorage["doi_resolver"];
-		}
-		sendResponse({cmd: urlPrefix});
-	}
-});
 
 // Omnibox
 function navigate(url) {

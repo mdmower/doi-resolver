@@ -476,4 +476,6 @@ function getLocalMessages() {
 	$("#optionSyncData").html(message);
 	message = chrome.i18n.getMessage("syncDataWipeDescription");
 	$("#syncDataWipeDescription").html(message);
+
+	$("#extensionVersion").html(chrome.app.getDetails().version);
 }

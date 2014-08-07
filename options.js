@@ -35,11 +35,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	}
 });
 
-/* TODO:
- * 1) write note by sync setting that some options are blacklisted
- * 2) look into jquery queue to only sync 1/10sec or so: http://api.jquery.com/queue/#queue2
- */
-
 function startClickListeners() {
 	$("#context").on("click", saveOptions);
 	$("#meta").on("click", saveOptions);
@@ -90,17 +85,26 @@ function startClickListeners() {
 }
 
 function startChangeListeners() {
+	/*
+	 * doiResolverInput and shortDoiResolverInput can fire onChange events
+	 * frequently. debounce them to only run once per 750ms so Chrome Sync
+	 * doesn't get too many sync requests.
+	 */
+	var dbSaveOptions = _.debounce(saveOptions, 750);
+
 	$(".crSelections").on("change", saveOptions);
-	$("#doiResolverInput").on("change input", saveOptions);
-	$("#shortDoiResolverInput").on("change input", saveOptions);
+	$("#doiResolverInput").on("change input", dbSaveOptions);
+	$("#shortDoiResolverInput").on("change input", dbSaveOptions);
 	$("#omniboxOpento").on("change", saveOptions);
 	$("#autolinkApplyto").on("change", saveOptions);
 }
 
 function haltChangeListeners() {
+	var dbSaveOptions = _.debounce(saveOptions, 750);
+
 	$(".crSelections").off("change", saveOptions);
-	$("#doiResolverInput").off("change input", saveOptions);
-	$("#shortDoiResolverInput").off("change input", saveOptions);
+	$("#doiResolverInput").off("change input", dbSaveOptions);
+	$("#shortDoiResolverInput").off("change input", dbSaveOptions);
 	$("#omniboxOpento").off("change", saveOptions);
 	$("#autolinkApplyto").off("change", saveOptions);
 }

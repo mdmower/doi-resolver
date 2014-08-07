@@ -190,5 +190,9 @@
 	"optionSyncData": {
 		"description": "(48) Label for data sync feature",
 		"message": "Synchronize this extension's settings across Chrome installations"
+	},
+	"syncDataWipeDescription": {
+		"description": "(49) Description for sync wipe button",
+		"message": "&#8618; Wipe all synced data and disable Sync"
 	}
 }

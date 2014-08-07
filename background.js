@@ -16,7 +16,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 	checkForSettings();
-	fetchOptions(true, false);
+	fetchOptions({cl: false, fr: true, csr: false});
 }, false);
 
 // Set default options and rename old option names
@@ -71,6 +71,9 @@ function setDefaultOption(opt) {
 	case 'sd':
 		localStorage["sync_data"] = false;
 		break;
+	case 'sr':
+		localStorage["sync_reset"] = false;
+		break;
 	default:
 		break;
 	}
@@ -91,6 +94,7 @@ function checkForSettings() {
 	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
 	if(typeof localStorage["al_protocol"] == 'undefined') setDefaultOption('alp');
 	if(typeof localStorage["sync_data"] == 'undefined') setDefaultOption('sd');
+	if(typeof localStorage["sync_reset"] == 'undefined') setDefaultOption('sr');
 
 	// Set elsewhere
 	if(typeof localStorage["qr_title"] == 'undefined') setDefaultOption('qrTitle');
@@ -101,33 +105,54 @@ function checkForSettings() {
 	syncOptions();
 }
 
-function fetchOptions(firstRun, cycleListeners) {
+/*
+ * Fetch parameters:
+ * cl: Cycle Listeners (for options page)
+ * fr: First Run (i.e. this is the first run-through of background page)
+ * csr: Clear Sync Reset
+ */
+function fetchOptions(params) {
 	if(localStorage["sync_data"] != "true") {
-		if(firstRun) {
+		if(params.fr) {
 			startFeatures();
 		}
-		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: cycleListeners});
+		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: params.cl});
 		return;
 	}
 
 	var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
 		"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
 		"omnibox_tab", "al_protocol", "qr_title", "cite_style", "cite_locale",
-		"cr_bubble_last", "custom_resolver"];
+		"cr_bubble_last", "custom_resolver", "sync_reset"];
 
 	var settingsBundle = {};
-	for (var i = 0; i < syncOpts.length; i++) {
+	for(var i = 0; i < syncOpts.length; i++) {
 		settingsBundle[syncOpts[i]] = localStorage[syncOpts[i]];
 	};
 
 	chrome.storage.sync.get(settingsBundle, function(result) {
-		for(var i = 0; i < syncOpts.length; i++) {
-			localStorage[syncOpts[i]] = result[syncOpts[i]];
-		};
-		if(firstRun) {
+		if(result["sync_reset"] == "true" && params.csr != true) {
+			localStorage["sync_data"] = false;
+		} else if(params.csr) {
+			for(var i = 0; i < syncOpts.length; i++) {
+				localStorage[syncOpts[i]] = result[syncOpts[i]];
+			};
+			localStorage["sync_reset"] = false;
+			chrome.storage.sync.set({sync_reset: false}, function() {
+				var lastError = chrome.runtime.lastError;
+				if(typeof lastError != 'undefined') {
+					console.log(lastError);
+				}
+			});
+		} else {
+			for(var i = 0; i < syncOpts.length; i++) {
+				localStorage[syncOpts[i]] = result[syncOpts[i]];
+			};
+		}
+		if(params.fr) {
 			startFeatures();
 		}
-		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: cycleListeners});
+		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: params.cl});
 	});
 }
 
@@ -136,23 +161,39 @@ function syncOptions() {
 		return;
 	}
 
-	// Blacklist: sync_data, auto_link, qr_title
-	var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
-		"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
-		"omnibox_tab", "al_protocol", "qr_title", "cite_style", "cite_locale",
-		"cr_bubble_last", "custom_resolver"];
+	if(localStorage["sync_reset"] == "true") {
+		var settingsBundle = {};
+		settingsBundle["sync_reset"] = "true";
+		chrome.storage.sync.clear(function() {
+			if(typeof lastError != 'undefined') {
+				console.log(lastError);
+			}
+			chrome.storage.sync.set(settingsBundle, function() {
+				var lastError = chrome.runtime.lastError;
+				if(typeof lastError != 'undefined') {
+					console.log(lastError);
+				}
+			});
+		});
+	} else {
+		// Blacklist: sync_data, auto_link, qr_title
+		var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
+			"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
+			"omnibox_tab", "al_protocol", "qr_title", "cite_style", "cite_locale",
+			"cr_bubble_last", "custom_resolver"];
 
-	var settingsBundle = {};
-	for(var i = 0; i < syncOpts.length; i++) {
-		settingsBundle[syncOpts[i]] = localStorage[syncOpts[i]];
-	};
+		var settingsBundle = {};
+		for(var i = 0; i < syncOpts.length; i++) {
+			settingsBundle[syncOpts[i]] = localStorage[syncOpts[i]];
+		};
 
-	chrome.storage.sync.set(settingsBundle, function() {
-		var lastError = chrome.runtime.lastError;
-		if(typeof lastError != 'undefined') {
-			console.log(lastError);
-		}
-	});
+		chrome.storage.sync.set(settingsBundle, function() {
+			var lastError = chrome.runtime.lastError;
+			if(typeof lastError != 'undefined') {
+				console.log(lastError);
+			}
+		});
+	}
 }
 
 function startFeatures() {
@@ -250,7 +291,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			syncOptions();
 			break;
 		case "fetch_opts":
-			fetchOptions(false, request.cl);
+			fetchOptions({cl: request.cl, fr: false, csr: request.csr});
 			break;
 		case "al_resolve_url":
 			var cr = localStorage["custom_resolver"];

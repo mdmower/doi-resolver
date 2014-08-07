@@ -16,7 +16,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 	getLocalMessages();
-	fetchOptions(false);
+	fetchOptions({cl: false, csr: false});
 	startClickListeners();
 }, false);
 
@@ -81,6 +81,12 @@ function startClickListeners() {
 		$("#meta").prop("checked", true);
 		saveOptions();
 	});
+	$("#syncDataWipeButton").on("click", function() {
+		$("#syncData").prop("checked", false);
+		$("#syncDataWipe").css("display", "none");
+		localStorage["sync_reset"] = true;
+		syncOptions();
+	});
 }
 
 function startChangeListeners() {
@@ -103,8 +109,8 @@ function syncOptions() {
 	chrome.runtime.sendMessage({cmd: "sync_opts"});
 }
 
-function fetchOptions(cycleListeners) {
-	chrome.runtime.sendMessage({cmd: "fetch_opts", cl: cycleListeners});
+function fetchOptions(params) {
+	chrome.runtime.sendMessage({cmd: "fetch_opts", cl: params.cl, csr: params.csr});
 }
 
 function syncHanler() {
@@ -115,7 +121,10 @@ function syncHanler() {
 	var sd = $("#syncData").is(":checked");
 	localStorage["sync_data"] = sd;
 	if(sd) {
-		fetchOptions(true);
+		$("#syncDataWipe").css("display", "block");
+		fetchOptions({cl: true, csr: true});
+	} else {
+		$("#syncDataWipe").css("display", "none");
 	}
 }
 
@@ -210,8 +219,10 @@ function restoreOptions() {
 
 	if(sdOp == "true") {
 		$("#syncData").prop("checked", true);
+		$("#syncDataWipe").css("display", "block");
 	} else {
 		$("#syncData").prop("checked", false);
+		$("#syncDataWipe").css("display", "none");
 	}
 
 	$("#crAutolink").val(craOp);
@@ -454,4 +465,6 @@ function getLocalMessages() {
 	$("#syncDataInfo").html(message);
 	message = chrome.i18n.getMessage("optionSyncData");
 	$("#optionSyncData").html(message);
+	message = chrome.i18n.getMessage("syncDataWipeDescription");
+	$("#syncDataWipeDescription").html(message);
 }

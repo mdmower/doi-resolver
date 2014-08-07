@@ -80,7 +80,11 @@ function startClickListeners() {
 		$("#syncData").prop("checked", false);
 		$("#syncDataWipe").css("display", "none");
 		localStorage["sync_reset"] = true;
-		syncOptions();
+		chrome.runtime.sendMessage({cmd: "sync_listener", enable: false},
+			function(response) {
+				syncOptions();
+			}
+		);
 	});
 }
 
@@ -129,6 +133,7 @@ function syncHanler() {
 		fetchOptions({cl: true, csr: true});
 	} else {
 		$("#syncDataWipe").css("display", "none");
+		chrome.runtime.sendMessage({cmd: "sync_listener", enable: false});
 	}
 }
 

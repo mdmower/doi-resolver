@@ -112,6 +112,7 @@ function checkForSettings() {
  * csr: Clear Sync Reset
  */
 function fetchOptions(params) {
+	syncListener(false);
 	if(localStorage["sync_data"] != "true") {
 		if(params.fr) {
 			startFeatures();
@@ -152,6 +153,9 @@ function fetchOptions(params) {
 		if(params.fr) {
 			startFeatures();
 		}
+		if(localStorage["sync_data"] == "true") {
+			syncListener(true);
+		}
 		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: params.cl});
 	});
 }
@@ -162,13 +166,12 @@ function syncOptions() {
 	}
 
 	if(localStorage["sync_reset"] == "true") {
-		var settingsBundle = {};
-		settingsBundle["sync_reset"] = "true";
+		localStorage["sync_data"] = false;
 		chrome.storage.sync.clear(function() {
 			if(typeof lastError != 'undefined') {
 				console.log(lastError);
 			}
-			chrome.storage.sync.set(settingsBundle, function() {
+			chrome.storage.sync.set({sync_reset: "true"}, function() {
 				var lastError = chrome.runtime.lastError;
 				if(typeof lastError != 'undefined') {
 					console.log(lastError);
@@ -193,6 +196,52 @@ function syncOptions() {
 				console.log(lastError);
 			}
 		});
+	}
+}
+
+/*
+ * Detect upstream changes when they occur and apply them here immediately.
+ * The Sync listener should start after the first run through of fetchOptions,
+ * but it should also start if the user toggles Sync on-off-on. Remove and
+ * re-add the listener each time fetchOptions is called. This has the added
+ * benefit of ensuring the listener is disabled if sync is disabled.
+ */
+function syncListener(enable) {
+	if(enable) {
+		chrome.storage.onChanged.addListener(syncChangeHandler);
+	} else {
+		chrome.storage.onChanged.removeListener(syncChangeHandler);
+	}
+}
+
+function syncChangeHandler(changes, namespace) {
+	if(namespace != "sync") {
+		return;
+	}
+
+	var opt;
+	var goFetch = false;
+
+	for(opt in changes) {
+		var newVal = changes[opt].newValue;
+		if(opt == "sync_reset") {
+			if(newVal == "true") {
+				console.log("[Sync] reset detected, disabling sync");
+				localStorage["sync_reset"] = true;
+				localStorage["sync_data"] = false;
+			} else if(newVal == "false") { // sync_reset can be undefined, so check for "false"
+				console.log("[Sync] service reactivated");
+				localStorage["sync_reset"] = false;
+			}
+			goFetch = true;
+		} else if(newVal != localStorage[opt]) {
+			goFetch = true;
+		}
+	}
+
+	if(goFetch) {
+		console.log("[Sync] changes detected, syncing");
+		fetchOptions({cl: true, fr: false, csr: false});
 	}
 }
 
@@ -289,6 +338,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			break;
 		case "sync_opts":
 			syncOptions();
+			break;
+		case "sync_listener":
+			syncListener(request.enable);
+			sendResponse({status: "finished"});
 			break;
 		case "fetch_opts":
 			fetchOptions({cl: request.cl, fr: false, csr: request.csr});

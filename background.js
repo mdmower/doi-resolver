@@ -16,7 +16,7 @@
 
 document.addEventListener('DOMContentLoaded', function () {
 	checkForSettings();
-	startFeatures();
+	fetchOptions(true, false);
 }, false);
 
 // Set default options and rename old option names
@@ -68,6 +68,9 @@ function setDefaultOption(opt) {
 	case 'cl':
 		localStorage["cite_locale"] = "en-US";
 		break;
+	case 'sd':
+		localStorage["sync_data"] = false;
+		break;
 	default:
 		break;
 	}
@@ -87,12 +90,69 @@ function checkForSettings() {
 	if(typeof localStorage["omnibox_tab"] == 'undefined') setDefaultOption('ot');
 	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
 	if(typeof localStorage["al_protocol"] == 'undefined') setDefaultOption('alp');
+	if(typeof localStorage["sync_data"] == 'undefined') setDefaultOption('sd');
 
 	// Set elsewhere
 	if(typeof localStorage["qr_title"] == 'undefined') setDefaultOption('qrTitle');
 	if(typeof localStorage["cite_style"] == 'undefined') setDefaultOption('cs');
 	if(typeof localStorage["cite_locale"] == 'undefined') setDefaultOption('cl');
 	if(typeof localStorage["cr_bubble_last"] == 'undefined') setDefaultOption('crb');
+
+	syncOptions();
+}
+
+function fetchOptions(firstRun, cycleListeners) {
+	if(localStorage["sync_data"] != "true") {
+		if(firstRun) {
+			startFeatures();
+		}
+		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: cycleListeners});
+		return;
+	}
+
+	var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
+		"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
+		"omnibox_tab", "al_protocol", "qr_title", "cite_style", "cite_locale",
+		"cr_bubble_last", "custom_resolver"];
+
+	var settingsBundle = {};
+	for (var i = 0; i < syncOpts.length; i++) {
+		settingsBundle[syncOpts[i]] = localStorage[syncOpts[i]];
+	};
+
+	chrome.storage.sync.get(settingsBundle, function(result) {
+		for(var i = 0; i < syncOpts.length; i++) {
+			localStorage[syncOpts[i]] = result[syncOpts[i]];
+		};
+		if(firstRun) {
+			startFeatures();
+		}
+		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: cycleListeners});
+	});
+}
+
+function syncOptions() {
+	if(localStorage["sync_data"] != "true") {
+		return;
+	}
+
+	// Blacklist: sync_data, auto_link, qr_title
+	var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
+		"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
+		"omnibox_tab", "al_protocol", "qr_title", "cite_style", "cite_locale",
+		"cr_bubble_last", "custom_resolver"];
+
+	var settingsBundle = {};
+	for(var i = 0; i < syncOpts.length; i++) {
+		settingsBundle[syncOpts[i]] = localStorage[syncOpts[i]];
+	};
+
+	chrome.storage.sync.set(settingsBundle, function() {
+		var lastError = chrome.runtime.lastError;
+		if(typeof lastError != 'undefined') {
+			console.log(lastError);
+		}
+	});
 }
 
 function startFeatures() {
@@ -186,6 +246,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		case "auto_link":
 			autoLinkDOIs();
 			break;
+		case "sync_opts":
+			syncOptions();
+			break;
+		case "fetch_opts":
+			fetchOptions(false, request.cl);
+			break;
 		case "al_resolve_url":
 			var cr = localStorage["custom_resolver"];
 			var cra = localStorage["cr_autolink"];
@@ -216,6 +282,7 @@ function autoLinkDOIs() {
 		if(result) {
 			localStorage["auto_link"] = true;
 			localStorage["al_protocol"] = "httphttps";
+			syncOptions();
 			chrome.tabs.onUpdated.addListener(alListener);
 			chrome.tabs.onCreated.addListener(alListener);
 			console.log('autolink listeners enabled for http and https');
@@ -227,6 +294,7 @@ function autoLinkDOIs() {
 				if(result) {
 					localStorage["auto_link"] = true;
 					localStorage["al_protocol"] = "http";
+					syncOptions();
 					chrome.tabs.onUpdated.addListener(alListener);
 					chrome.tabs.onCreated.addListener(alListener);
 					console.log('autolink listeners enabled for http');
@@ -238,6 +306,7 @@ function autoLinkDOIs() {
 						if(result) {
 							localStorage["auto_link"] = true;
 							localStorage["al_protocol"] = "https";
+							syncOptions();
 							chrome.tabs.onUpdated.addListener(alListener);
 							chrome.tabs.onCreated.addListener(alListener);
 							console.log('autolink listeners enabled for https');

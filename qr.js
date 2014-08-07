@@ -31,6 +31,10 @@ function getUrlVariables() {
 	}
 }
 
+function syncOptions() {
+	chrome.runtime.sendMessage({cmd: "sync_opts"});
+}
+
 function restoreQrTitleState() {
 	if(localStorage["qr_title"] == "true") {
 		$("#qrTitle").prop("checked", true);
@@ -82,11 +86,13 @@ function setCrossrefPermission() {
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(granted) {
 			if(granted) {
-				localStorage["qr_title"] = true;
 				$("#qrTitle").prop("checked", true);
+				localStorage["qr_title"] = true;
+				syncOptions();
 			} else {
-				localStorage["qr_title"] = false;
 				$("#qrTitle").prop("checked", false);
+				localStorage["qr_title"] = false;
+				syncOptions();
 			}
 		});
 	} else {
@@ -94,11 +100,13 @@ function setCrossrefPermission() {
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(removed) {
 			if(removed) {
-				localStorage["qr_title"] = false;
 				$("#qrTitle").prop("checked", false);
+				localStorage["qr_title"] = false;
+				syncOptions();
 			} else {
-				localStorage["qr_title"] = true;
 				$("#qrTitle").prop("checked", true);
+				localStorage["qr_title"] = true;
+				syncOptions();
 			}
 		});
 	}

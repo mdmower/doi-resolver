@@ -19,8 +19,19 @@
 	"omnibox": {
 		"keyword": "doi"
 	},
-	"optional_permissions": [ "http://*.doi.org/", "http://*.crossref.org/", "http://*.datacite.org/", "https://*/*", "http://*/*", "tabs" ],
+	"optional_permissions": [
+		"http://*.doi.org/",
+		"http://*.crossref.org/",
+		"http://*.datacite.org/",
+		"https://*/*",
+		"http://*/*",
+		"tabs"
+	],
 	"options_page": "options.html",
-	"permissions": [ "contextMenus", "clipboardWrite" ],
+	"permissions": [
+		"contextMenus",
+		"clipboardWrite",
+		"storage"
+	],
 	"version": "2.1.3"
 }

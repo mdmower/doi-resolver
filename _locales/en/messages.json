@@ -182,5 +182,13 @@
 	"optionAutolinkApplyto": {
 		"description": "(46) Label for selection of protocols where autolink should be applied",
 		"message": "&#8618; Apply autolink feature to pages with protocol(s): "
+	},
+	"syncDataInfo": {
+		"description": "(47) Additional information about sync feature",
+		"message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur. The following options are not included in sync because they require permissions to be accepted by the user before enabling: Autolink, QR title fetch."
+	},
+	"optionSyncData": {
+		"description": "(48) Label for data sync feature",
+		"message": "Synchronize this extension's settings across Chrome installations"
 	}
 }

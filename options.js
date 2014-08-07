@@ -15,29 +15,46 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	restoreOptions();
 	getLocalMessages();
-	startListeners();
+	fetchOptions(false);
+	startClickListeners();
 }, false);
 
-function startListeners() {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+	switch(request.cmd) {
+		case "fetch_complete":
+			var cycleListeners = request.cl;
+			if(cycleListeners) {
+				haltChangeListeners();
+			}
+			restoreOptions();
+			startChangeListeners();
+			break;
+		default:
+			break;
+	}
+});
+
+/* TODO:
+ * 1) write note by sync setting that some options are blacklisted
+ * 2) look into jquery queue to only sync 1/10sec or so: http://api.jquery.com/queue/#queue2
+ */
+
+function startClickListeners() {
 	$("#context").on("click", saveOptions);
 	$("#meta").on("click", saveOptions);
 	$("#autoLink").on("click", saveOptions);
 	$("#customResolver").on("click", saveOptions);
-	$(".crSelections").on("change", saveOptions);
-	$("#doiResolverInput").on("change input", saveOptions);
-	$("#shortDoiResolverInput").on("change input", saveOptions);
-	$("#omniboxOpento").on("change", saveOptions);
+	$("#syncData").on("click", syncHanler);
 
 	$("#options_tab").on("click", function() {
 		$("#content_options").css("display", "block");
 		$("#content_about").css("display", "none");
-	})
+	});
 	$("#about_tab").on("click", function() {
 		$("#content_options").css("display", "none");
 		$("#content_about").css("display", "block");
-	})
+	});
 
 	$("#doiResolverInputReset").on("click", function() {
 		$("#doiResolverInput").val("http://dx.doi.org/");
@@ -64,11 +81,44 @@ function startListeners() {
 		$("#meta").prop("checked", true);
 		saveOptions();
 	});
+}
 
+function startChangeListeners() {
+	$(".crSelections").on("change", saveOptions);
+	$("#doiResolverInput").on("change input", saveOptions);
+	$("#shortDoiResolverInput").on("change input", saveOptions);
+	$("#omniboxOpento").on("change", saveOptions);
 	$("#autolinkApplyto").on("change", saveOptions);
 }
 
-// Saves options to localStorage
+function haltChangeListeners() {
+	$(".crSelections").off("change", saveOptions);
+	$("#doiResolverInput").off("change input", saveOptions);
+	$("#shortDoiResolverInput").off("change input", saveOptions);
+	$("#omniboxOpento").off("change", saveOptions);
+	$("#autolinkApplyto").off("change", saveOptions);
+}
+
+function syncOptions() {
+	chrome.runtime.sendMessage({cmd: "sync_opts"});
+}
+
+function fetchOptions(cycleListeners) {
+	chrome.runtime.sendMessage({cmd: "fetch_opts", cl: cycleListeners});
+}
+
+function syncHanler() {
+	/*
+	 * If sync has just been switched to enabled, make an attempt to populate
+	 * local storage with synced settings and then refresh page.
+	 */
+	var sd = $("#syncData").is(":checked");
+	localStorage["sync_data"] = sd;
+	if(sd) {
+		fetchOptions(true);
+	}
+}
+
 function saveOptions() {
 	localStorage["context_menu"] = $("#context").is(":checked");
 	localStorage["meta_buttons"] = $("#meta").is(":checked");
@@ -81,19 +131,27 @@ function saveOptions() {
 	localStorage["shortdoi_resolver"] = $("#shortDoiResolverInput").val();
 	localStorage["omnibox_tab"] = $("#omniboxOpento option:selected").val();
 
-	// Lots of permissions checking here, only call when this option changes
+	/*
+	 * These options require permissions setting/checking. Only call them
+	 * if the current setting differs from stored setting
+	 */
 	var alCur = $("#autoLink").is(":checked");
 	var alpCur = $("#autolinkApplyto option:selected").val();
 	var alBool = (localStorage["auto_link"] == "true");
 	var alpStr = localStorage["al_protocol"];
-	if(alCur != alBool || alpCur != alpStr) {
+	var callAL = (alCur != alBool || alpCur != alpStr);
+	if(callAL) {
 		setAutolinkPermission();
+	}
+
+	// Background function autoLinkDOIs() handles sync
+	if(!callAL) {
+		syncOptions();
 	}
 
 	minimalOptionsRefresh();
 }
 
-// Restores options from localStorage
 function restoreOptions() {
 	var cmOp = localStorage["context_menu"];
 	var metaOp = localStorage["meta_buttons"];
@@ -106,6 +164,7 @@ function restoreOptions() {
 	var srOp = localStorage["shortdoi_resolver"];
 	var otOp = localStorage["omnibox_tab"];
 	var alpOp = localStorage["al_protocol"];
+	var sdOp = localStorage["sync_data"];
 
 	$("#doiResolverInput").val(drOp);
 	$("#shortDoiResolverInput").val(srOp);
@@ -147,6 +206,12 @@ function restoreOptions() {
 		$("#customResolver").prop("checked", false);
 		$("#customResolverLeft").css("display", "none");
 		$("#customResolverRight").css("display", "none");
+	}
+
+	if(sdOp == "true") {
+		$("#syncData").prop("checked", true);
+	} else {
+		$("#syncData").prop("checked", false);
 	}
 
 	$("#crAutolink").val(craOp);
@@ -246,10 +311,12 @@ function setAutolinkPermission() {
 				autolinkShufflePerms();
 				$("#autoLink").prop("checked", true);
 				$("#alProtocol").css("display", "block");
+				syncOptions();
 			} else {
 				$("#autolinkApplyto").val("http");
 				$("#autoLink").prop("checked", false);
 				$("#alProtocol").css("display", "none");
+				syncOptions();
 			}
 		});
 	} else {
@@ -261,10 +328,12 @@ function setAutolinkPermission() {
 				$("#autoLink").prop("checked", false);
 				$("#alProtocol").css("display", "none");
 				chrome.runtime.sendMessage({cmd: "auto_link"});
+				syncOptions();
 			} else {
 				$("#autoLink").prop("checked", true);
 				$("#alProtocol").css("display", "block");
 				chrome.runtime.sendMessage({cmd: "auto_link"});
+				syncOptions();
 			}
 		});
 	}
@@ -381,4 +450,8 @@ function getLocalMessages() {
 	$("#autoLinkInfo").html(message);
 	message = chrome.i18n.getMessage("optionAutolinkApplyto");
 	$("#optionAutolinkApplyto").html(message);
+	message = chrome.i18n.getMessage("syncDataInfo");
+	$("#syncDataInfo").html(message);
+	message = chrome.i18n.getMessage("optionSyncData");
+	$("#optionSyncData").html(message);
 }

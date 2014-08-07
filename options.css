@@ -132,9 +132,8 @@ ul {
 	color: #444;
 }
 
-#autoLinkInfo {
+#autoLinkInfo, #syncDataInfo {
 	font-size: 0.9em;
-	color: #500000;
 	margin-bottom: 4px;
 }
 

@@ -55,6 +55,7 @@ function buildSelections() {
 	if(allLocales.indexOf(storedLocale) < 0) {
 		storedLocale = "en-US";
 		localStorage["cite_locale"] = "en-US";
+		syncOptions();
 	}
 
 	var readableLocales = [];
@@ -85,6 +86,7 @@ function buildSelections() {
 	if(baseStyles.indexOf(storedStyle) < 0) {
 		storedStyle = "bibtex";
 		localStorage["cite_style"] = "bibtex";
+		syncOptions();
 	}
 
 	var styleHtmlOptions;
@@ -103,6 +105,7 @@ function buildSelections() {
 	if(allStyles.indexOf(otherStoredStyle) < 0) {
 		otherStoredStyle = "bibtex";
 		localStorage["cite_other_style"] = "bibtex";
+		syncOptions();
 	}
 
 	var otherStyleHtmlOptions;
@@ -140,10 +143,15 @@ function formSubmitHandler() {
 	getCitation(doi);
 }
 
+function syncOptions() {
+	chrome.runtime.sendMessage({cmd: "sync_opts"});
+}
+
 function saveSelections() {
 	localStorage["cite_style"] = $("#citeStyleInput option:selected").val();
 	localStorage["cite_locale"] = $("#citeLocaleInput option:selected").val();
 	localStorage["cite_other_style"] = $("#styleList option:selected").val();
+	syncOptions();
 }
 
 function checkValidDoi(doiInput) {

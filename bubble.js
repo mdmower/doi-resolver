@@ -39,12 +39,15 @@ function startListeners() {
 	$("input[name='crRadio']").on("click", saveOptions);
 }
 
-// Saves options to localStorage
-function saveOptions() {
-	localStorage["cr_bubble_last"] = $('input[name="crRadio"]:checked').val();
+function syncOptions() {
+	chrome.runtime.sendMessage({cmd: "sync_opts"});
 }
 
-// Restores options from localStorage
+function saveOptions() {
+	localStorage["cr_bubble_last"] = $('input[name="crRadio"]:checked').val();
+	syncOptions();
+}
+
 function restoreOptions() {
 	var crblOp = localStorage["cr_bubble_last"];
 

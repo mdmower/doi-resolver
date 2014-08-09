@@ -47,7 +47,7 @@ function setDefaultOption(opt) {
 	case 'dr':
 		localStorage["doi_resolver"] = "http://dx.doi.org/";
 		break;
-	case 'sr':
+	case 'sdr':
 		localStorage["shortdoi_resolver"] = "http://doi.org/";
 		break;
 	case 'ot':
@@ -89,7 +89,7 @@ function checkForSettings() {
 	if(typeof localStorage["cr_context"] == 'undefined') setDefaultOption('crc');
 	if(typeof localStorage["cr_omnibox"] == 'undefined') setDefaultOption('cro');
 	if(typeof localStorage["doi_resolver"] == 'undefined') setDefaultOption('dr');
-	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sr');
+	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sdr');
 	if(typeof localStorage["omnibox_tab"] == 'undefined') setDefaultOption('ot');
 	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
 	if(typeof localStorage["al_protocol"] == 'undefined') setDefaultOption('alp');

@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
 	restoreOptions();
 	getLocalMessages();
 	showHideOptionalElms();
-	setTextBoxWidth();
 	startListeners();
 }, false);
 
@@ -62,13 +61,6 @@ function restoreOptions() {
 function resetBubbleHeight() {
 	var bubbleHeight = document.getElementById("containerDiv").offsetHeight;
 	$("body").css("height", bubbleHeight + "px");
-}
-
-function setTextBoxWidth() {
-	var buttonWidth = $("#resolveSubmit").outerWidth();
-	var containerWidth = $("#mainForm").outerWidth();
-	textInputWidth = (containerWidth - buttonWidth - 10) + "px";
-	$("#textInput").css("width", textInputWidth);
 }
 
 // Remove spaces and punctuation from beginning and end of input

@@ -30,31 +30,34 @@
 <div id="containerDiv">
 	<div id="heading"></div>
 	<form name="citeForm" id="citeForm">
-	<div id="mainForm">
-		<div id="inputContainer">
-			<label for="doiInput" id="doiInputLabel">DOI</label>
-			<input type="text" id="doiInput" value="" autofocus />
+		<div id="mainForm">
+			<div id="inputContainer">
+				<label for="doiInput" id="doiInputLabel">DOI</label>
+				<input type="text" id="doiInput" value="" autofocus />
+			</div>
+			<div id="styleContainer">
+				<label for="citeStyle" id="citeStyleLabel"></label>
+				<select id="citeStyleInput"></select>
+			</div>
+			<div id="localSubmitContainer">
+				<label for="citeLocale" id="citeLocaleLabel"></label>
+				<select id="citeLocaleInput"></select>
+				<input type="submit" id="submitButton" value="Submit" />
+			</div>
 		</div>
-		<div id="styleContainer">
-			<label for="citeStyle" id="citeStyleLabel"></label>
-			<select id="citeStyleInput"></select>
+		<div id="stylesContainer">
+			<div id="stylesFilterContainer">
+				<label for="citeStyleFilter" id="citeStyleFilterLabel"></label>
+				<input id="citeStyleFilter" type="text" />
+			</div>
+			<select id="styleList" size="10"></select>
 		</div>
-		<div id="localSubmitContainer">
-			<label for="citeLocale" id="citeLocaleLabel"></label>
-			<select id="citeLocaleInput"></select>
-			<input type="submit" id="submitButton" value="Submit" />
+		<div id="notifyDiv"></div>
+		<div id="citeDiv">
+			<textarea id="citeOutput" rows="6" readonly></textarea>
+			<button id="copyButton" type="button" />Copy</button>
 		</div>
-	</div>
-	<div id="sideForm">
-		<select id="styleList" size="5"></select>
-	</div>
 	</form>
-	<div style="clear:both;"></div>
-	<div id="notifyDiv"></div>
-	<div id="citeDiv">
-		<textarea id="citeOutput" rows="6" readonly></textarea>
-		<button id="copyButton" type="button" />Copy</button>
-	</div>
 </div>
 </body>
 </html>

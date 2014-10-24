@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	getLocalMessages()
 	buildSelections();
+	setStyleListWidth();
 	startListeners();
 }, false);
 
@@ -32,6 +33,9 @@ function startListeners() {
 	});
 	$('#copyButton').on("click", copyCitation);
 	$("#citeStyleInput").on("change", otherField);
+	$(function() {
+		$('#styleList').filterByText($('#citeStyleFilter'), true);
+	});
 }
 
 // Read a page's GET URL variables and return them as an associative array.
@@ -118,18 +122,53 @@ function buildSelections() {
 	}
 
 	if(storedStyle == "other") {
-		$("#sideForm").css("display", "block");
+		$("#stylesContainer").css("display", "block");
 	}
+}
+
+function setStyleListWidth() {
+	var width = $("#styleList").width();
+	$("#styleList").css("width", width);
+	$("#stylesContainer").css("width", width+10);
 }
 
 function otherField() {
 	var style = $("#citeStyleInput option:selected").val();
 	if(style == "other") {
-		$("#sideForm").css("display", "block");
+		$("#stylesContainer").css("display", "block");
 	} else {
-		$("#sideForm").css("display", "none");
+		$("#stylesContainer").css("display", "none");
 	}
 }
+
+// jQuery select filter: http://www.lessanvaezi.com/filter-select-list-options/
+jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
+	return this.each(function() {
+	var select = this;
+	var options = [];
+	$(select).find('option').each(function() {
+		options.push({value: $(this).val(), text: $(this).text()});
+	});
+	$(select).data('options', options);
+	$(textbox).bind('change keyup', function() {
+		var options = $(select).empty().scrollTop(0).data('options');
+		var search = $.trim($(this).val());
+		var regex = new RegExp(search,'gi');
+
+		$.each(options, function(i) {
+		var option = options[i];
+		if(option.text.match(regex) !== null) {
+			$(select).append(
+			 $('<option>').text(option.text).val(option.value)
+			);
+		}
+		});
+		if (selectSingleMatch === true && $(select).children().length === 1) {
+			$(select).children().get(0).selected = true;
+		}
+	});
+	});
+};
 
 function trim(stringToTrim) {
 	return stringToTrim.replace(/doi:|\s+|[\.!\?,]$|[\.!\?,]\s+$/g,"");
@@ -246,4 +285,6 @@ function getLocalMessages() {
 	$("#citeStyleLabel").html(message);
 	message = chrome.i18n.getMessage("citeLocale");
 	$("#citeLocaleLabel").html(message);
+	message = chrome.i18n.getMessage("citeStyleFilterLabel");
+	$("#citeStyleFilterLabel").html(message);
 }

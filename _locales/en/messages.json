@@ -198,5 +198,9 @@
 	"optionsSubmit": {
 		"description": "(50) The text that appears on the button to open the Options page",
 		"message": "Options"
+	},
+	"citeStyleFilterLabel": {
+		"description": "(51) The label for the style filter box on the Citations page",
+		"message": "Filter"
 	}
 }

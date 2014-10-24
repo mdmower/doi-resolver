@@ -24,12 +24,18 @@ body {
 	padding: 4px;
 }
 
-#sideForm {
+#stylesContainer {
+	clear: both;
 	display: none;
 	float: left;
 	width: 390px;
-	margin: 0 5px;
+	margin-left: 10px;
+	margin-top: 4px;
 	padding: 4px;
+}
+
+#stylesFilterContainer {
+	margin-bottom: 4px;
 }
 
 #inputContainer {

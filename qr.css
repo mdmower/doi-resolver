@@ -24,21 +24,73 @@ body {
 	padding: 4px;
 }
 
-#doiInputLabel,
-#sizeInputLabel,
-#pxLabel {
-	float:left;
-	margin: 4px;
+#inputContainer {
+	flex: 1;
+	display: flex;
+}
+
+#doiInputLabel {
+	margin-right: 4px;
+	order: 1;
 }
 
 #doiInput {
-	width:340px;
-	float:left;
+	order: 2;
+	flex: 1;
+}
+
+#imageParams {
+	margin-top: 4px;
+	clear: both;
+	display: flex;
+	flex: 1;
+}
+
+#imageTypePNG {
+	order: 1;
+}
+
+#imageTypePNGLabel {
+	order: 2;
+	margin-right: 4px;
+}
+
+#imageTypeJPG {
+	order: 3;
+}
+
+#imageTypeJPGLabel {
+	order: 4;
+}
+
+#imageParamsSpacer {
+	flex: 1;
+	order: 5;
+}
+
+#sizeInputLabel {
+	order: 6;
+	margin-right: 4px;
 }
 
 #sizeInput {
-	width:40px;
-	float:left;
+	order: 7;
+	width: 4em;
+}
+
+#pxLabel {
+	order: 8;
+	margin-left: 4px;
+}
+
+#embedTitleSubmit {
+	margin-top: 4px;
+	clear: both;
+}
+
+#qrTitle,
+#qrTitleLabel {
+	float: left;
 }
 
 #submitButton {

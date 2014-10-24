@@ -31,6 +31,9 @@ function startListeners() {
 	$("#qrSubmit").click(function() {
 		$("#hiddenButtonInput").val("qr");
 	});
+	$("#optionsSubmit").click(function() {
+		$("#hiddenButtonInput").val("options");
+	});
 	$('#doiForm').submit(function () {
 		formSubmitHandler();
 		return false;
@@ -113,6 +116,10 @@ function formSubmitHandler() {
 		chrome.tabs.create({url:resolveURL(doiInput)});
 		window.close();
 		break;
+	case "options":
+		chrome.tabs.create({url:"options.html"});
+		window.close();
+		break;
 	default:
 		break;
 	}
@@ -181,6 +188,8 @@ function getLocalMessages() {
 	$("#resolveSubmit").attr("value", message);
 	message = chrome.i18n.getMessage("citeSubmit");
 	$("#citeSubmit").attr("value", message);
+	message = chrome.i18n.getMessage("optionsSubmit");
+	$("#optionsSubmit").attr("value", message);
 	message = chrome.i18n.getMessage("optionCrLabelBubble");
 	$("#optionCrLabelBubble").html(message);
 	message = chrome.i18n.getMessage("optionCrCustom");

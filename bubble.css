@@ -16,11 +16,13 @@ body {
 #mainForm {
 	display: flex;
 	flex: 1;
+	margin-bottom: 4px;
 }
 
 #textInput {
 	order: 1;
 	flex: 1;
+	margin-right: 2px;
 }
 
 #resolveSubmit {
@@ -30,26 +32,24 @@ body {
 #crRadios {
 	display:none;
 	clear:both;
-	min-height: 1.5em;
+	min-height: 1.2em;
 	font-size: 0.9em;
+	margin-bottom: 4px;
 }
 
 #metaButtons {
 	display:none;
 	clear:both;
-	min-height: 1.5em;
 }
 
 #citeSubmit,
 #qrSubmit {
 	float: right;
+	margin-left: 2px;
 }
 
-#optionsLink {
+#optionsSubmit {
 	float: left;
-	font-size: 0.8em;
-	position: absolute;
-	bottom: 0;
 }
 
 #messageDiv {

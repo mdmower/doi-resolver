@@ -30,18 +30,25 @@
 	<div id="heading">QR Code Generator</div>
 	<form name="doiForm" id="doiForm" style="margin:0;">
 	<div id="mainForm">
-		<label for="doiInput" id="doiInputLabel">DOI</label>
-		<input type="text" id="doiInput" value="" autofocus />
-		<div style="clear:both;"></div>
-		<label for="sizeInput" id="sizeInputLabel"></label>
-		<input type="text" id="sizeInput" value="250" />
-		<div id="pxLabel">px</div>
-		<div style="clear:both; margin-bottom: 4px;"></div>
-		<input type="checkbox" id="qrTitle" /> <label id="qrTitleLabel" for="qrTitle"></label>
-		<div style="clear:both; margin-bottom: 4px;"></div>
-		<input type="radio" name="imageType" id="imageTypePNG" value="png" checked /><label for="imageTypePNG" id="imageTypePNGLabel">PNG</label>&nbsp;
-		<input type="radio" name="imageType" id="imageTypeJPG" value="jpg" /><label for="imageTypeJPG" id="imageTypeJPGLabel">JPG</label>&nbsp;
-		<input type="submit" id="submitButton" value="Submit" />
+		<div id="inputContainer">
+			<label for="doiInput" id="doiInputLabel">DOI</label>
+			<input type="text" id="doiInput" value="" autofocus />
+		</div>
+		<div id="imageParams">
+			<input type="radio" name="imageType" id="imageTypePNG" value="png" checked />
+			<label for="imageTypePNG" id="imageTypePNGLabel">PNG</label>
+			<input type="radio" name="imageType" id="imageTypeJPG" value="jpg" />
+			<label for="imageTypeJPG" id="imageTypeJPGLabel">JPG</label>
+			<div id="imageParamsSpacer"></div>
+			<label for="sizeInput" id="sizeInputLabel"></label>
+			<input type="text" id="sizeInput" value="250" />
+			<div id="pxLabel">px</div>
+		</div>
+		<div id="embedTitleSubmit">
+			<input type="checkbox" id="qrTitle" />
+			<label id="qrTitleLabel" for="qrTitle"></label>
+			<input type="submit" id="submitButton" value="Submit" />
+		</div>
 	</div>
 	</form>
 	<div style="clear:both;"></div>

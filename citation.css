@@ -32,22 +32,37 @@ body {
 	padding: 4px;
 }
 
-#doiInput {
-	width:340px;
-	float:left;
+#inputContainer {
+	flex: 1;
+	display: flex;
 }
 
-#doiInputLabel,
+#doiInputLabel {
+	margin-right: 4px;
+	order: 1;
+}
+
+#doiInput {
+	order: 2;
+	flex: 1;
+}
+
+#styleContainer,
+#localSubmitContainer {
+	clear: both;
+	margin-top: 4px;
+	height: 1.2em;
+}
+
 #citeStyleLabel,
 #citeLocaleLabel {
 	float:left;
-	margin: 4px;
+	margin-right: 4px;
 }
 
 #citeStyleInput,
 #citeLocaleInput {
 	float:left;
-	margin: 5px 18px 5px 0px;
 }
 
 #submitButton {

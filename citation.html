@@ -31,15 +31,19 @@
 	<div id="heading"></div>
 	<form name="citeForm" id="citeForm">
 	<div id="mainForm">
-		<label for="doiInput" id="doiInputLabel">DOI</label>
-		<input type="text" id="doiInput" value="" autofocus />
-		<div style="clear:both;"></div>
-		<label for="citeStyle" id="citeStyleLabel"></label>
-		<select id="citeStyleInput"></select>
-		<div style="clear:both;"></div>
-		<label for="citeLocale" id="citeLocaleLabel"></label>
-		<select id="citeLocaleInput"></select>
-		<input type="submit" id="submitButton" value="Submit" />
+		<div id="inputContainer">
+			<label for="doiInput" id="doiInputLabel">DOI</label>
+			<input type="text" id="doiInput" value="" autofocus />
+		</div>
+		<div id="styleContainer">
+			<label for="citeStyle" id="citeStyleLabel"></label>
+			<select id="citeStyleInput"></select>
+		</div>
+		<div id="localSubmitContainer">
+			<label for="citeLocale" id="citeLocaleLabel"></label>
+			<select id="citeLocaleInput"></select>
+			<input type="submit" id="submitButton" value="Submit" />
+		</div>
 	</div>
 	<div id="sideForm">
 		<select id="styleList" size="5"></select>

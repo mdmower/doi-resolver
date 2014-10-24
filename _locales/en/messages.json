@@ -194,5 +194,9 @@
 	"syncDataWipeDescription": {
 		"description": "(49) Description for sync wipe button",
 		"message": "&#8618; Wipe all synced data and disable Sync"
+	},
+	"optionsSubmit": {
+		"description": "(50) The text that appears on the button to open the Options page",
+		"message": "Options"
 	}
 }

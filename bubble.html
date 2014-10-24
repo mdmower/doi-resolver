@@ -34,15 +34,20 @@
 		<input type="submit" id="resolveSubmit" />
 	</div>
 	<div id="crRadios">
-		<span id="optionCrLabelBubble"></span>
-		<input type="radio" id="crRadioBubbleCustom" name="crRadio" value="custom" /> <label id="optionCrCustom" for="crRadioBubbleCustom"></label>
-		<input type="radio" id="crRadioBubbleDefault" name="crRadio" value="default" /> <label id="optionCrDefault" for="crRadioBubbleDefault"></label>
+		<div style="float:left;">
+			<span id="optionCrLabelBubble"></span>
+		</div>
+		<div style="float:right;">
+			<input type="radio" id="crRadioBubbleCustom" name="crRadio" value="custom" /> <label id="optionCrCustom" for="crRadioBubbleCustom"></label>
+			<input type="radio" id="crRadioBubbleDefault" name="crRadio" value="default" /> <label id="optionCrDefault" for="crRadioBubbleDefault"></label>
+		</div>
 	</div>
 	<div id="metaButtons">
-		<div id="optionsLink"><a href="options.html" title="Options" target="_blank">Options</a></div>	
+		<input type="submit" id="optionsSubmit" />
 		<input type="submit" id="citeSubmit" />
 		<input type="submit" id="qrSubmit" value="QR Code" />
 	</div>
+	<div style="clear:both;"></div>
 	<div id="messageDiv" style="display:none; text-align:center; clear:both; margin-top:4px;"></div>
 	</form>
 </div>

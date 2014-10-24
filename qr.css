@@ -1,0 +1,71 @@
+@font-face {
+	font-family: "Droid Sans";
+	src: url("fonts/DroidSans.ttf") format("truetype");
+}
+
+body {
+	font-family: "Droid Sans", "Trebuchet MS", sans-serif;
+	font-size: 100%;
+	padding:4px;
+}
+
+#heading {
+	width: 400px;
+	text-align: center;
+	font-size: 1.2em;
+}
+
+#mainForm {
+	float: left;
+	border: 1px solid black;
+	border-radius: 4px;
+	width: 390px;
+	margin: 0 5px;
+	padding: 4px;
+}
+
+#doiInputLabel,
+#sizeInputLabel,
+#pxLabel {
+	float:left;
+	margin: 4px;
+}
+
+#doiInput {
+	width:340px;
+	float:left;
+}
+
+#sizeInput {
+	width:40px;
+	float:left;
+}
+
+#submitButton {
+	float: right;
+}
+
+#qrDiv {
+	clear:both;
+	margin: 8px 5px;
+	display: none;
+}
+
+#notifyDiv {
+	clear: both;
+	width: 384px;
+	float:left;
+	margin: 8px 5px;
+	padding: 8px;
+	display: none;
+	border: 1px solid black;
+	border-radius: 4px;
+}
+
+#notifyDiv .heading {
+	color: #008000;
+}
+
+#notifyDiv .highlight {
+	background-color: #FFE87C;
+}

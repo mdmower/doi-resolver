@@ -1,0 +1,61 @@
+@font-face {
+	font-family: "Droid Sans";
+	src: url("fonts/DroidSans.ttf") format("truetype");
+}
+
+body {
+	font-family: "Droid Sans", "Trebuchet MS", sans-serif;
+	font-size: 100%;
+	margin: 0;
+	padding: 3px;
+	min-width: 250px;
+	min-height: 26px;
+	overflow-x: hidden;
+}
+
+#mainForm {
+	display: flex;
+	flex: 1;
+}
+
+#textInput {
+	order: 1;
+	flex: 1;
+}
+
+#resolveSubmit {
+	order: 2;
+}
+
+#crRadios {
+	display:none;
+	clear:both;
+	min-height: 1.5em;
+	font-size: 0.9em;
+}
+
+#metaButtons {
+	display:none;
+	clear:both;
+	min-height: 1.5em;
+}
+
+#citeSubmit,
+#qrSubmit {
+	float: right;
+}
+
+#optionsLink {
+	float: left;
+	font-size: 0.8em;
+	position: absolute;
+	bottom: 0;
+}
+
+#messageDiv {
+	text-align: center;
+}
+
+#messageDiv div {
+	line-height: 60px;
+}

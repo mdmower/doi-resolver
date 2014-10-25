@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 	getLocalMessages()
 	buildSelections();
-	setStyleListWidth();
 	startListeners();
 }, false);
 
@@ -123,6 +122,7 @@ function buildSelections() {
 
 	if(storedStyle == "other") {
 		$("#stylesContainer").css("display", "block");
+		setStyleListWidth();
 	}
 }
 
@@ -136,6 +136,7 @@ function otherField() {
 	var style = $("#citeStyleInput option:selected").val();
 	if(style == "other") {
 		$("#stylesContainer").css("display", "block");
+		setStyleListWidth();
 	} else {
 		$("#stylesContainer").css("display", "none");
 	}

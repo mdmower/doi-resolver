@@ -6,7 +6,7 @@
 body {
 	font-family: "Droid Sans", "Trebuchet MS", sans-serif;
 	font-size: 100%;
-	padding:4px;
+	padding: 4px;
 }
 
 #heading {
@@ -62,13 +62,13 @@ body {
 
 #citeStyleLabel,
 #citeLocaleLabel {
-	float:left;
+	float: left;
 	margin-right: 4px;
 }
 
 #citeStyleInput,
 #citeLocaleInput {
-	float:left;
+	float: left;
 }
 
 #submitButton {
@@ -78,7 +78,7 @@ body {
 #citeDiv,
 #notifyDiv {
 	clear: both;
-	float:left;
+	float: left;
 	margin: 8px 5px;
 	padding: 8px;
 	display: none;

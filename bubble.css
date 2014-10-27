@@ -52,7 +52,7 @@ body {
 }
 
 #messageDiv {
-	display:none;
+	display: none;
 	margin-top: 4px;
 	clear: both;
 	text-align: center;

@@ -28,7 +28,7 @@ ul {
 }
 
 #optionsTitle {
-	float:left;
+	float: left;
 	margin-top: 20px;
 }
 
@@ -55,26 +55,26 @@ ul {
 
 #img_context_off {
 	background-image: url('img/context_off.png');
-	width:372px;
-	height:99px;
+	width: 372px;
+	height: 99px;
 }
 
 #img_context_on {
 	background-image: url('img/context_on.png');
-	width:379px;
-	height:129px;
+	width: 379px;
+	height: 129px;
 }
 
 #img_bubblemeta_off {
 	background-image: url('img/bubble_minimal.png');
-	width:256px;
-	height:32px;
+	width: 256px;
+	height: 32px;
 }
 
 #img_bubblemeta_on {
 	background-image: url('img/bubble_meta.png');
-	width:256px;
-	height:55px;
+	width: 256px;
+	height: 55px;
 }
 
 #customResolverFields {

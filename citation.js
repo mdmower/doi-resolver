@@ -94,7 +94,8 @@ function buildSelections() {
 
 	var styleHtmlOptions;
 	for(var i = 0; i < baseStyles.length; i++) {
-		styleHtmlOptions = $('<option>').attr("value", baseStyles[i]).html(readableStyles[i]);
+		styleHtmlOptions = $('<option>').attr("value", baseStyles[i]);
+		styleHtmlOptions.html(readableStyles[i]);
 		if(baseStyles[i] == storedStyle) {
 			styleHtmlOptions.attr("selected", "selected");
 		}
@@ -105,16 +106,17 @@ function buildSelections() {
 	var otherStoredStyle = localStorage["cite_other_style"];
 
 	// allStyles is defined when cite_styles.js is called by citation.html
-	if(allStyles.indexOf(otherStoredStyle) < 0) {
+	if(allStyleCodes.indexOf(otherStoredStyle) < 0) {
 		otherStoredStyle = "bibtex";
 		localStorage["cite_other_style"] = "bibtex";
 		syncOptions();
 	}
 
 	var otherStyleHtmlOptions;
-	for(var i = 0; i < allStyles.length; i++) {
-		otherStyleHtmlOptions = $('<option>').attr("value", allStyles[i]).html(allStyles[i]);
-		if(allStyles[i] == otherStoredStyle) {
+	for(var i = 0; i < allStyleCodes.length; i++) {
+		otherStyleHtmlOptions = $('<option>').attr("value", allStyleCodes[i]);
+		otherStyleHtmlOptions.html(allStyleTitles[i]);
+		if(allStyleCodes[i] == otherStoredStyle) {
 			otherStyleHtmlOptions.attr("selected", "selected");
 		}
 		otherStyleHtmlOptions.appendTo("#styleList");
@@ -122,21 +124,13 @@ function buildSelections() {
 
 	if(storedStyle == "other") {
 		$("#stylesContainer").css("display", "block");
-		setStyleListWidth();
 	}
-}
-
-function setStyleListWidth() {
-	var width = $("#styleList").width();
-	$("#styleList").css("width", width);
-	$("#stylesContainer").css("width", width+10);
 }
 
 function otherField() {
 	var style = $("#citeStyleInput option:selected").val();
 	if(style == "other") {
 		$("#stylesContainer").css("display", "block");
-		setStyleListWidth();
 	} else {
 		$("#stylesContainer").css("display", "none");
 	}
@@ -155,15 +149,15 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 		var options = $(select).empty().scrollTop(0).data('options');
 		var search = $.trim($(this).val());
 		var regex = new RegExp(search,'gi');
-
+		var option_html = "";
 		$.each(options, function(i) {
-		var option = options[i];
-		if(option.text.match(regex) !== null) {
-			$(select).append(
-			 $('<option>').text(option.text).val(option.value)
-			);
-		}
+			var option = options[i];
+			if(option.text.match(regex) !== null) {
+				option_html += '<option value="' + option.value + '">'
+				option_html += option.text + '</option>';
+			}
 		});
+		$(select).html(option_html);
 		if (selectSingleMatch === true && $(select).children().length === 1) {
 			$(select).children().get(0).selected = true;
 		}

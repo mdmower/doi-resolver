@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright (C) 2013 Matthew D. Mower
 #
@@ -14,6 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+read_dom () {
+    local IFS=\>
+    read -d \< ENTITY CONTENT
+}
+
 if [ ! -d "styles" ]; then
     git clone https://github.com/citation-style-language/styles.git styles
     cd styles
@@ -22,13 +27,60 @@ else
     git pull origin master
 fi
 if [ -f "README.md" ]; then
-    # remove existing styles
-    head -n -1 ../cite_styles.js > ../tmp.js && mv ../tmp.js ../cite_styles.js
-#              remove extension     wrap styles in quotes   \n --> ,      last comma --> ];        insert variable name and [       append styles
-    ls *.csl | sed 's/\.[^.]*$//' | sed 's/\(.*\)/"\1"/g' | tr '\n' ',' | sed 's/\(.\).$/\1];/g' | sed 's/^/var\ allStyles\ =\ [/g' >> ../cite_styles.js
-    cd ..
-    echo "" >> cite_styles.js
-    rm -rf styles
+    # Retain only the license header and one blank line (16 lines)
+    head -16 ../cite_styles.js > ../tmp.js
+    printf 'var allStyleTitles = [' >> ../tmp.js
+
+    declare -a cslfiles
+    cslfiles=(*.csl)
+    lastcslpos=$(( ${#cslfiles[*]} - 1 ))
+    lastcsl=${cslfiles[$lastcslpos]}
+
+    for FILE in "${cslfiles[@]}"; do
+        TITLE=""
+        while read_dom; do
+            if [[ $ENTITY = "title" ]]; then
+                TITLE=$CONTENT
+                break
+            fi
+        done < $FILE
+
+        if [ ! -z "$TITLE" ]; then
+            # Replace double quotes in title with escaped double quotes
+            if [[ $TITLE == *\"* ]]; then
+              TITLE=$(echo $TITLE | sed 's/\"/\\"/g')
+            fi
+
+            if [[ $FILE == $lastcsl ]]; then
+                printf '"%s"];\n' "$TITLE" >> ../tmp.js
+            else
+                printf '"%s",' "$TITLE" >> ../tmp.js
+            fi
+        fi
+    done
+
+    printf 'var allStyleCodes = [' >> ../tmp.js
+    for FILE in "${cslfiles[@]}"; do
+        TITLE=""
+        while read_dom; do
+            if [[ $ENTITY = "title" ]]; then
+                TITLE=$CONTENT
+                break
+            fi
+        done < $FILE
+
+        if [ ! -z "$TITLE" ]; then
+            # filename.csl --> filename
+            STYLE="${FILE%.*}"
+
+            if [[ $FILE == $lastcsl ]]; then
+                printf '"%s"];\n' "$STYLE" >> ../tmp.js
+            else
+                printf '"%s",' "$STYLE" >> ../tmp.js
+            fi
+        fi
+    done
+    mv ../tmp.js ../cite_styles.js
 else
     echo "Styles repository unavailable"
 fi

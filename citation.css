@@ -28,10 +28,15 @@ body {
 	clear: both;
 	display: none;
 	float: left;
-	width: 390px;
+	width: 450px;
 	margin-left: 10px;
 	margin-top: 4px;
 	padding: 4px;
+	overflow-x: auto;
+}
+
+#styleList {
+	width: 450px;
 }
 
 #stylesFilterContainer {

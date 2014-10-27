@@ -60,12 +60,6 @@ function restoreOptions() {
 	}
 }
 
-// Dynamically adjust bubble height when content changes
-function resetBubbleHeight() {
-	var bubbleHeight = document.getElementById("containerDiv").offsetHeight;
-	$("body").css("height", bubbleHeight + "px");
-}
-
 // Remove spaces and punctuation from beginning and end of input
 function trim(stringToTrim) {
 	return stringToTrim.replace(/doi:|\s+|[\.!\?,]$|[\.!\?,]\s+$/g,"");
@@ -83,20 +77,17 @@ function checkValidDoi(doiInput) {
 	}
 }
 
-// Clear message space in bubble and reset height
+// Clear message space
 function resetMessageSpace() {
 	$("#messageDiv").empty();
 	$("#messageDiv").css("display", "none");
-	resetBubbleHeight();
 }
 
 // General messaging area in bubble
 function bubbleMessage(message) {
 	resetMessageSpace();
-
 	$("#messageDiv").css("display", "block");
-	$("#messageDiv").css("height", "60px");
-	$("<div>").html(message).appendTo($("#messageDiv"));
+	$("#messageDiv").html(message);
 }
 
 // Process the form

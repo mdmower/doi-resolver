@@ -159,6 +159,7 @@ function qrGen(doiInput) {
 // Show or hide additional buttons in bubble
 function showHideOptionalElms() {
 	var meta = localStorage["meta_buttons"];
+	var crOp = localStorage["custom_resolver"];
 	var crbOp = localStorage["cr_bubble"];
 
 	if(meta == "true") {
@@ -167,7 +168,7 @@ function showHideOptionalElms() {
 		$("#metaButtons").css("display", "none");
 	}
 
-	if(crbOp == 'selectable') {
+	if(crOp == "true" && crbOp == "selectable") {
 		$("#crRadios").css("display", "block");
 	} else {
 		$("#crRadios").css("display", "none");

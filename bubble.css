@@ -39,16 +39,29 @@ body {
 	margin-top: 4px;
 	display: none;
 	clear: both;
+	flex: 1;
 }
 
 #citeSubmit,
 #qrSubmit {
-	float: right;
 	margin-left: 2px;
 }
 
 #optionsSubmit {
-	float: left;
+	order: 1;
+}
+
+#metaButtonsFlexSpacer {
+	flex: 1;
+	order: 2;
+}
+
+#citeSubmit {
+	order: 3;
+}
+
+#qrSubmit {
+	order: 4;
 }
 
 #messageDiv {

@@ -163,7 +163,7 @@ function showHideOptionalElms() {
 	var crbOp = localStorage["cr_bubble"];
 
 	if(meta == "true") {
-		$("#metaButtons").css("display", "block");
+		$("#metaButtons").css("display", "flex");
 	} else {
 		$("#metaButtons").css("display", "none");
 	}

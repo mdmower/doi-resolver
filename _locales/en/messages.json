@@ -201,6 +201,6 @@
 	},
 	"citeStyleFilterLabel": {
 		"description": "(51) The label for the style filter box on the Citations page",
-		"message": "Filter"
+		"message": "Style filter"
 	}
 }

@@ -31,7 +31,6 @@ function startListeners() {
 		return false;
 	});
 	$('#copyButton').on("click", copyCitation);
-	$("#citeStyleInput").on("change", otherField);
 	$(function() {
 		$('#styleList').filterByText($('#citeStyleFilter'), true);
 	});
@@ -51,7 +50,7 @@ function getUrlVars() {
 }
 
 function buildSelections() {
-	// LOCALES
+	// Locales
 	var storedLocale = localStorage["cite_locale"];
 	var allLocales = ["sk-SK","uk-UA","de-AT","el-GR","th-TH","tr-TR","cs-CZ","hu-HU","sr-RS","fi-FI","ko-KR","lt-LT","vi-VN","bg-BG","en-US","he-IL","et-EE","zh-TW","de-CH","pt-BR","it-IT","sv-SE","is-IS","nb-NO","eu","af-ZA","ja-JP","hr-HR","ar-AR","sl-SI","ca-AD","ro-RO","nn-NO","fa-IR","de-DE","mn-MN","da-DK","es-ES","ru-RU","en-GB","pl-PL","nl-NL","km-KH","fr-FR","zh-CN","fr-CA","pt-PT"];
 
@@ -81,59 +80,29 @@ function buildSelections() {
 		localeHtmlOptions.appendTo("#citeLocaleInput");
 	}
 
-	// SHORT STYLES LIST
-	var storedStyle = localStorage["cite_style"];
-	var baseStyles = ["apa","bibtex","chicago-author-date","ieee","mla","nature","other"];
-	var readableStyles = ["APA","BibTeX","Chicago","IEEE","MLA","Nature","Other"];
+	// Migration from short+long styles list to just long list
+	if(typeof localStorage["cite_other_style"] != 'undefined') {
+		localStorage.removeItem("cite_other_style");
+	}
 
-	if(baseStyles.indexOf(storedStyle) < 0) {
+	var storedStyle = localStorage["cite_style"];
+	// Style not found or "other" (migration)
+	if(allStyleCodes.indexOf(storedStyle) < 0) {
 		storedStyle = "bibtex";
 		localStorage["cite_style"] = "bibtex";
 		syncOptions();
 	}
 
 	var styleHtmlOptions;
-	for(var i = 0; i < baseStyles.length; i++) {
-		styleHtmlOptions = $('<option>').attr("value", baseStyles[i]);
-		styleHtmlOptions.html(readableStyles[i]);
-		if(baseStyles[i] == storedStyle) {
+	for(var i = 0; i < allStyleCodes.length; i++) {
+		styleHtmlOptions = $('<option>').attr("value", allStyleCodes[i]);
+		styleHtmlOptions.html(allStyleTitles[i]);
+		if(allStyleCodes[i] == storedStyle) {
 			styleHtmlOptions.attr("selected", "selected");
 		}
-		styleHtmlOptions.appendTo("#citeStyleInput");
+		styleHtmlOptions.appendTo("#styleList");
 	}
-
-	// FULL STYLES LIST
-	var otherStoredStyle = localStorage["cite_other_style"];
-
-	// allStyles is defined when cite_styles.js is called by citation.html
-	if(allStyleCodes.indexOf(otherStoredStyle) < 0) {
-		otherStoredStyle = "bibtex";
-		localStorage["cite_other_style"] = "bibtex";
-		syncOptions();
-	}
-
-	var otherStyleHtmlOptions;
-	for(var i = 0; i < allStyleCodes.length; i++) {
-		otherStyleHtmlOptions = $('<option>').attr("value", allStyleCodes[i]);
-		otherStyleHtmlOptions.html(allStyleTitles[i]);
-		if(allStyleCodes[i] == otherStoredStyle) {
-			otherStyleHtmlOptions.attr("selected", "selected");
-		}
-		otherStyleHtmlOptions.appendTo("#styleList");
-	}
-
-	if(storedStyle == "other") {
-		$("#stylesContainer").css("display", "block");
-	}
-}
-
-function otherField() {
-	var style = $("#citeStyleInput option:selected").val();
-	if(style == "other") {
-		$("#stylesContainer").css("display", "block");
-	} else {
-		$("#stylesContainer").css("display", "none");
-	}
+	$("#styleList option:selected")[0].scrollIntoView();
 }
 
 // jQuery select filter: http://www.lessanvaezi.com/filter-select-list-options/
@@ -171,7 +140,10 @@ function trim(stringToTrim) {
 
 function formSubmitHandler() {
 	var doi = escape(trim(document.getElementById("doiInput").value));
-	if(!doi || !checkValidDoi(doi)) return;
+    var sel = $("#styleList option:selected").val();
+	if(!doi || !checkValidDoi(doi) || typeof sel == 'undefined') {
+		return;
+	}
 
 	saveSelections();
 	getCitation(doi);
@@ -182,9 +154,8 @@ function syncOptions() {
 }
 
 function saveSelections() {
-	localStorage["cite_style"] = $("#citeStyleInput option:selected").val();
+	localStorage["cite_style"] = $("#styleList option:selected").val();
 	localStorage["cite_locale"] = $("#citeLocaleInput option:selected").val();
-	localStorage["cite_other_style"] = $("#styleList option:selected").val();
 	syncOptions();
 }
 
@@ -234,12 +205,8 @@ function htmlEscape(str) {
 }
 
 function getCitation(doi) {
-	var style = $("#citeStyleInput option:selected").val();
+	var style = $("#styleList option:selected").val();
 	var locale = $("#citeLocaleInput option:selected").val();
-
-	if(style == "other") {
-		style = $("#styleList option:selected").val();
-	}
 
 	var resolveUrl = "http://dx.doi.org/" + doi;
 	var content = "text/x-bibliography; style=" + style + "; locale=" + locale;
@@ -276,8 +243,6 @@ function getCitation(doi) {
 function getLocalMessages() {
 	var message = chrome.i18n.getMessage("citeTitle");
 	$("#heading").html(message);
-	message = chrome.i18n.getMessage("citeStyle");
-	$("#citeStyleLabel").html(message);
 	message = chrome.i18n.getMessage("citeLocale");
 	$("#citeLocaleLabel").html(message);
 	message = chrome.i18n.getMessage("citeStyleFilterLabel");

@@ -19,24 +19,22 @@ body {
 	float: left;
 	border: 1px solid black;
 	border-radius: 4px;
-	width: 390px;
+	width: 458px;
 	margin: 0 5px;
 	padding: 4px;
 }
 
 #stylesContainer {
 	clear: both;
-	display: none;
 	float: left;
 	width: 450px;
-	margin-left: 10px;
 	margin-top: 4px;
 	padding: 4px;
-	overflow-x: auto;
 }
 
 #styleList {
 	width: 450px;
+	overflow-x: auto;
 }
 
 #stylesFilterContainer {
@@ -58,7 +56,6 @@ body {
 	flex: 1;
 }
 
-#styleContainer,
 #localSubmitContainer {
 	clear: both;
 	margin-top: 4px;

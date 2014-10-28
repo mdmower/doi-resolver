@@ -117,6 +117,10 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 	$(textbox).bind('change keyup', function() {
 		var options = $(select).empty().scrollTop(0).data('options');
 		var search = $.trim($(this).val());
+		// escape special chars
+		search = search.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'); 
+		// ignore extra spaces and line breaks
+		search = search.replace(/\s* /g, '\\s*');
 		var regex = new RegExp(search,'gi');
 		var option_html = "";
 		$.each(options, function(i) {

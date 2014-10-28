@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-zip -r doi.zip . -x ".git/*" "output_styles.sh" "styles/*" "Readme.md" "zip_extension.sh" "doi.zip" "LICENSE"
+zip -r doi.zip . -x ".git/*" "output_styles.sh" "styles/*" "locales/*" "citeproc-js/*" "Readme.md" "zip_extension.sh" "doi.zip" "LICENSE"

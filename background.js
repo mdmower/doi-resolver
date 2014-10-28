@@ -66,7 +66,7 @@ function setDefaultOption(opt) {
 		localStorage["cite_style"] = "bibtex";
 		break;
 	case 'cl':
-		localStorage["cite_locale"] = "en-US";
+		localStorage["cite_locale"] = "auto";
 		break;
 	case 'sd':
 		localStorage["sync_data"] = false;

@@ -60,8 +60,8 @@ function buildSelections() {
 	var allLocales = ["af-ZA","ar-AR","bg-BG","ca-AD","cs-CZ","da-DK","de-AT","de-CH","de-DE","el-GR","en-GB","en-US","es-ES","et-EE","eu","fa-IR","fi-FI","fr-CA","fr-FR","he-IL","hr-HR","hu-HU","is-IS","it-IT","ja-JP","km-KH","ko-KR","lt-LT","lv-LV","mn-MN","nb-NO","nl-NL","nn-NO","pl-PL","pt-BR","pt-PT","ro-RO","ru-RU","sk-SK","sl-SI","sr-RS","sv-SE","th-TH","tr-TR","uk-UA","vi-VN","zh-CN","zh-TW"];
 
 	if(allLocales.indexOf(storedLocale) < 0) {
-		storedLocale = "en-US";
-		localStorage["cite_locale"] = "en-US";
+		storedLocale = "auto";
+		localStorage["cite_locale"] = "auto";
 		syncOptions();
 	}
 
@@ -76,7 +76,12 @@ function buildSelections() {
 		return a[1] < b[1] ? -1 : 1;
 	});
 
-	var localeHtmlOptions;
+	var localeHtmlOptions = $('<option>').attr("value", "auto").html("Auto");
+    if("auto" == storedLocale) {
+        localeHtmlOptions.attr("selected", "selected");
+    }
+    localeHtmlOptions.appendTo("#citeLocaleInput");
+
 	for(var i = 0; i < allLocales.length; i++) {
 		localeHtmlOptions = $('<option>').attr("value", readableLocales[i][0]).html(readableLocales[i][1]);
 		if(readableLocales[i][0] == storedLocale) {
@@ -149,7 +154,7 @@ function trim(stringToTrim) {
 
 function formSubmitHandler() {
 	var doi = escape(trim(document.getElementById("doiInput").value));
-    var sel = $("#styleList option:selected").val();
+	var sel = $("#styleList option:selected").val();
 	if(!doi || !checkValidDoi(doi) || typeof sel == 'undefined') {
 		return;
 	}
@@ -194,7 +199,7 @@ function simpleNotification(message) {
 
 function outputCitation(message) {
 	resetSpace();
-	$("#citeOutput").html(message);
+	$("#citeDiv").html(message);
 	$("#citeDiv").css("display", "block");
 }
 
@@ -217,8 +222,13 @@ function getCitation(doi) {
 	var style = $("#styleList option:selected").val();
 	var locale = $("#citeLocaleInput option:selected").val();
 
+    var forceLocale = false;
+    if(locale != "auto") {
+        forceLocale = true;
+    }
+
 	var resolveUrl = "http://dx.doi.org/" + doi;
-	var content = "text/x-bibliography; style=" + style + "; locale=" + locale;
+	var content = "application/citeproc+json";
 
 	simpleNotification(chrome.i18n.getMessage("loading"));
 
@@ -235,7 +245,8 @@ function getCitation(doi) {
 			});
 			jqxhr.done(function() {
 				if(jqxhr.responseText != "" && jqxhr.responseText.charAt(0) != '<') {
-					outputCitation(htmlEscape(jqxhr.responseText));
+					var citation = JSON.parse(jqxhr.responseText);
+					renderBib(citation, style, locale, forceLocale);
 				} else {
 					simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 				}
@@ -256,4 +267,59 @@ function getLocalMessages() {
 	$("#citeLocaleLabel").html(message);
 	message = chrome.i18n.getMessage("citeStyleFilterLabel");
 	$("#citeStyleFilterLabel").html(message);
+}
+
+// Given the identifier of a CSL style, this function instantiates a CSL.Engine
+// object that can render citations in that style.
+function getProcessor(styleID, citations, locale, forceLocale) {
+	// Initialize a system object, which contains two methods needed by the
+	// engine.
+	citeprocSys = {
+		// Given a language tag in RFC-4646 form, this method retrieves the
+		// locale definition file.  This method must return a valid *serialized*
+		// CSL locale. (In other words, an blob of XML as an unparsed string.  The
+		// processor will fail on a native XML object or buffer).
+		retrieveLocale: function(lang) {
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', 'csl/locales/locales-' + lang + '.xml', false);
+			xhr.send(null);
+			return xhr.responseText;
+		},
+		// Given an identifier, this retrieves one citation item.  This method
+		// must return a valid CSL-JSON object.
+		retrieveItem: function(id) {
+			return citations[id];
+		}
+	};
+	// Get the CSL style as a serialized string of XML
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', 'csl/styles/' + styleID + '.csl', false);
+	xhr.send(null);
+	var styleAsText = xhr.responseText;
+
+	// Instantiate and return the engine
+    var citeproc;
+    if (forceLocale) {
+        citeproc = new CSL.Engine(citeprocSys, styleAsText, locale, 1);
+    } else {
+        citeproc = new CSL.Engine(citeprocSys, styleAsText);
+    }
+	
+	return citeproc;
+};
+
+// This runs at document ready, and renders the bibliography
+function renderBib(citation, style, locale, forceLocale) {
+	var citations = {
+		"Item-1": $.extend({}, { "id": "Item-1" }, citation)
+	};
+
+	var citeproc = getProcessor(style, citations, locale, forceLocale);
+	var itemIDs = [];
+	for (var key in citations) {
+		itemIDs.push(key);
+	}
+	citeproc.updateItems(itemIDs);
+	var bibResult = citeproc.makeBibliography();
+	outputCitation(bibResult[1].join('\n'));
 }

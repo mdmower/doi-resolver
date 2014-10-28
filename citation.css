@@ -89,19 +89,10 @@ body {
 }
 
 #citeDiv {
-	width: 790px;
+	min-width: 450px;
+	max-width: 900px;
 }
 
 #notifyDiv {
-	width: 384px;
-}
-
-#citeOutput {
-	width: 766px;
-	padding: 10px;
-}
-
-#copyButton {
-	clear: both;
-	float: right;
+	width: 450px;
 }

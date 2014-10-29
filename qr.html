@@ -19,9 +19,11 @@
 <head>
 <title>QR Generator</title>
 <meta charset="utf-8"/>
-<link rel="stylesheet" type="text/css" href="qr.css">
+<link rel='stylesheet' type="text/css" href='spectrum/spectrum.css' />
+<link rel="stylesheet" type="text/css" href="qr.css" />
 <script type="text/javascript" src="jquery-2.1.1.min.js"></script>
-<script type="text/javascript" src="jquery.qrcode.min.js"></script>
+<script type="text/javascript" src="spectrum/spectrum.js"></script>
+<script type="text/javascript" src="jquery.qrcode-0.11.0.min.js"></script>
 <script type="text/javascript" src="qr.js"></script>
 
 </head>
@@ -32,26 +34,44 @@
 	<div id="mainForm">
 		<div id="inputContainer">
 			<label for="doiInput" id="doiInputLabel">DOI</label>
-			<input type="text" id="doiInput" value="" autofocus />
+			<input type="text" id="doiInput" autofocus />
 		</div>
-		<div id="imageParams">
-			<input type="radio" name="imageType" id="imageTypePNG" value="png" checked />
-			<label for="imageTypePNG" id="imageTypePNGLabel">PNG</label>
-			<input type="radio" name="imageType" id="imageTypeJPG" value="jpg" />
-			<label for="imageTypeJPG" id="imageTypeJPGLabel">JPG</label>
-			<div id="imageParamsSpacer"></div>
-			<label for="sizeInput" id="sizeInputLabel"></label>
-			<input type="text" id="sizeInput" value="250" />
+		<div id="sizeParam">
+			<label for="qrSizeInput" id="qrSizeInputLabel"></label>
+			<input type="text" id="qrSizeInput" class="numeric" />
 			<div id="pxLabel">px</div>
 		</div>
-		<div id="embedTitleSubmit">
-			<input type="checkbox" id="qrTitle" />
-			<label id="qrTitleLabel" for="qrTitle"></label>
+		<div id="colorParams">
+			<div id="fgColorDiv">
+				<label for="qrFgColorInput" id="qrFgColorInputLabel"></label>
+				<input type="text" id="qrFgColorInput" />
+			</div>
+			<div id="bgColorDiv">
+				<label for="qrBgColorInput" id="qrBgColorInputLabel"></label>
+				<input type="text" id="qrBgColorInput" />
+			</div>
+		</div>
+		<div id="bgTransDiv">
+			<input type="checkbox" id="qrBgTrans" />
+			<label id="qrBgTransLabel" for="qrBgTrans"></label>
+		</div>
+		<div id="qrManualTitleDiv">
+			<input type="checkbox" id="qrManualTitle" />
+			<label id="qrManualTitleLabel" for="qrManualTitle"></label>
+			<div id="qrManualTitleTextDiv">
+				<label id="qrManualTitleTextLabel" for="qrManualTitleText"></label>
+				<input type="text" id="qrManualTitleText" />
+			</div>
+		</div>
+		<div id="finalParams">
+			<div id="qrFetchTitleDiv">
+				<input type="checkbox" id="qrFetchTitle" />
+				<label id="qrFetchTitleLabel" for="qrFetchTitle"></label>
+			</div>
 			<input type="submit" id="submitButton" value="Submit" />
 		</div>
 	</div>
 	</form>
-	<div style="clear:both;"></div>
 	<div id="notifyDiv"></div>
 	<div id="qrDiv"></div>
 </div>

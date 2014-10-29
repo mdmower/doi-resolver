@@ -1,23 +1,24 @@
 /*!
-    Copyright (C) 2014 Matthew D. Mower
+	Copyright (C) 2014 Matthew D. Mower
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-         http://www.apache.org/licenses/LICENSE-2.0
+		 http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 */
 
 document.addEventListener('DOMContentLoaded', function () {
 	getLocalMessages();
 	getUrlVariables();
-	restoreQrTitleState();
+	restoreOptions();
+	prepareColorPickers();
 	startListeners();
 }, false);
 
@@ -26,8 +27,15 @@ function startListeners() {
 		formSubmitHandler();
 		return false;
 	});
-
-	$("#qrTitle").on("click", setCrossrefPermission);
+	$("#qrBgTrans").on("click", saveOptions);
+	$("#qrFetchTitle").on("click", setCrossrefPermission);
+	$(".numeric").keyup(function () {
+		this.value = this.value.replace(/[^0-9\.]/g,'');
+	});
+	$("#qrSizeInput").change(function() {
+		saveOptions();
+	});
+	$("#qrManualTitle").on("click", toggleTitleFetch);
 }
 
 // Read a page's GET URL variables and return them as an associative array.
@@ -51,9 +59,90 @@ function syncOptions() {
 	chrome.runtime.sendMessage({cmd: "sync_opts"});
 }
 
-function restoreQrTitleState() {
+function restoreOptions() {
+	var qrSize = localStorage["qr_size"];
+	if(isNaN(qrSize)) {
+		$("#qrSizeInput").val(300);
+	} else {
+		$("#qrSizeInput").val(qrSize);
+	}
 	if(localStorage["qr_title"] == "true") {
-		$("#qrTitle").prop("checked", true);
+		$("#qrFetchTitle").prop("checked", true);
+	}
+	if(localStorage["qr_bgtrans"] == "true") {
+		$("#qrBgTrans").prop("checked", true);
+		$("#bgColorDiv").css("display", "none");
+	}
+}
+
+function isHexColor(code) {
+	return /^#[0-9A-F]{6}$/i.test(code);
+}
+
+function prepareColorPickers() {
+	var qrFgColor = "#000000";
+	var storedQrFgColor = localStorage["qr_fgcolor"];
+	if(isHexColor(storedQrFgColor)) {
+		qrFgColor = storedQrFgColor;
+	}
+	$("#qrFgColorInput").val(qrFgColor);
+
+	var qrBgColor = "#ffffff";
+	var storedQrBgColor = localStorage["qr_bgcolor"];
+	if(isHexColor(storedQrBgColor)) {
+		qrBgColor = storedQrBgColor;
+	}
+	$("#qrBgColorInput").val(qrBgColor);
+
+	$("#qrFgColorInput").spectrum({
+		color: qrFgColor,
+		preferredFormat: "hex",
+		showInput: true,
+		clickoutFiresChange: true,
+		change: function(color) {
+			saveOptions()
+		}
+	});
+
+	$("#qrBgColorInput").spectrum({
+		color: qrBgColor,
+		preferredFormat: "hex",
+		showInput: true,
+		clickoutFiresChange: true,
+		change: function(color) {
+			saveOptions()
+		}
+	});
+}
+
+function saveOptions() {
+	if($("#qrFetchTitle").is(":checked")) {
+		localStorage["qr_title"] = true;
+	} else {
+		localStorage["qr_title"] = false;
+	}
+	if($("#qrBgTrans").is(":checked")) {
+		localStorage["qr_bgtrans"] = true;
+		$("#bgColorDiv").css("display", "none");
+	} else {
+		localStorage["qr_bgtrans"] = false;
+		$("#bgColorDiv").css("display", "block");
+	}
+	localStorage["qr_size"] = $("#qrSizeInput").val();
+	localStorage["qr_fgcolor"] = $("#qrFgColorInput").val();
+	localStorage["qr_bgcolor"] = $("#qrBgColorInput").val();
+	syncOptions();
+}
+
+function toggleTitleFetch() {
+	if($("#qrManualTitle").is(":checked")) {
+		$("#qrFetchTitle").prop("checked", false);
+		$("#qrFetchTitle").attr("disabled", "disabled");
+		$("#qrManualTitleTextDiv").css("display", "flex");
+		saveOptions();
+	} else {
+		$("#qrFetchTitle").removeAttr("disabled");
+		$("#qrManualTitleTextDiv").css("display", "none");
 	}
 }
 
@@ -95,20 +184,18 @@ function notification(elms, size) {
 }
 
 function setCrossrefPermission() {
-	var perm = $("#qrTitle").is(":checked");
+	var perm = $("#qrFetchTitle").is(":checked");
 
 	if(perm) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(granted) {
 			if(granted) {
-				$("#qrTitle").prop("checked", true);
-				localStorage["qr_title"] = true;
-				syncOptions();
+				$("#qrFetchTitle").prop("checked", true);
+				saveOptions();
 			} else {
-				$("#qrTitle").prop("checked", false);
-				localStorage["qr_title"] = false;
-				syncOptions();
+				$("#qrFetchTitle").prop("checked", false);
+				saveOptions();
 			}
 		});
 	} else {
@@ -116,13 +203,11 @@ function setCrossrefPermission() {
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(removed) {
 			if(removed) {
-				$("#qrTitle").prop("checked", false);
-				localStorage["qr_title"] = false;
-				syncOptions();
+				$("#qrFetchTitle").prop("checked", false);
+				saveOptions();
 			} else {
-				$("#qrTitle").prop("checked", true);
-				localStorage["qr_title"] = true;
-				syncOptions();
+				$("#qrFetchTitle").prop("checked", true);
+				saveOptions();
 			}
 		});
 	}
@@ -138,9 +223,14 @@ function htmlEscape(str) {
 }
 
 function formSubmitHandler() {
-	var actionType = $('input[name="imageType"]:checked').val();
 	var doiInput = escape(trim($("#doiInput").val()));
-	var size = parseInt(escape($("#sizeInput").val()));
+	var size = parseInt(escape($("#qrSizeInput").val()));
+	var fgcolor = $("#qrFgColorInput").val();
+	var bgcolor = $("#qrBgColorInput").val();
+
+	if($("#qrBgTrans").is(":checked")) {
+		bgcolor = null;
+	}
 
 	if(!doiInput || !size || !checkValidDoi(doiInput)) return;
 	if(size < 80) {
@@ -148,20 +238,10 @@ function formSubmitHandler() {
 		return;
 	}
 
-	switch(actionType) {
-	case 'submit':
-	case 'png':
-		insertQr(doiInput,size,'png');
-		break;
-	case 'jpg':
-		insertQr(doiInput,size,'jpg');
-		break;
-	default:
-		break;
-	}
+	insertQr(doiInput, size, fgcolor, bgcolor);
 }
 
-function insertQr(doiInput,size,outputType) {
+function insertQr(doiInput, size, fgcolor, bgcolor) {
 	resetSpace();
 
 	var stringToEncode = "";
@@ -175,7 +255,8 @@ function insertQr(doiInput,size,outputType) {
 
 	simpleNotification("Loading...");
 
-	if(localStorage["qr_title"] == "true") {
+	var perm = $("#qrFetchTitle").is(":checked");
+	if(perm) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(granted) {
@@ -194,31 +275,47 @@ function insertQr(doiInput,size,outputType) {
 						doiTitle = doiTitle.replace(/<alt-title>(.*)<\/alt-title>/,"");
 						doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/,"$1");
 						stringToEncode = doiTitle + "\n" + stringToEncode;
-						$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
-						outputImg(size, outputType, stringToEncode, "found");
+						updateMessage(stringToEncode, "found");
+						createQrImage(stringToEncode, size, fgcolor, bgcolor);
 					} catch(e) {
-						$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
-						outputImg(size, outputType, stringToEncode, "missing");
+						updateMessage(stringToEncode, "missing");
+						createQrImage(stringToEncode, size, fgcolor, bgcolor);
 					}
 				});
 				jqxhr.error(function() {
-					$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
-					outputImg(size, outputType, stringToEncode, "missing");
+					updateMessage(stringToEncode, "missing");
+					createQrImage(stringToEncode, size, fgcolor, bgcolor);
 				});
 			} else {
-				$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
-				outputImg(size, outputType, stringToEncode, "disabled");
+				updateMessage(stringToEncode, "disabled");
+				createQrImage(stringToEncode, size, fgcolor, bgcolor);
 			}
 		});
 	} else {
-		$("#qrDiv").qrcode({width: size, height: size, text: stringToEncode});
-		outputImg(size, outputType, stringToEncode, "disabled");
+		var manualTitle = $("#qrManualTitle").is(":checked");
+		if(manualTitle) {
+			var titleString = $("#qrManualTitleText").val();
+			if(titleString != "") {
+				stringToEncode = titleString + "\n" + stringToEncode;
+			}
+		}
+		updateMessage(stringToEncode, "disabled");
+		createQrImage(stringToEncode, size, fgcolor, bgcolor);
 	}
 }
 
-function outputImg(size, outputType, stringToEncode, titleRetrieval) {
-	var canvas = document.getElementById("qrDiv").firstChild;
-	var sizeString = (size + "px").toString();
+function createQrImage(text, size, fgcolor, bgcolor) {
+	$("#qrDiv").qrcode({
+		text: text,
+		size: size,
+		fill: fgcolor,
+		background: bgcolor,
+		render: 'image'
+	});
+	linkifyQrImage();
+}
+
+function updateMessage(stringToEncode, titleRetrieval) {
 	var titleNotice = "";
 	var statusMessage = "";
 
@@ -237,57 +334,52 @@ function outputImg(size, outputType, stringToEncode, titleRetrieval) {
 		break;
 	}
 
-	if(canvas) {
-		var img = $('<img>');
-		img.attr("width", sizeString);
-		img.attr("height", sizeString);
-		img.attr("alt", "QR Code");
-		img.attr("id", "qrImage");
-		if(outputType == "png") {
-			img.attr("src", canvas.toDataURL("image/png"));
-		} else if(outputType == "jpg")	{
-			img.attr("src", canvas.toDataURL("image/jpeg"));
-		}
+	var statusMessage = [];
+	var tmp = $('<span>').attr("class", "heading");
+	tmp.html(chrome.i18n.getMessage("qrTitleStatus"));
+	statusMessage.push(tmp);
+	tmp = $('<span>').html(titleNotice);
+	statusMessage.push(tmp);
+	tmp = $('<br>');
+	statusMessage.push(tmp);
+	tmp = $('<span>').attr("class", "heading");
+	tmp.html(chrome.i18n.getMessage("qrMessageEncoded"));
+	statusMessage.push(tmp);
+	tmp = $('<span>').html(htmlEscape(stringToEncode));
+	statusMessage.push(tmp);
+	tmp = $('<br>');
+	statusMessage.push(tmp);
+	tmp = $('<span>').attr("class", "highlight");
+	tmp.html("&nbsp;" + chrome.i18n.getMessage("qrSave") + "&nbsp;");
+	statusMessage.push(tmp);
 
+	notification(statusMessage, "790px");
+}
+
+function linkifyQrImage() {
+	var qrImg = $("#qrDiv img");
+	if(qrImg.length > 0) {
 		var saveLink = $('<a>').attr("id", "qrImageSaveLink");
-		if(outputType == "png")	{
-			saveLink.attr("href", canvas.toDataURL("image/png"));
-			saveLink.attr("download", "qrImage.png");
-		} else if(outputType == "jpg")	{
-			saveLink.attr("href", canvas.toDataURL("image/jpeg"));
-			saveLink.attr("download", "qrImage.jpg");
-		}
-
-		var statusMessage = [];
-		var tmp = $('<span>').attr("class", "heading");
-		tmp.html(chrome.i18n.getMessage("qrTitleStatus"));
-		statusMessage.push(tmp);
-		tmp = $('<span>').html(titleNotice);
-		statusMessage.push(tmp);
-		tmp = $('<br>');
-		statusMessage.push(tmp);
-		tmp = $('<span>').attr("class", "heading");
-		tmp.html(chrome.i18n.getMessage("qrMessageEncoded"));
-		statusMessage.push(tmp);
-		tmp = $('<span>').html(htmlEscape(stringToEncode));
-		statusMessage.push(tmp);
-		tmp = $('<br>');
-		statusMessage.push(tmp);
-		tmp = $('<span>').attr("class", "highlight");
-		tmp.html("&nbsp;" + chrome.i18n.getMessage("qrSave") + "&nbsp;");
-		statusMessage.push(tmp);
-
-		notification(statusMessage, "790px");
-
-		img.appendTo($("#qrDiv"));
-		$("#qrImage").wrap(saveLink);
-		$("#qrDiv").css({"display": "block", "height": (size + "px"), "line-height": (size + "px")});
+		saveLink.attr("href", qrImg.attr("src"));
+		saveLink.attr("download", "qrImage.png");
+		qrImg.wrap(saveLink);
+		$("#qrDiv").css("display", "block");
 	}
 }
 
 function getLocalMessages() {
-	var message = chrome.i18n.getMessage("qrSize");
-	$("#sizeInputLabel").html(message);
-	message = chrome.i18n.getMessage("qrTitleLabel");
-	$("#qrTitleLabel").html(message);
+	var message = chrome.i18n.getMessage("qrFgColorInputLabel");
+	$("#qrFgColorInputLabel").html(message);
+	message = chrome.i18n.getMessage("qrBgColorInputLabel");
+	$("#qrBgColorInputLabel").html(message);
+	message = chrome.i18n.getMessage("qrBgTransLabel");
+	$("#qrBgTransLabel").html(message);
+	message = chrome.i18n.getMessage("qrSizeInputLabel");
+	$("#qrSizeInputLabel").html(message);
+	message = chrome.i18n.getMessage("qrManualTitleLabel");
+	$("#qrManualTitleLabel").html(message);
+	message = chrome.i18n.getMessage("qrManualTitleTextLabel");
+	$("#qrManualTitleTextLabel").html(message);
+	message = chrome.i18n.getMessage("qrFetchTitleLabel");
+	$("#qrFetchTitleLabel").html(message);
 }

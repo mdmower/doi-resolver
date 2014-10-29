@@ -62,6 +62,18 @@ function setDefaultOption(opt) {
 	case 'qrTitle':
 		localStorage["qr_title"] = false;
 		break;
+	case 'qrSize':
+		localStorage["qr_size"] = "300";
+		break;
+	case 'qrFgColor':
+		localStorage["qr_fgcolor"] = "#000000";
+		break;
+	case 'qrBgColor':
+		localStorage["qr_bgcolor"] = "#ffffff";
+		break;
+	case 'qrBgTrans':
+		localStorage["qr_bgtrans"] = false;
+		break;
 	case 'cs':
 		localStorage["cite_style"] = "bibtex";
 		break;
@@ -98,6 +110,10 @@ function checkForSettings() {
 
 	// Set elsewhere
 	if(typeof localStorage["qr_title"] == 'undefined') setDefaultOption('qrTitle');
+	if(typeof localStorage["qr_size"] == 'undefined') setDefaultOption('qrSize');
+	if(typeof localStorage["qr_fgcolor"] == 'undefined') setDefaultOption('qrFgColor');
+	if(typeof localStorage["qr_bgcolor"] == 'undefined') setDefaultOption('qrBgColor');
+	if(typeof localStorage["qr_bgtrans"] == 'undefined') setDefaultOption('qrBgTrans');
 	if(typeof localStorage["cite_style"] == 'undefined') setDefaultOption('cs');
 	if(typeof localStorage["cite_locale"] == 'undefined') setDefaultOption('cl');
 	if(typeof localStorage["cr_bubble_last"] == 'undefined') setDefaultOption('crb');
@@ -123,8 +139,9 @@ function fetchOptions(params) {
 
 	var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
 		"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
-		"omnibox_tab", "al_protocol", "qr_title", "cite_style", "cite_locale",
-		"cr_bubble_last", "custom_resolver", "sync_reset"];
+		"omnibox_tab", "al_protocol", "qr_size", "qr_fgcolor", "qr_bgcolor",
+		"qr_bgtrans", "cite_style", "cite_locale", "cr_bubble_last",
+		"custom_resolver", "sync_reset"];
 
 	var settingsBundle = {};
 	for(var i = 0; i < syncOpts.length; i++) {
@@ -182,8 +199,9 @@ function syncOptions() {
 		// Blacklist: sync_data, auto_link, qr_title
 		var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
 			"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
-			"omnibox_tab", "al_protocol", "qr_title", "cite_style", "cite_locale",
-			"cr_bubble_last", "custom_resolver"];
+			"omnibox_tab", "al_protocol", "qr_size", "qr_fgcolor", "qr_bgcolor",
+			"qr_bgtrans", "cite_style", "cite_locale", "cr_bubble_last",
+			"custom_resolver"];
 
 		var settingsBundle = {};
 		for(var i = 0; i < syncOpts.length; i++) {

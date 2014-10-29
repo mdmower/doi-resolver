@@ -91,12 +91,12 @@
 		"description": "(23) A notice to the user that additional permissions must be accepted for the citation generator to work",
 		"message": "Citations are retrieved from data.crossref.org and dx.doi.org. This permission must be accepted before the generator will function."
 	},
-	"qrTitleLabel": {
-		"description": "(24) A setting to include the title of the reference in a generated QR code.",
-		"message": "Include title of reference in QR code"
+	"qrFetchTitleLabel": {
+		"description": "(24) A setting to fetch the title of the reference in a generated QR code.",
+		"message": "Fetch title of reference for QR code"
 	},
-	"qrSize": {
-		"description": "(25) A label for the dimension of the QR image",
+	"qrSizeInputLabel": {
+		"description": "(25) A label for the size text box on the QR page",
 		"message": "Size"
 	},
 	"invalidQrSizeAlert": {
@@ -202,5 +202,25 @@
 	"citeStyleFilterLabel": {
 		"description": "(51) The label for the style filter box on the Citations page",
 		"message": "Style filter"
+	},
+	"qrFgColorInputLabel": {
+		"description": "(52) The label for the foreground color text box on the QR page",
+		"message": "Foreground color"
+	},
+	"qrBgColorInputLabel": {
+		"description": "(53) The label for the background color text box on the QR page",
+		"message": "Background color"
+	},
+	"qrBgTransLabel": {
+		"description": "(54) The label for the transparent background check box on the QR page",
+		"message": "Transparent background"
+	},
+	"qrManualTitleLabel": {
+		"description": "(55) The label for the manual title check box on the QR page",
+		"message": "Manually include title of reference"
+	},
+	"qrManualTitleTextLabel": {
+		"description": "(56) The label for the manual title text box on the QR page",
+		"message": "Title"
 	}
 }

@@ -39,57 +39,84 @@ body {
 	flex: 1;
 }
 
-#imageParams {
+#sizeParam {
 	margin-top: 4px;
 	clear: both;
 	display: flex;
 	flex: 1;
 }
 
-#imageTypePNG {
+#qrSizeInputLabel {
 	order: 1;
 }
 
-#imageTypePNGLabel {
+#qrSizeInput {
 	order: 2;
-	margin-right: 4px;
-}
-
-#imageTypeJPG {
-	order: 3;
-}
-
-#imageTypeJPGLabel {
-	order: 4;
-}
-
-#imageParamsSpacer {
-	flex: 1;
-	order: 5;
-}
-
-#sizeInputLabel {
-	order: 6;
-	margin-right: 4px;
-}
-
-#sizeInput {
-	order: 7;
+	margin-left: 4px;
 	width: 4em;
 }
 
 #pxLabel {
-	order: 8;
+	order: 3;
 	margin-left: 4px;
 }
 
-#embedTitleSubmit {
+#colorParams {
+	margin-top: 4px;
+	clear: both;
+	line-height: 32px;
+	display: flex;
+	flex: 1;
+}
+
+#fgColorDiv {
+	order: 1;
+}
+
+#bgColorDiv {
+	order: 2;
+	margin-left: 10px;
+}
+
+#qrFgColorInputLabel,
+#qrBgColorInputLabel {
+	margin-right: 4px;
+}
+
+#bgTransDiv {
 	margin-top: 4px;
 	clear: both;
 }
 
-#qrTitle,
-#qrTitleLabel {
+#qrManualTitleDiv {
+	margin-top: 4px;
+	clear: both;
+}
+
+#qrManualTitleTextDiv {
+	margin-top: 4px;
+	margin-left: 25px;
+	clear: both;
+	display: none;
+	flex: 1;
+}
+
+#qrManualTitleTextLabel {
+	order 1;
+}
+
+#qrManualTitleText {
+	order: 2;
+	flex: 1;
+	margin-left: 4px;
+}
+
+#finalParams {
+	margin-top: 4px;
+	clear: both;
+}
+
+#qrFetchTitleDiv {
 	float: left;
 }
 

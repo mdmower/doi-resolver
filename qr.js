@@ -23,6 +23,12 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 function startListeners() {
+	/*
+	 * qrSizeInput can fire onChange events frequently. debounce it to only run
+	 * once per 750ms so Chrome Sync doesn't get too many sync requests.
+	 */
+	var dbSaveOptions = _.debounce(saveOptions, 750);
+
 	$("#doiForm").submit(function () {
 		formSubmitHandler();
 		return false;
@@ -32,9 +38,7 @@ function startListeners() {
 	$(".numeric").keyup(function () {
 		this.value = this.value.replace(/[^0-9\.]/g,'');
 	});
-	$("#qrSizeInput").change(function() {
-		saveOptions();
-	});
+	$("#qrSizeInput").on("change", dbSaveOptions);
 	$("#qrManualTitle").on("click", toggleTitleFetch);
 }
 

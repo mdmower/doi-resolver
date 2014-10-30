@@ -36,7 +36,7 @@ function startListeners() {
 	$("#qrBgTrans").on("click", saveOptions);
 	$("#qrFetchTitle").on("click", setCrossrefPermission);
 	$(".numeric").keyup(function () {
-		this.value = this.value.replace(/[^0-9\.]/g,'');
+		this.value = this.value.replace(/[^0-9]/g,'');
 	});
 	$("#qrSizeInput").on("change", dbSaveOptions);
 	$("#qrManualTitle").on("click", toggleTitleFetch);

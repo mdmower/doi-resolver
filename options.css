@@ -49,8 +49,8 @@ ul {
 	border: 2px solid white;
 	border-radius: 4px;
 	background-repeat: no-repeat;
-	background-position: top;
-	padding: 4px;
+	background-position: center;
+	padding: 2px;
 }
 
 #img_context_off {
@@ -68,13 +68,13 @@ ul {
 #img_bubblemeta_off {
 	background-image: url('img/bubble_minimal.png');
 	width: 256px;
-	height: 32px;
+	height: 27px;
 }
 
 #img_bubblemeta_on {
 	background-image: url('img/bubble_meta.png');
 	width: 256px;
-	height: 55px;
+	height: 52px;
 }
 
 #customResolverFields {

@@ -222,5 +222,17 @@
 	"qrManualTitleTextLabel": {
 		"description": "(56) The label for the manual title text box on the QR page",
 		"message": "Title"
+	},
+	"qrHeading": {
+		"description": "(58) Title for QR generator page",
+		"message": "QR Code Generator"
+	},
+	"qrSubHeading": {
+		"description": "(57) Subheading message on the QR generator page",
+		"message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
+	},
+	"citeSubHeading": {
+		"description": "(57) Subheading message on the citation generator page",
+		"message": "Generate a formatted citation for a DOI"
 	}
 }

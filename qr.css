@@ -7,17 +7,26 @@ body {
 	font-family: "Droid Sans", "Trebuchet MS", sans-serif;
 	font-size: 100%;
 	padding:4px;
+	background-color: #fafafa;
+	color: #303942;
 }
 
 #heading {
-	width: 400px;
-	text-align: center;
+	width: 390px;
 	font-size: 1.2em;
+	margin: 0 5px;
+}
+
+#subHeading {
+	width: 390px;
+	font-size: 0.9em;
+	margin: 2px 5px;
+	color: grey;
 }
 
 #mainForm {
 	float: left;
-	border: 1px solid black;
+	border: 1px solid grey;
 	border-radius: 4px;
 	width: 390px;
 	margin: 0 5px;
@@ -83,6 +92,30 @@ body {
 	margin-right: 4px;
 }
 
+.qrColorReplacerClass {
+	background-color: #fafafa;
+	border: 1px solid grey;
+}
+
+.qrColorReplacerClass:hover {
+	border: 1px solid grey;
+}
+
+
+#fgColorDiv .sp-active,
+#bgColorDiv .sp-active {
+	border-top: 1px solid grey;
+	border-right: 1px solid grey;
+	border-left: 1px solid grey;
+	border-bottom: 0;
+}
+
+.qrColorContainerClass {
+	background-color: #fafafa;
+	border: 1px solid grey;
+	box-shadow: 2px 2px 1px #888888;
+}
+
 #bgTransDiv {
 	margin-top: 4px;
 	clear: both;
@@ -132,19 +165,16 @@ body {
 
 #notifyDiv {
 	clear: both;
-	width: 384px;
+	min-width: 390px;
+	max-width: 790px;
 	float:left;
 	margin: 8px 5px;
-	padding: 8px;
+	padding: 4px;
 	display: none;
-	border: 1px solid black;
+	border: 1px solid grey;
 	border-radius: 4px;
 }
 
-#notifyDiv .heading {
-	color: #008000;
-}
-
-#notifyDiv .highlight {
-	background-color: #FFE87C;
+#notifyDiv .notifyContent {
+	color: #16626C;
 }

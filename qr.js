@@ -103,6 +103,8 @@ function prepareColorPickers() {
 		preferredFormat: "hex",
 		showInput: true,
 		clickoutFiresChange: true,
+		replacerClassName: "qrColorReplacerClass",
+		containerClassName: "qrColorContainerClass",
 		change: function(color) {
 			saveOptions()
 		}
@@ -113,6 +115,8 @@ function prepareColorPickers() {
 		preferredFormat: "hex",
 		showInput: true,
 		clickoutFiresChange: true,
+		replacerClassName: "qrColorReplacerClass",
+		containerClassName: "qrColorContainerClass",
 		change: function(color) {
 			saveOptions()
 		}
@@ -167,7 +171,7 @@ function checkValidDoi(doiInput) {
 
 function resetSpace() {
 	$("#notifyDiv").html("");
-	$("#notifyDiv").css({"display": "none", "width": "384px"});
+	$("#notifyDiv").css("display", "none");
 	$("#qrDiv").html("");
 	$("#qrDiv").css("display", "none");
 }
@@ -178,12 +182,11 @@ function simpleNotification(message) {
 	$("#notifyDiv").css("display", "block");
 }
 
-function notification(elms, size) {
+function advancedNotification(elms) {
 	resetSpace();
 	for(var i = 0; i < elms.length; i++) {
 		elms[i].appendTo($("#notifyDiv"));
 	}
-	$("#notifyDiv").css("width", size);
 	$("#notifyDiv").css("display", "block");
 }
 
@@ -339,25 +342,22 @@ function updateMessage(stringToEncode, titleRetrieval) {
 	}
 
 	var statusMessage = [];
-	var tmp = $('<span>').attr("class", "heading");
+	var tmp = $('<span>').attr("class", "notifyHeading");
 	tmp.html(chrome.i18n.getMessage("qrTitleStatus"));
 	statusMessage.push(tmp);
-	tmp = $('<span>').html(titleNotice);
+	tmp = $('<span>').attr("class", "notifyContent");
+	tmp.html(titleNotice);
 	statusMessage.push(tmp);
 	tmp = $('<br>');
 	statusMessage.push(tmp);
-	tmp = $('<span>').attr("class", "heading");
+	tmp = $('<span>').attr("class", "notifyHeading");
 	tmp.html(chrome.i18n.getMessage("qrMessageEncoded"));
 	statusMessage.push(tmp);
-	tmp = $('<span>').html(htmlEscape(stringToEncode));
-	statusMessage.push(tmp);
-	tmp = $('<br>');
-	statusMessage.push(tmp);
-	tmp = $('<span>').attr("class", "highlight");
-	tmp.html("&nbsp;" + chrome.i18n.getMessage("qrSave") + "&nbsp;");
+	tmp = $('<span>').attr("class", "notifyContent");
+	tmp.html(htmlEscape(stringToEncode));
 	statusMessage.push(tmp);
 
-	notification(statusMessage, "790px");
+	advancedNotification(statusMessage);
 }
 
 function linkifyQrImage() {
@@ -372,7 +372,11 @@ function linkifyQrImage() {
 }
 
 function getLocalMessages() {
-	var message = chrome.i18n.getMessage("qrFgColorInputLabel");
+	var message = chrome.i18n.getMessage("qrHeading");
+	$("#heading").html(message);
+	message = chrome.i18n.getMessage("qrSubHeading");
+	$("#subHeading").html(message);
+	message = chrome.i18n.getMessage("qrFgColorInputLabel");
 	$("#qrFgColorInputLabel").html(message);
 	message = chrome.i18n.getMessage("qrBgColorInputLabel");
 	$("#qrBgColorInputLabel").html(message);

@@ -77,10 +77,10 @@ function buildSelections() {
 	});
 
 	var localeHtmlOptions = $('<option>').attr("value", "auto").html("Auto");
-    if("auto" == storedLocale) {
-        localeHtmlOptions.attr("selected", "selected");
-    }
-    localeHtmlOptions.appendTo("#citeLocaleInput");
+	if("auto" == storedLocale) {
+		localeHtmlOptions.attr("selected", "selected");
+	}
+	localeHtmlOptions.appendTo("#citeLocaleInput");
 
 	for(var i = 0; i < allLocales.length; i++) {
 		localeHtmlOptions = $('<option>').attr("value", readableLocales[i][0]).html(readableLocales[i][1]);
@@ -222,10 +222,10 @@ function getCitation(doi) {
 	var style = $("#styleList option:selected").val();
 	var locale = $("#citeLocaleInput option:selected").val();
 
-    var forceLocale = false;
-    if(locale != "auto") {
-        forceLocale = true;
-    }
+	var forceLocale = false;
+	if(locale != "auto") {
+		forceLocale = true;
+	}
 
 	var resolveUrl = "http://dx.doi.org/" + doi;
 	var content = "application/citeproc+json";
@@ -260,20 +260,7 @@ function getCitation(doi) {
 	});
 }
 
-function getLocalMessages() {
-	var message = chrome.i18n.getMessage("citeTitle");
-	$("#heading").html(message);
-	message = chrome.i18n.getMessage("citeLocale");
-	$("#citeLocaleLabel").html(message);
-	message = chrome.i18n.getMessage("citeStyleFilterLabel");
-	$("#citeStyleFilterLabel").html(message);
-}
-
-// Given the identifier of a CSL style, this function instantiates a CSL.Engine
-// object that can render citations in that style.
 function getProcessor(styleID, citations, locale, forceLocale) {
-	// Initialize a system object, which contains two methods needed by the
-	// engine.
 	citeprocSys = {
 		// Given a language tag in RFC-4646 form, this method retrieves the
 		// locale definition file.  This method must return a valid *serialized*
@@ -291,24 +278,22 @@ function getProcessor(styleID, citations, locale, forceLocale) {
 			return citations[id];
 		}
 	};
-	// Get the CSL style as a serialized string of XML
+
 	var xhr = new XMLHttpRequest();
 	xhr.open('GET', 'csl/styles/' + styleID + '.csl', false);
 	xhr.send(null);
 	var styleAsText = xhr.responseText;
 
-	// Instantiate and return the engine
-    var citeproc;
-    if (forceLocale) {
-        citeproc = new CSL.Engine(citeprocSys, styleAsText, locale, 1);
-    } else {
-        citeproc = new CSL.Engine(citeprocSys, styleAsText);
-    }
+	var citeproc;
+	if (forceLocale) {
+		citeproc = new CSL.Engine(citeprocSys, styleAsText, locale, 1);
+	} else {
+		citeproc = new CSL.Engine(citeprocSys, styleAsText);
+	}
 	
 	return citeproc;
 };
 
-// This runs at document ready, and renders the bibliography
 function renderBib(citation, style, locale, forceLocale) {
 	var citations = {
 		"Item-1": $.extend({}, { "id": "Item-1" }, citation)
@@ -322,4 +307,15 @@ function renderBib(citation, style, locale, forceLocale) {
 	citeproc.updateItems(itemIDs);
 	var bibResult = citeproc.makeBibliography();
 	outputCitation(bibResult[1].join('\n'));
+}
+
+function getLocalMessages() {
+	var message = chrome.i18n.getMessage("citeTitle");
+	$("#heading").html(message);
+	message = chrome.i18n.getMessage("citeSubHeading");
+	$("#subHeading").html(message);
+	message = chrome.i18n.getMessage("citeLocale");
+	$("#citeLocaleLabel").html(message);
+	message = chrome.i18n.getMessage("citeStyleFilterLabel");
+	$("#citeStyleFilterLabel").html(message);
 }

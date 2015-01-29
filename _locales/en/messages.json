@@ -224,15 +224,35 @@
 		"message": "Title"
 	},
 	"qrHeading": {
-		"description": "(58) Title for QR generator page",
+		"description": "(57) Title for QR generator page",
 		"message": "QR Code Generator"
 	},
 	"qrSubHeading": {
-		"description": "(57) Subheading message on the QR generator page",
+		"description": "(58) Subheading message on the QR generator page",
 		"message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
 	},
 	"citeSubHeading": {
-		"description": "(57) Subheading message on the citation generator page",
+		"description": "(59) Subheading message on the citation generator page",
 		"message": "Generate a formatted citation for a DOI"
+	},
+	"citeStyleLoadFailP1": {
+		"description": "(60) Failure message when style.csl retrieval fails (first part)",
+		"message": "Could not load style "
+	},
+	"citeStyleLoadFailP2": {
+		"description": "(61) Failure message when style.csl retrieval fails (second part)",
+		"message": ".csl from <a href=\"https://github.com/citation-style-language/styles\">GitHub</a>"
+	},
+	"citeLocaleLoadFailP1": {
+		"description": "(62) Failure message when locale.xml retrieval fails (first part)",
+		"message": "Could not load locales-"
+	},
+	"citeLocaleLoadFailP2": {
+		"description": "(63) Failure message when locale.xml retrieval fails (second part)",
+		"message": ".xml from <a href=\"https://github.com/citation-style-language/locales\">GitHub</a>"
+	},
+	"citeStyleGenFail": {
+		"description": "(64) General failure message for citation generation",
+		"message": "Citation generation failed"
 	}
 }

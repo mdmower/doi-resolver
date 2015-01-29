@@ -50,14 +50,18 @@ function getUrlVars() {
 }
 
 function localeCodeToEnglish(loc) {
-	var citeproc_js_langs = {"af-ZA":"Afrikaans","ar-AR":"Arabic","bg-BG":"Bulgarian","ca-AD":"Catalan","cs-CZ":"Czech","da-DK":"Danish","de-AT":"Austrian","de-CH":"German (CH)","de-DE":"German (DE)","el-GR":"Greek","en-GB":"English (GB)","en-US":"English (US)","es-ES":"Spanish","et-EE":"Estonian","eu":"European","fa-IR":"Persian","fi-FI":"Finnish","fr-CA":"French (CA)","fr-FR":"French (FR)","he-IL":"Hebrew","hr-HR":"Croatian","hu-HU":"Hungarian","is-IS":"Icelandic","it-IT":"Italian","ja-JP":"Japanese","km-KH":"Khmer","ko-KR":"Korean","lt-LT":"Lithuanian","lv-LV":"Latvian","mn-MN":"Mongolian","nb-NO":"Norwegian (Bokmål)","nl-NL":"Dutch","nn-NO":"Norwegian (Nynorsk)","pl-PL":"Polish","pt-BR":"Portuguese (BR)","pt-PT":"Portuguese (PT)","ro-RO":"Romanian","ru-RU":"Russian","sk-SK":"Slovak","sl-SI":"Slovenian","sr-RS":"Serbian","sv-SE":"Swedish","th-TH":"Thai","tr-TR":"Turkish","uk-UA":"Ukranian","vi-VN":"Vietnamese","zh-CN":"Chinese (CN)","zh-TW":"Chinese (TW)"};
+	var citeproc_js_langs = {"af-ZA":"Afrikaans","ar":"Arabic","bg-BG":"Bulgarian","ca-AD":"Catalan","cs-CZ":"Czech","cy-GB":"Welsh","da-DK":"Danish","de-AT":"German (Austria)","de-CH":"German (Switzerland)","de-DE":"German (Germany)","el-GR":"Greek","en-GB":"English (British)","en-US":"English (US)","es-CL":"Spanish (Chile)","es-ES":"Spanish (Spain)","et-EE":"Estonian","eu":"Basque","fa-IR":"Persian","fi-FI":"Finnish","fr-CA":"French (Canada)","fr-FR":"French (France)","he-IL":"Hebrew","hr-HR":"Croatian","hu-HU":"Hungarian","is-IS":"Icelandic","it-IT":"Italian","ja-JP":"Japanese","km-KH":"Khmer","ko-KR":"Korean","lt-LT":"Lithuanian","lv-LV":"Latvian","mn-MN":"Mongolian","nb-NO":"Norwegian (Bokmål)","nl-NL":"Dutch","nn-NO":"Norwegian (Nynorsk)","pl-PL":"Polish","pt-BR":"Portuguese (Brazil)","pt-PT":"Portuguese (Portugal)","ro-RO":"Romanian","ru-RU":"Russian","sk-SK":"Slovak","sl-SL":"Slovenian","sr-RS":"Serbian","sv-SE":"Swedish","th-TH":"Thai","tr-TR":"Turkish","uk-UA":"Ukrainian","vi-VN":"Vietnamese","zh-CN":"Chinese (PRC)","zh-TW":"Chinese (Taiwan)"};
 	return citeproc_js_langs[loc];
+}
+
+function getAllLocales() {
+	return ["af-ZA","ar","bg-BG","ca-AD","cs-CZ","cy-GB","da-DK","de-AT","de-CH","de-DE","el-GR","en-GB","en-US","es-CL","es-ES","et-EE","eu","fa-IR","fi-FI","fr-CA","fr-FR","he-IL","hr-HR","hu-HU","is-IS","it-IT","ja-JP","km-KH","ko-KR","lt-LT","lv-LV","mn-MN","nb-NO","nl-NL","nn-NO","pl-PL","pt-BR","pt-PT","ro-RO","ru-RU","sk-SK","sl-SL","sr-RS","sv-SE","th-TH","tr-TR","uk-UA","vi-VN","zh-CN","zh-TW"];
 }
 
 function buildSelections() {
 	// Locales
 	var storedLocale = localStorage["cite_locale"];
-	var allLocales = ["af-ZA","ar-AR","bg-BG","ca-AD","cs-CZ","da-DK","de-AT","de-CH","de-DE","el-GR","en-GB","en-US","es-ES","et-EE","eu","fa-IR","fi-FI","fr-CA","fr-FR","he-IL","hr-HR","hu-HU","is-IS","it-IT","ja-JP","km-KH","ko-KR","lt-LT","lv-LV","mn-MN","nb-NO","nl-NL","nn-NO","pl-PL","pt-BR","pt-PT","ro-RO","ru-RU","sk-SK","sl-SI","sr-RS","sv-SE","th-TH","tr-TR","uk-UA","vi-VN","zh-CN","zh-TW"];
+	var allLocales = getAllLocales();
 
 	if(allLocales.indexOf(storedLocale) < 0) {
 		storedLocale = "auto";
@@ -70,7 +74,7 @@ function buildSelections() {
 		readableLocales[i] = [allLocales[i], localeCodeToEnglish(allLocales[i])];
 	}
 	readableLocales.sort( function( a, b ) {
-		if (a[1] == b[1]) {
+		if(a[1] == b[1]) {
 			return 0;
 		}
 		return a[1] < b[1] ? -1 : 1;
@@ -141,7 +145,7 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 			}
 		});
 		$(select).html(option_html);
-		if (selectSingleMatch === true && $(select).children().length === 1) {
+		if(selectSingleMatch === true && $(select).children().length === 1) {
 			$(select).children().get(0).selected = true;
 		}
 	});
@@ -222,18 +226,18 @@ function getCitation(doi) {
 	var style = $("#styleList option:selected").val();
 	var locale = $("#citeLocaleInput option:selected").val();
 
-	var forceLocale = false;
-	if(locale != "auto") {
-		forceLocale = true;
-	}
-
 	var resolveUrl = "http://dx.doi.org/" + doi;
 	var content = "application/citeproc+json";
 
 	simpleNotification(chrome.i18n.getMessage("loading"));
 
 	chrome.permissions.request({
-		origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
+		origins: [
+			'http://*.doi.org/',
+			'http://*.crossref.org/',
+			'http://*.datacite.org/',
+			'https://raw.githubusercontent.com/'
+		]
 	}, function(granted) {
 		if(granted) {
 			var jqxhr = $.ajax({
@@ -246,7 +250,7 @@ function getCitation(doi) {
 			jqxhr.done(function() {
 				if(jqxhr.responseText != "" && jqxhr.responseText.charAt(0) != '<') {
 					var citation = JSON.parse(jqxhr.responseText);
-					renderBib(citation, style, locale, forceLocale);
+					renderBib(citation, style, locale);
 				} else {
 					simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 				}
@@ -260,53 +264,91 @@ function getCitation(doi) {
 	});
 }
 
-function getProcessor(styleID, citations, locale, forceLocale) {
-	citeprocSys = {
-		// Given a language tag in RFC-4646 form, this method retrieves the
-		// locale definition file.  This method must return a valid *serialized*
-		// CSL locale. (In other words, an blob of XML as an unparsed string.  The
-		// processor will fail on a native XML object or buffer).
-		retrieveLocale: function(lang) {
-			var xhr = new XMLHttpRequest();
-			xhr.open('GET', 'csl/locales/locales-' + lang + '.xml', false);
-			xhr.send(null);
-			return xhr.responseText;
-		},
-		// Given an identifier, this retrieves one citation item.  This method
-		// must return a valid CSL-JSON object.
-		retrieveItem: function(id) {
-			return citations[id];
-		}
-	};
-
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', 'csl/styles/' + styleID + '.csl', false);
-	xhr.send(null);
-	var styleAsText = xhr.responseText;
-
-	var citeproc;
-	if (forceLocale) {
-		citeproc = new CSL.Engine(citeprocSys, styleAsText, locale, 1);
-	} else {
-		citeproc = new CSL.Engine(citeprocSys, styleAsText);
-	}
-	
-	return citeproc;
-};
-
-function renderBib(citation, style, locale, forceLocale) {
+function renderBib(citation, style, locale) {
+	var allLocales = getAllLocales();
+	var lang = locale;
 	var citations = {
 		"Item-1": $.extend({}, { "id": "Item-1" }, citation)
 	};
 
-	var citeproc = getProcessor(style, citations, locale, forceLocale);
-	var itemIDs = [];
-	for (var key in citations) {
-		itemIDs.push(key);
-	}
-	citeproc.updateItems(itemIDs);
-	var bibResult = citeproc.makeBibliography();
-	outputCitation(bibResult[1].join('\n'));
+	// origin: raw.githubusercontent.com permission already handled at button press
+	var cslUrl = 'https://raw.githubusercontent.com/citation-style-language/styles/master/' + style + '.csl';
+	var jqxhrCsl = $.ajax({
+		url: cslUrl,
+		dataType: "text",
+		type: "GET",
+		cache: true
+	});
+
+	jqxhrCsl.done(function() {
+		if(jqxhrCsl.responseText != "") {
+			if(locale == "auto") {
+				var xml = jqxhrCsl.responseText,
+				  xmlDoc = $.parseXML(xml),
+				  $xml = $(xmlDoc),
+				  $xmlStyle = $xml.find("style");
+
+				var defaultLocale = $xmlStyle.attr("default-locale");
+				if(allLocales.indexOf(defaultLocale) >= 0) {
+					lang = defaultLocale;
+				} else {
+					lang = "en-US";
+				}
+			}
+
+			var locUrl = 'https://raw.githubusercontent.com/citation-style-language/locales/master/locales-' + lang + '.xml';
+			var jqxhrLoc = $.ajax({
+				url: locUrl,
+				dataType: "text",
+				type: "GET",
+				cache: true
+			});
+
+			jqxhrLoc.done(function() {
+				if(jqxhrLoc.responseText != "") {
+					citeprocSys = {
+						retrieveLocale: function(lang) {
+							return jqxhrLoc.responseText
+						},
+						retrieveItem: function(id) {
+							return citations[id];
+						}
+					};
+
+					var styleAsText = jqxhrCsl.responseText;
+					var citeproc;
+					if(locale == "auto") {
+						citeproc = new CSL.Engine(citeprocSys, styleAsText);
+					} else {
+						citeproc = new CSL.Engine(citeprocSys, styleAsText, lang, 1);
+					}
+
+					var itemIDs = [];
+					for(var key in citations) {
+						itemIDs.push(key);
+					}
+					citeproc.updateItems(itemIDs);
+
+					var bibResult = citeproc.makeBibliography();
+					if(typeof bibResult != 'undefined' && bibResult != false) {
+						outputCitation(bibResult[1].join('\n'));
+					} else {
+						simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));
+					}
+				} else {
+					simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + lang + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
+				}
+			});
+			jqxhrLoc.fail(function() {
+				simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + lang + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
+			});
+		} else {
+			simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+		}
+	});
+	jqxhrCsl.fail(function() {
+		simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+	});
 }
 
 function getLocalMessages() {

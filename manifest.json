@@ -25,6 +25,7 @@
 		"http://*.doi.org/",
 		"http://*.crossref.org/",
 		"http://*.datacite.org/",
+		"https://raw.githubusercontent.com/",
 		"https://*/*",
 		"http://*/*",
 		"tabs"

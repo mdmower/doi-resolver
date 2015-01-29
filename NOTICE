@@ -16,7 +16,38 @@ This product includes software developed by
 Matthew D. Mower (https://github.com/mdmower).
 
 Portions of this software depend on
-jQuery (https://jquery.org) and
-jquery.qrcode.js (http://jeromeetienne.github.io/jquery-qrcode/)
-which are both available under the
-MIT License (http://github.com/jquery/jquery/blob/master/MIT-LICENSE.txt).
+
+  Droid Sans font:
+  https://www.google.com/fonts/specimen/Droid+Sans
+  Apache License, Version 2.0
+  href="http://www.apache.org/licenses/LICENSE-2.0
+
+  jQuery:
+  http://jquery.com
+  MIT license
+  https://jquery.org/license
+
+  jQuery.qrcode:
+  https://github.com/lrsjng/jquery-qrcode
+  MIT license
+  https://github.com/lrsjng/jquery-qrcode
+
+  Spectrum jQuery Colorpicker:
+  http://bgrins.github.io/spectrum
+  Copyright-only License
+  https://github.com/bgrins/spectrum/blob/master/LICENSE
+
+  underscore.js:
+  http://underscorejs.org
+  Copyright-only License
+  https://github.com/jashkenas/underscore/blob/master/LICENSE
+
+  citeproc-js:
+  https://bitbucket.org/fbennett/citeproc-js/wiki/Home
+  Common Public Attribution License Version 1.0
+  https://bitbucket.org/fbennett/citeproc-js/raw/default/LICENSE
+
+  Citation Style Language (CSL) citation styles:
+  http://citationstyles.org
+  Creative Commons Attribution-ShareAlike 3.0 Unported
+  http://creativecommons.org/licenses/by-sa/3.0/

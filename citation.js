@@ -120,6 +120,7 @@ function buildSelections() {
 }
 
 // jQuery select filter: http://www.lessanvaezi.com/filter-select-list-options/
+// scroll-to and ignore-defocus added by me
 jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 	return this.each(function() {
 	var select = this;
@@ -129,6 +130,14 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 	});
 	$(select).data('options', options);
 	$(textbox).bind('change keyup', function() {
+		if ($(textbox).data('filtext') == $(textbox).val()) return;
+		$(textbox).data('filtext', $(textbox).val());
+
+		var scrollto = false;
+		var cursel = null;
+		if (select.selectedOptions.length > 0)
+			cursel = select.selectedOptions[0].value;
+
 		var options = $(select).empty().scrollTop(0).data('options');
 		var search = $.trim($(this).val());
 		// escape special chars
@@ -140,13 +149,19 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 		$.each(options, function(i) {
 			var option = options[i];
 			if(option.text.match(regex) !== null) {
-				option_html += '<option value="' + option.value + '">'
-				option_html += option.text + '</option>';
+				option_html += '<option value="' + option.value + '"';
+				if(cursel != null && cursel == option.value) {
+					option_html += ' selected="selected"';
+					scrollto = true;
+				}
+				option_html += '>' + option.text + '</option>';
 			}
 		});
 		$(select).html(option_html);
 		if(selectSingleMatch === true && $(select).children().length === 1) {
 			$(select).children().get(0).selected = true;
+		} else if(scrollto == true) {
+			select.selectedOptions[0].scrollIntoView();
 		}
 	});
 	});

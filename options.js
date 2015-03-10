@@ -40,7 +40,7 @@ function startClickListeners() {
 	$("#meta").on("click", saveOptions);
 	$("#autoLink").on("click", saveOptions);
 	$("#customResolver").on("click", saveOptions);
-	$("#syncData").on("click", syncHanler);
+	$("#syncData").on("click", syncHandler);
 
 	$("#options_tab").on("click", function() {
 		$("#content_options").css("display", "block");
@@ -121,7 +121,7 @@ function fetchOptions(params) {
 	chrome.runtime.sendMessage({cmd: "fetch_opts", cl: params.cl, csr: params.csr});
 }
 
-function syncHanler() {
+function syncHandler() {
 	/*
 	 * If sync has just been switched to enabled, make an attempt to populate
 	 * local storage with synced settings and then refresh page.

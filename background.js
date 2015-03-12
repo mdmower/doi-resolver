@@ -157,9 +157,8 @@ function fetchOptions(params) {
 			};
 			localStorage["sync_reset"] = false;
 			chrome.storage.sync.set({sync_reset: false}, function() {
-				var lastError = chrome.runtime.lastError;
-				if(typeof lastError != 'undefined') {
-					console.log(lastError);
+				if(typeof chrome.runtime.lastError != 'undefined') {
+					console.log(chrome.runtime.lastError);
 				}
 			});
 		} else {
@@ -185,13 +184,12 @@ function syncOptions() {
 	if(localStorage["sync_reset"] == "true") {
 		localStorage["sync_data"] = false;
 		chrome.storage.sync.clear(function() {
-			if(typeof lastError != 'undefined') {
-				console.log(lastError);
+			if(typeof chrome.runtime.lastError != 'undefined') {
+				console.log(chrome.runtime.lastError);
 			}
 			chrome.storage.sync.set({sync_reset: "true"}, function() {
-				var lastError = chrome.runtime.lastError;
-				if(typeof lastError != 'undefined') {
-					console.log(lastError);
+				if(typeof chrome.runtime.lastError != 'undefined') {
+					console.log(chrome.runtime.lastError);
 				}
 			});
 		});
@@ -209,9 +207,8 @@ function syncOptions() {
 		};
 
 		chrome.storage.sync.set(settingsBundle, function() {
-			var lastError = chrome.runtime.lastError;
-			if(typeof lastError != 'undefined') {
-				console.log(lastError);
+			if(typeof chrome.runtime.lastError != 'undefined') {
+				console.log(chrome.runtime.lastError);
 			}
 		});
 	}

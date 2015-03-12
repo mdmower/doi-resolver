@@ -133,7 +133,7 @@ function resolveURL(doi) {
 
 	if(useDefaultResolver) {
 		if(doi.match(/^10\./)) return "http://dx.doi.org/" + doi;
-		else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");	
+		else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");
 	} else {
 		if(doi.match(/^10\./)) return dr + doi;
 		else if(doi.match(/^10\//)) return sr + doi.replace(/^10\//,"");

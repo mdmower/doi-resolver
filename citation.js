@@ -130,12 +130,12 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 	});
 	$(select).data('options', options);
 	$(textbox).bind('change keyup', function() {
-		if ($(textbox).data('filtext') == $(textbox).val()) return;
+		if($(textbox).data('filtext') == $(textbox).val()) return;
 		$(textbox).data('filtext', $(textbox).val());
 
 		var scrollto = false;
 		var cursel = null;
-		if (select.selectedOptions.length > 0)
+		if(select.selectedOptions.length > 0)
 			cursel = select.selectedOptions[0].value;
 
 		var options = $(select).empty().scrollTop(0).data('options');

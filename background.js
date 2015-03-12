@@ -138,7 +138,7 @@ function fetchOptions(params) {
 	}
 
 	var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
-		"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
+		"cr_context", "cr_omnibox", "doi_resolver", "shortdoi_resolver",
 		"omnibox_tab", "al_protocol", "qr_size", "qr_fgcolor", "qr_bgcolor",
 		"qr_bgtrans", "cite_style", "cite_locale", "cr_bubble_last",
 		"custom_resolver", "sync_reset"];
@@ -196,7 +196,7 @@ function syncOptions() {
 	} else {
 		// Blacklist: sync_data, auto_link, qr_title
 		var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
-			"cr_context", "cr_omnibox",	"doi_resolver",	"shortdoi_resolver",
+			"cr_context", "cr_omnibox", "doi_resolver", "shortdoi_resolver",
 			"omnibox_tab", "al_protocol", "qr_size", "qr_fgcolor", "qr_bgcolor",
 			"qr_bgtrans", "cite_style", "cite_locale", "cr_bubble_last",
 			"custom_resolver"];
@@ -310,7 +310,7 @@ function resolveURL(doi, source) {
 
 	if(useDefaultResolver) {
 		if(doi.match(/^10\./)) return "http://dx.doi.org/" + doi;
-		else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");	
+		else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");
 	} else {
 		if(doi.match(/^10\./)) return dr + doi;
 		else if(doi.match(/^10\//)) return sr + doi.replace(/^10\//,"");
@@ -443,17 +443,17 @@ chrome.omnibox.onInputEntered.addListener( function (text, disposition) {
 	var ot = localStorage["omnibox_tab"];
 	var tabToUse;
 
-	if (disposition == "currentTab" && ot == "newfgtab") {
+	if(disposition == "currentTab" && ot == "newfgtab") {
 		tabToUse = "newForegroundTab";
-	} else if (disposition == "currentTab" && ot == "newbgtab") {
+	} else if(disposition == "currentTab" && ot == "newbgtab") {
 		tabToUse = "newBackgroundTab";
 	} else {
 		tabToUse = disposition;
 	}
 
-	if (tabToUse == "newForegroundTab") {
+	if(tabToUse == "newForegroundTab") {
 		chrome.tabs.create({url:resolveURL(doiInput, "omnibox")});
-	} else if (tabToUse == "newBackgroundTab") {
+	} else if(tabToUse == "newBackgroundTab") {
 		chrome.tabs.create({active: false, url:resolveURL(doiInput, "omnibox")});
 	} else {
 		navigate(resolveURL(doiInput, "omnibox"));

@@ -32,14 +32,14 @@ function replaceDOIsWithLinks() {
 
 function replaceInElement(element, find, replace) {
 	// iterate over child nodes in reverse, as replacement may increase length of child node list.
-	for (var i = element.childNodes.length; i-->0;) {
+	for(var i = element.childNodes.length; i-->0;) {
 		var child = element.childNodes[i];
-		if (child.nodeType==1) { // ELEMENT_NODE
+		if(child.nodeType==1) { // ELEMENT_NODE
 			var tag = child.nodeName.toLowerCase();
-			if (tag!='style' && tag!='script' && tag!='a' && tag!='input' && tag!='textarea') { // don't touch these elements
+			if(tag!='style' && tag!='script' && tag!='a' && tag!='input' && tag!='textarea') { // don't touch these elements
 				replaceInElement(child, find, replace);
 			}
-		} else if (child.nodeType==3) { // TEXT_NODE
+		} else if(child.nodeType==3) { // TEXT_NODE
 			replaceInText(child, find, replace);
 		}
 	}
@@ -48,11 +48,11 @@ function replaceInElement(element, find, replace) {
 function replaceInText(text, find, replace) {
 	var match;
 	var matches = [];
-	while (match = find.exec(text.data)) {
+	while(match = find.exec(text.data)) {
 		matches.push(match);
 	}
-	for (var i= matches.length; i-->0;) {
-		match= matches[i];
+	for(var i = matches.length; i-- > 0;) {
+		match = matches[i];
 		text.splitText(match.index);
 		text.nextSibling.splitText(match[0].length);
 		text.parentNode.replaceChild(replace(match), text.nextSibling);

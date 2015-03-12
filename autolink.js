@@ -30,16 +30,17 @@ function replaceDOIsWithLinks() {
 	});
 }
 
+// iterate over child nodes in reverse, as replacement may increase length of child node list.
 function replaceInElement(element, find, replace) {
-	// iterate over child nodes in reverse, as replacement may increase length of child node list.
-	for(var i = element.childNodes.length; i-->0;) {
+	// don't touch these elements
+	var forbiddenTags = ["a", "input", "script", "style", "textarea"];
+	for(var i = element.childNodes.length; i-- > 0;) {
 		var child = element.childNodes[i];
-		if(child.nodeType==1) { // ELEMENT_NODE
-			var tag = child.nodeName.toLowerCase();
-			if(tag!='style' && tag!='script' && tag!='a' && tag!='input' && tag!='textarea') { // don't touch these elements
+		if(child.nodeType == 1) { // ELEMENT_NODE
+			if(forbiddenTags.indexOf(child.nodeName.toLowerCase()) < 0) {
 				replaceInElement(child, find, replace);
 			}
-		} else if(child.nodeType==3) { // TEXT_NODE
+		} else if(child.nodeType == 3) { // TEXT_NODE
 			replaceInText(child, find, replace);
 		}
 	}

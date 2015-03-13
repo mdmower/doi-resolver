@@ -14,9 +14,13 @@
 	limitations under the License.
 */
 
+var tabIds = [];
+
 document.addEventListener('DOMContentLoaded', function () {
+	cleanupPerms();
 	checkForSettings();
 	fetchOptions({cl: false, fr: true, csr: false});
+	permRemoveListeners();
 }, false);
 
 // Set default options and rename old option names
@@ -370,10 +374,51 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			}
 			sendResponse({url: urlPrefix});
 			break;
+		case "set_tab_id":
+			tabIds.push(request.id);
+			break;
 		default:
 			break;
 	}
 });
+
+function cleanupPerms() {
+	chrome.permissions.remove({
+		origins: [
+			'http://*.doi.org/',
+			'http://*.crossref.org/',
+			'http://*.datacite.org/',
+			'https://raw.githubusercontent.com/'
+		]
+	}, function(removed) {
+		if(removed)
+			console.log("Permissions cleaned");
+		else
+			console.log("Unable to cleanup permissions");
+	});
+}
+
+function permRemoveListeners() {
+	chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+		var tabIndex = tabIds.indexOf(tabId);
+		if(tabIndex > -1) {
+			chrome.permissions.remove({
+				origins: [
+					'http://*.doi.org/',
+					'http://*.crossref.org/',
+					'http://*.datacite.org/',
+					'https://raw.githubusercontent.com/'
+				]
+			}, function(removed) {
+				if(removed)
+					console.log("Removed qr/citation-related permissions");
+				else
+					console.log("Unable to remove qr/citation-related permissions");
+			});
+			tabIds.splice(tabIndex, 1);
+		}
+	});
+}
 
 // Auto-link listeners
 function alListener(tab) {

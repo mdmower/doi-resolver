@@ -349,11 +349,13 @@ function setAutolinkPermission() {
 				$("#alProtocol").css("display", "none");
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				syncOptions();
+				console.log("Autolink permissions removed");
 			} else {
 				$("#autoLink").prop("checked", true);
 				$("#alProtocol").css("display", "block");
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				syncOptions();
+				console.log("Could not remove autolink permissions");
 			}
 		});
 	}

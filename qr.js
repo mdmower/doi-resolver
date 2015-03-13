@@ -40,6 +40,10 @@ function startListeners() {
 	});
 	$("#qrSizeInput").on("change", dbSaveOptions);
 	$("#qrManualTitle").on("click", toggleTitleFetch);
+
+	chrome.tabs.getCurrent(function(tab) {
+		chrome.runtime.sendMessage({cmd: "set_tab_id", id: tab.id});
+	});
 }
 
 // Read a page's GET URL variables and return them as an associative array.

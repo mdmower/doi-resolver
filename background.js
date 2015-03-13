@@ -14,8 +14,6 @@
 	limitations under the License.
 */
 
-var tabIds = [];
-
 document.addEventListener('DOMContentLoaded', function () {
 	cleanupPerms();
 	checkForSettings();
@@ -374,8 +372,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			}
 			sendResponse({url: urlPrefix});
 			break;
-		case "set_tab_id":
-			tabIds.push(request.id);
+		case "record_tab_id":
+			tabRecord(request.id, true);
 			break;
 		default:
 			break;
@@ -398,10 +396,21 @@ function cleanupPerms() {
 	});
 }
 
+function tabRecord(id, add) {
+	if(typeof tabRecord.openTabs == 'undefined')
+		tabRecord.openTabs = [];
+
+	if(add) {
+		tabRecord.openTabs.push(id);
+	} else {
+		var index = tabRecord.openTabs.indexOf(id);
+		tabRecord.openTabs.splice(index, 1);
+	}
+}
+
 function permRemoveListeners() {
 	chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-		var tabIndex = tabIds.indexOf(tabId);
-		if(tabIndex > -1) {
+		if(typeof tabRecord.openTabs != 'undefined' && tabRecord.openTabs.indexOf(tabId) >= 0) {
 			chrome.permissions.remove({
 				origins: [
 					'http://*.doi.org/',
@@ -415,7 +424,7 @@ function permRemoveListeners() {
 				else
 					console.log("Unable to remove qr/citation-related permissions");
 			});
-			tabIds.splice(tabIndex, 1);
+			tabRecord(tabId, false);
 		}
 	});
 }

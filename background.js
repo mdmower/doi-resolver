@@ -421,13 +421,34 @@ function permRemoveListeners() {
 }
 
 // Auto-link listeners
-function alListener(tab) {
-	chrome.tabs.executeScript(tab.id, {file: "autolink.js"});
+function alListener(tabId, changeInfo, tab) {
+	chrome.permissions.contains({
+		origins: [ 'http://*/*', 'https://*/*' ]
+	}, function(result) {
+		if(result && tab.url.indexOf("http") == 0) {
+			chrome.tabs.executeScript(tabId, {file: "autolink.js"});
+		} else {
+			chrome.permissions.contains({
+				origins: [ 'http://*/*' ]
+			}, function(result) {
+				if(result && tab.url.indexOf("http") == 0 && tab.url.indexOf("https") == -1) {
+					chrome.tabs.executeScript(tabId, {file: "autolink.js"});
+				} else {
+					chrome.permissions.contains({
+						origins: [ 'https://*/*' ]
+					}, function(result) {
+						if(result && tab.url.indexOf("https") == 0) {
+							chrome.tabs.executeScript(tabId, {file: "autolink.js"});
+						}
+					});
+				}
+			});
+		}
+	});
 }
 
 function autoLinkDOIs() {
 	chrome.tabs.onUpdated.removeListener(alListener);
-	chrome.tabs.onCreated.removeListener(alListener);
 
 	chrome.permissions.contains({
 		permissions: [ 'tabs' ],
@@ -438,8 +459,7 @@ function autoLinkDOIs() {
 			localStorage["al_protocol"] = "httphttps";
 			syncOptions();
 			chrome.tabs.onUpdated.addListener(alListener);
-			chrome.tabs.onCreated.addListener(alListener);
-			console.log('autolink listeners enabled for http and https');
+			console.log('Autolink listeners enabled for http and https');
 		} else {
 			chrome.permissions.contains({
 				permissions: [ 'tabs' ],
@@ -450,8 +470,7 @@ function autoLinkDOIs() {
 					localStorage["al_protocol"] = "http";
 					syncOptions();
 					chrome.tabs.onUpdated.addListener(alListener);
-					chrome.tabs.onCreated.addListener(alListener);
-					console.log('autolink listeners enabled for http');
+					console.log('Autolink listeners enabled for http');
 				} else {
 					chrome.permissions.contains({
 						permissions: [ 'tabs' ],
@@ -462,11 +481,10 @@ function autoLinkDOIs() {
 							localStorage["al_protocol"] = "https";
 							syncOptions();
 							chrome.tabs.onUpdated.addListener(alListener);
-							chrome.tabs.onCreated.addListener(alListener);
-							console.log('autolink listeners enabled for https');
+							console.log('Autolink listeners enabled for https');
 						} else {
 							localStorage["auto_link"] = false;
-							console.log('autolink listeners disabled');
+							console.log('Autolink listeners disabled');
 						}
 					});
 				}

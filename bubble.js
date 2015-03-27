@@ -108,8 +108,14 @@ function formSubmitHandler() {
 		window.close();
 		break;
 	case "options":
-		chrome.tabs.create({url:"options.html"});
-		window.close();
+		if(chrome.runtime.openOptionsPage) {
+			chrome.runtime.openOptionsPage(function() {
+				window.close();
+			});
+		} else {
+			chrome.tabs.create({url:"options.html"});
+			window.close();
+		}
 		break;
 	default:
 		break;

@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		$("#doiInput").attr("value", initDOI);
 	}
 
-	getLocalMessages()
+	getLocalMessages();
 	initLocales(true, buildSelections);
 	startListeners();
 }, false);
@@ -31,9 +31,6 @@ function startListeners() {
 		return false;
 	});
 	$('#copyButton').on("click", copyCitation);
-	$(function() {
-		$('#styleList').filterByText($('#citeStyleFilter'), true);
-	});
 
 	chrome.tabs.getCurrent(function(tab) {
 		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
@@ -140,6 +137,9 @@ function buildSelections(allLocales, localesMap) {
 		styleHtmlOptions.appendTo("#styleList");
 	}
 	$("#styleList option:selected")[0].scrollIntoView();
+	$(function() {
+		$('#styleList').filterByText($('#citeStyleFilter'), true);
+	});
 }
 
 // jQuery select filter: http://www.lessanvaezi.com/filter-select-list-options/

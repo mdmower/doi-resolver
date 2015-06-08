@@ -20,8 +20,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		$("#doiInput").attr("value", initDOI);
 	}
 
-	getLocalMessages()
-	buildSelections();
+	getLocalMessages();
+	initLocales(true, buildSelections);
 	startListeners();
 }, false);
 
@@ -31,9 +31,6 @@ function startListeners() {
 		return false;
 	});
 	$('#copyButton').on("click", copyCitation);
-	$(function() {
-		$('#styleList').filterByText($('#citeStyleFilter'), true);
-	});
 
 	chrome.tabs.getCurrent(function(tab) {
 		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
@@ -53,19 +50,35 @@ function getUrlVars() {
 	return vars;
 }
 
-function localeCodeToEnglish(loc) {
-	var citeproc_js_langs = {"af-ZA":"Afrikaans","ar":"Arabic","bg-BG":"Bulgarian","ca-AD":"Catalan","cs-CZ":"Czech","cy-GB":"Welsh","da-DK":"Danish","de-AT":"German (Austria)","de-CH":"German (Switzerland)","de-DE":"German (Germany)","el-GR":"Greek","en-GB":"English (British)","en-US":"English (US)","es-CL":"Spanish (Chile)","es-ES":"Spanish (Spain)","et-EE":"Estonian","eu":"Basque","fa-IR":"Persian","fi-FI":"Finnish","fr-CA":"French (Canada)","fr-FR":"French (France)","he-IL":"Hebrew","hr-HR":"Croatian","hu-HU":"Hungarian","is-IS":"Icelandic","it-IT":"Italian","ja-JP":"Japanese","km-KH":"Khmer","ko-KR":"Korean","lt-LT":"Lithuanian","lv-LV":"Latvian","mn-MN":"Mongolian","nb-NO":"Norwegian (Bokmål)","nl-NL":"Dutch","nn-NO":"Norwegian (Nynorsk)","pl-PL":"Polish","pt-BR":"Portuguese (Brazil)","pt-PT":"Portuguese (Portugal)","ro-RO":"Romanian","ru-RU":"Russian","sk-SK":"Slovak","sl-SL":"Slovenian","sr-RS":"Serbian","sv-SE":"Swedish","th-TH":"Thai","tr-TR":"Turkish","uk-UA":"Ukrainian","vi-VN":"Vietnamese","zh-CN":"Chinese (PRC)","zh-TW":"Chinese (Taiwan)"};
-	return citeproc_js_langs[loc];
+function initLocales(needsMap, callback) {
+	if(!callback || typeof(callback) !== "function")
+		return;
+
+	var args = [].slice.call(arguments, 2);
+
+	$.getJSON("csl_locales/locales.json")
+	.done(function(data) {
+		var langList = $.map(data["primary-dialects"], function(el) {
+			return el;
+		});
+
+		args.push(langList);
+		if (needsMap)
+			args.push(data["language-names"]);
+
+		callback.apply(null, args);
+	})
+	.fail(function() {
+		args.push(["en-US"]);
+		if(needsMap)
+			args.push({"en-US": ["English (US)", "English (US)"]});
+
+		callback.apply(null, args);
+	});
 }
 
-function getAllLocales() {
-	return ["af-ZA","ar","bg-BG","ca-AD","cs-CZ","cy-GB","da-DK","de-AT","de-CH","de-DE","el-GR","en-GB","en-US","es-CL","es-ES","et-EE","eu","fa-IR","fi-FI","fr-CA","fr-FR","he-IL","hr-HR","hu-HU","is-IS","it-IT","ja-JP","km-KH","ko-KR","lt-LT","lv-LV","mn-MN","nb-NO","nl-NL","nn-NO","pl-PL","pt-BR","pt-PT","ro-RO","ru-RU","sk-SK","sl-SL","sr-RS","sv-SE","th-TH","tr-TR","uk-UA","vi-VN","zh-CN","zh-TW"];
-}
-
-function buildSelections() {
-	// Locales
+function buildSelections(allLocales, localesMap) {
 	var storedLocale = localStorage["cite_locale"];
-	var allLocales = getAllLocales();
 
 	if(allLocales.indexOf(storedLocale) < 0) {
 		storedLocale = "auto";
@@ -73,10 +86,13 @@ function buildSelections() {
 		syncOptions();
 	}
 
+	/* To do: Offer option to display locales in their native language;
+	   Retrieved with localesMap[allLocales[i]][0]] */
 	var readableLocales = [];
 	for(var i = 0; i < allLocales.length; i++) {
-		readableLocales[i] = [allLocales[i], localeCodeToEnglish(allLocales[i])];
+		readableLocales[i] = [allLocales[i], localesMap[allLocales[i]][1]];
 	}
+
 	readableLocales.sort( function( a, b ) {
 		if(a[1] == b[1]) {
 			return 0;
@@ -121,6 +137,9 @@ function buildSelections() {
 		styleHtmlOptions.appendTo("#styleList");
 	}
 	$("#styleList option:selected")[0].scrollIntoView();
+	$(function() {
+		$('#styleList').filterByText($('#citeStyleFilter'), true);
+	});
 }
 
 // jQuery select filter: http://www.lessanvaezi.com/filter-select-list-options/
@@ -269,7 +288,7 @@ function getCitation(doi) {
 			jqxhr.done(function() {
 				if(jqxhr.responseText != "" && jqxhr.responseText.charAt(0) != '<') {
 					var citation = JSON.parse(jqxhr.responseText);
-					renderBib(citation, style, locale);
+					initLocales(false, renderBib, citation, style, locale);
 				} else {
 					simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 				}
@@ -283,8 +302,7 @@ function getCitation(doi) {
 	});
 }
 
-function renderBib(citation, style, locale) {
-	var allLocales = getAllLocales();
+function renderBib(citation, style, locale, allLocales) {
 	var lang = locale;
 	var citations = {
 		"Item-1": $.extend({}, { "id": "Item-1" }, citation)

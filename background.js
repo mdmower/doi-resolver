@@ -21,104 +21,68 @@ document.addEventListener('DOMContentLoaded', function () {
 	permRemoveListeners();
 }, false);
 
-// Set default options and rename old option names
-function setDefaultOption(opt) {
-	switch(opt) {
-	case 'cm':
-		localStorage["context_menu"] = true;
-		break;
-	case 'meta':
-		localStorage["meta_buttons"] = true;
-		break;
-	case 'cr':
-		localStorage["custom_resolver"] = false;
-		break;
-	case 'cra':
-		localStorage["cr_autolink"] = "custom";
-		break;
-	case 'crb':
-		localStorage["cr_bubble"] = "custom";
-		localStorage["cr_bubble_last"] = "custom";
-		break;
-	case 'crc':
-		localStorage["cr_context"] = "custom";
-		break;
-	case 'cro':
-		localStorage["cr_omnibox"] = "custom";
-		break;
-	case 'dr':
-		localStorage["doi_resolver"] = "http://dx.doi.org/";
-		break;
-	case 'sdr':
-		localStorage["shortdoi_resolver"] = "http://doi.org/";
-		break;
-	case 'ot':
-		localStorage["omnibox_tab"] = "newfgtab";
-		break;
-	case 'al':
-		localStorage["auto_link"] = false;
-		break;
-	case 'alp':
-		localStorage["al_protocol"] = "http";
-		break;
-	case 'qrTitle':
-		localStorage["qr_title"] = false;
-		break;
-	case 'qrSize':
-		localStorage["qr_size"] = "300";
-		break;
-	case 'qrFgColor':
-		localStorage["qr_fgcolor"] = "#000000";
-		break;
-	case 'qrBgColor':
-		localStorage["qr_bgcolor"] = "#ffffff";
-		break;
-	case 'qrBgTrans':
-		localStorage["qr_bgtrans"] = false;
-		break;
-	case 'cs':
-		localStorage["cite_style"] = "bibtex";
-		break;
-	case 'cl':
-		localStorage["cite_locale"] = "auto";
-		break;
-	case 'sd':
-		localStorage["sync_data"] = false;
-		break;
-	case 'sr':
-		localStorage["sync_reset"] = false;
-		break;
-	default:
-		break;
+function getDefaultOption(opt) {
+	defaultOptions = {
+		al_protocol: "http",
+		auto_link: false,
+		cite_locale: "auto",
+		cite_style: "bibtex",
+		context_menu: true,
+		cr_autolink: "custom",
+		cr_bubble: "custom",
+		cr_bubble_last: "custom",
+		cr_context: "custom",
+		cr_omnibox: "custom",
+		custom_resolver: false,
+		doi_resolver: "http://dx.doi.org/",
+		meta_buttons: true,
+		omnibox_tab: "newfgtab",
+		qr_bgcolor: "#ffffff",
+		qr_bgtrans: false,
+		qr_fgcolor: "#000000",
+		qr_size: "300",
+		qr_title: false,
+		shortdoi_resolver: "http://doi.org/",
+		sync_data: false,
+		sync_reset: false
 	}
+
+	if(typeof defaultOptions[opt] !== 'undefined')
+		return defaultOptions[opt];
+
+	return false;
 }
 
 function checkForSettings() {
-	// Set on options page
-	if(typeof localStorage["context_menu"] == 'undefined') setDefaultOption('cm');
-	if(typeof localStorage["meta_buttons"] == 'undefined') setDefaultOption('meta');
-	if(typeof localStorage["custom_resolver"] == 'undefined') setDefaultOption('cr');
-	if(typeof localStorage["cr_autolink"] == 'undefined') setDefaultOption('cra');
-	if(typeof localStorage["cr_bubble"] == 'undefined') setDefaultOption('crb');
-	if(typeof localStorage["cr_context"] == 'undefined') setDefaultOption('crc');
-	if(typeof localStorage["cr_omnibox"] == 'undefined') setDefaultOption('cro');
-	if(typeof localStorage["doi_resolver"] == 'undefined') setDefaultOption('dr');
-	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sdr');
-	if(typeof localStorage["omnibox_tab"] == 'undefined') setDefaultOption('ot');
-	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
-	if(typeof localStorage["al_protocol"] == 'undefined') setDefaultOption('alp');
-	if(typeof localStorage["sync_data"] == 'undefined') setDefaultOption('sd');
-	if(typeof localStorage["sync_reset"] == 'undefined') setDefaultOption('sr');
+	options = [
+		"al_protocol",
+		"auto_link",
+		"cite_locale",
+		"cite_style",
+		"context_menu",
+		"cr_autolink",
+		"cr_bubble",
+		"cr_bubble_last",
+		"cr_context",
+		"cr_omnibox",
+		"custom_resolver",
+		"doi_resolver",
+		"meta_buttons",
+		"omnibox_tab",
+		"qr_bgcolor",
+		"qr_bgtrans",
+		"qr_fgcolor",
+		"qr_size",
+		"qr_title",
+		"shortdoi_resolver",
+		"sync_data",
+		"sync_reset"
+	];
 
-	// Set elsewhere
-	if(typeof localStorage["qr_title"] == 'undefined') setDefaultOption('qrTitle');
-	if(typeof localStorage["qr_size"] == 'undefined') setDefaultOption('qrSize');
-	if(typeof localStorage["qr_fgcolor"] == 'undefined') setDefaultOption('qrFgColor');
-	if(typeof localStorage["qr_bgcolor"] == 'undefined') setDefaultOption('qrBgColor');
-	if(typeof localStorage["qr_bgtrans"] == 'undefined') setDefaultOption('qrBgTrans');
-	if(typeof localStorage["cite_style"] == 'undefined') setDefaultOption('cs');
-	if(typeof localStorage["cite_locale"] == 'undefined') setDefaultOption('cl');
-	if(typeof localStorage["cr_bubble_last"] == 'undefined') setDefaultOption('crb');
+	for(var i = 0; i < options.length; i++) {
+		if(typeof localStorage[options[i]] === 'undefined')
+			localStorage[options[i]] = getDefaultOption(options[i]);
+	}
 
 	syncOptions();
 }

@@ -15,12 +15,43 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
+	storage(true);
+}, false);
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+	switch(request.cmd) {
+		case "sync_toggle_complete":
+			storage(false);
+			break;
+		default:
+			break;
+	}
+});
+
+function storage(firstRun) {
+	if(typeof storage.area === 'undefined') {
+		storage.area = chrome.storage.local;
+	}
+
+	chrome.storage.local.get(["sync_data"], function(stg) {
+		if(stg["sync_data"] === true) {
+			storage.area = chrome.storage.sync;
+		} else {
+			storage.area = chrome.storage.local;
+		}
+
+		if(firstRun === true)
+			continueOnLoad();
+	});
+}
+
+function continueOnLoad() {
 	getLocalMessages();
 	getUrlVariables();
 	restoreOptions();
 	prepareColorPickers();
 	startListeners();
-}, false);
+}
 
 function startListeners() {
 	/*
@@ -33,7 +64,15 @@ function startListeners() {
 		formSubmitHandler();
 		return false;
 	});
-	$("#qrBgTrans").on("click", saveOptions);
+	$("#qrBgTrans").on("click", function() {
+		saveOptions();
+
+		if($("#qrBgTrans").is(":checked")) {
+			$("#bgColorDiv").css("display", "none");
+		} else {
+			$("#bgColorDiv").css("display", "block");
+		}
+	});
 	$("#qrFetchTitle").on("click", setCrossrefPermission);
 	$(".numeric").keyup(function () {
 		this.value = this.value.replace(/[^0-9]/g,'');
@@ -63,24 +102,29 @@ function getUrlVariables() {
 	}
 }
 
-function syncOptions() {
-	chrome.runtime.sendMessage({cmd: "sync_opts"});
-}
-
 function restoreOptions() {
-	var qrSize = localStorage["qr_size"];
-	if(isNaN(qrSize)) {
-		$("#qrSizeInput").val(300);
-	} else {
-		$("#qrSizeInput").val(qrSize);
-	}
-	if(localStorage["qr_title"] == "true") {
-		$("#qrFetchTitle").prop("checked", true);
-	}
-	if(localStorage["qr_bgtrans"] == "true") {
-		$("#qrBgTrans").prop("checked", true);
-		$("#bgColorDiv").css("display", "none");
-	}
+	var stgFetch = [
+		"qr_size",
+		"qr_bgtrans"
+	];
+
+	chrome.storage.local.get(["qr_title"], function(stgLocal) {
+	storage.area.get(stgFetch, function(stg) {
+		var qrSize = stg["qr_size"];
+		if(isNaN(qrSize)) {
+			$("#qrSizeInput").val(300);
+		} else {
+			$("#qrSizeInput").val(qrSize);
+		}
+		if(stgLocal["qr_title"] === true) {
+			$("#qrFetchTitle").prop("checked", true);
+		}
+		if(stg["qr_bgtrans"] === true) {
+			$("#qrBgTrans").prop("checked", true);
+			$("#bgColorDiv").css("display", "none");
+		}
+	});
+	});
 }
 
 function isHexColor(code) {
@@ -88,62 +132,76 @@ function isHexColor(code) {
 }
 
 function prepareColorPickers() {
-	var qrFgColor = "#000000";
-	var storedQrFgColor = localStorage["qr_fgcolor"];
-	if(isHexColor(storedQrFgColor)) {
-		qrFgColor = storedQrFgColor;
-	}
-	$("#qrFgColorInput").val(qrFgColor);
+	var stgFetch = [
+		"qr_fgcolor",
+		"qr_bgcolor"
+	];
 
-	var qrBgColor = "#ffffff";
-	var storedQrBgColor = localStorage["qr_bgcolor"];
-	if(isHexColor(storedQrBgColor)) {
-		qrBgColor = storedQrBgColor;
-	}
-	$("#qrBgColorInput").val(qrBgColor);
+	storage.area.get(stgFetch, function(stg) {
 
-	$("#qrFgColorInput").spectrum({
-		color: qrFgColor,
-		preferredFormat: "hex",
-		showInput: true,
-		clickoutFiresChange: true,
-		replacerClassName: "qrColorReplacerClass",
-		containerClassName: "qrColorContainerClass",
-		change: function(color) {
-			saveOptions()
+		var qrFgColor = "#000000";
+		var storedQrFgColor = stg["qr_fgcolor"];
+		if(isHexColor(storedQrFgColor)) {
+			qrFgColor = storedQrFgColor;
+		} else {
+			chrome.storage.local.set({qr_fgcolor: qrFgColor}, function() {
+				if(typeof chrome.runtime.lastError != 'undefined') {
+					console.log(chrome.runtime.lastError);
+				}
+			});
 		}
-	});
+		$("#qrFgColorInput").val(qrFgColor);
 
-	$("#qrBgColorInput").spectrum({
-		color: qrBgColor,
-		preferredFormat: "hex",
-		showInput: true,
-		clickoutFiresChange: true,
-		replacerClassName: "qrColorReplacerClass",
-		containerClassName: "qrColorContainerClass",
-		change: function(color) {
-			saveOptions()
+		var qrBgColor = "#ffffff";
+		var storedQrBgColor = stg["qr_bgcolor"];
+		if(isHexColor(storedQrBgColor)) {
+			qrBgColor = storedQrBgColor;
+		} else {
+			chrome.storage.local.set({qr_bgcolor: qrBgColor}, function() {
+				if(typeof chrome.runtime.lastError != 'undefined') {
+					console.log(chrome.runtime.lastError);
+				}
+			});
 		}
+		$("#qrBgColorInput").val(qrBgColor);
+
+		$("#qrFgColorInput").spectrum({
+			color: qrFgColor,
+			preferredFormat: "hex",
+			showInput: true,
+			clickoutFiresChange: true,
+			replacerClassName: "qrColorReplacerClass",
+			containerClassName: "qrColorContainerClass",
+			change: function(color) {
+				saveOptions()
+			}
+		});
+
+		$("#qrBgColorInput").spectrum({
+			color: qrBgColor,
+			preferredFormat: "hex",
+			showInput: true,
+			clickoutFiresChange: true,
+			replacerClassName: "qrColorReplacerClass",
+			containerClassName: "qrColorContainerClass",
+			change: function(color) {
+				saveOptions()
+			}
+		});
+
 	});
 }
 
 function saveOptions() {
-	if($("#qrFetchTitle").is(":checked")) {
-		localStorage["qr_title"] = true;
-	} else {
-		localStorage["qr_title"] = false;
+	var options = {
+		qr_bgtrans: $("#qrBgTrans").is(":checked"),
+		qr_size: $("#qrSizeInput").val(),
+		qr_fgcolor: $("#qrFgColorInput").val(),
+		qr_bgcolor: $("#qrBgColorInput").val(),
+		qr_title: $("#qrFetchTitle").is(":checked")
 	}
-	if($("#qrBgTrans").is(":checked")) {
-		localStorage["qr_bgtrans"] = true;
-		$("#bgColorDiv").css("display", "none");
-	} else {
-		localStorage["qr_bgtrans"] = false;
-		$("#bgColorDiv").css("display", "block");
-	}
-	localStorage["qr_size"] = $("#qrSizeInput").val();
-	localStorage["qr_fgcolor"] = $("#qrFgColorInput").val();
-	localStorage["qr_bgcolor"] = $("#qrBgColorInput").val();
-	syncOptions();
+
+	chrome.storage.local.set(options, null);
 }
 
 function toggleTitleFetch() {

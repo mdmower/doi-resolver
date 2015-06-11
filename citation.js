@@ -15,6 +15,37 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
+	storage(true);
+}, false);
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+	switch(request.cmd) {
+		case "sync_toggle_complete":
+			storage(false);
+			break;
+		default:
+			break;
+	}
+});
+
+function storage(firstRun) {
+	if(typeof storage.area === 'undefined') {
+		storage.area = chrome.storage.local;
+	}
+
+	chrome.storage.local.get(["sync_data"], function(stg) {
+		if(stg["sync_data"] === true) {
+			storage.area = chrome.storage.sync;
+		} else {
+			storage.area = chrome.storage.local;
+		}
+
+		if(firstRun === true)
+			continueOnLoad();
+	});
+}
+
+function continueOnLoad() {
 	var initDOI = getUrlVars()["doi"];
 	if(initDOI) {
 		$("#doiInput").attr("value", initDOI);
@@ -23,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	getLocalMessages();
 	initLocales(true, buildSelections);
 	startListeners();
-}, false);
+}
 
 function startListeners() {
 	$('#citeForm').submit(function () {
@@ -63,7 +94,7 @@ function initLocales(needsMap, callback) {
 		});
 
 		args.push(langList);
-		if (needsMap)
+		if(needsMap)
 			args.push(data["language-names"]);
 
 		callback.apply(null, args);
@@ -78,67 +109,67 @@ function initLocales(needsMap, callback) {
 }
 
 function buildSelections(allLocales, localesMap) {
-	var storedLocale = localStorage["cite_locale"];
+	var stgFetch = [
+		"cite_locale",
+		"cite_style"
+	];
 
-	if(allLocales.indexOf(storedLocale) < 0) {
-		storedLocale = "auto";
-		localStorage["cite_locale"] = "auto";
-		syncOptions();
-	}
+	storage.area.get(stgFetch, function(stg) {
+		var storedLocale = stg["cite_locale"];
+		var storedStyle = stg["cite_style"];
 
-	/* To do: Offer option to display locales in their native language;
-	   Retrieved with localesMap[allLocales[i]][0]] */
-	var readableLocales = [];
-	for(var i = 0; i < allLocales.length; i++) {
-		readableLocales[i] = [allLocales[i], localesMap[allLocales[i]][1]];
-	}
-
-	readableLocales.sort( function( a, b ) {
-		if(a[1] == b[1]) {
-			return 0;
+		if(allLocales.indexOf(storedLocale) < 0) {
+			storedLocale = "auto";
+			chrome.storage.local.set({cite_locale: "auto"}, null);
 		}
-		return a[1] < b[1] ? -1 : 1;
-	});
 
-	var localeHtmlOptions = $('<option>').attr("value", "auto").html("Auto");
-	if("auto" == storedLocale) {
-		localeHtmlOptions.attr("selected", "selected");
-	}
-	localeHtmlOptions.appendTo("#citeLocaleInput");
+		/* To do: Offer option to display locales in their native language;
+		   Retrieved with localesMap[allLocales[i]][0]] */
+		var readableLocales = [];
+		for(var i = 0; i < allLocales.length; i++) {
+			readableLocales[i] = [allLocales[i], localesMap[allLocales[i]][1]];
+		}
 
-	for(var i = 0; i < allLocales.length; i++) {
-		localeHtmlOptions = $('<option>').attr("value", readableLocales[i][0]).html(readableLocales[i][1]);
-		if(readableLocales[i][0] == storedLocale) {
+		readableLocales.sort( function( a, b ) {
+			if(a[1] == b[1]) {
+				return 0;
+			}
+			return a[1] < b[1] ? -1 : 1;
+		});
+
+		var localeHtmlOptions = $('<option>').attr("value", "auto").html("Auto");
+		if("auto" == storedLocale)
 			localeHtmlOptions.attr("selected", "selected");
-		}
+
 		localeHtmlOptions.appendTo("#citeLocaleInput");
-	}
 
-	// Migration from short+long styles list to just long list
-	if(typeof localStorage["cite_other_style"] != 'undefined') {
-		localStorage.removeItem("cite_other_style");
-	}
-
-	var storedStyle = localStorage["cite_style"];
-	// Style not found or "other" (migration)
-	if(allStyleCodes.indexOf(storedStyle) < 0) {
-		storedStyle = "bibtex";
-		localStorage["cite_style"] = "bibtex";
-		syncOptions();
-	}
-
-	var styleHtmlOptions;
-	for(var i = 0; i < allStyleCodes.length; i++) {
-		styleHtmlOptions = $('<option>').attr("value", allStyleCodes[i]);
-		styleHtmlOptions.html(allStyleTitles[i]);
-		if(allStyleCodes[i] == storedStyle) {
-			styleHtmlOptions.attr("selected", "selected");
+		for(i = 0; i < allLocales.length; i++) {
+			localeHtmlOptions = $('<option>').attr("value", readableLocales[i][0]).html(readableLocales[i][1]);
+			if(readableLocales[i][0] == storedLocale) {
+				localeHtmlOptions.attr("selected", "selected");
+			}
+			localeHtmlOptions.appendTo("#citeLocaleInput");
 		}
-		styleHtmlOptions.appendTo("#styleList");
-	}
-	$("#styleList option:selected")[0].scrollIntoView();
-	$(function() {
-		$('#styleList').filterByText($('#citeStyleFilter'), true);
+
+		// Style not found or "other" (migration)
+		if(allStyleCodes.indexOf(storedStyle) < 0) {
+			storedStyle = "bibtex";
+			chrome.storage.local.set({cite_style: "bibtex"}, null);
+		}
+
+		var styleHtmlOptions;
+		for(i = 0; i < allStyleCodes.length; i++) {
+			styleHtmlOptions = $('<option>').attr("value", allStyleCodes[i]);
+			styleHtmlOptions.html(allStyleTitles[i]);
+			if(allStyleCodes[i] == storedStyle) {
+				styleHtmlOptions.attr("selected", "selected");
+			}
+			styleHtmlOptions.appendTo("#styleList");
+		}
+		$("#styleList option:selected")[0].scrollIntoView();
+		$(function() {
+			$('#styleList').filterByText($('#citeStyleFilter'), true);
+		});
 	});
 }
 
@@ -205,14 +236,13 @@ function formSubmitHandler() {
 	getCitation(doi);
 }
 
-function syncOptions() {
-	chrome.runtime.sendMessage({cmd: "sync_opts"});
-}
-
 function saveSelections() {
-	localStorage["cite_style"] = $("#styleList option:selected").val();
-	localStorage["cite_locale"] = $("#citeLocaleInput option:selected").val();
-	syncOptions();
+	var options = {
+		cite_style: $("#styleList option:selected").val(),
+		cite_locale: $("#citeLocaleInput option:selected").val()
+	}
+
+	chrome.storage.local.set(options, null);
 }
 
 function checkValidDoi(doiInput) {

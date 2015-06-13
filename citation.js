@@ -46,11 +46,7 @@ function storage(firstRun) {
 }
 
 function continueOnLoad() {
-	var initDOI = getUrlVars()["doi"];
-	if(initDOI) {
-		$("#doiInput").attr("value", initDOI);
-	}
-
+	getUrlVariables();
 	getLocalMessages();
 	initLocales(true, buildSelections);
 	startListeners();
@@ -70,7 +66,7 @@ function startListeners() {
 
 // Read a page's GET URL variables and return them as an associative array.
 // http://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
-function getUrlVars() {
+function getUrlVariables() {
 	var vars = [], hash;
 	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
 	for(var i = 0; i < hashes.length; i++) {
@@ -78,7 +74,11 @@ function getUrlVars() {
 		vars.push(hash[0]);
 		vars[hash[0]] = hash[1];
 	}
-	return vars;
+
+	var initDOI = vars["doi"];
+	if(initDOI) {
+		$("#doiInput").val(initDOI);
+	}
 }
 
 function initLocales(needsMap, callback) {

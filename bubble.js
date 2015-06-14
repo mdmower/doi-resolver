@@ -84,7 +84,7 @@ function restoreOptions() {
 	var stgFetch = ["cr_bubble_last"];
 
 	storage.area.get(stgFetch, function(stg) {
-		if(stg["cr_bubble_last"] == "custom") {
+		if(stg["cr_bubble_last"] === "custom") {
 			$("#crRadioBubbleCustom").prop("checked", true);
 		} else {
 			$("#crRadioBubbleDefault").prop("checked", true);
@@ -172,9 +172,9 @@ function resolveURL(doi) {
 		var sr = stg["shortdoi_resolver"];
 		var useDefaultResolver = true;
 
-		if(cr === true && crb == "custom") {
+		if(cr === true && crb === "custom") {
 			useDefaultResolver = false;
-		} else if(cr === true && crb == 'selectable' && crbl == 'custom') {
+		} else if(cr === true && crb === 'selectable' && crbl === 'custom') {
 			useDefaultResolver = false;
 		}
 
@@ -230,7 +230,7 @@ function showHideOptionalElms() {
 			$("#metaButtons").css("display", "none");
 		}
 
-		if(crOp === true && crbOp == "selectable") {
+		if(crOp === true && crbOp === "selectable") {
 			$("#crRadios").css("display", "block");
 		} else {
 			$("#crRadios").css("display", "none");

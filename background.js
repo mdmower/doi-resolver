@@ -427,7 +427,7 @@ function contextMenuResolve(info) {
 	storage.area.get(stgFetch, function(stg) {
 		var cr = stg["custom_resolver"];
 		var crc = stg["cr_context"];
-		if(cr === true && crc == "custom") {
+		if(cr === true && crc === "custom") {
 			resolveDOI(doiInput, true, "newForegroundTab");
 		} else {
 			resolveDOI(doiInput, false, "newForegroundTab");
@@ -470,7 +470,7 @@ function cleanupPerms() {
 }
 
 function tabRecord(id, add) {
-	if(typeof tabRecord.openTabs == 'undefined')
+	if(typeof tabRecord.openTabs === 'undefined')
 		tabRecord.openTabs = [];
 
 	if(add) {
@@ -513,7 +513,7 @@ function alListener(tabId, changeInfo, tab) {
 			chrome.permissions.contains({
 				origins: [ 'http://*/*' ]
 			}, function(result) {
-				if(result && tab.url.indexOf("http") == 0 && tab.url.indexOf("https") == -1) {
+				if(result && tab.url.indexOf("http") == 0 && tab.url.indexOf("https") < 0) {
 					chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 				} else {
 					chrome.permissions.contains({
@@ -622,7 +622,7 @@ function omniListener(text, disposition) {
 				break;
 		}
 
-		if(cr === true && cro == "custom") {
+		if(cr === true && cro === "custom") {
 			resolveDOI(doiInput, true, tab);
 		} else {
 			resolveDOI(doiInput, false, tab);

@@ -138,14 +138,15 @@ function buildSelections(allLocales, localesMap) {
 		});
 
 		var localeHtmlOptions = $('<option>').attr("value", "auto").html("Auto");
-		if("auto" == storedLocale)
+		if("auto" === storedLocale) {
 			localeHtmlOptions.attr("selected", "selected");
+		}
 
 		localeHtmlOptions.appendTo("#citeLocaleInput");
 
 		for(i = 0; i < allLocales.length; i++) {
 			localeHtmlOptions = $('<option>').attr("value", readableLocales[i][0]).html(readableLocales[i][1]);
-			if(readableLocales[i][0] == storedLocale) {
+			if(readableLocales[i][0] === storedLocale) {
 				localeHtmlOptions.attr("selected", "selected");
 			}
 			localeHtmlOptions.appendTo("#citeLocaleInput");
@@ -161,7 +162,7 @@ function buildSelections(allLocales, localesMap) {
 		for(i = 0; i < allStyleCodes.length; i++) {
 			styleHtmlOptions = $('<option>').attr("value", allStyleCodes[i]);
 			styleHtmlOptions.html(allStyleTitles[i]);
-			if(allStyleCodes[i] == storedStyle) {
+			if(allStyleCodes[i] === storedStyle) {
 				styleHtmlOptions.attr("selected", "selected");
 			}
 			styleHtmlOptions.appendTo("#styleList");
@@ -189,8 +190,9 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 
 		var scrollto = false;
 		var cursel = null;
-		if(select.selectedOptions.length > 0)
+		if(select.selectedOptions.length > 0) {
 			cursel = select.selectedOptions[0].value;
+		}
 
 		var options = $(select).empty().scrollTop(0).data('options');
 		var search = $.trim($(this).val());
@@ -214,7 +216,7 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 		$(select).html(option_html);
 		if(selectSingleMatch === true && $(select).children().length === 1) {
 			$(select).children().get(0).selected = true;
-		} else if(scrollto == true) {
+		} else if(scrollto === true) {
 			select.selectedOptions[0].scrollIntoView();
 		}
 	});
@@ -228,7 +230,7 @@ function trim(stringToTrim) {
 function formSubmitHandler() {
 	var doi = escape(trim(document.getElementById("doiInput").value));
 	var sel = $("#styleList option:selected").val();
-	if(!doi || !checkValidDoi(doi) || typeof sel == 'undefined') {
+	if(!doi || !checkValidDoi(doi) || typeof sel === 'undefined') {
 		return;
 	}
 
@@ -349,7 +351,7 @@ function renderBib(citation, style, locale, allLocales) {
 
 	jqxhrCsl.done(function() {
 		if(jqxhrCsl.responseText != "") {
-			if(locale == "auto") {
+			if(locale === "auto") {
 				var xml = jqxhrCsl.responseText,
 				  xmlDoc = $.parseXML(xml),
 				  $xml = $(xmlDoc),
@@ -384,7 +386,7 @@ function renderBib(citation, style, locale, allLocales) {
 
 					var styleAsText = jqxhrCsl.responseText;
 					var citeproc;
-					if(locale == "auto") {
+					if(locale === "auto") {
 						citeproc = new CSL.Engine(citeprocSys, styleAsText);
 					} else {
 						citeproc = new CSL.Engine(citeprocSys, styleAsText, lang, 1);

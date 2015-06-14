@@ -434,14 +434,14 @@ function autolinkShufflePerms() {
 	// Only called if permissions have been granted by user
 	var alp = $("#autolinkApplyto option:selected").val();
 
-	if(alp == "http") {
+	if(alp === "http") {
 		chrome.permissions.remove({
 			origins: [ 'https://*/*' ]
 		}, function(removed) {
 			chrome.runtime.sendMessage({cmd: "auto_link"});
 			verifyAutolinkPermission(startChangeListeners);
 		});
-	} else if(alp == "https") {
+	} else if(alp === "https") {
 		chrome.permissions.remove({
 			origins: [ 'http://*/*' ]
 		}, function(removed) {

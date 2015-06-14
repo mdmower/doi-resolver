@@ -336,9 +336,9 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (alert)
 function checkValidDoi(doiInput) {
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		return true;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		alert(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -378,11 +378,11 @@ function resolveURL(doi, source) {
 		}
 
 		if(useDefaultResolver) {
-			if(doi.match(/^10\./)) return "http://dx.doi.org/" + doi;
-			else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");
+			if(/^10\./.test(doi)) return "http://dx.doi.org/" + doi;
+			else if(/^10\//.test(doi)) return "http://doi.org/" + doi.replace(/^10\//,"");
 		} else {
-			if(doi.match(/^10\./)) return dr + doi;
-			else if(doi.match(/^10\//)) return sr + doi.replace(/^10\//,"");
+			if(/^10\./.test(doi)) return dr + doi;
+			else if(/^10\//.test(doi)) return sr + doi.replace(/^10\//,"");
 		}
 
 		return "";

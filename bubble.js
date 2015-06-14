@@ -99,9 +99,9 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (in bubble)
 function checkValidDoi(doiInput) {
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		return true;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -179,15 +179,15 @@ function resolveURL(doi) {
 		}
 
 		if(useDefaultResolver) {
-			if(doi.match(/^10\./)) {
+			if(/^10\./.test(doi)) {
 				url = "http://dx.doi.org/" + doi;
-			} else if(doi.match(/^10\//)) {
+			} else if(/^10\//.test(doi)) {
 				url = "http://doi.org/" + doi.replace(/^10\//,"");
 			}
 		} else {
-			if(doi.match(/^10\./)) {
+			if(/^10\./.test(doi)) {
 				url = dr + doi;
-			} else if(doi.match(/^10\//)) {
+			} else if(/^10\//.test(doi)) {
 				url = sr + doi.replace(/^10\//,"");
 			}
 		}

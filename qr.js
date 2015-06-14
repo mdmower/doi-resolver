@@ -221,9 +221,9 @@ function trim(stringToTrim) {
 }
 
 function checkValidDoi(doiInput) {
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		return true;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -316,9 +316,9 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 	var stringToEncode = "";
 	var jsonUrl = "http://dx.doi.org/" + doiInput;
 
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		stringToEncode = "http://dx.doi.org/" + doiInput;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		stringToEncode = "http://doi.org/" + doiInput.replace(/^10\//,"");
 	}
 

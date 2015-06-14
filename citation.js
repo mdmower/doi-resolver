@@ -202,7 +202,7 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 		var option_html = "";
 		$.each(options, function(i) {
 			var option = options[i];
-			if(option.text.match(regex) !== null) {
+			if(regex.test(option.text)) {
 				option_html += '<option value="' + option.value + '"';
 				if(cursel != null && cursel == option.value) {
 					option_html += ' selected="selected"';
@@ -246,9 +246,9 @@ function saveSelections() {
 }
 
 function checkValidDoi(doiInput) {
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		return true;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));

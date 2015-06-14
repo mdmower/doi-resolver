@@ -258,9 +258,11 @@ function storageChangeHandler(changes, namespace) {
 	}
 
 	/* Debugging */
+	/*
 	for(var key in changes) {
 		console.log("Option: " + key + ", oldValue: " + changes[key].oldValue + ", newValue: " + changes[key].newValue + ", Namespace: " + namespace);
 	}
+	*/
 
 	if(namespace === "local") {
 		chrome.storage.local.get(["sync_data"], function(stgLocal) {

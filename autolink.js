@@ -14,19 +14,21 @@
 	limitations under the License.
 */
 
-// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
-var find = /\b(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig;
 replaceDOIsWithLinks();
 
 // http://stackoverflow.com/questions/1444409/in-javascript-how-can-i-replace-text-in-an-html-page-without-affecting-the-tags
 function replaceDOIsWithLinks() {
-	replaceInElement(document.body, find, function(match) {
-		var link = document.createElement('a');
-		chrome.runtime.sendMessage({cmd: "al_resolve_url"}, function(response) {
-			link.href = response.url + match[0];
+	// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
+	var find = /\b(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig;
+
+	chrome.runtime.sendMessage({cmd: "al_resolve_url"}, function(response) {
+		var urlPrefix = response.url;
+		replaceInElement(document.body, find, function(match) {
+			var link = document.createElement('a');
+			link.href = urlPrefix + match[0];
+			link.appendChild(document.createTextNode(match[0]));
+			return link;
 		});
-		link.appendChild(document.createTextNode(match[0]));
-		return link;
 	});
 }
 

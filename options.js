@@ -168,10 +168,14 @@ function saveOptions() {
 	var alCur = $("#autoLink").is(":checked");
 	var alpCur = $("#autolinkApplyto option:selected").val();
 
-	chrome.storage.local.get(["auto_link"], function(stgLocal) {
-	storage.area.get(["al_protocol"], function(stg) {
+	var stgLclFetch = [
+		"auto_link",
+		"al_protocol"
+	];
+
+	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
 		var alBool = stgLocal["auto_link"];
-		var alpStr = stg["al_protocol"];
+		var alpStr = stgLocal["al_protocol"];
 
 		storageListener(false);
 		if(alCur != alBool || alpCur != alpStr) {
@@ -182,11 +186,15 @@ function saveOptions() {
 			});
 		}
 	});
-	});
 }
 
 function restoreOptions() {
 	haltChangeListeners();
+
+	var stgLclFetch = [
+		"al_protocol",
+		"sync_data"
+	];
 
 	var stgFetch = stgFetch = [
 		"context_menu",
@@ -198,12 +206,12 @@ function restoreOptions() {
 		"cr_omnibox",
 		"doi_resolver",
 		"shortdoi_resolver",
-		"omnibox_tab",
-		"al_protocol"
+		"omnibox_tab"
 	];
 
-	chrome.storage.local.get(["sync_data"], function(stgLocal) {
+	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
 	storage.area.get(stgFetch, function(stg) {
+		var alpOp = stgLocal["al_protocol"];
 		var sdOp = stgLocal["sync_data"];
 		var cmOp = stg["context_menu"];
 		var metaOp = stg["meta_buttons"];
@@ -215,7 +223,6 @@ function restoreOptions() {
 		var drOp = stg["doi_resolver"];
 		var srOp = stg["shortdoi_resolver"];
 		var otOp = stg["omnibox_tab"];
-		var alpOp = stg["al_protocol"];
 
 		if(typeof drOp !== "undefined") {
 			$("#doiResolverInput").val(drOp);
@@ -325,7 +332,6 @@ function storageChangeHandler(changes, namespace) {
 
 	/* sync_reset is handled in the background page */
 	if(namespace === "sync" && typeof changes["sync_reset"] === 'undefined') {
-		var key;
 		var options = [
 			"context_menu",
 			"meta_buttons",
@@ -336,10 +342,9 @@ function storageChangeHandler(changes, namespace) {
 			"cr_omnibox",
 			"doi_resolver",
 			"shortdoi_resolver",
-			"omnibox_tab",
-			"al_protocol"
+			"omnibox_tab"
 		];
-		for(key in changes) {
+		for(var key in changes) {
 			if(options.indexOf(key) >= 0) {
 				restoreOptions();
 				break;

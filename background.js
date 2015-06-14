@@ -122,9 +122,10 @@ function allOptions() {
 
 function excludeFromSync() {
 	return [
-		"auto_link", // Requires permissions
-		"qr_title",  // Requires permissions
-		"sync_data"  // Controls sync on/off
+		"al_protocol", // Requires user interaction to trigger permissions requests
+		"auto_link",   // Requires permissions to enable
+		"qr_title",    // Requires permissions to enable
+		"sync_data"    // Controls sync on/off
 	];
 }
 
@@ -296,29 +297,45 @@ function storageChangeHandler(changes, namespace) {
 			if(sr === true || sr === "true") {
 				storageListener(false);
 				chrome.storage.local.set({sync_data: false}, toggleSync);
-				return; // No need to perform sanitization below since wiping
+				return; // No need to perform anything below since wiping
 			}
 		} else if(typeof changes["context_menu"] !== 'undefined') {
 			toggleContextMenu();
 		}
 
-		// Sanitize values coming from pre-storage-migration
+		/* optionSyncPairs is for sanitizing bools coming from
+		 * pre-storage-migration and pushing back to .sync.
+		 *
+		 * optionLocalPairs is for keeping .local in-sync with
+		 * .sync since toggleSync only switches between storage
+		 * areas when sync disabled; it does not copy values.
+		 */
 		var optionSyncPairs = {};
-		var syncKeys = (allOptions()).diff(excludeFromSync());
+		var optionLocalPairs = {};
 		for(var key in changes) {
 			if(changes[key].newValue === 'true') {
 				optionSyncPairs[key] = true;
+				optionLocalPairs[key] = true;
 			} else if(changes[key].newValue === 'false') {
 				optionSyncPairs[key] = false;
+				optionLocalPairs[key] = false;
+			} else if(key !== 'al_protocol') {
+				/* Migration: al_protocol was removed from sync
+				 * since calls to chrome.permissions.request must
+				 * stem from user interaction; thus, autolink
+				 * listeners cannot be refreshed. Ignore since old
+				 * versions of this extension may still alter it.
+				 */
+				optionLocalPairs[key] = changes[key].newValue;
 			}
 		}
 
-		if(Object.keys(optionSyncPairs).length > 0)	{
-			storageListener(false);
-			chrome.storage.sync.set(optionSyncPairs, function() {
-				storageListener(true);
-			});
-		}
+		storageListener(false);
+		chrome.storage.sync.set(optionSyncPairs, function() {
+		chrome.storage.local.set(optionLocalPairs, function() {
+			storageListener(true);
+		});
+		});
 	}
 }
 
@@ -504,7 +521,7 @@ function permRemoveListeners() {
 	});
 }
 
-// Auto-link listeners
+// Auto-link
 function alListener(tabId, changeInfo, tab) {
 	chrome.permissions.contains({
 		origins: [ 'http://*/*', 'https://*/*' ]

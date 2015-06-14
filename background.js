@@ -86,6 +86,7 @@ function migrateStorage(callback) {
 
 function continueOnLoad() {
 	chrome.storage.onChanged.addListener(storageChangeHandler);
+	chrome.omnibox.onInputEntered.addListener(omniListener);
 	storageListener(true);
 	cleanupPerms();
 	checkForSettings(startFeatures);
@@ -240,8 +241,9 @@ function toggleSync() {
 }
 
 function storageListener(enable) {
-	if(typeof storageListener.status === 'undefined')
+	if(typeof storageListener.status === 'undefined') {
 		storageListener.status = true;
+	}
 
 	if(enable) {
 		storageListener.status = true;
@@ -262,7 +264,7 @@ function storageChangeHandler(changes, namespace) {
 
 	if(namespace === "local") {
 		chrome.storage.local.get(["sync_data"], function(stgLocal) {
-			if(typeof changes["context_menu"] !== 'undefined') {
+			if(stgLocal["sync_data"] !== true && typeof changes["context_menu"] !== 'undefined') {
 				toggleContextMenu();
 			}
 			if(stgLocal["sync_data"] === true) {
@@ -276,6 +278,9 @@ function storageChangeHandler(changes, namespace) {
 				storageListener(false);
 				chrome.storage.sync.set(toSync, function() {
 					storageListener(true);
+					if(typeof changes["context_menu"] !== 'undefined') {
+						toggleContextMenu();
+					}
 				});
 			}
 		});
@@ -291,6 +296,8 @@ function storageChangeHandler(changes, namespace) {
 				chrome.storage.local.set({sync_data: false}, toggleSync);
 				return; // No need to perform sanitization below since wiping
 			}
+		} else if(typeof changes["context_menu"] !== 'undefined') {
+			toggleContextMenu();
 		}
 
 		// Sanitize values coming from pre-storage-migration
@@ -314,15 +321,12 @@ function storageChangeHandler(changes, namespace) {
 }
 
 function startFeatures() {
-	var stgFetch = [
-		"context_menu",
-		"auto_link"
-	];
-
-	storage.area.get(stgFetch, function(stg) {
+	storage.area.get(["context_menu"], function(stg) {
 		if(stg["context_menu"] === true) {
 			contextMenuMaker();
 		}
+	});
+	chrome.storage.local.get(["auto_link"], function(stg) {
 		if(stg["auto_link"] === true) {
 			autoLinkDOIs();
 		}
@@ -346,46 +350,46 @@ function checkValidDoi(doiInput) {
 	}
 }
 
-// Build URL based on custom resolver settings
-function resolveURL(doi, source) {
+
+function navigate(url) {
+	chrome.tabs.query({
+		active: true,
+		currentWindow: true
+	}, function(tabs) {
+		chrome.tabs.update(tabs[0].id, {url: url});
+	});
+}
+
+function resolveDOI(doi, useCustomResolver, tab) {
 	var stgFetch = [
-		"custom_resolver",
-		"cr_context",
-		"cr_omnibox",
 		"doi_resolver",
 		"shortdoi_resolver"
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		var cr = stg["custom_resolver"];
-		var crc = stg["cr_context"];
-		var cro = stg["cr_omnibox"];
+		var str = "";
 		var dr = stg["doi_resolver"];
 		var sr = stg["shortdoi_resolver"];
-		var useDefaultResolver = true;
 
-		switch(source) {
-			case "context":
-				if(cr === true && crc == "custom") {
-					useDefaultResolver = false;
-				}
-				break;
-			case "omnibox":
-				if(cr === true && cro == "custom") {
-					useDefaultResolver = false;
-				}
-				break;
-		}
-
-		if(useDefaultResolver) {
-			if(/^10\./.test(doi)) return "http://dx.doi.org/" + doi;
-			else if(/^10\//.test(doi)) return "http://doi.org/" + doi.replace(/^10\//,"");
+		if(useCustomResolver) {
+			if(/^10\./.test(doi)) str = dr + doi;
+			else if(/^10\//.test(doi)) str = sr + doi.replace(/^10\//,"");
 		} else {
-			if(/^10\./.test(doi)) return dr + doi;
-			else if(/^10\//.test(doi)) return sr + doi.replace(/^10\//,"");
+			if(/^10\./.test(doi)) str = "http://dx.doi.org/" + doi;
+			else if(/^10\//.test(doi)) str = "http://doi.org/" + doi.replace(/^10\//,"");
 		}
 
-		return "";
+		switch(tab) {
+			case "newForegroundTab":
+				chrome.tabs.create({url: str, active: true});
+				break;
+			case "newBackgroundTab":
+				chrome.tabs.create({url: str, active: false});
+				break;
+			default: // "currentTab"
+				navigate(str);
+				break;
+		}
 	});
 }
 
@@ -409,12 +413,26 @@ function toggleContextMenu() {
 	});
 }
 
-// Context menu resolve doi
 function contextMenuResolve(info) {
 	var doiInput = escape(trim(info.selectionText));
-	if(checkValidDoi(doiInput)) {
-		chrome.tabs.create({url:resolveURL(doiInput, "context")});
+	if(!checkValidDoi(doiInput)) {
+		return;
 	}
+
+	var stgFetch = [
+		"custom_resolver",
+		"cr_context"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		var cr = stg["custom_resolver"];
+		var crc = stg["cr_context"];
+		if(cr === true && crc == "custom") {
+			resolveDOI(doiInput, true, "newForegroundTab");
+		} else {
+			resolveDOI(doiInput, false, "newForegroundTab");
+		}
+	});
 }
 
 // Message passing
@@ -427,9 +445,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			storageListener(false);
 			toggleSync();
 			break;
-		case "al_resolve_url":
-			sendUrlMessage();
-			break;
 		case "record_tab_id":
 			tabRecord(request.id, true);
 			break;
@@ -437,22 +452,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			break;
 	}
 });
-
-function sendUrlMessage() {
-	var stgFetch = [
-		"cr_autolink",
-		"custom_resolver",
-		"doi_resolver"
-	];
-
-	storage.area.get(stgFetch, function(stg) {
-		var urlPrefix = "http://dx.doi.org/";
-		if(stg["custom_resolver"] === true && stg["cr_autolink"] == "custom") {
-			urlPrefix = stg["doi_resolver"];
-		}
-		sendResponse({url: urlPrefix});
-	});
-}
 
 function cleanupPerms() {
 	chrome.permissions.remove({
@@ -588,35 +587,45 @@ function autoLinkDOIs() {
 }
 
 // Omnibox
-function navigate(url) {
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-		chrome.tabs.update(tabs[0].id, {url: url});
-	});
-}
-
-chrome.omnibox.onInputEntered.addListener( function (text, disposition) {
-	var stgFetch = [ "omnibox_tab" ];
+function omniListener(text, disposition) {
+	var stgFetch = [
+		"omnibox_tab",
+		"custom_resolver",
+		"cr_omnibox"
+	];
 
 	storage.area.get(stgFetch, function(stg) {
-		console.log('inputEntered: ' + text);
-		var doiInput = escape(trim(text));
-		var ot = stg["omnibox_tab"];
-		var tabToUse;
+		console.log('omnibox: ' + text);
 
-		if(disposition == "currentTab" && ot == "newfgtab") {
-			tabToUse = "newForegroundTab";
-		} else if(disposition == "currentTab" && ot == "newbgtab") {
-			tabToUse = "newBackgroundTab";
-		} else {
-			tabToUse = disposition;
+		var doiInput = escape(trim(text));
+		if(!checkValidDoi(doiInput)) {
+			return;
 		}
 
-		if(tabToUse == "newForegroundTab") {
-			chrome.tabs.create({url:resolveURL(doiInput, "omnibox")});
-		} else if(tabToUse == "newBackgroundTab") {
-			chrome.tabs.create({active: false, url:resolveURL(doiInput, "omnibox")});
+		var ot = stg["omnibox_tab"];
+		var cr = stg["custom_resolver"];
+		var cro = stg["cr_omnibox"];
+		var tab;
+
+		switch(ot) {
+			case "newfgtab":
+				tab = "newForegroundTab";
+				break;
+			case "newbgtab":
+				tab = "newBackgroundTab";
+				break;
+			case "curtab":
+				tab = "currentTab";
+				break;
+			default:
+				tab = disposition;
+				break;
+		}
+
+		if(cr === true && cro == "custom") {
+			resolveDOI(doiInput, true, tab);
 		} else {
-			navigate(resolveURL(doiInput, "omnibox"));
+			resolveDOI(doiInput, false, tab);
 		}
 	});
-});
+}

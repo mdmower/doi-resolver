@@ -267,9 +267,6 @@ function storageChangeHandler(changes, namespace) {
 
 	if(namespace === "local") {
 		chrome.storage.local.get(["sync_data"], function(stgLocal) {
-			if(stgLocal["sync_data"] !== true && typeof changes["context_menu"] !== 'undefined') {
-				toggleContextMenu();
-			}
 			if(stgLocal["sync_data"] === true) {
 				var toSync = {};
 				var syncKeys = (allOptions()).diff(excludeFromSync());
@@ -279,12 +276,23 @@ function storageChangeHandler(changes, namespace) {
 					}
 				}
 				storageListener(false);
+				/* We need to send a message to the options page even if toSync is
+				 * empty, so go ahead and .set() regardless of content. This
+				 * covers auto_link so that storage listeners on the Options page
+				 * can resume while permissions verification occurs asynchronously.
+				 */
 				chrome.storage.sync.set(toSync, function() {
 					storageListener(true);
 					if(typeof changes["context_menu"] !== 'undefined') {
 						toggleContextMenu();
 					}
+					chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
 				});
+			} else {
+				if(typeof changes["context_menu"] !== 'undefined') {
+					toggleContextMenu();
+				}
+				chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
 			}
 		});
 	} else if(namespace === "sync") {

@@ -15,23 +15,26 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	storage(true);
+	storage(true, true);
 }, false);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch(request.cmd) {
 		case "sync_toggle_complete":
-			storage(false);
+			storage(false, true);
+			break;
+		case "settings_dup_complete":
+			storage(false, false);
 			break;
 		case "auto_link_config_complete":
-			storageListener(true);
+			// Do nothing
 			break;
 		default:
 			break;
 	}
 });
 
-function storage(firstRun) {
+function storage(firstRun, restore) {
 	if (typeof storage.area === 'undefined') {
 		storage.area = chrome.storage.local;
 	}
@@ -39,14 +42,18 @@ function storage(firstRun) {
 	chrome.storage.local.get(["sync_data"], function(stg) {
 		if(stg["sync_data"] === true) {
 			storage.area = chrome.storage.sync;
+			storageListener(true);
 		} else {
 			storage.area = chrome.storage.local;
+			storageListener(false);
 		}
 
-		restoreOptions();
-
-		if(firstRun === true)
+		if(firstRun === true) {
 			continueOnLoad();
+		}
+		if(restore === true) {
+			restoreOptions();
+		}
 	});
 }
 
@@ -54,7 +61,6 @@ function continueOnLoad() {
 	getLocalMessages();
 	startClickListeners();
 	chrome.storage.onChanged.addListener(storageChangeHandler);
-	storageListener(true);
 }
 
 function startClickListeners() {
@@ -199,9 +205,11 @@ function saveOptions() {
 		if(alCur != alBool || alpCur != alpStr) {
 			chrome.storage.local.set(options, setAutolinkPermission);
 		} else {
-			chrome.storage.local.set(options, function() {
-				storageListener(true);
-			});
+			/* Wait for message confirming .local to .sync duplication
+			 * is complete in background before re-enabling storage
+			 * listener here
+			 */
+			chrome.storage.local.set(options, null);
 		}
 	});
 }

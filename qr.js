@@ -58,7 +58,8 @@ function startListeners() {
 	 * qrSizeInput can fire onChange events frequently. debounce it to only run
 	 * once per 750ms so Chrome Sync doesn't get too many sync requests.
 	 */
-	var dbSaveOptions = _.debounce(saveOptions, 750);
+	var dbQrSizeSave = _.debounce(qrSizeSave, 750);
+
 
 	$("#doiForm").submit(function () {
 		formSubmitHandler();
@@ -74,14 +75,26 @@ function startListeners() {
 		}
 	});
 	$("#qrFetchTitle").on("click", setCrossrefPermission);
-	$(".numeric").keyup(function () {
-		this.value = this.value.replace(/[^0-9]/g,'');
-	});
-	$("#qrSizeInput").on("change", dbSaveOptions);
+	$("#qrSizeInput").on("change input", dbQrSizeSave);
 	$("#qrManualTitle").on("click", toggleTitleFetch);
 
 	chrome.tabs.getCurrent(function(tab) {
 		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
+	});
+}
+
+function qrSizeSave() {
+	if(isNaN($("#qrSizeInput").val())) {
+		var num = $("#qrSizeInput").val().replace(/[^0-9]/g,'');
+		$("#qrSizeInput").val(num);
+	}
+
+	storage.area.get(["qr_size"], function(stg) {
+		var stgQrSize = stg["qr_size"];
+		var newQrSize = $("#qrSizeInput").val();
+		if(stgQrSize !== newQrSize) {
+			saveOptions();
+		}
 	});
 }
 

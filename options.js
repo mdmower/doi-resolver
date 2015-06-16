@@ -75,12 +75,12 @@ function startClickListeners() {
 
 	$("#doiResolverInputReset").on("click", function() {
 		if($("#doiResolverInput").val() !== "http://dx.doi.org/") {
-			$("#doiResolverInput").val("http://dx.doi.org/").trigger("change");
+			$("#doiResolverInput").val("http://dx.doi.org/").trigger("input").trigger("change");
 		}
 	});
 	$("#shortDoiResolverInputReset").on("click", function() {
 		if($("#shortDoiResolverInput").val() !== "http://doi.org/") {
-			$("#shortDoiResolverInput").val("http://doi.org/").trigger("change");
+			$("#shortDoiResolverInput").val("http://doi.org/").trigger("input").trigger("change");
 		}
 	});
 
@@ -127,8 +127,10 @@ function startChangeListeners() {
 	$("#autoLink").on("change", saveOptions);
 	$("#customResolver").on("change", saveOptions);
 	$(".crSelections").on("change", saveOptions);
-	$("#doiResolverInput").on("change input", dbSaveOptions);
-	$("#shortDoiResolverInput").on("change input", dbSaveOptions);
+	$("#doiResolverInput").on("change", dbSaveOptions);
+	$("#doiResolverInput").on("input", setCrPreviews);
+	$("#shortDoiResolverInput").on("change", dbSaveOptions);
+	$("#shortDoiResolverInput").on("input", setCrPreviews);
 	$("#omniboxOpento").on("change", saveOptions);
 	$("#autolinkApplyto").on("change", saveOptions);
 	$("#syncData").on("change", toggleSync);
@@ -142,8 +144,10 @@ function haltChangeListeners() {
 	$("#autoLink").off("change", saveOptions);
 	$("#customResolver").off("change", saveOptions);
 	$(".crSelections").off("change", saveOptions);
-	$("#doiResolverInput").off("change input", dbSaveOptions);
-	$("#shortDoiResolverInput").off("change input", dbSaveOptions);
+	$("#doiResolverInput").off("change", dbSaveOptions);
+	$("#doiResolverInput").off("input", setCrPreviews);
+	$("#shortDoiResolverInput").off("change", dbSaveOptions);
+	$("#shortDoiResolverInput").off("input", setCrPreviews);
 	$("#omniboxOpento").off("change", saveOptions);
 	$("#autolinkApplyto").off("change", saveOptions);
 	$("#syncData").off("change", toggleSync);
@@ -250,12 +254,8 @@ function restoreOptions() {
 		var srOp = stg["shortdoi_resolver"];
 		var otOp = stg["omnibox_tab"];
 
-		if(typeof drOp !== "undefined") {
-			$("#doiResolverInput").val(drOp);
-		}
-		if(typeof srOp !== "undefined") {
-			$("#shortDoiResolverInput").val(srOp);
-		}
+		$("#doiResolverInput").val(drOp);
+		$("#shortDoiResolverInput").val(srOp);
 
 		if(cmOp === true) {
 			$("#context").prop("checked", true);
@@ -281,7 +281,7 @@ function restoreOptions() {
 			$("#customResolver").prop("checked", true);
 			$("#customResolverLeft").css("display", "inline-block");
 			$("#customResolverRight").css("display", "inline-block");
-			setCrPreviews();
+			setCrPreviews(); // Depends on text fields being filled already
 		} else {
 			$("#customResolver").prop("checked", false);
 			$("#customResolverLeft").css("display", "none");
@@ -380,31 +380,24 @@ function storageChangeHandler(changes, namespace) {
 }
 
 function setCrPreviews() {
-	var stgFetch = [
-		"doi_resolver",
-		"shortdoi_resolver"
-	];
+	var drInput = $("#doiResolverInput").val();
+	var srInput = $("#shortDoiResolverInput").val();
+	var drPreview = "";
+	var srPreview = "";
 
-	storage.area.get(stgFetch, function(stg) {
-		var drOp = stg["doi_resolver"];
-		var srOp = stg["shortdoi_resolver"];
-		var drPreview = "";
-		var srPreview = "";
+	if(drInput.length <= 10) {
+		drPreview = drInput + "10.1000/182";
+	} else {
+		drPreview = "&hellip;" + drInput.slice(-10, drInput.length) + "10.1000/182";
+	}
+	if(srInput.length <= 10) {
+		srPreview = srInput + "dws9sz";
+	} else {
+		srPreview = "&hellip;" + srInput.slice(-10, srInput.length) + "dws9sz";
+	}
 
-		if(drOp.length <= 10) {
-			drPreview = drOp + "10.1000/182";
-		} else {
-			drPreview = "&hellip;" + drOp.slice(-10, drOp.length) + "10.1000/182";
-		}
-		if(srOp.length <= 10) {
-			srPreview = srOp + "dws9sz";
-		} else {
-			srPreview = "&hellip;" + srOp.slice(-10, srOp.length) + "dws9sz";
-		}
-
-		$("#doiResolverOutput").html(drPreview);
-		$("#shortDoiResolverOutput").html(srPreview);
-	});
+	$("#doiResolverOutput").html(drPreview);
+	$("#shortDoiResolverOutput").html(srPreview);
 }
 
 function setAutolinkPermission() {

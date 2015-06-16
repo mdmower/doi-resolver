@@ -89,7 +89,7 @@
 	},
 	"needCitationPerm": {
 		"description": "(23) A notice to the user that additional permissions must be accepted for the citation generator to work",
-		"message": "Citations are retrieved from data.crossref.org and dx.doi.org. This permission must be accepted before the generator will function."
+		"message": "Citations are retrieved from crossref.org, datacite.org, and doi.org. These permissions must be accepted before the generator will function."
 	},
 	"qrFetchTitleLabel": {
 		"description": "(24) A setting to fetch the title of the reference in a generated QR code.",

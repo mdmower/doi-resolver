@@ -69,7 +69,7 @@ function startListeners() {
 		toggleBgColor();
 		saveOptions();
 	});
-	$("#qrFetchTitle").on("change", setCrossrefPermission);
+	$("#qrFetchTitle").on("change", setDoiMetaPermissions);
 	$("#qrSizeInput").on("change input", dbQrSizeSave);
 	$("#qrManualTitle").on("change", toggleTitleFetch);
 
@@ -268,7 +268,7 @@ function advancedNotification(elms) {
 	$("#notifyDiv").css("display", "block");
 }
 
-function setCrossrefPermission() {
+function setDoiMetaPermissions() {
 	var perm = $("#qrFetchTitle").prop('checked');
 
 	if(perm) {

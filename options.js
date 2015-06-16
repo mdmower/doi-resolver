@@ -58,11 +58,6 @@ function continueOnLoad() {
 }
 
 function startClickListeners() {
-	$("#context").on("click", saveOptions);
-	$("#meta").on("click", saveOptions);
-	$("#autoLink").on("click", saveOptions);
-	$("#customResolver").on("click", saveOptions);
-
 	$("#options_tab").on("click", function() {
 		$("#content_options").css("display", "block");
 		$("#content_about").css("display", "none");
@@ -73,51 +68,44 @@ function startClickListeners() {
 	});
 
 	$("#doiResolverInputReset").on("click", function() {
-		$("#doiResolverInput").val("http://dx.doi.org/");
-		saveOptions();
+		if($("#doiResolverInput").val() !== "http://dx.doi.org/") {
+			$("#doiResolverInput").val("http://dx.doi.org/").trigger("change");
+		}
 	});
 	$("#shortDoiResolverInputReset").on("click", function() {
-		$("#shortDoiResolverInput").val("http://doi.org/");
-		saveOptions();
+		if($("#shortDoiResolverInput").val() !== "http://doi.org/") {
+			$("#shortDoiResolverInput").val("http://doi.org/").trigger("change");
+		}
 	});
 
 	$("#img_context_off").on("click", function() {
-		$("#context").prop("checked", false);
-		saveOptions();
-	});
-	$("#img_context_on").on("click", function() {
-		$("#context").prop("checked", true);
-		saveOptions();
-	});
-	$("#img_bubblemeta_off").on("click", function() {
-		$("#meta").prop("checked", false);
-		saveOptions();
-	});
-	$("#img_bubblemeta_on").on("click", function() {
-		$("#meta").prop("checked", true);
-		saveOptions();
-	});
-
-	$("#syncData").on("click", function() {
-		var sdcb = $("#syncData").is(":checked");
-		if(sdcb) {
-			chrome.storage.sync.set({sync_reset: false}, function() {
-				chrome.storage.local.set({sync_data: true}, toggleSync);
-			});
-		} else {
-			chrome.storage.local.set({sync_data: false}, toggleSync);
+		if($("#context").is(":checked")) {
+			$("#context").prop("checked", false).trigger("change");
 		}
 	});
+	$("#img_context_on").on("click", function() {
+		if(!($("#context").is(":checked"))) {
+			$("#context").prop("checked", true).trigger("change");
+		}
+	});
+
+	$("#img_bubblemeta_off").on("click", function() {
+		if($("#meta").is(":checked")) {
+			$("#meta").prop("checked", false).trigger("change");
+		}
+	});
+	$("#img_bubblemeta_on").on("click", function() {
+		if(!($("#meta").is(":checked"))) {
+			$("#meta").prop("checked", true).trigger("change");
+		}
+	});
+
 	$("#syncDataWipeButton").on("click", function() {
 		$("#syncData").prop("checked", false);
 		$("#syncDataWipe").css("display", "none");
 		/* background listens for sync_reset == true */
 		chrome.storage.sync.set({sync_reset: true}, null);
 	});
-}
-
-function toggleSync() {
-	chrome.runtime.sendMessage({cmd: "toggle_sync"});
 }
 
 function startChangeListeners() {
@@ -128,21 +116,51 @@ function startChangeListeners() {
 	 */
 	var dbSaveOptions = _.debounce(saveOptions, 750);
 
+	$("#context").on("change", saveOptions);
+	$("#meta").on("change", saveOptions);
+	$("#autoLink").on("change", saveOptions);
+	$("#customResolver").on("change", saveOptions);
 	$(".crSelections").on("change", saveOptions);
 	$("#doiResolverInput").on("change input", dbSaveOptions);
 	$("#shortDoiResolverInput").on("change input", dbSaveOptions);
 	$("#omniboxOpento").on("change", saveOptions);
 	$("#autolinkApplyto").on("change", saveOptions);
+	$("#syncData").on("change", toggleSync);
 }
 
 function haltChangeListeners() {
 	var dbSaveOptions = _.debounce(saveOptions, 750);
 
+	$("#context").off("change", saveOptions);
+	$("#meta").off("change", saveOptions);
+	$("#autoLink").off("change", saveOptions);
+	$("#customResolver").off("change", saveOptions);
 	$(".crSelections").off("change", saveOptions);
 	$("#doiResolverInput").off("change input", dbSaveOptions);
 	$("#shortDoiResolverInput").off("change input", dbSaveOptions);
 	$("#omniboxOpento").off("change", saveOptions);
 	$("#autolinkApplyto").off("change", saveOptions);
+	$("#syncData").off("change", toggleSync);
+}
+
+function toggleSync() {
+	var sd = $("#syncData").is(":checked");
+	if(sd) {
+		$("#syncDataWipe").css("display", "block");
+
+		chrome.storage.sync.set({sync_reset: false}, function() {
+			chrome.storage.local.set({sync_data: true}, function() {
+				chrome.runtime.sendMessage({cmd: "toggle_sync"});
+			});
+		});
+	} else {
+		$("#syncDataWipe").css("display", "none");
+
+		storageListener(false);
+		chrome.storage.local.set({sync_data: false}, function() {
+			chrome.runtime.sendMessage({cmd: "toggle_sync"});
+		});
+	}
 }
 
 function saveOptions() {

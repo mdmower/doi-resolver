@@ -65,22 +65,25 @@ function startListeners() {
 		formSubmitHandler();
 		return false;
 	});
-	$("#qrBgTrans").on("click", function() {
+	$("#qrBgTrans").on("change", function() {
+		toggleBgColor();
 		saveOptions();
-
-		if($("#qrBgTrans").is(":checked")) {
-			$("#bgColorDiv").css("display", "none");
-		} else {
-			$("#bgColorDiv").css("display", "block");
-		}
 	});
-	$("#qrFetchTitle").on("click", setCrossrefPermission);
+	$("#qrFetchTitle").on("change", setCrossrefPermission);
 	$("#qrSizeInput").on("change input", dbQrSizeSave);
-	$("#qrManualTitle").on("click", toggleTitleFetch);
+	$("#qrManualTitle").on("change", toggleTitleFetch);
 
 	chrome.tabs.getCurrent(function(tab) {
 		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
 	});
+}
+
+function toggleBgColor() {
+	if($("#qrBgTrans").is(":checked")) {
+		$("#bgColorDiv").css("display", "none");
+	} else {
+		$("#bgColorDiv").css("display", "block");
+	}
 }
 
 function qrSizeSave() {

@@ -79,7 +79,7 @@ function startListeners() {
 }
 
 function toggleBgColor() {
-	if($("#qrBgTrans").is(":checked")) {
+	if($("#qrBgTrans").prop('checked')) {
 		$("#bgColorDiv").css("display", "none");
 	} else {
 		$("#bgColorDiv").css("display", "block");
@@ -210,18 +210,18 @@ function prepareColorPickers() {
 
 function saveOptions() {
 	var options = {
-		qr_bgtrans: $("#qrBgTrans").is(":checked"),
+		qr_bgtrans: $("#qrBgTrans").prop('checked'),
 		qr_size: $("#qrSizeInput").val(),
 		qr_fgcolor: $("#qrFgColorInput").val(),
 		qr_bgcolor: $("#qrBgColorInput").val(),
-		qr_title: $("#qrFetchTitle").is(":checked")
+		qr_title: $("#qrFetchTitle").prop('checked')
 	}
 
 	chrome.storage.local.set(options, null);
 }
 
 function toggleTitleFetch() {
-	if($("#qrManualTitle").is(":checked")) {
+	if($("#qrManualTitle").prop('checked')) {
 		$("#qrFetchTitle").prop("checked", false);
 		$("#qrFetchTitle").attr("disabled", "disabled");
 		$("#qrManualTitleTextDiv").css("display", "flex");
@@ -269,7 +269,7 @@ function advancedNotification(elms) {
 }
 
 function setCrossrefPermission() {
-	var perm = $("#qrFetchTitle").is(":checked");
+	var perm = $("#qrFetchTitle").prop('checked');
 
 	if(perm) {
 		chrome.permissions.request({
@@ -313,7 +313,7 @@ function formSubmitHandler() {
 	var fgcolor = $("#qrFgColorInput").val();
 	var bgcolor = $("#qrBgColorInput").val();
 
-	if($("#qrBgTrans").is(":checked")) {
+	if($("#qrBgTrans").prop('checked')) {
 		bgcolor = null;
 	}
 
@@ -340,7 +340,7 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 
 	simpleNotification("Loading...");
 
-	var perm = $("#qrFetchTitle").is(":checked");
+	var perm = $("#qrFetchTitle").prop('checked');
 	if(perm) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
@@ -377,7 +377,7 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 			}
 		});
 	} else {
-		var manualTitle = $("#qrManualTitle").is(":checked");
+		var manualTitle = $("#qrManualTitle").prop('checked');
 		if(manualTitle) {
 			var titleString = $("#qrManualTitleText").val();
 			if(titleString != "") {

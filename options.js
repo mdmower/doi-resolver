@@ -79,23 +79,23 @@ function startClickListeners() {
 	});
 
 	$("#img_context_off").on("click", function() {
-		if($("#context").is(":checked")) {
+		if($("#context").prop('checked')) {
 			$("#context").prop("checked", false).trigger("change");
 		}
 	});
 	$("#img_context_on").on("click", function() {
-		if(!($("#context").is(":checked"))) {
+		if(!($("#context").prop('checked'))) {
 			$("#context").prop("checked", true).trigger("change");
 		}
 	});
 
 	$("#img_bubblemeta_off").on("click", function() {
-		if($("#meta").is(":checked")) {
+		if($("#meta").prop('checked')) {
 			$("#meta").prop("checked", false).trigger("change");
 		}
 	});
 	$("#img_bubblemeta_on").on("click", function() {
-		if(!($("#meta").is(":checked"))) {
+		if(!($("#meta").prop('checked'))) {
 			$("#meta").prop("checked", true).trigger("change");
 		}
 	});
@@ -144,7 +144,7 @@ function haltChangeListeners() {
 }
 
 function toggleSync() {
-	var sd = $("#syncData").is(":checked");
+	var sd = $("#syncData").prop('checked');
 	if(sd) {
 		$("#syncDataWipe").css("display", "block");
 
@@ -167,9 +167,9 @@ function saveOptions() {
 	minimalOptionsRefresh();
 
 	var options = {
-		context_menu: $("#context").is(":checked"),
-		meta_buttons: $("#meta").is(":checked"),
-		custom_resolver: $("#customResolver").is(":checked"),
+		context_menu: $("#context").prop('checked'),
+		meta_buttons: $("#meta").prop('checked'),
+		custom_resolver: $("#customResolver").prop('checked'),
 		cr_autolink: $("#crAutolink option:selected").val(),
 		cr_bubble: $("#crBubble option:selected").val(),
 		cr_context: $("#crContext option:selected").val(),
@@ -183,7 +183,7 @@ function saveOptions() {
 	 * These options require permissions setting/checking. Only call them
 	 * if the current setting differs from stored setting
 	 */
-	var alCur = $("#autoLink").is(":checked");
+	var alCur = $("#autoLink").prop('checked');
 	var alpCur = $("#autolinkApplyto option:selected").val();
 
 	var stgLclFetch = [
@@ -302,9 +302,9 @@ function restoreOptions() {
 
 // Only refresh fields that need updating after save
 function minimalOptionsRefresh() {
-	var cm = $("#context").is(":checked");
-	var meta = $("#meta").is(":checked");
-	var cr = $("#customResolver").is(":checked");
+	var cm = $("#context").prop('checked');
+	var meta = $("#meta").prop('checked');
+	var cr = $("#customResolver").prop('checked');
 
 	if(cm) {
 		$("#img_context_on").css("border-color", "#404040");
@@ -415,7 +415,7 @@ function setAutolinkPermission() {
 	 */
 
 	haltChangeListeners();
-	var al = $("#autoLink").is(":checked");
+	var al = $("#autoLink").prop('checked');
 
 	if(al) {
 		chrome.permissions.request({

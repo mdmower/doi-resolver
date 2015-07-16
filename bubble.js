@@ -15,11 +15,42 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
+	storage(true);
+}, false);
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+	switch(request.cmd) {
+		case "sync_toggle_complete":
+			storage(false);
+			break;
+		default:
+			break;
+	}
+});
+
+function storage(firstRun) {
+	if(typeof storage.area === 'undefined') {
+		storage.area = chrome.storage.local;
+	}
+
+	chrome.storage.local.get(["sync_data"], function(stg) {
+		if(stg["sync_data"] === true) {
+			storage.area = chrome.storage.sync;
+		} else {
+			storage.area = chrome.storage.local;
+		}
+
+		if(firstRun === true)
+			continueOnLoad();
+	});
+}
+
+function continueOnLoad() {
 	restoreOptions();
 	getLocalMessages();
 	showHideOptionalElms();
 	startListeners();
-}, false);
+}
 
 function startListeners() {
 	$("#resolveSubmit").click(function() {
@@ -41,23 +72,24 @@ function startListeners() {
 	$("input[name='crRadio']").on("click", saveOptions);
 }
 
-function syncOptions() {
-	chrome.runtime.sendMessage({cmd: "sync_opts"});
-}
-
 function saveOptions() {
-	localStorage["cr_bubble_last"] = $('input[name="crRadio"]:checked').val();
-	syncOptions();
+	var options = {
+		cr_bubble_last: $('input[name="crRadio"]:checked').val()
+	}
+
+	chrome.storage.local.set(options, null);
 }
 
 function restoreOptions() {
-	var crblOp = localStorage["cr_bubble_last"];
+	var stgFetch = ["cr_bubble_last"];
 
-	if(crblOp == "custom") {
-		$("#crRadioBubbleCustom").prop("checked", true);
-	} else {
-		$("#crRadioBubbleDefault").prop("checked", true);
-	}
+	storage.area.get(stgFetch, function(stg) {
+		if(stg["cr_bubble_last"] === "custom") {
+			$("#crRadioBubbleCustom").prop("checked", true);
+		} else {
+			$("#crRadioBubbleDefault").prop("checked", true);
+		}
+	});
 }
 
 // Remove spaces and punctuation from beginning and end of input
@@ -67,9 +99,9 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (in bubble)
 function checkValidDoi(doiInput) {
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		return true;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -104,8 +136,7 @@ function formSubmitHandler() {
 		break;
 	case "doi":
 		if(doiInput.length == 0 || !checkValidDoi(doiInput)) return;
-		chrome.tabs.create({url:resolveURL(doiInput)});
-		window.close();
+		resolveURL(doiInput);
 		break;
 	case "options":
 		if(chrome.runtime.openOptionsPage) {
@@ -124,61 +155,87 @@ function formSubmitHandler() {
 
 // Build URL based on custom resolver settings
 function resolveURL(doi) {
-	var cr = localStorage["custom_resolver"];
-	var crb = localStorage["cr_bubble"];
-	var crbl = localStorage["cr_bubble_last"];
-	var dr = localStorage["doi_resolver"];
-	var sr = localStorage["shortdoi_resolver"];
-	var useDefaultResolver = true;
+	var stgFetch = [
+		"custom_resolver",
+		"cr_bubble",
+		"cr_bubble_last",
+		"doi_resolver",
+		"shortdoi_resolver"
+	];
 
-	if(cr == "true" && crb == "custom") {
-		useDefaultResolver = false;
-	} else if(cr == "true" && crb == 'selectable' && crbl == 'custom') {
-		useDefaultResolver = false;
-	}
+	storage.area.get(stgFetch, function(stg) {
+		var url = "";
+		var cr = stg["custom_resolver"];
+		var crb = stg["cr_bubble"];
+		var crbl = stg["cr_bubble_last"];
+		var dr = stg["doi_resolver"];
+		var sr = stg["shortdoi_resolver"];
+		var useDefaultResolver = true;
 
-	if(useDefaultResolver) {
-		if(doi.match(/^10\./)) return "http://dx.doi.org/" + doi;
-		else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");
-	} else {
-		if(doi.match(/^10\./)) return dr + doi;
-		else if(doi.match(/^10\//)) return sr + doi.replace(/^10\//,"");
-	}
+		if(cr === true && crb === "custom") {
+			useDefaultResolver = false;
+		} else if(cr === true && crb === 'selectable' && crbl === 'custom') {
+			useDefaultResolver = false;
+		}
 
-	return "";
+		if(useDefaultResolver) {
+			if(/^10\./.test(doi)) {
+				url = "http://dx.doi.org/" + doi;
+			} else if(/^10\//.test(doi)) {
+				url = "http://doi.org/" + doi.replace(/^10\//,"");
+			}
+		} else {
+			if(/^10\./.test(doi)) {
+				url = dr + doi;
+			} else if(/^10\//.test(doi)) {
+				url = sr + doi.replace(/^10\//,"");
+			}
+		}
+
+		chrome.tabs.create({url: url});
+		window.close();
+	});
 }
 
 // Open citation formatting page
 function citeDOI(doiInput) {
 	var citeUrl= "citation.html?doi=" + doiInput;
-	chrome.tabs.create({url:citeUrl});
+	chrome.tabs.create({url: citeUrl});
 	window.close();
 }
 
 // Open QR generator page
 function qrGen(doiInput) {
 	var qrUrl = "qr.html?doi=" + doiInput;
-	chrome.tabs.create({url:qrUrl});
+	chrome.tabs.create({url: qrUrl});
 	window.close();
 }
 
 // Show or hide additional buttons in bubble
 function showHideOptionalElms() {
-	var meta = localStorage["meta_buttons"];
-	var crOp = localStorage["custom_resolver"];
-	var crbOp = localStorage["cr_bubble"];
+	var stgFetch = [
+		"meta_buttons",
+		"custom_resolver",
+		"cr_bubble"
+	];
 
-	if(meta == "true") {
-		$("#metaButtons").css("display", "flex");
-	} else {
-		$("#metaButtons").css("display", "none");
-	}
+	storage.area.get(stgFetch, function(stg) {
+		var meta = stg["meta_buttons"];
+		var crOp = stg["custom_resolver"];
+		var crbOp = stg["cr_bubble"];
 
-	if(crOp == "true" && crbOp == "selectable") {
-		$("#crRadios").css("display", "block");
-	} else {
-		$("#crRadios").css("display", "none");
-	}
+		if(meta === true) {
+			$("#metaButtons").css("display", "flex");
+		} else {
+			$("#metaButtons").css("display", "none");
+		}
+
+		if(crOp === true && crbOp === "selectable") {
+			$("#crRadios").css("display", "block");
+		} else {
+			$("#crRadios").css("display", "none");
+		}
+	});
 }
 
 function getLocalMessages() {

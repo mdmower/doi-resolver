@@ -14,17 +14,47 @@
 	limitations under the License.
 */
 
-// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
-var find = /\b(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig;
-replaceDOIsWithLinks();
+storage();
+
+function storage() {
+	if(typeof storage.area === 'undefined') {
+		storage.area = chrome.storage.local;
+	}
+	if(typeof storage.urlPrefix === 'undefined') {
+		storage.urlPrefix = "http://dx.doi.org/";
+	}
+	if(typeof storage.find === 'undefined') {
+		// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
+		storage.find = /\b(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig;
+	}
+
+	chrome.storage.local.get(["sync_data"], function(stg) {
+		if(stg["sync_data"] === true) {
+			storage.area = chrome.storage.sync;
+		} else {
+			storage.area = chrome.storage.local;
+		}
+
+		var stgFetch = [
+			"cr_autolink",
+			"custom_resolver",
+			"doi_resolver"
+		];
+
+		storage.area.get(stgFetch, function(stg) {
+			if(stg["custom_resolver"] === true && stg["cr_autolink"] == "custom") {
+				storage.urlPrefix = stg["doi_resolver"];
+			}
+			replaceDOIsWithLinks();
+		});
+	});
+}
 
 // http://stackoverflow.com/questions/1444409/in-javascript-how-can-i-replace-text-in-an-html-page-without-affecting-the-tags
 function replaceDOIsWithLinks() {
-	replaceInElement(document.body, find, function(match) {
+	replaceInElement(document.body, storage.find, function(match) {
 		var link = document.createElement('a');
-		chrome.runtime.sendMessage({cmd: "al_resolve_url"}, function(response) {
-			link.href = response.url + match[0];
-		});
+		link.href = storage.urlPrefix + match[0];
 		link.appendChild(document.createTextNode(match[0]));
 		return link;
 	});

@@ -15,260 +15,349 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	cleanupPerms();
-	checkForSettings();
-	fetchOptions({cl: false, fr: true, csr: false});
-	permRemoveListeners();
+	storage(true);
 }, false);
 
-// Set default options and rename old option names
-function setDefaultOption(opt) {
-	switch(opt) {
-	case 'cm':
-		localStorage["context_menu"] = true;
-		break;
-	case 'meta':
-		localStorage["meta_buttons"] = true;
-		break;
-	case 'cr':
-		localStorage["custom_resolver"] = false;
-		break;
-	case 'cra':
-		localStorage["cr_autolink"] = "custom";
-		break;
-	case 'crb':
-		localStorage["cr_bubble"] = "custom";
-		localStorage["cr_bubble_last"] = "custom";
-		break;
-	case 'crc':
-		localStorage["cr_context"] = "custom";
-		break;
-	case 'cro':
-		localStorage["cr_omnibox"] = "custom";
-		break;
-	case 'dr':
-		localStorage["doi_resolver"] = "http://dx.doi.org/";
-		break;
-	case 'sdr':
-		localStorage["shortdoi_resolver"] = "http://doi.org/";
-		break;
-	case 'ot':
-		localStorage["omnibox_tab"] = "newfgtab";
-		break;
-	case 'al':
-		localStorage["auto_link"] = false;
-		break;
-	case 'alp':
-		localStorage["al_protocol"] = "http";
-		break;
-	case 'qrTitle':
-		localStorage["qr_title"] = false;
-		break;
-	case 'qrSize':
-		localStorage["qr_size"] = "300";
-		break;
-	case 'qrFgColor':
-		localStorage["qr_fgcolor"] = "#000000";
-		break;
-	case 'qrBgColor':
-		localStorage["qr_bgcolor"] = "#ffffff";
-		break;
-	case 'qrBgTrans':
-		localStorage["qr_bgtrans"] = false;
-		break;
-	case 'cs':
-		localStorage["cite_style"] = "bibtex";
-		break;
-	case 'cl':
-		localStorage["cite_locale"] = "auto";
-		break;
-	case 'sd':
-		localStorage["sync_data"] = false;
-		break;
-	case 'sr':
-		localStorage["sync_reset"] = false;
-		break;
-	default:
-		break;
+function storage(firstRun) {
+	if(typeof storage.area === 'undefined') {
+		storage.area = chrome.storage.local;
+	}
+
+	if(firstRun === true && localStorage.length > 0) {
+		migrateStorage(continueOnLoad);
+	} else {
+		chrome.storage.local.get(["sync_data"], function(stg) {
+			if(stg["sync_data"] === true) {
+				storage.area = chrome.storage.sync;
+			} else {
+				storage.area = chrome.storage.local;
+			}
+
+			if(firstRun === true) {
+				continueOnLoad();
+			}
+		});
 	}
 }
 
-function checkForSettings() {
-	// Set on options page
-	if(typeof localStorage["context_menu"] == 'undefined') setDefaultOption('cm');
-	if(typeof localStorage["meta_buttons"] == 'undefined') setDefaultOption('meta');
-	if(typeof localStorage["custom_resolver"] == 'undefined') setDefaultOption('cr');
-	if(typeof localStorage["cr_autolink"] == 'undefined') setDefaultOption('cra');
-	if(typeof localStorage["cr_bubble"] == 'undefined') setDefaultOption('crb');
-	if(typeof localStorage["cr_context"] == 'undefined') setDefaultOption('crc');
-	if(typeof localStorage["cr_omnibox"] == 'undefined') setDefaultOption('cro');
-	if(typeof localStorage["doi_resolver"] == 'undefined') setDefaultOption('dr');
-	if(typeof localStorage["shortdoi_resolver"] == 'undefined') setDefaultOption('sdr');
-	if(typeof localStorage["omnibox_tab"] == 'undefined') setDefaultOption('ot');
-	if(typeof localStorage["auto_link"] == 'undefined') setDefaultOption('al');
-	if(typeof localStorage["al_protocol"] == 'undefined') setDefaultOption('alp');
-	if(typeof localStorage["sync_data"] == 'undefined') setDefaultOption('sd');
-	if(typeof localStorage["sync_reset"] == 'undefined') setDefaultOption('sr');
+function migrateStorage(callback) {
+	var key;
+	var options = allOptions();
+	var noSyncs = excludeFromSync();
 
-	// Set elsewhere
-	if(typeof localStorage["qr_title"] == 'undefined') setDefaultOption('qrTitle');
-	if(typeof localStorage["qr_size"] == 'undefined') setDefaultOption('qrSize');
-	if(typeof localStorage["qr_fgcolor"] == 'undefined') setDefaultOption('qrFgColor');
-	if(typeof localStorage["qr_bgcolor"] == 'undefined') setDefaultOption('qrBgColor');
-	if(typeof localStorage["qr_bgtrans"] == 'undefined') setDefaultOption('qrBgTrans');
-	if(typeof localStorage["cite_style"] == 'undefined') setDefaultOption('cs');
-	if(typeof localStorage["cite_locale"] == 'undefined') setDefaultOption('cl');
-	if(typeof localStorage["cr_bubble_last"] == 'undefined') setDefaultOption('crb');
-
-	syncOptions();
-}
-
-/*
- * Fetch parameters:
- * cl: Cycle Listeners (for options page)
- * fr: First Run (i.e. this is the first run-through of background page)
- * csr: Clear Sync Reset
- */
-function fetchOptions(params) {
-	syncListener(false);
-	if(localStorage["sync_data"] != "true") {
-		if(params.fr) {
-			startFeatures();
+	var optionPairs = {};
+	for(var i = 0; i < options.length; i++) {
+		key = options[i];
+		if(typeof localStorage[key] !== 'undefined') {
+			if(key === "sync_reset") {
+				// .sync storage only
+			} else if(localStorage[key] === 'true') {
+				optionPairs[key] = true;
+			} else if(localStorage[key] === 'false') {
+				optionPairs[key] = false;
+			} else {
+				optionPairs[key] = localStorage[key];
+			}
 		}
-		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: params.cl});
-		return;
 	}
 
-	var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
-		"cr_context", "cr_omnibox", "doi_resolver", "shortdoi_resolver",
-		"omnibox_tab", "al_protocol", "qr_size", "qr_fgcolor", "qr_bgcolor",
-		"qr_bgtrans", "cite_style", "cite_locale", "cr_bubble_last",
-		"custom_resolver", "sync_reset"];
+	chrome.storage.local.set(optionPairs, function() {
+		console.log("localStorage migrated to chrome.storage.local");
+		localStorage.clear();
 
-	var settingsBundle = {};
-	for(var i = 0; i < syncOpts.length; i++) {
-		settingsBundle[syncOpts[i]] = localStorage[syncOpts[i]];
-	};
-
-	chrome.storage.sync.get(settingsBundle, function(result) {
-		if(result["sync_reset"] == "true" && params.csr != true) {
-			localStorage["sync_data"] = false;
-		} else if(params.csr) {
-			for(var i = 0; i < syncOpts.length; i++) {
-				localStorage[syncOpts[i]] = result[syncOpts[i]];
-			};
-			localStorage["sync_reset"] = false;
-			chrome.storage.sync.set({sync_reset: false}, function() {
-				if(typeof chrome.runtime.lastError != 'undefined') {
-					console.log(chrome.runtime.lastError);
+		chrome.storage.sync.get(null, function(stgSync) {
+			var optionSyncPairs = {};
+			for(key in stgSync) {
+				if(stgSync[key] === 'true') {
+					optionSyncPairs[key] = true;
+				} else if(stgSync[key] === 'false') {
+					optionSyncPairs[key] = false;
 				}
+			}
+			chrome.storage.sync.set(optionSyncPairs, function() {
+				if(optionPairs["sync_data"] === true) {
+					storage.area = chrome.storage.sync;
+				}
+				callback();
 			});
-		} else {
-			for(var i = 0; i < syncOpts.length; i++) {
-				localStorage[syncOpts[i]] = result[syncOpts[i]];
-			};
-		}
-		if(params.fr) {
-			startFeatures();
-		}
-		if(localStorage["sync_data"] == "true") {
-			syncListener(true);
-		}
-		chrome.runtime.sendMessage({cmd: "fetch_complete", cl: params.cl});
+		});
 	});
 }
 
-function syncOptions() {
-	if(localStorage["sync_data"] != "true") {
-		return;
+function continueOnLoad() {
+	chrome.storage.onChanged.addListener(storageChangeHandler);
+	chrome.omnibox.onInputEntered.addListener(omniListener);
+	storageListener(true);
+	cleanupPerms();
+	checkForSettings(startFeatures);
+	permRemoveListeners();
+}
+
+function allOptions() {
+	return [
+		"al_protocol",
+		"auto_link",
+		"cite_locale",
+		"cite_style",
+		"context_menu",
+		"cr_autolink",
+		"cr_bubble",
+		"cr_bubble_last",
+		"cr_context",
+		"cr_omnibox",
+		"custom_resolver",
+		"doi_resolver",
+		"meta_buttons",
+		"omnibox_tab",
+		"qr_bgcolor",
+		"qr_bgtrans",
+		"qr_fgcolor",
+		"qr_size",
+		"qr_title",
+		"shortdoi_resolver",
+		"sync_data",
+		"sync_reset"
+	];
+}
+
+function excludeFromSync() {
+	return [
+		"al_protocol", // Requires user interaction to trigger permissions requests
+		"auto_link",   // Requires permissions to enable
+		"qr_title",    // Requires permissions to enable
+		"sync_data"    // Controls sync on/off
+	];
+}
+
+Array.prototype.diff = function(a) {
+	return this.filter(function(i) {
+		return a.indexOf(i) < 0;
+	});
+};
+
+function getDefaultOption(opt) {
+	defaultOptions = {
+		al_protocol: "http",
+		auto_link: false,
+		cite_locale: "auto",
+		cite_style: "bibtex",
+		context_menu: true,
+		cr_autolink: "custom",
+		cr_bubble: "custom",
+		cr_bubble_last: "custom",
+		cr_context: "custom",
+		cr_omnibox: "custom",
+		custom_resolver: false,
+		doi_resolver: "http://dx.doi.org/",
+		meta_buttons: true,
+		omnibox_tab: "newfgtab",
+		qr_bgcolor: "#ffffff",
+		qr_bgtrans: false,
+		qr_fgcolor: "#000000",
+		qr_size: "300",
+		qr_title: false,
+		shortdoi_resolver: "http://doi.org/",
+		sync_data: false
 	}
+	/* sync_reset is not stored locally
+	 * and does not need a default set */
 
-	if(localStorage["sync_reset"] == "true") {
-		localStorage["sync_data"] = false;
-		chrome.storage.sync.clear(function() {
-			if(typeof chrome.runtime.lastError != 'undefined') {
-				console.log(chrome.runtime.lastError);
+	if(typeof defaultOptions[opt] !== 'undefined')
+		return defaultOptions[opt];
+
+	return; // returns 'undefined'
+}
+
+function checkForSettings(callback) {
+	var key;
+	var options = (allOptions()).diff(["sync_reset"]);
+	var newOptions = {};
+	var updateSettings = false;
+
+	chrome.storage.local.get(options, function(stg) {
+		for(var i = 0; i < options.length; i++) {
+			key = options[i];
+			if(typeof stg[key] === 'undefined') {
+				newOptions[key] = getDefaultOption(key);
+				updateSettings = true;
 			}
-			chrome.storage.sync.set({sync_reset: "true"}, function() {
-				if(typeof chrome.runtime.lastError != 'undefined') {
-					console.log(chrome.runtime.lastError);
-				}
-			});
-		});
-	} else {
-		// Blacklist: sync_data, auto_link, qr_title
-		var syncOpts = ["context_menu", "meta_buttons", "cr_autolink", "cr_bubble",
-			"cr_context", "cr_omnibox", "doi_resolver", "shortdoi_resolver",
-			"omnibox_tab", "al_protocol", "qr_size", "qr_fgcolor", "qr_bgcolor",
-			"qr_bgtrans", "cite_style", "cite_locale", "cr_bubble_last",
-			"custom_resolver"];
+		}
 
-		var settingsBundle = {};
-		for(var i = 0; i < syncOpts.length; i++) {
-			settingsBundle[syncOpts[i]] = localStorage[syncOpts[i]];
-		};
-
-		chrome.storage.sync.set(settingsBundle, function() {
-			if(typeof chrome.runtime.lastError != 'undefined') {
-				console.log(chrome.runtime.lastError);
-			}
-		});
-	}
+		if(updateSettings) {
+			chrome.storage.local.set(newOptions, callback);
+		} else {
+			callback();
+		}
+	});
 }
 
 /*
- * Detect upstream changes when they occur and apply them here immediately.
- * The Sync listener should start after the first run through of fetchOptions,
- * but it should also start if the user toggles Sync on-off-on. Remove and
- * re-add the listener each time fetchOptions is called. This has the added
- * benefit of ensuring the listener is disabled if sync is disabled.
+ * toggleSync expects sync_data and sync_reset are set in .local and .sync
+ * storage, respectively, before being called.
  */
-function syncListener(enable) {
+function toggleSync() {
+	var key;
+	var syncKeys = (allOptions()).diff(excludeFromSync());
+	var dupOptions = {};
+
+	chrome.storage.local.get(null, function(stgLocal) {
+	chrome.storage.sync.get(null, function(stgSync) {
+		var syncEnabled = (typeof stgLocal["sync_data"] === "boolean") ? stgLocal["sync_data"] : true;
+		var syncReset = (typeof stgSync["sync_reset"] === "boolean") ? stgSync["sync_reset"] : false;
+
+		if(syncEnabled && !syncReset) {
+			console.log("[Sync] Using sync storage");
+			for(var i = 0; i < syncKeys.length; i++) {
+				key = syncKeys[i];
+				if(typeof stgSync[key] === 'undefined') {
+					if(typeof stgLocal[key] === 'undefined') {
+						dupOptions[key] = getDefaultOption(key);
+					} else {
+						dupOptions[key] = stgLocal[key];
+					}
+				}
+			}
+			chrome.storage.sync.set(dupOptions, function() {
+				storage.area = chrome.storage.sync;
+				chrome.runtime.sendMessage({cmd: "sync_toggle_complete"});
+				storageListener(true);
+			});
+		} else if(!syncEnabled && !syncReset) {
+			console.log("[Sync] Using local storage");
+			storage.area = chrome.storage.local;
+			chrome.runtime.sendMessage({cmd: "sync_toggle_complete"});
+			storageListener(true);
+		} else if (syncReset) {
+			console.log("[Sync] Reset detected, wiping sync storage");
+			storage.area = chrome.storage.local;
+			chrome.storage.sync.clear(function() {
+				chrome.storage.sync.set({sync_reset: true}, function() {
+					chrome.runtime.sendMessage({cmd: "sync_toggle_complete"});
+					storageListener(true);
+				});
+			});
+		}
+	});
+	});
+}
+
+function storageListener(enable) {
+	if(typeof storageListener.status === 'undefined') {
+		storageListener.status = true;
+	}
+
 	if(enable) {
-		chrome.storage.onChanged.addListener(syncChangeHandler);
+		storageListener.status = true;
 	} else {
-		chrome.storage.onChanged.removeListener(syncChangeHandler);
+		storageListener.status = false;
 	}
 }
 
-function syncChangeHandler(changes, namespace) {
-	if(namespace != "sync") {
+function storageChangeHandler(changes, namespace) {
+	if(storageListener.status !== true) {
 		return;
 	}
 
-	var opt;
-	var goFetch = false;
-
-	for(opt in changes) {
-		var newVal = changes[opt].newValue;
-		if(opt == "sync_reset") {
-			if(newVal == "true") {
-				console.log("[Sync] reset detected, disabling sync");
-				localStorage["sync_reset"] = true;
-				localStorage["sync_data"] = false;
-			} else if(newVal == "false") { // sync_reset can be undefined, so check for "false"
-				console.log("[Sync] service reactivated");
-				localStorage["sync_reset"] = false;
-			}
-			goFetch = true;
-		} else if(newVal != localStorage[opt]) {
-			goFetch = true;
-		}
+	/* Debugging */
+	/*
+	for(var key in changes) {
+		console.log("Option: " + key + ", oldValue: " + changes[key].oldValue + ", newValue: " + changes[key].newValue + ", Namespace: " + namespace);
 	}
+	*/
 
-	if(goFetch) {
-		console.log("[Sync] changes detected, syncing");
-		fetchOptions({cl: true, fr: false, csr: false});
+	if(namespace === "local") {
+		chrome.storage.local.get(["sync_data"], function(stgLocal) {
+			if(stgLocal["sync_data"] === true) {
+				var toSync = {};
+				var syncKeys = (allOptions()).diff(excludeFromSync());
+				for(var key in changes) {
+					if(syncKeys.indexOf(key) >= 0) {
+						toSync[key] = changes[key].newValue;
+					}
+				}
+				storageListener(false);
+				/* We need to send a message to the options page even if toSync is
+				 * empty, so go ahead and .set() regardless of content. This
+				 * covers auto_link so that storage listeners on the Options page
+				 * can resume while permissions verification occurs asynchronously.
+				 */
+				chrome.storage.sync.set(toSync, function() {
+					storageListener(true);
+					if(typeof changes["context_menu"] !== 'undefined') {
+						toggleContextMenu();
+					}
+					chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
+				});
+			} else {
+				if(typeof changes["context_menu"] !== 'undefined') {
+					toggleContextMenu();
+				}
+				chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
+			}
+		});
+	} else if(namespace === "sync") {
+		/*
+		 * If user reset sync before storage migration,
+		 * the value is stored as a string, not a bool
+		 */
+		if (typeof changes["sync_reset"] !== 'undefined') {
+			var sr = changes["sync_reset"].newValue;
+			if(sr === true || sr === "true") {
+				storageListener(false);
+				chrome.storage.local.set({sync_data: false}, toggleSync);
+				return; // No need to perform anything below since wiping
+			}
+		} else if(typeof changes["context_menu"] !== 'undefined') {
+			toggleContextMenu();
+		}
+
+		/* optionSyncPairs is for sanitizing bools coming from
+		 * pre-storage-migration and pushing back to .sync.
+		 *
+		 * optionLocalPairs is for keeping .local in-sync with
+		 * .sync since toggleSync only switches between storage
+		 * areas when sync disabled; it does not copy values.
+		 */
+		var optionSyncPairs = {};
+		var optionLocalPairs = {};
+		for(var key in changes) {
+			if(changes[key].newValue === 'true') {
+				optionSyncPairs[key] = true;
+				optionLocalPairs[key] = true;
+			} else if(changes[key].newValue === 'false') {
+				optionSyncPairs[key] = false;
+				optionLocalPairs[key] = false;
+			} else if(key !== 'al_protocol') {
+				/* Migration: al_protocol was removed from sync
+				 * since calls to chrome.permissions.request must
+				 * stem from user interaction; thus, autolink
+				 * listeners cannot be refreshed. Ignore since old
+				 * versions of this extension may still alter it.
+				 */
+				optionLocalPairs[key] = changes[key].newValue;
+			}
+		}
+
+		storageListener(false);
+		chrome.storage.sync.set(optionSyncPairs, function() {
+		chrome.storage.local.set(optionLocalPairs, function() {
+			storageListener(true);
+		});
+		});
 	}
 }
 
 function startFeatures() {
-	if(localStorage["context_menu"] == "true") {
-		contextMenuMaker();
-	}
-	if(localStorage["auto_link"] == "true") {
-		autoLinkDOIs();
-	}
+	storage.area.get(["context_menu"], function(stg) {
+		if(stg["context_menu"] === true) {
+			contextMenuMaker();
+		}
+	});
+	chrome.storage.local.get(["auto_link"], function(stg) {
+		if(stg["auto_link"] === true) {
+			autoLinkDOIs();
+		}
+	});
 }
 
 // Remove spaces and punctuation from beginning and end of input
@@ -278,9 +367,9 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (alert)
 function checkValidDoi(doiInput) {
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		return true;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		alert(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -288,37 +377,47 @@ function checkValidDoi(doiInput) {
 	}
 }
 
-// Build URL based on custom resolver settings
-function resolveURL(doi, source) {
-	var cr = localStorage["custom_resolver"];
-	var crc = localStorage["cr_context"];
-	var cro = localStorage["cr_omnibox"];
-	var dr = localStorage["doi_resolver"];
-	var sr = localStorage["shortdoi_resolver"];
-	var useDefaultResolver = true;
 
-	switch(source) {
-		case "context":
-			if(cr == "true" && crc == "custom") {
-				useDefaultResolver = false;
-			}
-			break;
-		case "omnibox":
-			if(cr == "true" && cro == "custom") {
-				useDefaultResolver = false;
-			}
-			break;
-	}
+function navigate(url) {
+	chrome.tabs.query({
+		active: true,
+		currentWindow: true
+	}, function(tabs) {
+		chrome.tabs.update(tabs[0].id, {url: url});
+	});
+}
 
-	if(useDefaultResolver) {
-		if(doi.match(/^10\./)) return "http://dx.doi.org/" + doi;
-		else if(doi.match(/^10\//)) return "http://doi.org/" + doi.replace(/^10\//,"");
-	} else {
-		if(doi.match(/^10\./)) return dr + doi;
-		else if(doi.match(/^10\//)) return sr + doi.replace(/^10\//,"");
-	}
+function resolveDOI(doi, useCustomResolver, tab) {
+	var stgFetch = [
+		"doi_resolver",
+		"shortdoi_resolver"
+	];
 
-	return "";
+	storage.area.get(stgFetch, function(stg) {
+		var str = "";
+		var dr = stg["doi_resolver"];
+		var sr = stg["shortdoi_resolver"];
+
+		if(useCustomResolver) {
+			if(/^10\./.test(doi)) str = dr + doi;
+			else if(/^10\//.test(doi)) str = sr + doi.replace(/^10\//,"");
+		} else {
+			if(/^10\./.test(doi)) str = "http://dx.doi.org/" + doi;
+			else if(/^10\//.test(doi)) str = "http://doi.org/" + doi.replace(/^10\//,"");
+		}
+
+		switch(tab) {
+			case "newForegroundTab":
+				chrome.tabs.create({url: str, active: true});
+				break;
+			case "newBackgroundTab":
+				chrome.tabs.create({url: str, active: false});
+				break;
+			default: // "currentTab"
+				navigate(str);
+				break;
+		}
+	});
 }
 
 // Context menu
@@ -327,50 +426,51 @@ function contextMenuMaker() {
 		"title" : chrome.i18n.getMessage("contextText"),
 		"type" : "normal",
 		"contexts" : ["selection"],
-		"onclick" : cmResolve
+		"onclick" : contextMenuResolve
 	});
 }
 
-// Context menu resolve doi
-function cmResolve(info) {
+function toggleContextMenu() {
+	storage.area.get(["context_menu"], function(stg) {
+		if(stg["context_menu"] === true) {
+			chrome.contextMenus.removeAll(contextMenuMaker);
+		} else {
+			chrome.contextMenus.removeAll(null);
+		}
+	});
+}
+
+function contextMenuResolve(info) {
 	var doiInput = escape(trim(info.selectionText));
-	if(checkValidDoi(doiInput)) {
-		chrome.tabs.create({url:resolveURL(doiInput, "context")});
+	if(!checkValidDoi(doiInput)) {
+		return;
 	}
+
+	var stgFetch = [
+		"custom_resolver",
+		"cr_context"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		var cr = stg["custom_resolver"];
+		var crc = stg["cr_context"];
+		if(cr === true && crc === "custom") {
+			resolveDOI(doiInput, true, "newForegroundTab");
+		} else {
+			resolveDOI(doiInput, false, "newForegroundTab");
+		}
+	});
 }
 
 // Message passing
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch(request.cmd) {
-		case "context_menu":
-			if(request.setting == "enable") {
-				chrome.contextMenus.removeAll();
-				contextMenuMaker();
-			} else {
-				chrome.contextMenus.removeAll();
-			}
-			break;
 		case "auto_link":
 			autoLinkDOIs();
 			break;
-		case "sync_opts":
-			syncOptions();
-			break;
-		case "sync_listener":
-			syncListener(request.enable);
-			sendResponse({status: "finished"});
-			break;
-		case "fetch_opts":
-			fetchOptions({cl: request.cl, fr: false, csr: request.csr});
-			break;
-		case "al_resolve_url":
-			var cr = localStorage["custom_resolver"];
-			var cra = localStorage["cr_autolink"];
-			var urlPrefix = "http://dx.doi.org/";
-			if(cr == "true" && cra == "custom") {
-				urlPrefix = localStorage["doi_resolver"];
-			}
-			sendResponse({url: urlPrefix});
+		case "toggle_sync":
+			storageListener(false);
+			toggleSync();
 			break;
 		case "record_tab_id":
 			tabRecord(request.id, true);
@@ -397,7 +497,7 @@ function cleanupPerms() {
 }
 
 function tabRecord(id, add) {
-	if(typeof tabRecord.openTabs == 'undefined')
+	if(typeof tabRecord.openTabs === 'undefined')
 		tabRecord.openTabs = [];
 
 	if(add) {
@@ -429,7 +529,7 @@ function permRemoveListeners() {
 	});
 }
 
-// Auto-link listeners
+// Auto-link
 function alListener(tabId, changeInfo, tab) {
 	chrome.permissions.contains({
 		origins: [ 'http://*/*', 'https://*/*' ]
@@ -440,7 +540,7 @@ function alListener(tabId, changeInfo, tab) {
 			chrome.permissions.contains({
 				origins: [ 'http://*/*' ]
 			}, function(result) {
-				if(result && tab.url.indexOf("http") == 0 && tab.url.indexOf("https") == -1) {
+				if(result && tab.url.indexOf("http") == 0 && tab.url.indexOf("https") < 0) {
 					chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 				} else {
 					chrome.permissions.contains({
@@ -464,36 +564,47 @@ function autoLinkDOIs() {
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
 		if(result) {
-			localStorage["auto_link"] = true;
-			localStorage["al_protocol"] = "httphttps";
-			syncOptions();
-			chrome.tabs.onUpdated.addListener(alListener);
-			console.log('Autolink listeners enabled for http and https');
+			chrome.storage.local.set({
+				auto_link: true,
+				al_protocol: "httphttps"
+			}, function() {
+				chrome.tabs.onUpdated.addListener(alListener);
+				console.log('Autolink listeners enabled for http and https');
+				chrome.runtime.sendMessage({cmd: "auto_link_config_complete"});
+			});
 		} else {
 			chrome.permissions.contains({
 				permissions: [ 'tabs' ],
 				origins: [ 'http://*/*' ]
 			}, function(result) {
 				if(result) {
-					localStorage["auto_link"] = true;
-					localStorage["al_protocol"] = "http";
-					syncOptions();
-					chrome.tabs.onUpdated.addListener(alListener);
-					console.log('Autolink listeners enabled for http');
+					chrome.storage.local.set({
+						auto_link: true,
+						al_protocol: "http"
+					}, function() {
+						chrome.tabs.onUpdated.addListener(alListener);
+						console.log('Autolink listeners enabled for http');
+						chrome.runtime.sendMessage({cmd: "auto_link_config_complete"});
+					});
 				} else {
 					chrome.permissions.contains({
 						permissions: [ 'tabs' ],
 						origins: [ 'https://*/*' ]
 					}, function(result) {
 						if(result) {
-							localStorage["auto_link"] = true;
-							localStorage["al_protocol"] = "https";
-							syncOptions();
-							chrome.tabs.onUpdated.addListener(alListener);
-							console.log('Autolink listeners enabled for https');
+							chrome.storage.local.set({
+								auto_link: true,
+								al_protocol: "https"
+							}, function() {
+								chrome.tabs.onUpdated.addListener(alListener);
+								console.log('Autolink listeners enabled for https');
+								chrome.runtime.sendMessage({cmd: "auto_link_config_complete"});
+							});
 						} else {
-							localStorage["auto_link"] = false;
-							console.log('Autolink listeners disabled');
+							chrome.storage.local.set({ auto_link: false }, function() {
+								console.log('Autolink listeners disabled');
+								chrome.runtime.sendMessage({cmd: "auto_link_config_complete"});
+							});
 						}
 					});
 				}
@@ -503,31 +614,45 @@ function autoLinkDOIs() {
 }
 
 // Omnibox
-function navigate(url) {
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-		chrome.tabs.update(tabs[0].id, {url: url});
+function omniListener(text, disposition) {
+	var stgFetch = [
+		"omnibox_tab",
+		"custom_resolver",
+		"cr_omnibox"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		console.log('omnibox: ' + text);
+
+		var doiInput = escape(trim(text));
+		if(!checkValidDoi(doiInput)) {
+			return;
+		}
+
+		var ot = stg["omnibox_tab"];
+		var cr = stg["custom_resolver"];
+		var cro = stg["cr_omnibox"];
+		var tab;
+
+		switch(ot) {
+			case "newfgtab":
+				tab = "newForegroundTab";
+				break;
+			case "newbgtab":
+				tab = "newBackgroundTab";
+				break;
+			case "curtab":
+				tab = "currentTab";
+				break;
+			default:
+				tab = disposition;
+				break;
+		}
+
+		if(cr === true && cro === "custom") {
+			resolveDOI(doiInput, true, tab);
+		} else {
+			resolveDOI(doiInput, false, tab);
+		}
 	});
 }
-
-chrome.omnibox.onInputEntered.addListener( function (text, disposition) {
-	console.log('inputEntered: ' + text);
-	var doiInput = escape(trim(text));
-	var ot = localStorage["omnibox_tab"];
-	var tabToUse;
-
-	if(disposition == "currentTab" && ot == "newfgtab") {
-		tabToUse = "newForegroundTab";
-	} else if(disposition == "currentTab" && ot == "newbgtab") {
-		tabToUse = "newBackgroundTab";
-	} else {
-		tabToUse = disposition;
-	}
-
-	if(tabToUse == "newForegroundTab") {
-		chrome.tabs.create({url:resolveURL(doiInput, "omnibox")});
-	} else if(tabToUse == "newBackgroundTab") {
-		chrome.tabs.create({active: false, url:resolveURL(doiInput, "omnibox")});
-	} else {
-		navigate(resolveURL(doiInput, "omnibox"));
-	}
-});

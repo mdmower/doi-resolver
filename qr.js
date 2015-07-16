@@ -15,34 +15,89 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
+	storage(true);
+}, false);
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+	switch(request.cmd) {
+		case "sync_toggle_complete":
+			storage(false);
+			break;
+		default:
+			break;
+	}
+});
+
+function storage(firstRun) {
+	if(typeof storage.area === 'undefined') {
+		storage.area = chrome.storage.local;
+	}
+
+	chrome.storage.local.get(["sync_data"], function(stg) {
+		if(stg["sync_data"] === true) {
+			storage.area = chrome.storage.sync;
+		} else {
+			storage.area = chrome.storage.local;
+		}
+
+		if(firstRun === true)
+			continueOnLoad();
+	});
+}
+
+function continueOnLoad() {
 	getLocalMessages();
 	getUrlVariables();
 	restoreOptions();
 	prepareColorPickers();
 	startListeners();
-}, false);
+}
 
 function startListeners() {
 	/*
 	 * qrSizeInput can fire onChange events frequently. debounce it to only run
 	 * once per 750ms so Chrome Sync doesn't get too many sync requests.
 	 */
-	var dbSaveOptions = _.debounce(saveOptions, 750);
+	var dbQrSizeSave = _.debounce(qrSizeSave, 750);
+
 
 	$("#doiForm").submit(function () {
 		formSubmitHandler();
 		return false;
 	});
-	$("#qrBgTrans").on("click", saveOptions);
-	$("#qrFetchTitle").on("click", setCrossrefPermission);
-	$(".numeric").keyup(function () {
-		this.value = this.value.replace(/[^0-9]/g,'');
+	$("#qrBgTrans").on("change", function() {
+		toggleBgColor();
+		saveOptions();
 	});
-	$("#qrSizeInput").on("change", dbSaveOptions);
-	$("#qrManualTitle").on("click", toggleTitleFetch);
+	$("#qrFetchTitle").on("change", setDoiMetaPermissions);
+	$("#qrSizeInput").on("change input", dbQrSizeSave);
+	$("#qrManualTitle").on("change", toggleTitleFetch);
 
 	chrome.tabs.getCurrent(function(tab) {
 		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
+	});
+}
+
+function toggleBgColor() {
+	if($("#qrBgTrans").prop('checked')) {
+		$("#bgColorDiv").css("display", "none");
+	} else {
+		$("#bgColorDiv").css("display", "block");
+	}
+}
+
+function qrSizeSave() {
+	if(isNaN($("#qrSizeInput").val())) {
+		var num = $("#qrSizeInput").val().replace(/[^0-9]/g,'');
+		$("#qrSizeInput").val(num);
+	}
+
+	storage.area.get(["qr_size"], function(stg) {
+		var stgQrSize = stg["qr_size"];
+		var newQrSize = $("#qrSizeInput").val();
+		if(stgQrSize !== newQrSize) {
+			saveOptions();
+		}
 	});
 }
 
@@ -63,24 +118,29 @@ function getUrlVariables() {
 	}
 }
 
-function syncOptions() {
-	chrome.runtime.sendMessage({cmd: "sync_opts"});
-}
-
 function restoreOptions() {
-	var qrSize = localStorage["qr_size"];
-	if(isNaN(qrSize)) {
-		$("#qrSizeInput").val(300);
-	} else {
-		$("#qrSizeInput").val(qrSize);
-	}
-	if(localStorage["qr_title"] == "true") {
-		$("#qrFetchTitle").prop("checked", true);
-	}
-	if(localStorage["qr_bgtrans"] == "true") {
-		$("#qrBgTrans").prop("checked", true);
-		$("#bgColorDiv").css("display", "none");
-	}
+	var stgFetch = [
+		"qr_size",
+		"qr_bgtrans"
+	];
+
+	chrome.storage.local.get(["qr_title"], function(stgLocal) {
+	storage.area.get(stgFetch, function(stg) {
+		var qrSize = stg["qr_size"];
+		if(isNaN(qrSize)) {
+			$("#qrSizeInput").val(300);
+		} else {
+			$("#qrSizeInput").val(qrSize);
+		}
+		if(stgLocal["qr_title"] === true) {
+			$("#qrFetchTitle").prop("checked", true);
+		}
+		if(stg["qr_bgtrans"] === true) {
+			$("#qrBgTrans").prop("checked", true);
+			$("#bgColorDiv").css("display", "none");
+		}
+	});
+	});
 }
 
 function isHexColor(code) {
@@ -88,66 +148,80 @@ function isHexColor(code) {
 }
 
 function prepareColorPickers() {
-	var qrFgColor = "#000000";
-	var storedQrFgColor = localStorage["qr_fgcolor"];
-	if(isHexColor(storedQrFgColor)) {
-		qrFgColor = storedQrFgColor;
-	}
-	$("#qrFgColorInput").val(qrFgColor);
+	var stgFetch = [
+		"qr_fgcolor",
+		"qr_bgcolor"
+	];
 
-	var qrBgColor = "#ffffff";
-	var storedQrBgColor = localStorage["qr_bgcolor"];
-	if(isHexColor(storedQrBgColor)) {
-		qrBgColor = storedQrBgColor;
-	}
-	$("#qrBgColorInput").val(qrBgColor);
+	storage.area.get(stgFetch, function(stg) {
 
-	$("#qrFgColorInput").spectrum({
-		color: qrFgColor,
-		preferredFormat: "hex",
-		showInput: true,
-		clickoutFiresChange: true,
-		replacerClassName: "qrColorReplacerClass",
-		containerClassName: "qrColorContainerClass",
-		change: function(color) {
-			saveOptions()
+		var qrFgColor = "#000000";
+		var storedQrFgColor = stg["qr_fgcolor"];
+		if(isHexColor(storedQrFgColor)) {
+			qrFgColor = storedQrFgColor;
+		} else {
+			chrome.storage.local.set({qr_fgcolor: qrFgColor}, function() {
+				if(typeof chrome.runtime.lastError != 'undefined') {
+					console.log(chrome.runtime.lastError);
+				}
+			});
 		}
-	});
+		$("#qrFgColorInput").val(qrFgColor);
 
-	$("#qrBgColorInput").spectrum({
-		color: qrBgColor,
-		preferredFormat: "hex",
-		showInput: true,
-		clickoutFiresChange: true,
-		replacerClassName: "qrColorReplacerClass",
-		containerClassName: "qrColorContainerClass",
-		change: function(color) {
-			saveOptions()
+		var qrBgColor = "#ffffff";
+		var storedQrBgColor = stg["qr_bgcolor"];
+		if(isHexColor(storedQrBgColor)) {
+			qrBgColor = storedQrBgColor;
+		} else {
+			chrome.storage.local.set({qr_bgcolor: qrBgColor}, function() {
+				if(typeof chrome.runtime.lastError != 'undefined') {
+					console.log(chrome.runtime.lastError);
+				}
+			});
 		}
+		$("#qrBgColorInput").val(qrBgColor);
+
+		$("#qrFgColorInput").spectrum({
+			color: qrFgColor,
+			preferredFormat: "hex",
+			showInput: true,
+			clickoutFiresChange: true,
+			replacerClassName: "qrColorReplacerClass",
+			containerClassName: "qrColorContainerClass",
+			change: function(color) {
+				saveOptions()
+			}
+		});
+
+		$("#qrBgColorInput").spectrum({
+			color: qrBgColor,
+			preferredFormat: "hex",
+			showInput: true,
+			clickoutFiresChange: true,
+			replacerClassName: "qrColorReplacerClass",
+			containerClassName: "qrColorContainerClass",
+			change: function(color) {
+				saveOptions()
+			}
+		});
+
 	});
 }
 
 function saveOptions() {
-	if($("#qrFetchTitle").is(":checked")) {
-		localStorage["qr_title"] = true;
-	} else {
-		localStorage["qr_title"] = false;
+	var options = {
+		qr_bgtrans: $("#qrBgTrans").prop('checked'),
+		qr_size: $("#qrSizeInput").val(),
+		qr_fgcolor: $("#qrFgColorInput").val(),
+		qr_bgcolor: $("#qrBgColorInput").val(),
+		qr_title: $("#qrFetchTitle").prop('checked')
 	}
-	if($("#qrBgTrans").is(":checked")) {
-		localStorage["qr_bgtrans"] = true;
-		$("#bgColorDiv").css("display", "none");
-	} else {
-		localStorage["qr_bgtrans"] = false;
-		$("#bgColorDiv").css("display", "block");
-	}
-	localStorage["qr_size"] = $("#qrSizeInput").val();
-	localStorage["qr_fgcolor"] = $("#qrFgColorInput").val();
-	localStorage["qr_bgcolor"] = $("#qrBgColorInput").val();
-	syncOptions();
+
+	chrome.storage.local.set(options, null);
 }
 
 function toggleTitleFetch() {
-	if($("#qrManualTitle").is(":checked")) {
+	if($("#qrManualTitle").prop('checked')) {
 		$("#qrFetchTitle").prop("checked", false);
 		$("#qrFetchTitle").attr("disabled", "disabled");
 		$("#qrManualTitleTextDiv").css("display", "flex");
@@ -163,9 +237,9 @@ function trim(stringToTrim) {
 }
 
 function checkValidDoi(doiInput) {
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		return true;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -194,8 +268,8 @@ function advancedNotification(elms) {
 	$("#notifyDiv").css("display", "block");
 }
 
-function setCrossrefPermission() {
-	var perm = $("#qrFetchTitle").is(":checked");
+function setDoiMetaPermissions() {
+	var perm = $("#qrFetchTitle").prop('checked');
 
 	if(perm) {
 		chrome.permissions.request({
@@ -239,7 +313,7 @@ function formSubmitHandler() {
 	var fgcolor = $("#qrFgColorInput").val();
 	var bgcolor = $("#qrBgColorInput").val();
 
-	if($("#qrBgTrans").is(":checked")) {
+	if($("#qrBgTrans").prop('checked')) {
 		bgcolor = null;
 	}
 
@@ -258,15 +332,15 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 	var stringToEncode = "";
 	var jsonUrl = "http://dx.doi.org/" + doiInput;
 
-	if(doiInput.match(/^10\./)) {
+	if(/^10\./.test(doiInput)) {
 		stringToEncode = "http://dx.doi.org/" + doiInput;
-	} else if(doiInput.match(/^10\//)) {
+	} else if(/^10\//.test(doiInput)) {
 		stringToEncode = "http://doi.org/" + doiInput.replace(/^10\//,"");
 	}
 
 	simpleNotification("Loading...");
 
-	var perm = $("#qrFetchTitle").is(":checked");
+	var perm = $("#qrFetchTitle").prop('checked');
 	if(perm) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
@@ -303,7 +377,7 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 			}
 		});
 	} else {
-		var manualTitle = $("#qrManualTitle").is(":checked");
+		var manualTitle = $("#qrManualTitle").prop('checked');
 		if(manualTitle) {
 			var titleString = $("#qrManualTitleText").val();
 			if(titleString != "") {

@@ -534,6 +534,10 @@ function alListener(tabId, changeInfo, tab) {
 	chrome.permissions.contains({
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
+		if(result && tab.url.indexOf("https://chrome.google.com/webstore") == 0) {
+			return;
+		}
+
 		if(result && tab.url.indexOf("http") == 0) {
 			chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 		} else {

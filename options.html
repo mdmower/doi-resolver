@@ -68,7 +68,7 @@
 			<h3 class="option_title">Custom DOI Resolver</h3>
 			<input type="checkbox" id="customResolver" /><label id="optionCustomResolver" for="customResolver"></label><br>
 			<div class="row">
-				<div id="customResolverLeft">
+				<div id="customResolverLeft" class="cr_dependent">
 					<div id="customResolverFields">
 						<div class="cr_input_container">
 							<label id="textDoiResolverInput" for="doiResolverInput"></label><br>
@@ -88,7 +88,7 @@
 						</div>
 					</div>
 				</div>
-				<div id="customResolverRight">
+				<div id="customResolverRight" class="cr_dependent">
 					<div id="optionCustomResolverSelection"></div>
 					<select type="selection" id="crAutolink" class="crSelections">
 						<option class="optionCrCustom" value="custom"></option>
@@ -115,7 +115,7 @@
 			<h3 class="option_title">Autolink</h3>
 			<div id="autoLinkInfo"></div>
 			<input type="checkbox" id="autoLink" /><label id="optionAutoLink" for="autoLink"></label>
-			<div id="alProtocol">
+			<div id="alProtocol" class="al_dependent">
 				<span id="optionAutolinkApplyto"></span>
 				<select type="selection" id="autolinkApplyto">
 					<option id="optionAutolinkApplytoHttp" value="http">http</option>
@@ -123,7 +123,7 @@
 					<option id="optionAutolinkApplytoHttpHttps" value="httphttps">http &amp; https</option>
 				</select>
 			</div>
-		</div>
+			<input type="checkbox" id="autoLinkRewrite" class="al_dependent cr_dependent" /><label id="optionAutoLinkRewrite" for="autoLinkRewrite" class="al_dependent cr_dependent"></label>
 
 		<div class="option_container" id="last_option_container">
 			<h3 class="option_title">Sync</h3>

@@ -97,6 +97,7 @@ function allOptions() {
 	return [
 		"al_protocol",
 		"auto_link",
+		"auto_link_rewrite",
 		"cite_locale",
 		"cite_style",
 		"context_menu",
@@ -139,6 +140,7 @@ function getDefaultOption(opt) {
 	defaultOptions = {
 		al_protocol: "http",
 		auto_link: false,
+		auto_link_rewrite: false,
 		cite_locale: "auto",
 		cite_style: "bibtex",
 		context_menu: true,

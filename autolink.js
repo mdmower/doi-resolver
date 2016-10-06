@@ -27,6 +27,14 @@ function storage() {
 		// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
 		storage.find = /\b(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig;
 	}
+	if(typeof storage.findURL === 'undefined') {
+		// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
+		storage.findURL = /^(?:https?\:\/\/)dx\.doi\.org\/(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)$/ig;
+	}
+	if(typeof storage.autoLinkRewrite === 'undefined') {
+		storage.autoLinkRewrite = false;
+	}
+	
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
 		if(stg["sync_data"] === true) {
@@ -37,6 +45,7 @@ function storage() {
 
 		var stgFetch = [
 			"cr_autolink",
+			"auto_link_rewrite",
 			"custom_resolver",
 			"doi_resolver"
 		];
@@ -44,6 +53,7 @@ function storage() {
 		storage.area.get(stgFetch, function(stg) {
 			if(stg["custom_resolver"] === true && stg["cr_autolink"] == "custom") {
 				storage.urlPrefix = stg["doi_resolver"];
+				storage.autoLinkRewrite = stg["auto_link_rewrite"] === true;
 			}
 			replaceDOIsWithLinks();
 		});
@@ -69,6 +79,10 @@ function replaceInElement(element, find, replace) {
 		if(child.nodeType == 1) { // ELEMENT_NODE
 			if(forbiddenTags.indexOf(child.nodeName.toLowerCase()) < 0) {
 				replaceInElement(child, find, replace);
+			} else if(storage.autoLinkRewrite && child.nodeName.toLowerCase() == "a") {
+				if (storage.findURL.test(child.href)) {
+					child.href = child.href.replace(storage.findURL, storage.urlPrefix+"$1");
+				}
 			}
 		} else if(child.nodeType == 3) { // TEXT_NODE
 			replaceInText(child, find, replace);

@@ -125,6 +125,7 @@ function startChangeListeners() {
 	$("#context").on("change", saveOptions);
 	$("#meta").on("change", saveOptions);
 	$("#autoLink").on("change", saveOptions);
+	$("#autoLinkRewrite").on("change", saveOptions);
 	$("#customResolver").on("change", saveOptions);
 	$(".crSelections").on("change", saveOptions);
 	$("#doiResolverInput").on("change", dbSaveOptions);
@@ -142,6 +143,7 @@ function haltChangeListeners() {
 	$("#context").off("change", saveOptions);
 	$("#meta").off("change", saveOptions);
 	$("#autoLink").off("change", saveOptions);
+	$("#autoLinkRewrite").off("change", saveOptions);
 	$("#customResolver").off("change", saveOptions);
 	$(".crSelections").off("change", saveOptions);
 	$("#doiResolverInput").off("change", dbSaveOptions);
@@ -177,6 +179,7 @@ function saveOptions() {
 	minimalOptionsRefresh();
 
 	var options = {
+		auto_link_rewrite: $("#autoLinkRewrite").prop('checked'),
 		context_menu: $("#context").prop('checked'),
 		meta_buttons: $("#meta").prop('checked'),
 		custom_resolver: $("#customResolver").prop('checked'),
@@ -194,21 +197,27 @@ function saveOptions() {
 	 * if the current setting differs from stored setting
 	 */
 	var alCur = $("#autoLink").prop('checked');
+	var alrCur = $("#autoLinkRewrite").prop('checked');
 	var alpCur = $("#autolinkApplyto option:selected").val();
 
 	var stgLclFetch = [
 		"auto_link",
+		"auto_link_rewrite",
 		"al_protocol"
 	];
 
 	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
 		var alBool = stgLocal["auto_link"];
+		var alrBool = stgLocal["auto_link_rewrite"];
 		var alpStr = stgLocal["al_protocol"];
 
 		storageListener(false);
 		if(alCur != alBool || alpCur != alpStr) {
 			chrome.storage.local.set(options, setAutolinkPermission);
 		} else {
+			if(alBool && (alrBool != alrCur)) {
+				chrome.runtime.sendMessage({cmd: "auto_link"});
+			}
 			/* Wait for message confirming .local to .sync duplication
 			 * is complete in background before re-enabling storage
 			 * listener here
@@ -227,6 +236,7 @@ function restoreOptions() {
 	];
 
 	var stgFetch = stgFetch = [
+		"auto_link_rewrite",
 		"context_menu",
 		"meta_buttons",
 		"custom_resolver",
@@ -242,6 +252,7 @@ function restoreOptions() {
 	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
 	storage.area.get(stgFetch, function(stg) {
 		var alpOp = stgLocal["al_protocol"];
+		var alrOp = stg["auto_link_rewrite"];
 		var sdOp = stgLocal["sync_data"];
 		var cmOp = stg["context_menu"];
 		var metaOp = stg["meta_buttons"];
@@ -279,13 +290,11 @@ function restoreOptions() {
 
 		if(crOp === true) {
 			$("#customResolver").prop("checked", true);
-			$("#customResolverLeft").css("display", "inline-block");
-			$("#customResolverRight").css("display", "inline-block");
+			$(".cr_dependent").removeClass("cr_dependent_hidden");
 			setCrPreviews(); // Depends on text fields being filled already
 		} else {
 			$("#customResolver").prop("checked", false);
-			$("#customResolverLeft").css("display", "none");
-			$("#customResolverRight").css("display", "none");
+			$(".cr_dependent").addClass("cr_dependent_hidden");
 		}
 
 		if(sdOp === true) {
@@ -302,6 +311,7 @@ function restoreOptions() {
 		$("#crOmnibox").val(croOp);
 		$("#omniboxOpento").val(otOp);
 		$("#autolinkApplyto").val(alpOp);
+		$("#autoLinkRewrite").prop("checked", alrOp);
 
 		verifyAutolinkPermission(startChangeListeners);
 	});
@@ -331,12 +341,10 @@ function minimalOptionsRefresh() {
 	}
 
 	if(cr) {
-		$("#customResolverLeft").css("display", "inline-block");
-		$("#customResolverRight").css("display", "inline-block");
+		$(".cr_dependent").removeClass("cr_dependent_hidden");
 		setCrPreviews();
 	} else {
-		$("#customResolverLeft").css("display", "none");
-		$("#customResolverRight").css("display", "none");
+		$(".cr_dependent").addClass("cr_dependent_hidden");
 	}
 }
 
@@ -359,6 +367,7 @@ function storageChangeHandler(changes, namespace) {
 	/* sync_reset is handled in the background page */
 	if(namespace === "sync" && typeof changes["sync_reset"] === 'undefined') {
 		var options = [
+			"auto_link_rewrite",
 			"context_menu",
 			"meta_buttons",
 			"custom_resolver",
@@ -428,7 +437,7 @@ function setAutolinkPermission() {
 			} else {
 				$("#autolinkApplyto").val("http");
 				$("#autoLink").prop("checked", false);
-				$("#alProtocol").css("display", "none");
+				$(".al_dependent").addClass("al_dependent_hidden");
 				startChangeListeners();
 			}
 		});
@@ -439,13 +448,13 @@ function setAutolinkPermission() {
 		}, function(removed) {
 			if(removed) {
 				$("#autoLink").prop("checked", false);
-				$("#alProtocol").css("display", "none");
+				$(".al_dependent").addClass("al_dependent_hidden");
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				startChangeListeners();
 				console.log("Autolink permissions removed");
 			} else {
 				$("#autoLink").prop("checked", true);
-				$("#alProtocol").css("display", "block");
+				$(".al_dependent").removeClass("al_dependent_hidden");
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				startChangeListeners();
 				console.log("Could not remove autolink permissions");
@@ -486,7 +495,7 @@ function verifyAutolinkPermission(callback) {
 		if(result) {
 			$("#autolinkApplyto").val("httphttps");
 			$("#autoLink").prop("checked", true);
-			$("#alProtocol").css("display", "block");
+			$(".al_dependent").removeClass("al_dependent_hidden");
 			callback();
 		} else {
 			chrome.permissions.contains({
@@ -496,7 +505,7 @@ function verifyAutolinkPermission(callback) {
 				if(result) {
 					$("#autolinkApplyto").val("http");
 					$("#autoLink").prop("checked", true);
-					$("#alProtocol").css("display", "block");
+					$(".al_dependent").removeClass("al_dependent_hidden");
 					callback();
 				} else {
 					chrome.permissions.contains({
@@ -506,11 +515,11 @@ function verifyAutolinkPermission(callback) {
 						if(result) {
 							$("#autolinkApplyto").val("https");
 							$("#autoLink").prop("checked", true);
-							$("#alProtocol").css("display", "block");
+							$(".al_dependent").removeClass("al_dependent_hidden");
 							callback();
 						} else {
 							$("#autoLink").prop("checked", false);
-							$("#alProtocol").css("display", "none");
+							$(".al_dependent").addClass("al_dependent_hidden");
 							callback();
 						}
 					});
@@ -557,6 +566,8 @@ function getLocalMessages() {
 	$("#shortDoiOutputUrlExample").html(message);
 	message = chrome.i18n.getMessage("optionAutoLink");
 	$("#optionAutoLink").html(message);
+	message = chrome.i18n.getMessage("optionAutoLinkRewrite");
+	$("#optionAutoLinkRewrite").html(message);
 	message = chrome.i18n.getMessage("optionOmniboxOpento");
 	$("#optionOmniboxOpento").html(message);
 	message = chrome.i18n.getMessage("optionOmniboxOpentoCurtab");

@@ -104,7 +104,6 @@ ul {
 #customResolverLeft,
 #customResolverRight {
 	vertical-align: top;
-	display: none;
 	padding-top: 5px;
 	white-space: normal;
 }
@@ -220,4 +219,12 @@ ul {
 
 .option_title {
 	margin: 0 0 4px 0;
+}
+
+.cr_dependent_hidden {
+	display: none;
+}
+
+.al_dependent_hidden {
+	display: none;
 }

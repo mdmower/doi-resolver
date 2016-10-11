@@ -184,7 +184,7 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 		options.push({value: $(this).val(), text: $(this).text()});
 	});
 	$(select).data('options', options);
-	$(textbox).bind('change keyup', function() {
+	$(textbox).on('change keyup', function() {
 		if($(textbox).data('filtext') == $(textbox).val()) return;
 		$(textbox).data('filtext', $(textbox).val());
 
@@ -325,7 +325,7 @@ function getCitation(doi) {
 					simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 				}
 			});
-			jqxhr.error(function() {
+			jqxhr.fail(function() {
 				simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 			});
 		} else {

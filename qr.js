@@ -223,11 +223,11 @@ function saveOptions() {
 function toggleTitleFetch() {
 	if($("#qrManualTitle").prop('checked')) {
 		$("#qrFetchTitle").prop("checked", false);
-		$("#qrFetchTitle").attr("disabled", "disabled");
+		$("#qrFetchTitle").prop("disabled", true);
 		$("#qrManualTitleTextDiv").css("display", "flex");
 		saveOptions();
 	} else {
-		$("#qrFetchTitle").removeAttr("disabled");
+		$("#qrFetchTitle").prop("disabled", false);
 		$("#qrManualTitleTextDiv").css("display", "none");
 	}
 }
@@ -367,7 +367,7 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 						createQrImage(stringToEncode, size, fgcolor, bgcolor);
 					}
 				});
-				jqxhr.error(function() {
+				jqxhr.fail(function() {
 					updateMessage(stringToEncode, "missing");
 					createQrImage(stringToEncode, size, fgcolor, bgcolor);
 				});

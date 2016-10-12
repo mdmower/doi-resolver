@@ -257,6 +257,6 @@
 	},
 	"optionAutoLinkRewrite": {
 		"description": "(65) A setting to enable the extension to scan every page visited by the user and rewite dx.doi.org liks to be handled by the custom DOI resolver instead.",
-		"message": "Automatically rewrite dx.doi.org links on web pages into links to your custom DOI resolver"
+		"message": "Rewrite existing dx.doi.org links to use the Custom DOI Resolver"
 	}
 }

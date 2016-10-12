@@ -79,9 +79,8 @@ function replaceInElement(element, find, replace) {
 			if(forbiddenTags.indexOf(child.nodeName.toLowerCase()) < 0) {
 				replaceInElement(child, find, replace);
 			} else if(storage.autoLinkRewrite && child.nodeName.toLowerCase() == "a") {
-				if(storage.findURL.test(child.href)) {
+				if(storage.findURL.test(child.href))
 					child.href = child.href.replace(storage.findURL, storage.urlPrefix + "$1");
-				}
 			}
 		} else if(child.nodeType == 3) { // TEXT_NODE
 			replaceInText(child, find, replace);

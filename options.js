@@ -197,27 +197,21 @@ function saveOptions() {
 	 * if the current setting differs from stored setting
 	 */
 	var alCur = $("#autoLink").prop('checked');
-	var alrCur = $("#autoLinkRewrite").prop('checked');
 	var alpCur = $("#autolinkApplyto option:selected").val();
 
 	var stgLclFetch = [
 		"auto_link",
-		"auto_link_rewrite",
 		"al_protocol"
 	];
 
 	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
 		var alBool = stgLocal["auto_link"];
-		var alrBool = stgLocal["auto_link_rewrite"];
 		var alpStr = stgLocal["al_protocol"];
 
 		storageListener(false);
 		if(alCur != alBool || alpCur != alpStr) {
 			chrome.storage.local.set(options, setAutolinkPermission);
 		} else {
-			if(alBool && (alrBool != alrCur)) {
-				chrome.runtime.sendMessage({cmd: "auto_link"});
-			}
 			/* Wait for message confirming .local to .sync duplication
 			 * is complete in background before re-enabling storage
 			 * listener here
@@ -290,11 +284,13 @@ function restoreOptions() {
 
 		if(crOp === true) {
 			$("#customResolver").prop("checked", true);
-			$(".cr_dependent").removeClass("cr_dependent_hidden");
+			$("#customResolverLeft").css("display", "inline-block");
+			$("#customResolverRight").css("display", "inline-block");
 			setCrPreviews(); // Depends on text fields being filled already
 		} else {
 			$("#customResolver").prop("checked", false);
-			$(".cr_dependent").addClass("cr_dependent_hidden");
+			$("#customResolverLeft").css("display", "none");
+			$("#customResolverRight").css("display", "none");
 		}
 
 		if(sdOp === true) {
@@ -320,9 +316,11 @@ function restoreOptions() {
 
 // Only refresh fields that need updating after save
 function minimalOptionsRefresh() {
+	var al = $("#autoLink").prop('checked');
 	var cm = $("#context").prop('checked');
 	var meta = $("#meta").prop('checked');
 	var cr = $("#customResolver").prop('checked');
+	var cra = $("#crAutolink").val();
 
 	if(cm) {
 		$("#img_context_on").css("border-color", "#404040");
@@ -341,11 +339,18 @@ function minimalOptionsRefresh() {
 	}
 
 	if(cr) {
-		$(".cr_dependent").removeClass("cr_dependent_hidden");
+		$("#customResolverLeft").css("display", "inline-block");
+		$("#customResolverRight").css("display", "inline-block");
 		setCrPreviews();
 	} else {
-		$(".cr_dependent").addClass("cr_dependent_hidden");
+		$("#customResolverLeft").css("display", "none");
+		$("#customResolverRight").css("display", "none");
 	}
+
+	if(al && cr && cra == "custom")
+		$("#alRewriteLinks").css("display", "block");
+	else
+		$("#alRewriteLinks").css("display", "none");
 }
 
 function storageListener(enable) {
@@ -409,6 +414,25 @@ function setCrPreviews() {
 	$("#shortDoiResolverOutput").html(srPreview);
 }
 
+function autolinkDisplayUpdate(protocol) {
+	var cr = $("#customResolver").prop('checked');
+	var cra = $("#crAutolink").val();
+
+	if(protocol) {
+		$("#autolinkApplyto").val(protocol);
+		$("#autoLink").prop("checked", true);
+		$("#alProtocol").css("display", "block");
+		if(cr && cra == "custom")
+			$("#alRewriteLinks").css("display", "block");
+		else
+			$("#alRewriteLinks").css("display", "none");
+	} else {
+		$("#autoLink").prop("checked", false);
+		$("#alProtocol").css("display", "none");
+		$("#alRewriteLinks").css("display", "none");
+	}
+}
+
 function setAutolinkPermission() {
 	/*
 	 * We only want autolinking for user-enabled protocols, but we also don't
@@ -435,9 +459,7 @@ function setAutolinkPermission() {
 			if(granted) {
 				autolinkShufflePerms();
 			} else {
-				$("#autolinkApplyto").val("http");
-				$("#autoLink").prop("checked", false);
-				$(".al_dependent").addClass("al_dependent_hidden");
+				autolinkDisplayUpdate(false);
 				startChangeListeners();
 			}
 		});
@@ -447,14 +469,13 @@ function setAutolinkPermission() {
 			origins: [ 'http://*/*', 'https://*/*' ]
 		}, function(removed) {
 			if(removed) {
-				$("#autoLink").prop("checked", false);
-				$(".al_dependent").addClass("al_dependent_hidden");
+				autolinkDisplayUpdate(false);
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				startChangeListeners();
 				console.log("Autolink permissions removed");
 			} else {
-				$("#autoLink").prop("checked", true);
-				$(".al_dependent").removeClass("al_dependent_hidden");
+				var alp = $("#autolinkApplyto option:selected").val();
+				autolinkDisplayUpdate(alp);
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				startChangeListeners();
 				console.log("Could not remove autolink permissions");
@@ -493,9 +514,7 @@ function verifyAutolinkPermission(callback) {
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
 		if(result) {
-			$("#autolinkApplyto").val("httphttps");
-			$("#autoLink").prop("checked", true);
-			$(".al_dependent").removeClass("al_dependent_hidden");
+			autolinkDisplayUpdate("httphttps");
 			callback();
 		} else {
 			chrome.permissions.contains({
@@ -503,9 +522,7 @@ function verifyAutolinkPermission(callback) {
 				origins: [ 'http://*/*' ]
 			}, function(result) {
 				if(result) {
-					$("#autolinkApplyto").val("http");
-					$("#autoLink").prop("checked", true);
-					$(".al_dependent").removeClass("al_dependent_hidden");
+					autolinkDisplayUpdate("http");
 					callback();
 				} else {
 					chrome.permissions.contains({
@@ -513,13 +530,10 @@ function verifyAutolinkPermission(callback) {
 						origins: [ 'https://*/*' ]
 					}, function(result) {
 						if(result) {
-							$("#autolinkApplyto").val("https");
-							$("#autoLink").prop("checked", true);
-							$(".al_dependent").removeClass("al_dependent_hidden");
+							autolinkDisplayUpdate("https");
 							callback();
 						} else {
-							$("#autoLink").prop("checked", false);
-							$(".al_dependent").addClass("al_dependent_hidden");
+							autolinkDisplayUpdate(false);
 							callback();
 						}
 					});

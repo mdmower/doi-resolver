@@ -104,6 +104,7 @@ ul {
 #customResolverLeft,
 #customResolverRight {
 	vertical-align: top;
+	display: none;
 	padding-top: 5px;
 	white-space: normal;
 }
@@ -153,7 +154,8 @@ ul {
 	margin-bottom: 4px;
 }
 
-#optionAutolinkApplyto {
+#optionAutolinkApplyto,
+#autoLinkRewrite {
 	margin-left: 26px;
 }
 
@@ -219,12 +221,4 @@ ul {
 
 .option_title {
 	margin: 0 0 4px 0;
-}
-
-.cr_dependent_hidden {
-	display: none;
-}
-
-.al_dependent_hidden {
-	display: none;
 }

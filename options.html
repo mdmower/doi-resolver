@@ -30,6 +30,7 @@
 		<h1 id="optionsTitle"></h1>
 		<div id="tabs">
 			<div class="tab" id="options_tab">Options</div>
+			<div class="tab" id="history_tab">History</div>
 			<div class="tab" id="about_tab">About</div>
 		</div>
 		<img id="extLogo" src="icons/icon128.png" />
@@ -44,6 +45,11 @@
 				<option id="optionOmniboxOpentoNewForetab" value="newfgtab"></option>
 				<option id="optionOmniboxOpentoNewBacktab" value="newbgtab"></option>
 			</select>
+		</div>
+
+		<div class="option_container">
+			<h3 class="option_title">History</h3>
+			<input type="checkbox" id="history" /><label id="optionHistory" for="history"></label>
 		</div>
 
 		<div class="option_container">
@@ -136,6 +142,15 @@
 				<span id="syncDataWipeDescription"></span> <input type="submit" id="syncDataWipeButton" value="Reset Sync" />
 			</div>
 		</div>
+	</div>
+
+	<div class="content" id="content_history">
+		<p id="optionsHistoryInfo">
+			History
+		</p>
+		<p id="optionsHistoryList">
+			List
+		</p>
 	</div>
 
 	<div class="content" id="content_about">

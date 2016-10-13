@@ -199,8 +199,9 @@ ul {
 	border-radius: 4px;
 }
 
-#content_options {
-
+#content_history,
+#history_tab {
+	display: none;
 }
 
 #content_about {

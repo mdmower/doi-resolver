@@ -66,10 +66,17 @@ function continueOnLoad() {
 function startClickListeners() {
 	$("#options_tab").on("click", function() {
 		$("#content_options").css("display", "block");
+		$("#content_history").css("display", "none");
+		$("#content_about").css("display", "none");
+	});
+	$("#history_tab").on("click", function() {
+		$("#content_options").css("display", "none");
+		$("#content_history").css("display", "block");
 		$("#content_about").css("display", "none");
 	});
 	$("#about_tab").on("click", function() {
 		$("#content_options").css("display", "none");
+		$("#content_history").css("display", "none");
 		$("#content_about").css("display", "block");
 	});
 
@@ -122,6 +129,7 @@ function startChangeListeners() {
 	 */
 	var dbSaveOptions = _.debounce(saveOptions, 750);
 
+	$("#history").on("change", saveOptions);
 	$("#context").on("change", saveOptions);
 	$("#meta").on("change", saveOptions);
 	$("#autoLink").on("change", saveOptions);
@@ -140,6 +148,7 @@ function startChangeListeners() {
 function haltChangeListeners() {
 	var dbSaveOptions = _.debounce(saveOptions, 750);
 
+	$("#history").off("change", saveOptions);
 	$("#context").off("change", saveOptions);
 	$("#meta").off("change", saveOptions);
 	$("#autoLink").off("change", saveOptions);
@@ -180,6 +189,7 @@ function saveOptions() {
 
 	var options = {
 		auto_link_rewrite: $("#autoLinkRewrite").prop('checked'),
+		history: $("#history").prop('checked'),
 		context_menu: $("#context").prop('checked'),
 		meta_buttons: $("#meta").prop('checked'),
 		custom_resolver: $("#customResolver").prop('checked'),
@@ -231,6 +241,7 @@ function restoreOptions() {
 
 	var stgFetch = [
 		"auto_link_rewrite",
+		"history",
 		"context_menu",
 		"meta_buttons",
 		"custom_resolver",
@@ -248,6 +259,7 @@ function restoreOptions() {
 		var alpOp = stgLocal["al_protocol"];
 		var alrOp = stg["auto_link_rewrite"];
 		var sdOp = stgLocal["sync_data"];
+		var hOp = stg["history"];
 		var cmOp = stg["context_menu"];
 		var metaOp = stg["meta_buttons"];
 		var crOp = stg["custom_resolver"];
@@ -261,6 +273,14 @@ function restoreOptions() {
 
 		$("#doiResolverInput").val(drOp);
 		$("#shortDoiResolverInput").val(srOp);
+
+		if(hOp === true) {
+			$("#history").prop("checked", true);
+			$("#history_tab").css("display", "block");
+		} else {
+			$("#history").prop("checked", false);
+			$("#history_tab").css("display", "none");
+		}
 
 		if(cmOp === true) {
 			$("#context").prop("checked", true);
@@ -317,10 +337,16 @@ function restoreOptions() {
 // Only refresh fields that need updating after save
 function minimalOptionsRefresh() {
 	var al = $("#autoLink").prop('checked');
+	var history = $("#history").prop('checked');
 	var cm = $("#context").prop('checked');
 	var meta = $("#meta").prop('checked');
 	var cr = $("#customResolver").prop('checked');
 	var cra = $("#crAutolink").val();
+
+	if(history)
+		$("#history_tab").css("display", "block");
+	else
+		$("#history_tab").css("display", "none");
 
 	if(cm) {
 		$("#img_context_on").css("border-color", "#404040");
@@ -373,6 +399,7 @@ function storageChangeHandler(changes, namespace) {
 	if(namespace === "sync" && typeof changes["sync_reset"] === 'undefined') {
 		var options = [
 			"auto_link_rewrite",
+			"history",
 			"context_menu",
 			"meta_buttons",
 			"custom_resolver",
@@ -550,6 +577,8 @@ function getLocalMessages() {
 	document.title = message;
 	message = chrome.i18n.getMessage("optionsTitle");
 	$("#optionsTitle").html(message);
+	message = chrome.i18n.getMessage("optionHistory");
+	$("#optionHistory").html(message);
 	message = chrome.i18n.getMessage("optionContextMenu");
 	$("#optionContextMenu").html(message);
 	message = chrome.i18n.getMessage("optionMetaButtons");

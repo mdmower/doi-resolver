@@ -180,7 +180,7 @@ function buildSelections(allLocales, localesMap) {
 
 // jQuery select filter: http://www.lessanvaezi.com/filter-select-list-options/
 // scroll-to and ignore-defocus added by me
-jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
+$.fn.filterByText = function(textbox, selectSingleMatch) {
 	return this.each(function() {
 	var select = this;
 	var options = [];

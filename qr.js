@@ -34,7 +34,7 @@ function storage(firstRun) {
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg["sync_data"] === true) {
+		if (stg.sync_data === true) {
 			storage.area = chrome.storage.sync;
 		} else {
 			storage.area = chrome.storage.local;
@@ -94,7 +94,7 @@ function qrSizeSave() {
 	}
 
 	storage.area.get(["qr_size"], function(stg) {
-		var stgQrSize = stg["qr_size"];
+		var stgQrSize = stg.qr_size;
 		var newQrSize = $("#qrSizeInput").val();
 		if (stgQrSize !== newQrSize) {
 			saveOptions();
@@ -113,7 +113,7 @@ function getUrlVariables() {
 		vars[hash[0]] = hash[1];
 	}
 
-	var initDOI = vars["doi"];
+	var initDOI = vars.doi;
 	if (initDOI) {
 		$("#doiInput").val(initDOI);
 	}
@@ -127,16 +127,16 @@ function restoreOptions() {
 
 	chrome.storage.local.get(["qr_title"], function(stgLocal) {
 	storage.area.get(stgFetch, function(stg) {
-		var qrSize = stg["qr_size"];
+		var qrSize = stg.qr_size;
 		if (isNaN(qrSize)) {
 			$("#qrSizeInput").val(300);
 		} else {
 			$("#qrSizeInput").val(qrSize);
 		}
-		if (stgLocal["qr_title"] === true) {
+		if (stgLocal.qr_title === true) {
 			$("#qrFetchTitle").prop("checked", true);
 		}
-		if (stg["qr_bgtrans"] === true) {
+		if (stg.qr_bgtrans === true) {
 			$("#qrBgTrans").prop("checked", true);
 			$("#bgColorDiv").css("display", "none");
 		}
@@ -157,7 +157,7 @@ function prepareColorPickers() {
 	storage.area.get(stgFetch, function(stg) {
 
 		var qrFgColor = "#000000";
-		var storedQrFgColor = stg["qr_fgcolor"];
+		var storedQrFgColor = stg.qr_fgcolor;
 		if (isHexColor(storedQrFgColor)) {
 			qrFgColor = storedQrFgColor;
 		} else {
@@ -170,7 +170,7 @@ function prepareColorPickers() {
 		$("#qrFgColorInput").val(qrFgColor);
 
 		var qrBgColor = "#ffffff";
-		var storedQrBgColor = stg["qr_bgcolor"];
+		var storedQrBgColor = stg.qr_bgcolor;
 		if (isHexColor(storedQrBgColor)) {
 			qrBgColor = storedQrBgColor;
 		} else {

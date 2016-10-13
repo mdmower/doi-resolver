@@ -27,7 +27,7 @@ function storage(firstRun) {
 		migrateStorage(continueOnLoad);
 	} else {
 		chrome.storage.local.get(["sync_data"], function(stg) {
-			if (stg["sync_data"] === true) {
+			if (stg.sync_data === true) {
 				storage.area = chrome.storage.sync;
 			} else {
 				storage.area = chrome.storage.local;
@@ -76,7 +76,7 @@ function migrateStorage(callback) {
 				}
 			}
 			chrome.storage.sync.set(optionSyncPairs, function() {
-				if (optionPairs["sync_data"] === true) {
+				if (optionPairs.sync_data === true) {
 					storage.area = chrome.storage.sync;
 				}
 				callback();
@@ -208,8 +208,8 @@ function toggleSync() {
 
 	chrome.storage.local.get(null, function(stgLocal) {
 	chrome.storage.sync.get(null, function(stgSync) {
-		var syncEnabled = (typeof stgLocal["sync_data"] === "boolean") ? stgLocal["sync_data"] : true;
-		var syncReset = (typeof stgSync["sync_reset"] === "boolean") ? stgSync["sync_reset"] : false;
+		var syncEnabled = (typeof stgLocal.sync_data === "boolean") ? stgLocal.sync_data : true;
+		var syncReset = (typeof stgSync.sync_reset === "boolean") ? stgSync.sync_reset : false;
 
 		if (syncEnabled && !syncReset) {
 			console.log("[Sync] Using sync storage");
@@ -275,7 +275,7 @@ function storageChangeHandler(changes, namespace) {
 
 	if (namespace === "local") {
 		chrome.storage.local.get(["sync_data"], function(stgLocal) {
-			if (stgLocal["sync_data"] === true) {
+			if (stgLocal.sync_data === true) {
 				var toSync = {};
 				var syncKeys = (allOptions()).diff(excludeFromSync());
 				for (var key in changes) {
@@ -293,13 +293,13 @@ function storageChangeHandler(changes, namespace) {
 				 */
 				chrome.storage.sync.set(toSync, function() {
 					storageListener(true);
-					if (typeof changes["context_menu"] !== 'undefined') {
+					if (typeof changes.context_menu !== 'undefined') {
 						toggleContextMenu();
 					}
 					chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
 				});
 			} else {
-				if (typeof changes["context_menu"] !== 'undefined') {
+				if (typeof changes.context_menu !== 'undefined') {
 					toggleContextMenu();
 				}
 				chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
@@ -310,14 +310,14 @@ function storageChangeHandler(changes, namespace) {
 		 * If user reset sync before storage migration,
 		 * the value is stored as a string, not a bool
 		 */
-		if (typeof changes["sync_reset"] !== 'undefined') {
-			var sr = changes["sync_reset"].newValue;
+		if (typeof changes.sync_reset !== 'undefined') {
+			var sr = changes.sync_reset.newValue;
 			if (sr === true || sr === "true") {
 				storageListener(false);
 				chrome.storage.local.set({sync_data: false}, toggleSync);
 				return; // No need to perform anything below since wiping
 			}
-		} else if (typeof changes["context_menu"] !== 'undefined') {
+		} else if (typeof changes.context_menu !== 'undefined') {
 			toggleContextMenu();
 		}
 
@@ -361,12 +361,12 @@ function storageChangeHandler(changes, namespace) {
 
 function startFeatures() {
 	storage.area.get(["context_menu"], function(stg) {
-		if (stg["context_menu"] === true) {
+		if (stg.context_menu === true) {
 			contextMenuMaker();
 		}
 	});
 	chrome.storage.local.get(["auto_link"], function(stg) {
-		if (stg["auto_link"] === true) {
+		if (stg.auto_link === true) {
 			autoLinkDOIs();
 		}
 	});
@@ -407,8 +407,8 @@ function resolveDOI(doi, useCustomResolver, tab) {
 
 	storage.area.get(stgFetch, function(stg) {
 		var str = "";
-		var dr = stg["doi_resolver"];
-		var sr = stg["shortdoi_resolver"];
+		var dr = stg.doi_resolver;
+		var sr = stg.shortdoi_resolver;
 
 		if (useCustomResolver) {
 			if (/^10\./.test(doi)) str = dr + doi;
@@ -444,7 +444,7 @@ function contextMenuMaker() {
 
 function toggleContextMenu() {
 	storage.area.get(["context_menu"], function(stg) {
-		if (stg["context_menu"] === true) {
+		if (stg.context_menu === true) {
 			chrome.contextMenus.removeAll(contextMenuMaker);
 		} else {
 			chrome.contextMenus.removeAll(null);
@@ -464,8 +464,8 @@ function contextMenuResolve(info) {
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		var cr = stg["custom_resolver"];
-		var crc = stg["cr_context"];
+		var cr = stg.custom_resolver;
+		var crc = stg.cr_context;
 		if (cr === true && crc === "custom") {
 			resolveDOI(doiInput, true, "newForegroundTab");
 		} else {
@@ -648,9 +648,9 @@ function omniListener(text, disposition) {
 			return;
 		}
 
-		var ot = stg["omnibox_tab"];
-		var cr = stg["custom_resolver"];
-		var cro = stg["cr_omnibox"];
+		var ot = stg.omnibox_tab;
+		var cr = stg.custom_resolver;
+		var cro = stg.cr_omnibox;
 		var tab;
 
 		switch (ot) {

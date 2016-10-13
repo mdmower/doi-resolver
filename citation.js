@@ -34,7 +34,7 @@ function storage(firstRun) {
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg["sync_data"] === true) {
+		if (stg.sync_data === true) {
 			storage.area = chrome.storage.sync;
 		} else {
 			storage.area = chrome.storage.local;
@@ -76,7 +76,7 @@ function getUrlVariables() {
 		vars[hash[0]] = hash[1];
 	}
 
-	var initDOI = vars["doi"];
+	var initDOI = vars.doi;
 	if (initDOI) {
 		$("#doiInput").val(initDOI);
 	}
@@ -119,8 +119,8 @@ function buildSelections(allLocales, localesMap) {
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		var storedLocale = stg["cite_locale"];
-		var storedStyle = stg["cite_style"];
+		var storedLocale = stg.cite_locale;
+		var storedStyle = stg.cite_style;
 
 		if (allLocales.indexOf(storedLocale) < 0) {
 			storedLocale = "auto";

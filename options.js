@@ -40,7 +40,7 @@ function storage(firstRun, restore) {
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg["sync_data"] === true) {
+		if (stg.sync_data === true) {
 			storage.area = chrome.storage.sync;
 			storageListener(true);
 		} else {
@@ -215,8 +215,8 @@ function saveOptions() {
 	];
 
 	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
-		var alBool = stgLocal["auto_link"];
-		var alpStr = stgLocal["al_protocol"];
+		var alBool = stgLocal.auto_link;
+		var alpStr = stgLocal.al_protocol;
 
 		storageListener(false);
 		if (alCur != alBool || alpCur != alpStr) {
@@ -256,20 +256,20 @@ function restoreOptions() {
 
 	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
 	storage.area.get(stgFetch, function(stg) {
-		var alpOp = stgLocal["al_protocol"];
-		var alrOp = stg["auto_link_rewrite"];
-		var sdOp = stgLocal["sync_data"];
-		var hOp = stg["history"];
-		var cmOp = stg["context_menu"];
-		var metaOp = stg["meta_buttons"];
-		var crOp = stg["custom_resolver"];
-		var craOp = stg["cr_autolink"];
-		var crbOp = stg["cr_bubble"];
-		var crcOp = stg["cr_context"];
-		var croOp = stg["cr_omnibox"];
-		var drOp = stg["doi_resolver"];
-		var srOp = stg["shortdoi_resolver"];
-		var otOp = stg["omnibox_tab"];
+		var alpOp = stgLocal.al_protocol;
+		var alrOp = stg.auto_link_rewrite;
+		var sdOp = stgLocal.sync_data;
+		var hOp = stg.history;
+		var cmOp = stg.context_menu;
+		var metaOp = stg.meta_buttons;
+		var crOp = stg.custom_resolver;
+		var craOp = stg.cr_autolink;
+		var crbOp = stg.cr_bubble;
+		var crcOp = stg.cr_context;
+		var croOp = stg.cr_omnibox;
+		var drOp = stg.doi_resolver;
+		var srOp = stg.shortdoi_resolver;
+		var otOp = stg.omnibox_tab;
 
 		$("#doiResolverInput").val(drOp);
 		$("#shortDoiResolverInput").val(srOp);
@@ -399,7 +399,7 @@ function storageChangeHandler(changes, namespace) {
 	}
 
 	/* sync_reset is handled in the background page */
-	if (namespace === "sync" && typeof changes["sync_reset"] === 'undefined') {
+	if (namespace === "sync" && typeof changes.sync_reset === 'undefined') {
 		var options = [
 			"auto_link_rewrite",
 			"history",

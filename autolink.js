@@ -36,7 +36,7 @@ function storage() {
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg["sync_data"] === true) {
+		if (stg.sync_data === true) {
 			storage.area = chrome.storage.sync;
 		} else {
 			storage.area = chrome.storage.local;
@@ -50,9 +50,9 @@ function storage() {
 		];
 
 		storage.area.get(stgFetch, function(stg) {
-			if (stg["custom_resolver"] === true && stg["cr_autolink"] == "custom") {
-				storage.urlPrefix = stg["doi_resolver"];
-				storage.autoLinkRewrite = stg["auto_link_rewrite"] === true;
+			if (stg.custom_resolver === true && stg.cr_autolink == "custom") {
+				storage.urlPrefix = stg.doi_resolver;
+				storage.autoLinkRewrite = stg.auto_link_rewrite === true;
 			}
 			replaceDOIsWithLinks();
 		});

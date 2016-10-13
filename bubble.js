@@ -34,7 +34,7 @@ function storage(firstRun) {
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg["sync_data"] === true) {
+		if (stg.sync_data === true) {
 			storage.area = chrome.storage.sync;
 		} else {
 			storage.area = chrome.storage.local;
@@ -82,10 +82,8 @@ function saveOptions() {
 }
 
 function restoreOptions() {
-	var stgFetch = ["cr_bubble_last"];
-
-	storage.area.get(stgFetch, function(stg) {
-		if (stg["cr_bubble_last"] === "custom") {
+	storage.area.get(["cr_bubble_last"], function(stg) {
+		if (stg.cr_bubble_last === "custom") {
 			$("#crRadioBubbleCustom").prop("checked", true);
 		} else {
 			$("#crRadioBubbleDefault").prop("checked", true);
@@ -166,11 +164,11 @@ function resolveURL(doi) {
 
 	storage.area.get(stgFetch, function(stg) {
 		var url = "";
-		var cr = stg["custom_resolver"];
-		var crb = stg["cr_bubble"];
-		var crbl = stg["cr_bubble_last"];
-		var dr = stg["doi_resolver"];
-		var sr = stg["shortdoi_resolver"];
+		var cr = stg.custom_resolver;
+		var crb = stg.cr_bubble;
+		var crbl = stg.cr_bubble_last;
+		var dr = stg.doi_resolver;
+		var sr = stg.shortdoi_resolver;
 		var useDefaultResolver = true;
 
 		if (cr === true && crb === "custom") {
@@ -221,9 +219,9 @@ function showHideOptionalElms() {
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		var meta = stg["meta_buttons"];
-		var crOp = stg["custom_resolver"];
-		var crbOp = stg["cr_bubble"];
+		var meta = stg.meta_buttons;
+		var crOp = stg.custom_resolver;
+		var crbOp = stg.cr_bubble;
 
 		if (meta === true) {
 			$("#metaButtons").css("display", "flex");

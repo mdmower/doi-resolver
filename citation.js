@@ -19,29 +19,30 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch(request.cmd) {
-		case "sync_toggle_complete":
-			storage(false);
-			break;
-		default:
-			break;
+	switch (request.cmd) {
+	case "sync_toggle_complete":
+		storage(false);
+		break;
+	default:
+		break;
 	}
 });
 
 function storage(firstRun) {
-	if(typeof storage.area === 'undefined') {
+	if (typeof storage.area === 'undefined') {
 		storage.area = chrome.storage.local;
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if(stg["sync_data"] === true) {
+		if (stg["sync_data"] === true) {
 			storage.area = chrome.storage.sync;
 		} else {
 			storage.area = chrome.storage.local;
 		}
 
-		if(firstRun === true)
+		if (firstRun === true) {
 			continueOnLoad();
+		}
 	});
 }
 
@@ -69,21 +70,22 @@ function startListeners() {
 function getUrlVariables() {
 	var vars = [], hash;
 	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-	for(var i = 0; i < hashes.length; i++) {
+	for (var i = 0; i < hashes.length; i++) {
 		hash = hashes[i].split('=');
 		vars.push(hash[0]);
 		vars[hash[0]] = hash[1];
 	}
 
 	var initDOI = vars["doi"];
-	if(initDOI) {
+	if (initDOI) {
 		$("#doiInput").val(initDOI);
 	}
 }
 
 function initLocales(needsMap, callback) {
-	if(!callback || typeof(callback) !== "function")
+	if (!callback || typeof(callback) !== "function") {
 		return;
+	}
 
 	var args = [].slice.call(arguments, 2);
 
@@ -94,15 +96,17 @@ function initLocales(needsMap, callback) {
 		});
 
 		args.push(langList);
-		if(needsMap)
+		if (needsMap) {
 			args.push(data["language-names"]);
+		}
 
 		callback.apply(null, args);
 	})
 	.fail(function() {
 		args.push(["en-US"]);
-		if(needsMap)
+		if (needsMap) {
 			args.push({"en-US": ["English (US)", "English (US)"]});
+		}
 
 		callback.apply(null, args);
 	});
@@ -118,7 +122,7 @@ function buildSelections(allLocales, localesMap) {
 		var storedLocale = stg["cite_locale"];
 		var storedStyle = stg["cite_style"];
 
-		if(allLocales.indexOf(storedLocale) < 0) {
+		if (allLocales.indexOf(storedLocale) < 0) {
 			storedLocale = "auto";
 			chrome.storage.local.set({cite_locale: "auto"}, null);
 		}
@@ -126,43 +130,43 @@ function buildSelections(allLocales, localesMap) {
 		/* To do: Offer option to display locales in their native language;
 		   Retrieved with localesMap[allLocales[i]][0]] */
 		var readableLocales = [];
-		for(var i = 0; i < allLocales.length; i++) {
+		for (var i = 0; i < allLocales.length; i++) {
 			readableLocales[i] = [allLocales[i], localesMap[allLocales[i]][1]];
 		}
 
 		readableLocales.sort( function( a, b ) {
-			if(a[1] == b[1]) {
+			if (a[1] == b[1]) {
 				return 0;
 			}
 			return a[1] < b[1] ? -1 : 1;
 		});
 
 		var localeHtmlOptions = $('<option>').attr("value", "auto").html("Auto");
-		if("auto" === storedLocale) {
+		if ("auto" === storedLocale) {
 			localeHtmlOptions.attr("selected", "selected");
 		}
 
 		localeHtmlOptions.appendTo("#citeLocaleInput");
 
-		for(i = 0; i < allLocales.length; i++) {
+		for (i = 0; i < allLocales.length; i++) {
 			localeHtmlOptions = $('<option>').attr("value", readableLocales[i][0]).html(readableLocales[i][1]);
-			if(readableLocales[i][0] === storedLocale) {
+			if (readableLocales[i][0] === storedLocale) {
 				localeHtmlOptions.attr("selected", "selected");
 			}
 			localeHtmlOptions.appendTo("#citeLocaleInput");
 		}
 
 		// Style not found or "other" (migration)
-		if(allStyleCodes.indexOf(storedStyle) < 0) {
+		if (allStyleCodes.indexOf(storedStyle) < 0) {
 			storedStyle = "bibtex";
 			chrome.storage.local.set({cite_style: "bibtex"}, null);
 		}
 
 		var styleHtmlOptions;
-		for(i = 0; i < allStyleCodes.length; i++) {
+		for (i = 0; i < allStyleCodes.length; i++) {
 			styleHtmlOptions = $('<option>').attr("value", allStyleCodes[i]);
 			styleHtmlOptions.html(allStyleTitles[i]);
-			if(allStyleCodes[i] === storedStyle) {
+			if (allStyleCodes[i] === storedStyle) {
 				styleHtmlOptions.attr("selected", "selected");
 			}
 			styleHtmlOptions.appendTo("#styleList");
@@ -185,12 +189,12 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 	});
 	$(select).data('options', options);
 	$(textbox).on('change keyup', function() {
-		if($(textbox).data('filtext') == $(textbox).val()) return;
+		if ($(textbox).data('filtext') == $(textbox).val()) return;
 		$(textbox).data('filtext', $(textbox).val());
 
 		var scrollto = false;
 		var cursel = null;
-		if(select.selectedOptions.length > 0) {
+		if (select.selectedOptions.length > 0) {
 			cursel = select.selectedOptions[0].value;
 		}
 
@@ -204,9 +208,9 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 		var option_html = "";
 		$.each(options, function(i) {
 			var option = options[i];
-			if(regex.test(option.text)) {
+			if (regex.test(option.text)) {
 				option_html += '<option value="' + option.value + '"';
-				if(cursel !== null && cursel == option.value) {
+				if (cursel !== null && cursel == option.value) {
 					option_html += ' selected="selected"';
 					scrollto = true;
 				}
@@ -214,9 +218,9 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 			}
 		});
 		$(select).html(option_html);
-		if(selectSingleMatch === true && $(select).children().length === 1) {
+		if (selectSingleMatch === true && $(select).children().length === 1) {
 			$(select).children().get(0).selected = true;
-		} else if(scrollto === true) {
+		} else if (scrollto === true) {
 			select.selectedOptions[0].scrollIntoView();
 		}
 	});
@@ -230,7 +234,7 @@ function trim(stringToTrim) {
 function formSubmitHandler() {
 	var doi = encodeURI(trim(document.getElementById("doiInput").value));
 	var sel = $("#styleList option:selected").val();
-	if(!doi || !checkValidDoi(doi) || typeof sel === 'undefined') {
+	if (!doi || !checkValidDoi(doi) || typeof sel === 'undefined') {
 		return;
 	}
 
@@ -248,9 +252,9 @@ function saveSelections() {
 }
 
 function checkValidDoi(doiInput) {
-	if(/^10\./.test(doiInput)) {
+	if (/^10\./.test(doiInput)) {
 		return true;
-	} else if(/^10\//.test(doiInput)) {
+	} else if (/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -300,7 +304,7 @@ function getCitation(doi) {
 			'https://raw.githubusercontent.com/'
 		]
 	}, function(granted) {
-		if(granted) {
+		if (granted) {
 			var jqxhr = $.ajax({
 				url: resolveUrl,
 				headers: { Accept: content },
@@ -309,7 +313,7 @@ function getCitation(doi) {
 				cache: false
 			});
 			jqxhr.done(function() {
-				if(jqxhr.responseText !== "" && jqxhr.responseText.charAt(0) != '<') {
+				if (jqxhr.responseText !== "" && jqxhr.responseText.charAt(0) != '<') {
 					var citation = JSON.parse(jqxhr.responseText);
 					initLocales(false, renderBib, citation, style, locale);
 				} else {
@@ -341,15 +345,15 @@ function renderBib(citation, style, locale, allLocales) {
 	});
 
 	jqxhrCsl.done(function() {
-		if(jqxhrCsl.responseText !== "") {
-			if(locale === "auto") {
+		if (jqxhrCsl.responseText !== "") {
+			if (locale === "auto") {
 				var xml = jqxhrCsl.responseText,
 				  xmlDoc = $.parseXML(xml),
 				  $xml = $(xmlDoc),
 				  $xmlStyle = $xml.find("style");
 
 				var defaultLocale = $xmlStyle.attr("default-locale");
-				if(allLocales.indexOf(defaultLocale) >= 0) {
+				if (allLocales.indexOf(defaultLocale) >= 0) {
 					lang = defaultLocale;
 				} else {
 					lang = "en-US";
@@ -365,7 +369,7 @@ function renderBib(citation, style, locale, allLocales) {
 			});
 
 			jqxhrLoc.done(function() {
-				if(jqxhrLoc.responseText !== "") {
+				if (jqxhrLoc.responseText !== "") {
 					citeprocSys = {
 						retrieveLocale: function(lang) {
 							return jqxhrLoc.responseText;
@@ -377,14 +381,14 @@ function renderBib(citation, style, locale, allLocales) {
 
 					var styleAsText = jqxhrCsl.responseText;
 					var citeproc;
-					if(locale === "auto") {
+					if (locale === "auto") {
 						citeproc = new CSL.Engine(citeprocSys, styleAsText);
 					} else {
 						citeproc = new CSL.Engine(citeprocSys, styleAsText, lang, 1);
 					}
 
 					var itemIDs = [];
-					for(var key in citations) {
+					for (var key in citations) {
 						if (citations.hasOwnProperty(key)) {
 							itemIDs.push(key);
 						}
@@ -392,7 +396,7 @@ function renderBib(citation, style, locale, allLocales) {
 					citeproc.updateItems(itemIDs);
 
 					var bibResult = citeproc.makeBibliography();
-					if(typeof bibResult != 'undefined' && bibResult !== false) {
+					if (typeof bibResult != 'undefined' && bibResult !== false) {
 						outputCitation(bibResult[1].join('\n'));
 					} else {
 						simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));

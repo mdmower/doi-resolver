@@ -17,26 +17,26 @@
 storage();
 
 function storage() {
-	if(typeof storage.area === 'undefined') {
+	if (typeof storage.area === 'undefined') {
 		storage.area = chrome.storage.local;
 	}
-	if(typeof storage.urlPrefix === 'undefined') {
+	if (typeof storage.urlPrefix === 'undefined') {
 		storage.urlPrefix = "http://dx.doi.org/";
 	}
-	if(typeof storage.find === 'undefined') {
+	if (typeof storage.find === 'undefined') {
 		// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
 		storage.find = /\b(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig;
 	}
-	if(typeof storage.findURL === 'undefined') {
+	if (typeof storage.findURL === 'undefined') {
 		// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
 		storage.findURL = /^(?:https?\:\/\/)dx\.doi\.org\/(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)$/ig;
 	}
-	if(typeof storage.autoLinkRewrite === 'undefined') {
+	if (typeof storage.autoLinkRewrite === 'undefined') {
 		storage.autoLinkRewrite = false;
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if(stg["sync_data"] === true) {
+		if (stg["sync_data"] === true) {
 			storage.area = chrome.storage.sync;
 		} else {
 			storage.area = chrome.storage.local;
@@ -50,7 +50,7 @@ function storage() {
 		];
 
 		storage.area.get(stgFetch, function(stg) {
-			if(stg["custom_resolver"] === true && stg["cr_autolink"] == "custom") {
+			if (stg["custom_resolver"] === true && stg["cr_autolink"] == "custom") {
 				storage.urlPrefix = stg["doi_resolver"];
 				storage.autoLinkRewrite = stg["auto_link_rewrite"] === true;
 			}
@@ -73,16 +73,17 @@ function replaceDOIsWithLinks() {
 function replaceInElement(element, find, replace) {
 	// don't touch these elements
 	var forbiddenTags = ["a", "input", "script", "style", "textarea"];
-	for(var i = element.childNodes.length; i-- > 0;) {
+	for (var i = element.childNodes.length; i-- > 0;) {
 		var child = element.childNodes[i];
-		if(child.nodeType == 1) { // ELEMENT_NODE
-			if(forbiddenTags.indexOf(child.nodeName.toLowerCase()) < 0) {
+		if (child.nodeType == 1) { // ELEMENT_NODE
+			if (forbiddenTags.indexOf(child.nodeName.toLowerCase()) < 0) {
 				replaceInElement(child, find, replace);
-			} else if(storage.autoLinkRewrite && child.nodeName.toLowerCase() == "a") {
-				if(storage.findURL.test(child.href))
+			} else if (storage.autoLinkRewrite && child.nodeName.toLowerCase() == "a") {
+				if (storage.findURL.test(child.href)) {
 					child.href = child.href.replace(storage.findURL, storage.urlPrefix + "$1");
+				}
 			}
-		} else if(child.nodeType == 3) { // TEXT_NODE
+		} else if (child.nodeType == 3) { // TEXT_NODE
 			replaceInText(child, find, replace);
 		}
 	}
@@ -91,10 +92,10 @@ function replaceInElement(element, find, replace) {
 function replaceInText(text, find, replace) {
 	var match;
 	var matches = [];
-	while((match = find.exec(text.data)) !== null) {
+	while ((match = find.exec(text.data)) !== null) {
 		matches.push(match);
 	}
-	for(var i = matches.length; i-- > 0;) {
+	for (var i = matches.length; i-- > 0;) {
 		match = matches[i];
 		text.splitText(match.index);
 		text.nextSibling.splitText(match[0].length);

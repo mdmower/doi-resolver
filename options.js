@@ -19,18 +19,18 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch(request.cmd) {
-		case "sync_toggle_complete":
-			storage(false, true);
-			break;
-		case "settings_dup_complete":
-			storage(false, false);
-			break;
-		case "auto_link_config_complete":
-			// Do nothing
-			break;
-		default:
-			break;
+	switch (request.cmd) {
+	case "sync_toggle_complete":
+		storage(false, true);
+		break;
+	case "settings_dup_complete":
+		storage(false, false);
+		break;
+	case "auto_link_config_complete":
+		// Do nothing
+		break;
+	default:
+		break;
 	}
 });
 
@@ -40,7 +40,7 @@ function storage(firstRun, restore) {
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if(stg["sync_data"] === true) {
+		if (stg["sync_data"] === true) {
 			storage.area = chrome.storage.sync;
 			storageListener(true);
 		} else {
@@ -48,10 +48,10 @@ function storage(firstRun, restore) {
 			storageListener(false);
 		}
 
-		if(firstRun === true) {
+		if (firstRun === true) {
 			continueOnLoad();
 		}
-		if(restore === true) {
+		if (restore === true) {
 			restoreOptions();
 		}
 	});
@@ -81,34 +81,34 @@ function startClickListeners() {
 	});
 
 	$("#doiResolverInputReset").on("click", function() {
-		if($("#doiResolverInput").val() !== "http://dx.doi.org/") {
+		if ($("#doiResolverInput").val() !== "http://dx.doi.org/") {
 			$("#doiResolverInput").val("http://dx.doi.org/").trigger("input").trigger("change");
 		}
 	});
 	$("#shortDoiResolverInputReset").on("click", function() {
-		if($("#shortDoiResolverInput").val() !== "http://doi.org/") {
+		if ($("#shortDoiResolverInput").val() !== "http://doi.org/") {
 			$("#shortDoiResolverInput").val("http://doi.org/").trigger("input").trigger("change");
 		}
 	});
 
 	$("#img_context_off").on("click", function() {
-		if($("#context").prop('checked')) {
+		if ($("#context").prop('checked')) {
 			$("#context").prop("checked", false).trigger("change");
 		}
 	});
 	$("#img_context_on").on("click", function() {
-		if(!($("#context").prop('checked'))) {
+		if (!($("#context").prop('checked'))) {
 			$("#context").prop("checked", true).trigger("change");
 		}
 	});
 
 	$("#img_bubblemeta_off").on("click", function() {
-		if($("#meta").prop('checked')) {
+		if ($("#meta").prop('checked')) {
 			$("#meta").prop("checked", false).trigger("change");
 		}
 	});
 	$("#img_bubblemeta_on").on("click", function() {
-		if(!($("#meta").prop('checked'))) {
+		if (!($("#meta").prop('checked'))) {
 			$("#meta").prop("checked", true).trigger("change");
 		}
 	});
@@ -166,7 +166,7 @@ function haltChangeListeners() {
 
 function toggleSync() {
 	var sd = $("#syncData").prop('checked');
-	if(sd) {
+	if (sd) {
 		$("#syncDataWipe").css("display", "block");
 
 		chrome.storage.sync.set({sync_reset: false}, function() {
@@ -219,7 +219,7 @@ function saveOptions() {
 		var alpStr = stgLocal["al_protocol"];
 
 		storageListener(false);
-		if(alCur != alBool || alpCur != alpStr) {
+		if (alCur != alBool || alpCur != alpStr) {
 			chrome.storage.local.set(options, setAutolinkPermission);
 		} else {
 			/* Wait for message confirming .local to .sync duplication
@@ -274,7 +274,7 @@ function restoreOptions() {
 		$("#doiResolverInput").val(drOp);
 		$("#shortDoiResolverInput").val(srOp);
 
-		if(hOp === true) {
+		if (hOp === true) {
 			$("#history").prop("checked", true);
 			$("#history_tab").css("display", "block");
 		} else {
@@ -282,7 +282,7 @@ function restoreOptions() {
 			$("#history_tab").css("display", "none");
 		}
 
-		if(cmOp === true) {
+		if (cmOp === true) {
 			$("#context").prop("checked", true);
 			$("#img_context_on").css("border-color", "#404040");
 			$("#img_context_off").css("border-color", "white");
@@ -292,7 +292,7 @@ function restoreOptions() {
 			$("#img_context_off").css("border-color", "#404040");
 		}
 
-		if(metaOp === true) {
+		if (metaOp === true) {
 			$("#meta").prop("checked", true);
 			$("#img_bubblemeta_on").css("border-color", "#404040");
 			$("#img_bubblemeta_off").css("border-color", "white");
@@ -302,7 +302,7 @@ function restoreOptions() {
 			$("#img_bubblemeta_off").css("border-color", "#404040");
 		}
 
-		if(crOp === true) {
+		if (crOp === true) {
 			$("#customResolver").prop("checked", true);
 			$("#customResolverLeft").css("display", "inline-block");
 			$("#customResolverRight").css("display", "inline-block");
@@ -313,7 +313,7 @@ function restoreOptions() {
 			$("#customResolverRight").css("display", "none");
 		}
 
-		if(sdOp === true) {
+		if (sdOp === true) {
 			$("#syncData").prop("checked", true);
 			$("#syncDataWipe").css("display", "block");
 		} else {
@@ -343,12 +343,13 @@ function minimalOptionsRefresh() {
 	var cr = $("#customResolver").prop('checked');
 	var cra = $("#crAutolink").val();
 
-	if(history)
+	if (history) {
 		$("#history_tab").css("display", "block");
-	else
+	} else {
 		$("#history_tab").css("display", "none");
+	}
 
-	if(cm) {
+	if (cm) {
 		$("#img_context_on").css("border-color", "#404040");
 		$("#img_context_off").css("border-color", "white");
 	} else {
@@ -356,7 +357,7 @@ function minimalOptionsRefresh() {
 		$("#img_context_off").css("border-color", "#404040");
 	}
 
-	if(meta) {
+	if (meta) {
 		$("#img_bubblemeta_on").css("border-color", "#404040");
 		$("#img_bubblemeta_off").css("border-color", "white");
 	} else {
@@ -364,7 +365,7 @@ function minimalOptionsRefresh() {
 		$("#img_bubblemeta_off").css("border-color", "#404040");
 	}
 
-	if(cr) {
+	if (cr) {
 		$("#customResolverLeft").css("display", "inline-block");
 		$("#customResolverRight").css("display", "inline-block");
 		setCrPreviews();
@@ -373,17 +374,19 @@ function minimalOptionsRefresh() {
 		$("#customResolverRight").css("display", "none");
 	}
 
-	if(al && cr && cra == "custom")
+	if (al && cr && cra == "custom") {
 		$("#alRewriteLinks").css("display", "block");
-	else
+	} else {
 		$("#alRewriteLinks").css("display", "none");
+	}
 }
 
 function storageListener(enable) {
-	if(typeof storageListener.status === 'undefined')
+	if (typeof storageListener.status === 'undefined') {
 		storageListener.status = true;
+	}
 
-	if(enable) {
+	if (enable) {
 		storageListener.status = true;
 	} else {
 		storageListener.status = false;
@@ -391,12 +394,12 @@ function storageListener(enable) {
 }
 
 function storageChangeHandler(changes, namespace) {
-	if(storageListener.status !== true) {
+	if (storageListener.status !== true) {
 		return;
 	}
 
 	/* sync_reset is handled in the background page */
-	if(namespace === "sync" && typeof changes["sync_reset"] === 'undefined') {
+	if (namespace === "sync" && typeof changes["sync_reset"] === 'undefined') {
 		var options = [
 			"auto_link_rewrite",
 			"history",
@@ -411,9 +414,9 @@ function storageChangeHandler(changes, namespace) {
 			"shortdoi_resolver",
 			"omnibox_tab"
 		];
-		for(var key in changes) {
-			if(changes.hasOwnProperty(key)) {
-				if(options.indexOf(key) >= 0) {
+		for (var key in changes) {
+			if (changes.hasOwnProperty(key)) {
+				if (options.indexOf(key) >= 0) {
 					restoreOptions();
 					break;
 				}
@@ -428,12 +431,12 @@ function setCrPreviews() {
 	var drPreview = "";
 	var srPreview = "";
 
-	if(drInput.length <= 10) {
+	if (drInput.length <= 10) {
 		drPreview = drInput + "10.1000/182";
 	} else {
 		drPreview = "&hellip;" + drInput.slice(-10, drInput.length) + "10.1000/182";
 	}
-	if(srInput.length <= 10) {
+	if (srInput.length <= 10) {
 		srPreview = srInput + "dws9sz";
 	} else {
 		srPreview = "&hellip;" + srInput.slice(-10, srInput.length) + "dws9sz";
@@ -447,14 +450,15 @@ function autolinkDisplayUpdate(protocol) {
 	var cr = $("#customResolver").prop('checked');
 	var cra = $("#crAutolink").val();
 
-	if(protocol) {
+	if (protocol) {
 		$("#autolinkApplyto").val(protocol);
 		$("#autoLink").prop("checked", true);
 		$("#alProtocol").css("display", "block");
-		if(cr && cra == "custom")
+		if (cr && cra == "custom") {
 			$("#alRewriteLinks").css("display", "block");
-		else
+		} else {
 			$("#alRewriteLinks").css("display", "none");
+		}
 	} else {
 		$("#autoLink").prop("checked", false);
 		$("#alProtocol").css("display", "none");
@@ -480,12 +484,12 @@ function setAutolinkPermission() {
 	haltChangeListeners();
 	var al = $("#autoLink").prop('checked');
 
-	if(al) {
+	if (al) {
 		chrome.permissions.request({
 			permissions: [ 'tabs' ],
 			origins: [ 'http://*/*', 'https://*/*' ]
 		}, function(granted) {
-			if(granted) {
+			if (granted) {
 				autolinkShufflePerms();
 			} else {
 				autolinkDisplayUpdate(false);
@@ -497,7 +501,7 @@ function setAutolinkPermission() {
 			permissions: [ 'tabs' ],
 			origins: [ 'http://*/*', 'https://*/*' ]
 		}, function(removed) {
-			if(removed) {
+			if (removed) {
 				autolinkDisplayUpdate(false);
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				startChangeListeners();
@@ -517,14 +521,14 @@ function autolinkShufflePerms() {
 	// Only called if permissions have been granted by user
 	var alp = $("#autolinkApplyto option:selected").val();
 
-	if(alp === "http") {
+	if (alp === "http") {
 		chrome.permissions.remove({
 			origins: [ 'https://*/*' ]
 		}, function(removed) {
 			chrome.runtime.sendMessage({cmd: "auto_link"});
 			verifyAutolinkPermission(startChangeListeners);
 		});
-	} else if(alp === "https") {
+	} else if (alp === "https") {
 		chrome.permissions.remove({
 			origins: [ 'http://*/*' ]
 		}, function(removed) {
@@ -542,7 +546,7 @@ function verifyAutolinkPermission(callback) {
 		permissions: [ 'tabs' ],
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
-		if(result) {
+		if (result) {
 			autolinkDisplayUpdate("httphttps");
 			callback();
 		} else {
@@ -550,7 +554,7 @@ function verifyAutolinkPermission(callback) {
 				permissions: [ 'tabs' ],
 				origins: [ 'http://*/*' ]
 			}, function(result) {
-				if(result) {
+				if (result) {
 					autolinkDisplayUpdate("http");
 					callback();
 				} else {
@@ -558,7 +562,7 @@ function verifyAutolinkPermission(callback) {
 						permissions: [ 'tabs' ],
 						origins: [ 'https://*/*' ]
 					}, function(result) {
-						if(result) {
+						if (result) {
 							autolinkDisplayUpdate("https");
 							callback();
 						} else {

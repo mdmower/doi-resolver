@@ -19,21 +19,21 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 function storage(firstRun) {
-	if(typeof storage.area === 'undefined') {
+	if (typeof storage.area === 'undefined') {
 		storage.area = chrome.storage.local;
 	}
 
-	if(firstRun === true && localStorage.length > 0) {
+	if (firstRun === true && localStorage.length > 0) {
 		migrateStorage(continueOnLoad);
 	} else {
 		chrome.storage.local.get(["sync_data"], function(stg) {
-			if(stg["sync_data"] === true) {
+			if (stg["sync_data"] === true) {
 				storage.area = chrome.storage.sync;
 			} else {
 				storage.area = chrome.storage.local;
 			}
 
-			if(firstRun === true) {
+			if (firstRun === true) {
 				continueOnLoad();
 			}
 		});
@@ -45,14 +45,14 @@ function migrateStorage(callback) {
 	var options = allOptions();
 
 	var optionPairs = {};
-	for(var i = 0; i < options.length; i++) {
+	for (var i = 0; i < options.length; i++) {
 		key = options[i];
-		if(typeof localStorage[key] !== 'undefined') {
-			if(key === "sync_reset") {
+		if (typeof localStorage[key] !== 'undefined') {
+			if (key === "sync_reset") {
 				// .sync storage only
-			} else if(localStorage[key] === 'true') {
+			} else if (localStorage[key] === 'true') {
 				optionPairs[key] = true;
-			} else if(localStorage[key] === 'false') {
+			} else if (localStorage[key] === 'false') {
 				optionPairs[key] = false;
 			} else {
 				optionPairs[key] = localStorage[key];
@@ -66,17 +66,17 @@ function migrateStorage(callback) {
 
 		chrome.storage.sync.get(null, function(stgSync) {
 			var optionSyncPairs = {};
-			for(key in stgSync) {
-				if(stgSync.hasOwnProperty(key)) {
-					if(stgSync[key] === 'true') {
+			for (key in stgSync) {
+				if (stgSync.hasOwnProperty(key)) {
+					if (stgSync[key] === 'true') {
 						optionSyncPairs[key] = true;
-					} else if(stgSync[key] === 'false') {
+					} else if (stgSync[key] === 'false') {
 						optionSyncPairs[key] = false;
 					}
 				}
 			}
 			chrome.storage.sync.set(optionSyncPairs, function() {
-				if(optionPairs["sync_data"] === true) {
+				if (optionPairs["sync_data"] === true) {
 					storage.area = chrome.storage.sync;
 				}
 				callback();
@@ -167,8 +167,9 @@ function getDefaultOption(opt) {
 	/* sync_reset is not stored locally
 	 * and does not need a default set */
 
-	if(typeof defaultOptions[opt] !== 'undefined')
+	if (typeof defaultOptions[opt] !== 'undefined') {
 		return defaultOptions[opt];
+	}
 
 	return; // returns 'undefined'
 }
@@ -180,15 +181,15 @@ function checkForSettings(callback) {
 	var updateSettings = false;
 
 	chrome.storage.local.get(options, function(stg) {
-		for(var i = 0; i < options.length; i++) {
+		for (var i = 0; i < options.length; i++) {
 			key = options[i];
-			if(typeof stg[key] === 'undefined') {
+			if (typeof stg[key] === 'undefined') {
 				newOptions[key] = getDefaultOption(key);
 				updateSettings = true;
 			}
 		}
 
-		if(updateSettings) {
+		if (updateSettings) {
 			chrome.storage.local.set(newOptions, callback);
 		} else {
 			callback();
@@ -210,12 +211,12 @@ function toggleSync() {
 		var syncEnabled = (typeof stgLocal["sync_data"] === "boolean") ? stgLocal["sync_data"] : true;
 		var syncReset = (typeof stgSync["sync_reset"] === "boolean") ? stgSync["sync_reset"] : false;
 
-		if(syncEnabled && !syncReset) {
+		if (syncEnabled && !syncReset) {
 			console.log("[Sync] Using sync storage");
-			for(var i = 0; i < syncKeys.length; i++) {
+			for (var i = 0; i < syncKeys.length; i++) {
 				key = syncKeys[i];
-				if(typeof stgSync[key] === 'undefined') {
-					if(typeof stgLocal[key] === 'undefined') {
+				if (typeof stgSync[key] === 'undefined') {
+					if (typeof stgLocal[key] === 'undefined') {
 						dupOptions[key] = getDefaultOption(key);
 					} else {
 						dupOptions[key] = stgLocal[key];
@@ -227,7 +228,7 @@ function toggleSync() {
 				chrome.runtime.sendMessage({cmd: "sync_toggle_complete"});
 				storageListener(true);
 			});
-		} else if(!syncEnabled && !syncReset) {
+		} else if (!syncEnabled && !syncReset) {
 			console.log("[Sync] Using local storage");
 			storage.area = chrome.storage.local;
 			chrome.runtime.sendMessage({cmd: "sync_toggle_complete"});
@@ -247,11 +248,11 @@ function toggleSync() {
 }
 
 function storageListener(enable) {
-	if(typeof storageListener.status === 'undefined') {
+	if (typeof storageListener.status === 'undefined') {
 		storageListener.status = true;
 	}
 
-	if(enable) {
+	if (enable) {
 		storageListener.status = true;
 	} else {
 		storageListener.status = false;
@@ -259,27 +260,27 @@ function storageListener(enable) {
 }
 
 function storageChangeHandler(changes, namespace) {
-	if(storageListener.status !== true) {
+	if (storageListener.status !== true) {
 		return;
 	}
 
 	/* Debugging */
 	/*
-	for(var key in changes) {
-		if(changes.hasOwnProperty(key)) {
+	for (var key in changes) {
+		if (changes.hasOwnProperty(key)) {
 			console.log("Option: " + key + ", oldValue: " + changes[key].oldValue + ", newValue: " + changes[key].newValue + ", Namespace: " + namespace);
 		}
 	}
 	*/
 
-	if(namespace === "local") {
+	if (namespace === "local") {
 		chrome.storage.local.get(["sync_data"], function(stgLocal) {
-			if(stgLocal["sync_data"] === true) {
+			if (stgLocal["sync_data"] === true) {
 				var toSync = {};
 				var syncKeys = (allOptions()).diff(excludeFromSync());
-				for(var key in changes) {
-					if(changes.hasOwnProperty(key)) {
-						if(syncKeys.indexOf(key) >= 0) {
+				for (var key in changes) {
+					if (changes.hasOwnProperty(key)) {
+						if (syncKeys.indexOf(key) >= 0) {
 							toSync[key] = changes[key].newValue;
 						}
 					}
@@ -292,31 +293,31 @@ function storageChangeHandler(changes, namespace) {
 				 */
 				chrome.storage.sync.set(toSync, function() {
 					storageListener(true);
-					if(typeof changes["context_menu"] !== 'undefined') {
+					if (typeof changes["context_menu"] !== 'undefined') {
 						toggleContextMenu();
 					}
 					chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
 				});
 			} else {
-				if(typeof changes["context_menu"] !== 'undefined') {
+				if (typeof changes["context_menu"] !== 'undefined') {
 					toggleContextMenu();
 				}
 				chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
 			}
 		});
-	} else if(namespace === "sync") {
+	} else if (namespace === "sync") {
 		/*
 		 * If user reset sync before storage migration,
 		 * the value is stored as a string, not a bool
 		 */
 		if (typeof changes["sync_reset"] !== 'undefined') {
 			var sr = changes["sync_reset"].newValue;
-			if(sr === true || sr === "true") {
+			if (sr === true || sr === "true") {
 				storageListener(false);
 				chrome.storage.local.set({sync_data: false}, toggleSync);
 				return; // No need to perform anything below since wiping
 			}
-		} else if(typeof changes["context_menu"] !== 'undefined') {
+		} else if (typeof changes["context_menu"] !== 'undefined') {
 			toggleContextMenu();
 		}
 
@@ -329,15 +330,15 @@ function storageChangeHandler(changes, namespace) {
 		 */
 		var optionSyncPairs = {};
 		var optionLocalPairs = {};
-		for(var key in changes) {
-			if(changes.hasOwnProperty(key)) {
-				if(changes[key].newValue === 'true') {
+		for (var key in changes) {
+			if (changes.hasOwnProperty(key)) {
+				if (changes[key].newValue === 'true') {
 					optionSyncPairs[key] = true;
 					optionLocalPairs[key] = true;
-				} else if(changes[key].newValue === 'false') {
+				} else if (changes[key].newValue === 'false') {
 					optionSyncPairs[key] = false;
 					optionLocalPairs[key] = false;
-				} else if(key !== 'al_protocol') {
+				} else if (key !== 'al_protocol') {
 					/* Migration: al_protocol was removed from sync
 					 * since calls to chrome.permissions.request must
 					 * stem from user interaction; thus, autolink
@@ -360,12 +361,12 @@ function storageChangeHandler(changes, namespace) {
 
 function startFeatures() {
 	storage.area.get(["context_menu"], function(stg) {
-		if(stg["context_menu"] === true) {
+		if (stg["context_menu"] === true) {
 			contextMenuMaker();
 		}
 	});
 	chrome.storage.local.get(["auto_link"], function(stg) {
-		if(stg["auto_link"] === true) {
+		if (stg["auto_link"] === true) {
 			autoLinkDOIs();
 		}
 	});
@@ -378,9 +379,9 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (alert)
 function checkValidDoi(doiInput) {
-	if(/^10\./.test(doiInput)) {
+	if (/^10\./.test(doiInput)) {
 		return true;
-	} else if(/^10\//.test(doiInput)) {
+	} else if (/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		alert(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -409,24 +410,24 @@ function resolveDOI(doi, useCustomResolver, tab) {
 		var dr = stg["doi_resolver"];
 		var sr = stg["shortdoi_resolver"];
 
-		if(useCustomResolver) {
-			if(/^10\./.test(doi)) str = dr + doi;
-			else if(/^10\//.test(doi)) str = sr + doi.replace(/^10\//,"");
+		if (useCustomResolver) {
+			if (/^10\./.test(doi)) str = dr + doi;
+			else if (/^10\//.test(doi)) str = sr + doi.replace(/^10\//,"");
 		} else {
-			if(/^10\./.test(doi)) str = "http://dx.doi.org/" + doi;
-			else if(/^10\//.test(doi)) str = "http://doi.org/" + doi.replace(/^10\//,"");
+			if (/^10\./.test(doi)) str = "http://dx.doi.org/" + doi;
+			else if (/^10\//.test(doi)) str = "http://doi.org/" + doi.replace(/^10\//,"");
 		}
 
-		switch(tab) {
-			case "newForegroundTab":
-				chrome.tabs.create({url: str, active: true});
-				break;
-			case "newBackgroundTab":
-				chrome.tabs.create({url: str, active: false});
-				break;
-			default: // "currentTab"
-				navigate(str);
-				break;
+		switch (tab) {
+		case "newForegroundTab":
+			chrome.tabs.create({url: str, active: true});
+			break;
+		case "newBackgroundTab":
+			chrome.tabs.create({url: str, active: false});
+			break;
+		default: // "currentTab"
+			navigate(str);
+			break;
 		}
 	});
 }
@@ -443,7 +444,7 @@ function contextMenuMaker() {
 
 function toggleContextMenu() {
 	storage.area.get(["context_menu"], function(stg) {
-		if(stg["context_menu"] === true) {
+		if (stg["context_menu"] === true) {
 			chrome.contextMenus.removeAll(contextMenuMaker);
 		} else {
 			chrome.contextMenus.removeAll(null);
@@ -453,7 +454,7 @@ function toggleContextMenu() {
 
 function contextMenuResolve(info) {
 	var doiInput = encodeURI(trim(info.selectionText));
-	if(!checkValidDoi(doiInput)) {
+	if (!checkValidDoi(doiInput)) {
 		return;
 	}
 
@@ -465,7 +466,7 @@ function contextMenuResolve(info) {
 	storage.area.get(stgFetch, function(stg) {
 		var cr = stg["custom_resolver"];
 		var crc = stg["cr_context"];
-		if(cr === true && crc === "custom") {
+		if (cr === true && crc === "custom") {
 			resolveDOI(doiInput, true, "newForegroundTab");
 		} else {
 			resolveDOI(doiInput, false, "newForegroundTab");
@@ -475,19 +476,19 @@ function contextMenuResolve(info) {
 
 // Message passing
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch(request.cmd) {
-		case "auto_link":
-			autoLinkDOIs();
-			break;
-		case "toggle_sync":
-			storageListener(false);
-			toggleSync();
-			break;
-		case "record_tab_id":
-			tabRecord(request.id, true);
-			break;
-		default:
-			break;
+	switch (request.cmd) {
+	case "auto_link":
+		autoLinkDOIs();
+		break;
+	case "toggle_sync":
+		storageListener(false);
+		toggleSync();
+		break;
+	case "record_tab_id":
+		tabRecord(request.id, true);
+		break;
+	default:
+		break;
 	}
 });
 
@@ -500,18 +501,20 @@ function cleanupPerms() {
 			'https://raw.githubusercontent.com/'
 		]
 	}, function(removed) {
-		if(removed)
+		if (removed) {
 			console.log("Permissions cleaned");
-		else
+		} else {
 			console.log("Unable to cleanup permissions");
+		}
 	});
 }
 
 function tabRecord(id, add) {
-	if(typeof tabRecord.openTabs === 'undefined')
+	if (typeof tabRecord.openTabs === 'undefined') {
 		tabRecord.openTabs = [];
+	}
 
-	if(add) {
+	if (add) {
 		tabRecord.openTabs.push(id);
 	} else {
 		var index = tabRecord.openTabs.indexOf(id);
@@ -521,7 +524,7 @@ function tabRecord(id, add) {
 
 function permRemoveListeners() {
 	chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-		if(typeof tabRecord.openTabs != 'undefined' && tabRecord.openTabs.indexOf(tabId) >= 0) {
+		if (typeof tabRecord.openTabs != 'undefined' && tabRecord.openTabs.indexOf(tabId) >= 0) {
 			chrome.permissions.remove({
 				origins: [
 					'http://*.doi.org/',
@@ -530,10 +533,11 @@ function permRemoveListeners() {
 					'https://raw.githubusercontent.com/'
 				]
 			}, function(removed) {
-				if(removed)
+				if (removed) {
 					console.log("Removed qr/citation-related permissions");
-				else
+				} else {
 					console.log("Unable to remove qr/citation-related permissions");
+				}
 			});
 			tabRecord(tabId, false);
 		}
@@ -545,23 +549,23 @@ function alListener(tabId, changeInfo, tab) {
 	chrome.permissions.contains({
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
-		if(result && tab.url.indexOf("https://chrome.google.com/webstore") === 0) {
+		if (result && tab.url.indexOf("https://chrome.google.com/webstore") === 0) {
 			return;
 		}
 
-		if(result && tab.url.indexOf("http") === 0) {
+		if (result && tab.url.indexOf("http") === 0) {
 			chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 		} else {
 			chrome.permissions.contains({
 				origins: [ 'http://*/*' ]
 			}, function(result) {
-				if(result && tab.url.indexOf("http") === 0 && tab.url.indexOf("https") < 0) {
+				if (result && tab.url.indexOf("http") === 0 && tab.url.indexOf("https") < 0) {
 					chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 				} else {
 					chrome.permissions.contains({
 						origins: [ 'https://*/*' ]
 					}, function(result) {
-						if(result && tab.url.indexOf("https") === 0) {
+						if (result && tab.url.indexOf("https") === 0) {
 							chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 						}
 					});
@@ -578,7 +582,7 @@ function autoLinkDOIs() {
 		permissions: [ 'tabs' ],
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
-		if(result) {
+		if (result) {
 			chrome.storage.local.set({
 				auto_link: true,
 				al_protocol: "httphttps"
@@ -592,7 +596,7 @@ function autoLinkDOIs() {
 				permissions: [ 'tabs' ],
 				origins: [ 'http://*/*' ]
 			}, function(result) {
-				if(result) {
+				if (result) {
 					chrome.storage.local.set({
 						auto_link: true,
 						al_protocol: "http"
@@ -606,7 +610,7 @@ function autoLinkDOIs() {
 						permissions: [ 'tabs' ],
 						origins: [ 'https://*/*' ]
 					}, function(result) {
-						if(result) {
+						if (result) {
 							chrome.storage.local.set({
 								auto_link: true,
 								al_protocol: "https"
@@ -640,7 +644,7 @@ function omniListener(text, disposition) {
 		console.log('omnibox: ' + text);
 
 		var doiInput = encodeURI(trim(text));
-		if(!checkValidDoi(doiInput)) {
+		if (!checkValidDoi(doiInput)) {
 			return;
 		}
 
@@ -649,22 +653,22 @@ function omniListener(text, disposition) {
 		var cro = stg["cr_omnibox"];
 		var tab;
 
-		switch(ot) {
-			case "newfgtab":
-				tab = "newForegroundTab";
-				break;
-			case "newbgtab":
-				tab = "newBackgroundTab";
-				break;
-			case "curtab":
-				tab = "currentTab";
-				break;
-			default:
-				tab = disposition;
-				break;
+		switch (ot) {
+		case "newfgtab":
+			tab = "newForegroundTab";
+			break;
+		case "newbgtab":
+			tab = "newBackgroundTab";
+			break;
+		case "curtab":
+			tab = "currentTab";
+			break;
+		default:
+			tab = disposition;
+			break;
 		}
 
-		if(cr === true && cro === "custom") {
+		if (cr === true && cro === "custom") {
 			resolveDOI(doiInput, true, tab);
 		} else {
 			resolveDOI(doiInput, false, tab);

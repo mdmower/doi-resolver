@@ -43,7 +43,6 @@ function storage(firstRun) {
 function migrateStorage(callback) {
 	var key;
 	var options = allOptions();
-	var noSyncs = excludeFromSync();
 
 	var optionPairs = {};
 	for(var i = 0; i < options.length; i++) {
@@ -68,10 +67,12 @@ function migrateStorage(callback) {
 		chrome.storage.sync.get(null, function(stgSync) {
 			var optionSyncPairs = {};
 			for(key in stgSync) {
-				if(stgSync[key] === 'true') {
-					optionSyncPairs[key] = true;
-				} else if(stgSync[key] === 'false') {
-					optionSyncPairs[key] = false;
+				if(stgSync.hasOwnProperty(key)) {
+					if(stgSync[key] === 'true') {
+						optionSyncPairs[key] = true;
+					} else if(stgSync[key] === 'false') {
+						optionSyncPairs[key] = false;
+					}
 				}
 			}
 			chrome.storage.sync.set(optionSyncPairs, function() {
@@ -137,7 +138,7 @@ Array.prototype.diff = function(a) {
 };
 
 function getDefaultOption(opt) {
-	defaultOptions = {
+	var defaultOptions = {
 		al_protocol: "http",
 		auto_link: false,
 		auto_link_rewrite: false,
@@ -160,7 +161,7 @@ function getDefaultOption(opt) {
 		qr_title: false,
 		shortdoi_resolver: "http://doi.org/",
 		sync_data: false
-	}
+	};
 	/* sync_reset is not stored locally
 	 * and does not need a default set */
 
@@ -263,7 +264,9 @@ function storageChangeHandler(changes, namespace) {
 	/* Debugging */
 	/*
 	for(var key in changes) {
-		console.log("Option: " + key + ", oldValue: " + changes[key].oldValue + ", newValue: " + changes[key].newValue + ", Namespace: " + namespace);
+		if(changes.hasOwnProperty(key)) {
+			console.log("Option: " + key + ", oldValue: " + changes[key].oldValue + ", newValue: " + changes[key].newValue + ", Namespace: " + namespace);
+		}
 	}
 	*/
 
@@ -273,8 +276,10 @@ function storageChangeHandler(changes, namespace) {
 				var toSync = {};
 				var syncKeys = (allOptions()).diff(excludeFromSync());
 				for(var key in changes) {
-					if(syncKeys.indexOf(key) >= 0) {
-						toSync[key] = changes[key].newValue;
+					if(changes.hasOwnProperty(key)) {
+						if(syncKeys.indexOf(key) >= 0) {
+							toSync[key] = changes[key].newValue;
+						}
 					}
 				}
 				storageListener(false);
@@ -323,20 +328,22 @@ function storageChangeHandler(changes, namespace) {
 		var optionSyncPairs = {};
 		var optionLocalPairs = {};
 		for(var key in changes) {
-			if(changes[key].newValue === 'true') {
-				optionSyncPairs[key] = true;
-				optionLocalPairs[key] = true;
-			} else if(changes[key].newValue === 'false') {
-				optionSyncPairs[key] = false;
-				optionLocalPairs[key] = false;
-			} else if(key !== 'al_protocol') {
-				/* Migration: al_protocol was removed from sync
-				 * since calls to chrome.permissions.request must
-				 * stem from user interaction; thus, autolink
-				 * listeners cannot be refreshed. Ignore since old
-				 * versions of this extension may still alter it.
-				 */
-				optionLocalPairs[key] = changes[key].newValue;
+			if(changes.hasOwnProperty(key)) {
+				if(changes[key].newValue === 'true') {
+					optionSyncPairs[key] = true;
+					optionLocalPairs[key] = true;
+				} else if(changes[key].newValue === 'false') {
+					optionSyncPairs[key] = false;
+					optionLocalPairs[key] = false;
+				} else if(key !== 'al_protocol') {
+					/* Migration: al_protocol was removed from sync
+					 * since calls to chrome.permissions.request must
+					 * stem from user interaction; thus, autolink
+					 * listeners cannot be refreshed. Ignore since old
+					 * versions of this extension may still alter it.
+					 */
+					optionLocalPairs[key] = changes[key].newValue;
+				}
 			}
 		}
 
@@ -443,7 +450,7 @@ function toggleContextMenu() {
 }
 
 function contextMenuResolve(info) {
-	var doiInput = escape(trim(info.selectionText));
+	var doiInput = encodeURI(trim(info.selectionText));
 	if(!checkValidDoi(doiInput)) {
 		return;
 	}
@@ -536,23 +543,23 @@ function alListener(tabId, changeInfo, tab) {
 	chrome.permissions.contains({
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
-		if(result && tab.url.indexOf("https://chrome.google.com/webstore") == 0) {
+		if(result && tab.url.indexOf("https://chrome.google.com/webstore") === 0) {
 			return;
 		}
 
-		if(result && tab.url.indexOf("http") == 0) {
+		if(result && tab.url.indexOf("http") === 0) {
 			chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 		} else {
 			chrome.permissions.contains({
 				origins: [ 'http://*/*' ]
 			}, function(result) {
-				if(result && tab.url.indexOf("http") == 0 && tab.url.indexOf("https") < 0) {
+				if(result && tab.url.indexOf("http") === 0 && tab.url.indexOf("https") < 0) {
 					chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 				} else {
 					chrome.permissions.contains({
 						origins: [ 'https://*/*' ]
 					}, function(result) {
-						if(result && tab.url.indexOf("https") == 0) {
+						if(result && tab.url.indexOf("https") === 0) {
 							chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 						}
 					});
@@ -630,7 +637,7 @@ function omniListener(text, disposition) {
 	storage.area.get(stgFetch, function(stg) {
 		console.log('omnibox: ' + text);
 
-		var doiInput = escape(trim(text));
+		var doiInput = encodeURI(trim(text));
 		if(!checkValidDoi(doiInput)) {
 			return;
 		}

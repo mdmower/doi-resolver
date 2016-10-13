@@ -190,7 +190,7 @@ function saveOptions() {
 		doi_resolver: $("#doiResolverInput").val(),
 		shortdoi_resolver: $("#shortDoiResolverInput").val(),
 		omnibox_tab: $("#omniboxOpento option:selected").val()
-	}
+	};
 
 	/*
 	 * These options require permissions setting/checking. Only call them
@@ -229,7 +229,7 @@ function restoreOptions() {
 		"sync_data"
 	];
 
-	var stgFetch = stgFetch = [
+	var stgFetch = [
 		"auto_link_rewrite",
 		"context_menu",
 		"meta_buttons",
@@ -385,9 +385,11 @@ function storageChangeHandler(changes, namespace) {
 			"omnibox_tab"
 		];
 		for(var key in changes) {
-			if(options.indexOf(key) >= 0) {
-				restoreOptions();
-				break;
+			if(changes.hasOwnProperty(key)) {
+				if(options.indexOf(key) >= 0) {
+					restoreOptions();
+					break;
+				}
 			}
 		}
 	}

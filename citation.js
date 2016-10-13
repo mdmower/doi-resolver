@@ -206,7 +206,7 @@ jQuery.fn.filterByText = function(textbox, selectSingleMatch) {
 			var option = options[i];
 			if(regex.test(option.text)) {
 				option_html += '<option value="' + option.value + '"';
-				if(cursel != null && cursel == option.value) {
+				if(cursel !== null && cursel == option.value) {
 					option_html += ' selected="selected"';
 					scrollto = true;
 				}
@@ -228,7 +228,7 @@ function trim(stringToTrim) {
 }
 
 function formSubmitHandler() {
-	var doi = escape(trim(document.getElementById("doiInput").value));
+	var doi = encodeURI(trim(document.getElementById("doiInput").value));
 	var sel = $("#styleList option:selected").val();
 	if(!doi || !checkValidDoi(doi) || typeof sel === 'undefined') {
 		return;
@@ -242,7 +242,7 @@ function saveSelections() {
 	var options = {
 		cite_style: $("#styleList option:selected").val(),
 		cite_locale: $("#citeLocaleInput option:selected").val()
-	}
+	};
 
 	chrome.storage.local.set(options, null);
 }
@@ -283,15 +283,6 @@ function copyCitation() {
 	$("#citeOutput").select();
 }
 
-function htmlEscape(str) {
-	return String(str)
-		.replace(/&/g, '&amp;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;');
-}
-
 function getCitation(doi) {
 	var style = $("#styleList option:selected").val();
 	var locale = $("#citeLocaleInput option:selected").val();
@@ -318,7 +309,7 @@ function getCitation(doi) {
 				cache: false
 			});
 			jqxhr.done(function() {
-				if(jqxhr.responseText != "" && jqxhr.responseText.charAt(0) != '<') {
+				if(jqxhr.responseText !== "" && jqxhr.responseText.charAt(0) != '<') {
 					var citation = JSON.parse(jqxhr.responseText);
 					initLocales(false, renderBib, citation, style, locale);
 				} else {
@@ -350,7 +341,7 @@ function renderBib(citation, style, locale, allLocales) {
 	});
 
 	jqxhrCsl.done(function() {
-		if(jqxhrCsl.responseText != "") {
+		if(jqxhrCsl.responseText !== "") {
 			if(locale === "auto") {
 				var xml = jqxhrCsl.responseText,
 				  xmlDoc = $.parseXML(xml),
@@ -374,10 +365,10 @@ function renderBib(citation, style, locale, allLocales) {
 			});
 
 			jqxhrLoc.done(function() {
-				if(jqxhrLoc.responseText != "") {
+				if(jqxhrLoc.responseText !== "") {
 					citeprocSys = {
 						retrieveLocale: function(lang) {
-							return jqxhrLoc.responseText
+							return jqxhrLoc.responseText;
 						},
 						retrieveItem: function(id) {
 							return citations[id];
@@ -394,12 +385,14 @@ function renderBib(citation, style, locale, allLocales) {
 
 					var itemIDs = [];
 					for(var key in citations) {
-						itemIDs.push(key);
+						if (citations.hasOwnProperty(key)) {
+							itemIDs.push(key);
+						}
 					}
 					citeproc.updateItems(itemIDs);
 
 					var bibResult = citeproc.makeBibliography();
-					if(typeof bibResult != 'undefined' && bibResult != false) {
+					if(typeof bibResult != 'undefined' && bibResult !== false) {
 						outputCitation(bibResult[1].join('\n'));
 					} else {
 						simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));

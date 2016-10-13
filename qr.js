@@ -189,7 +189,7 @@ function prepareColorPickers() {
 			replacerClassName: "qrColorReplacerClass",
 			containerClassName: "qrColorContainerClass",
 			change: function(color) {
-				saveOptions()
+				saveOptions();
 			}
 		});
 
@@ -201,7 +201,7 @@ function prepareColorPickers() {
 			replacerClassName: "qrColorReplacerClass",
 			containerClassName: "qrColorContainerClass",
 			change: function(color) {
-				saveOptions()
+				saveOptions();
 			}
 		});
 
@@ -215,7 +215,7 @@ function saveOptions() {
 		qr_fgcolor: $("#qrFgColorInput").val(),
 		qr_bgcolor: $("#qrBgColorInput").val(),
 		qr_title: $("#qrFetchTitle").prop('checked')
-	}
+	};
 
 	chrome.storage.local.set(options, null);
 }
@@ -308,8 +308,8 @@ function htmlEscape(str) {
 }
 
 function formSubmitHandler() {
-	var doiInput = escape(trim($("#doiInput").val()));
-	var size = parseInt(escape($("#qrSizeInput").val()));
+	var doiInput = encodeURI(trim($("#doiInput").val()));
+	var size = parseInt(encodeURI($("#qrSizeInput").val()));
 	var fgcolor = $("#qrFgColorInput").val();
 	var bgcolor = $("#qrBgColorInput").val();
 
@@ -380,7 +380,7 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 		var manualTitle = $("#qrManualTitle").prop('checked');
 		if(manualTitle) {
 			var titleString = $("#qrManualTitleText").val();
-			if(titleString != "") {
+			if(titleString !== "") {
 				stringToEncode = titleString + "\n" + stringToEncode;
 			}
 		}
@@ -402,7 +402,6 @@ function createQrImage(text, size, fgcolor, bgcolor) {
 
 function updateMessage(stringToEncode, titleRetrieval) {
 	var titleNotice = "";
-	var statusMessage = "";
 
 	switch(titleRetrieval) {
 	case "found":

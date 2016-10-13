@@ -75,7 +75,7 @@ function startListeners() {
 function saveOptions() {
 	var options = {
 		cr_bubble_last: $('input[name="crRadio"]:checked').val()
-	}
+	};
 
 	chrome.storage.local.set(options, null);
 }
@@ -125,7 +125,7 @@ function bubbleMessage(message) {
 // Process the form
 function formSubmitHandler() {
 	var actionType = $("#hiddenButtonInput").val();
-	var doiInput = escape(trim($("#textInput").val()));
+	var doiInput = encodeURI(trim($("#textInput").val()));
 
 	switch(actionType) {
 	case "qr":
@@ -135,7 +135,7 @@ function formSubmitHandler() {
 		citeDOI(doiInput);
 		break;
 	case "doi":
-		if(doiInput.length == 0 || !checkValidDoi(doiInput)) return;
+		if(doiInput.length === 0 || !checkValidDoi(doiInput)) return;
 		resolveURL(doiInput);
 		break;
 	case "options":

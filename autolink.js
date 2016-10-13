@@ -91,7 +91,7 @@ function replaceInElement(element, find, replace) {
 function replaceInText(text, find, replace) {
 	var match;
 	var matches = [];
-	while(match = find.exec(text.data)) {
+	while((match = find.exec(text.data)) !== null) {
 		matches.push(match);
 	}
 	for(var i = matches.length; i-- > 0;) {

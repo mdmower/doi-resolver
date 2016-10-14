@@ -234,7 +234,7 @@ function trim(stringToTrim) {
 function formSubmitHandler() {
 	var doi = encodeURI(trim(document.getElementById("doiInput").value));
 	var sel = $("#styleList option:selected").val();
-	if (!doi || !checkValidDoi(doi) || typeof sel === 'undefined') {
+	if (!checkValidDoi(doi) || typeof sel === 'undefined') {
 		return;
 	}
 
@@ -252,7 +252,9 @@ function saveSelections() {
 }
 
 function checkValidDoi(doiInput) {
-	if (/^10\./.test(doiInput)) {
+	if (!doiInput) {
+		return false;
+	} else if (/^10\./.test(doiInput)) {
 		return true;
 	} else if (/^10\//.test(doiInput)) {
 		return true;

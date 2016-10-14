@@ -389,7 +389,6 @@ function checkValidDoi(doiInput) {
 	}
 }
 
-
 function navigate(url) {
 	chrome.tabs.query({
 		active: true,

@@ -98,7 +98,9 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (in bubble)
 function checkValidDoi(doiInput) {
-	if (/^10\./.test(doiInput)) {
+	if (!doiInput) {
+		return false;
+	} else if (/^10\./.test(doiInput)) {
 		return true;
 	} else if (/^10\//.test(doiInput)) {
 		return true;
@@ -134,7 +136,9 @@ function formSubmitHandler() {
 		citeDOI(doiInput);
 		break;
 	case "doi":
-		if (doiInput.length === 0 || !checkValidDoi(doiInput)) return;
+		if (!checkValidDoi(doiInput)) {
+			return;
+		}
 		resolveURL(doiInput);
 		break;
 	case "options":

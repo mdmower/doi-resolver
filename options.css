@@ -150,9 +150,14 @@ ul {
 	margin-bottom: 4px;
 }
 
+#historySubOptions,
 #optionAutolinkApplyto,
 #autoLinkRewrite {
 	margin-left: 26px;
+}
+
+#historySubOptions input {
+	margin-top: 4px;
 }
 
 #syncDataWipeDescription {
@@ -218,4 +223,43 @@ ul {
 
 .option_title {
 	margin: 0 0 4px 0;
+}
+
+#historyList {
+	border: 0;
+	border-collapse: collapse;
+	width: 100%;
+	table-layout: fixed;
+}
+
+#historyHeading th {
+	text-align: left;
+	padding: 5px;
+	border-bottom: 1px solid black;
+}
+
+#historySeparator {
+	height: 6px;
+}
+
+#historyList td {
+	text-align: left;
+	padding: 5px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#historyList td input,
+#historyList td button,
+#historyList td a {
+	vertical-align: middle;
+}
+
+.history_entry_save {
+	width: 45px;
+}
+
+.history_entry_delete {
+	width: 60px;
 }

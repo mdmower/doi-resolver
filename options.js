@@ -22,12 +22,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch (request.cmd) {
 	case "sync_toggle_complete":
 		storage(false, true);
+		populateHistory();
 		break;
 	case "settings_dup_complete":
 		storage(false, false);
 		break;
 	case "auto_link_config_complete":
 		// Do nothing
+		break;
+	case "doi_recorded":
+		updateHistory(request);
 		break;
 	default:
 		break;
@@ -60,6 +64,7 @@ function storage(firstRun, restore) {
 function continueOnLoad() {
 	getLocalMessages();
 	startClickListeners();
+	populateHistory();
 	chrome.storage.onChanged.addListener(storageChangeHandler);
 }
 
@@ -123,13 +128,15 @@ function startClickListeners() {
 
 function startChangeListeners() {
 	/*
-	 * doiResolverInput and shortDoiResolverInput can fire onChange events
-	 * frequently. debounce them to only run once per 750ms so Chrome Sync
-	 * doesn't get too many sync requests.
+	 * doiResolverInput, shortDoiResolverInput, historyLength
+	 * These can fire onChange events frequently. debounce them to only
+	 * run once per 750ms so Chrome Sync doesn't get too many sync requests.
 	 */
 	var dbSaveOptions = _.debounce(saveOptions, 750);
 
 	$("#history").on("change", saveOptions);
+	$("#historyShowSave").on("change", saveOptions);
+	$("#historyLength").on("change", dbSaveOptions);
 	$("#context").on("change", saveOptions);
 	$("#meta").on("change", saveOptions);
 	$("#autoLink").on("change", saveOptions);
@@ -143,12 +150,16 @@ function startChangeListeners() {
 	$("#omniboxOpento").on("change", saveOptions);
 	$("#autolinkApplyto").on("change", saveOptions);
 	$("#syncData").on("change", toggleSync);
+
+	startHistoryChangeListeners();
 }
 
 function haltChangeListeners() {
 	var dbSaveOptions = _.debounce(saveOptions, 750);
 
 	$("#history").off("change", saveOptions);
+	$("#historyShowSave").off("change", saveOptions);
+	$("#historyLength").off("change", dbSaveOptions);
 	$("#context").off("change", saveOptions);
 	$("#meta").off("change", saveOptions);
 	$("#autoLink").off("change", saveOptions);
@@ -162,6 +173,24 @@ function haltChangeListeners() {
 	$("#omniboxOpento").off("change", saveOptions);
 	$("#autolinkApplyto").off("change", saveOptions);
 	$("#syncData").off("change", toggleSync);
+
+	haltHistoryChangeListeners();
+}
+
+function startHistoryChangeListeners() {
+	$('.history_input_save').on("change", function() {
+		var arrid = parseInt(this.id.substr("save_entry_".length));
+		saveHistoryEntry(arrid);
+	});
+	$('.history_input_delete').on("click", function() {
+		var arrid = parseInt(this.id.substr("delete_entry_".length));
+		deleteHistoryEntry(arrid);
+	});
+}
+
+function haltHistoryChangeListeners() {
+	$('.history_input_save').off("change");
+	$('.history_input_delete').off("click");
 }
 
 function toggleSync() {
@@ -190,17 +219,28 @@ function saveOptions() {
 	var options = {
 		auto_link_rewrite: $("#autoLinkRewrite").prop('checked'),
 		history: $("#history").prop('checked'),
+		history_showsave: $("#historyShowSave").prop('checked'),
+		history_length: parseInt($("#historyLength").val()),
 		context_menu: $("#context").prop('checked'),
 		meta_buttons: $("#meta").prop('checked'),
 		custom_resolver: $("#customResolver").prop('checked'),
 		cr_autolink: $("#crAutolink option:selected").val(),
 		cr_bubble: $("#crBubble option:selected").val(),
 		cr_context: $("#crContext option:selected").val(),
+		cr_history: $("#crHistory option:selected").val(),
 		cr_omnibox: $("#crOmnibox option:selected").val(),
 		doi_resolver: $("#doiResolverInput").val(),
 		shortdoi_resolver: $("#shortDoiResolverInput").val(),
 		omnibox_tab: $("#omniboxOpento option:selected").val()
 	};
+
+	/* If history is disabled, remove all history entries */
+	if (!options.history) {
+		options.recorded_dois = [];
+		$(".history_entry").remove();
+	} else {
+		shrinkHistory(options.history_length);
+	}
 
 	/*
 	 * These options require permissions setting/checking. Only call them
@@ -242,12 +282,15 @@ function restoreOptions() {
 	var stgFetch = [
 		"auto_link_rewrite",
 		"history",
+		"history_length",
+		"history_showsave",
 		"context_menu",
 		"meta_buttons",
 		"custom_resolver",
 		"cr_autolink",
 		"cr_bubble",
 		"cr_context",
+		"cr_history",
 		"cr_omnibox",
 		"doi_resolver",
 		"shortdoi_resolver",
@@ -260,12 +303,15 @@ function restoreOptions() {
 		var alrOp = stg.auto_link_rewrite;
 		var sdOp = stgLocal.sync_data;
 		var hOp = stg.history;
+		var hlOp = stg.history_length;
+		var hssOp = stg.history_showsave;
 		var cmOp = stg.context_menu;
 		var metaOp = stg.meta_buttons;
 		var crOp = stg.custom_resolver;
 		var craOp = stg.cr_autolink;
 		var crbOp = stg.cr_bubble;
 		var crcOp = stg.cr_context;
+		var crhOp = stg.cr_history;
 		var croOp = stg.cr_omnibox;
 		var drOp = stg.doi_resolver;
 		var srOp = stg.shortdoi_resolver;
@@ -277,10 +323,14 @@ function restoreOptions() {
 		if (hOp === true) {
 			$("#history").prop("checked", true);
 			$("#history_tab").css("display", "block");
+			$("#historySubOptions").css("display", "block");
 		} else {
 			$("#history").prop("checked", false);
 			$("#history_tab").css("display", "none");
+			$("#historySubOptions").css("display", "none");
 		}
+		$("#historyShowSave").prop("checked", hssOp);
+		$("#historyLength").val(hlOp);
 
 		if (cmOp === true) {
 			$("#context").prop("checked", true);
@@ -324,6 +374,7 @@ function restoreOptions() {
 		$("#crAutolink").val(craOp);
 		$("#crBubble").val(crbOp);
 		$("#crContext").val(crcOp);
+		$("#crHistory").val(crhOp);
 		$("#crOmnibox").val(croOp);
 		$("#omniboxOpento").val(otOp);
 		$("#autolinkApplyto").val(alpOp);
@@ -338,6 +389,7 @@ function restoreOptions() {
 function minimalOptionsRefresh() {
 	var al = $("#autoLink").prop('checked');
 	var history = $("#history").prop('checked');
+	var histlen = $("#historyLength").val();
 	var cm = $("#context").prop('checked');
 	var meta = $("#meta").prop('checked');
 	var cr = $("#customResolver").prop('checked');
@@ -345,8 +397,16 @@ function minimalOptionsRefresh() {
 
 	if (history) {
 		$("#history_tab").css("display", "block");
+		$("#historySubOptions").css("display", "block");
 	} else {
 		$("#history_tab").css("display", "none");
+		$("#historySubOptions").css("display", "none");
+	}
+
+	if (isNaN(parseInt(histlen)) || parseInt(histlen) < 1) {
+		$("#historyLength").val("1");
+	} else if (parseInt(histlen) > 500) {
+		$("#historyLength").val("500");
 	}
 
 	if (cm) {
@@ -409,6 +469,7 @@ function storageChangeHandler(changes, namespace) {
 			"cr_autolink",
 			"cr_bubble",
 			"cr_context",
+			"cr_history",
 			"cr_omnibox",
 			"doi_resolver",
 			"shortdoi_resolver",
@@ -541,6 +602,240 @@ function autolinkShufflePerms() {
 	}
 }
 
+function populateHistory() {
+	var stgFetch = [
+		"history",
+		"recorded_dois"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (stg.history !== true) {
+			return;
+		}
+
+		if (typeof stg.recorded_dois === 'undefined') {
+			return;
+		}
+
+		$(".history_entry").remove();
+
+		// Skip holes in the array (should not occur)
+		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
+			// Use !=, not !==, so that null is caught as well
+			return elm != undefined;
+		});
+
+		var i;
+		for (i = 0; i < stg.recorded_dois.length; i++) {
+			if (!stg.recorded_dois[i].save) {
+				generateHistoryEntry(stg.recorded_dois[i], i, null);
+			}
+		}
+		for (i = 0; i < stg.recorded_dois.length; i++) {
+			if (stg.recorded_dois[i].save) {
+				generateHistoryEntry(stg.recorded_dois[i], i, null);
+			}
+		}
+	});
+}
+
+function generateHistoryEntry(doiObject, doiId, callback) {
+	var stgFetch = [
+		"custom_resolver",
+		"cr_history",
+		"doi_resolver",
+		"history",
+		"shortdoi_resolver"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (stg.history !== true) {
+			return;
+		}
+
+		var cr = stg.custom_resolver;
+		var crh = stg.cr_history;
+		var dr = stg.doi_resolver;
+		var sr = stg.shortdoi_resolver;
+		var url = "";
+		var doi = doiObject.doi;
+
+		if (cr === true && crh === "custom") {
+			if (/^10\./.test(doi)) {
+				url = dr + doi;
+			} else if (/^10\//.test(doi)) {
+				url = sr + doi.replace(/^10\//,"");
+			}
+		} else {
+			if (/^10\./.test(doi)) {
+				url = "http://dx.doi.org/" + doi;
+			} else if (/^10\//.test(doi)) {
+				url = "http://doi.org/" + doi.replace(/^10\//,"");
+			}
+		}
+
+		var tr = $('<tr>');
+		tr.addClass('history_entry');
+		tr.attr({id: "history_entry_" + doiId});
+
+		var save = $('<td>');
+		save.addClass('history_entry_save');
+		var saveCheckbox = $('<input/>');
+		saveCheckbox.addClass('history_input_save');
+		saveCheckbox.attr({type: "checkbox", id: "save_entry_" + doiId});
+		saveCheckbox.prop("checked", doiObject.save);
+		save.append([saveCheckbox]);
+
+		var trash = $('<td>');
+		trash.addClass('history_entry_delete');
+		var trashButton = $('<button>').html("&#10006;");
+		trashButton.addClass('history_input_delete');
+		trashButton.attr({id: "delete_entry_" + doiId});
+		trash.append([trashButton]);
+
+		var anchor = $('<td>');
+		anchor.addClass("history_entry_doi");
+		var anchorLink = $('<a>');
+		anchorLink.attr({ href: url, target: '_blank' });
+		anchorLink.html(doi);
+		anchor.append([anchorLink]);
+
+		appendHistoryEntry(tr.append([save, trash, anchor]), function() {
+			if (callback !== null) {
+				callback();
+			}
+		});
+	});
+}
+
+function appendHistoryEntry(elm, callback) {
+	$("#historySeparator").after(elm);
+	callback();
+}
+
+function saveHistoryEntry(id) {
+	storage.area.get(["recorded_dois"], function(stg) {
+		if (typeof stg.recorded_dois === 'undefined') {
+			return;
+		}
+
+		stg.recorded_dois[id].save = $("#save_entry_" + id).prop("checked");
+		chrome.storage.local.set(stg, null);
+	});
+}
+
+function updateHistoryIdentifiers(id) {
+	var historyRows = $(".history_entry").length;
+	if (!historyRows || id > historyRows) {
+		return;
+	}
+
+	for (var i = id + 1; i < historyRows + 1; i++) {
+		var newId = i - 1;
+		$("#history_entry_" + i).attr("id", "history_entry_" + newId);
+		$("#save_entry_" + i).attr("id", "save_entry_" + newId);
+		$("#delete_entry_" + i).attr("id", "delete_entry_" + newId);
+	}
+}
+
+function deleteHistoryEntry(id) {
+	storage.area.get(["recorded_dois"], function(stg) {
+		if (typeof stg.recorded_dois === 'undefined') {
+			return;
+		}
+
+		haltHistoryChangeListeners();
+
+		var delentry = '#history_entry_' + id;
+		$(delentry).fadeOut(function() {
+			$(delentry).remove();
+			stg.recorded_dois.splice(id, 1);
+			chrome.storage.local.set(stg, function() {
+				updateHistoryIdentifiers(id);
+				startHistoryChangeListeners();
+			});
+		});
+	});
+}
+
+function shrinkHistory(newHistoryLength) {
+	var stgFetch = [
+		"recorded_dois",
+		"history_length"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (typeof stg.history_length === 'undefined') {
+			return;
+		}
+		if (newHistoryLength >= stg.history_length) {
+			return;
+		}
+
+		haltHistoryChangeListeners();
+
+		for (var i = 0; i < stg.recorded_dois.length; i++) {
+			if (stg.recorded_dois[i].save !== true) {
+				stg.recorded_dois.splice(i, 1);
+				i--;
+			}
+			if (newHistoryLength >= stg.recorded_dois.length) {
+				break;
+			}
+		}
+
+		chrome.storage.local.set({
+			recorded_dois: stg.recorded_dois
+		}, function() {
+			populateHistory();
+		});
+	});
+}
+
+function updateHistory(request) {
+	var shift = request.shift;
+	var doiObject = request.doi;
+	var doiId = request.doiId;
+
+	haltHistoryChangeListeners();
+	shiftHistoryEntries(shift, function() {
+		generateHistoryEntry(doiObject, doiId, startHistoryChangeListeners);
+	});
+}
+
+function shiftHistoryEntries(shift, callback) {
+	if (!shift && callback !== null) {
+		callback();
+		return;
+	} else if (!shift) {
+		return;
+	}
+
+	var historyRows = $(".history_entry").length;
+	if (!historyRows) {
+		return;
+	}
+
+	var id = historyRows;
+	for (var i = 0; i < historyRows; i++) {
+		if (!$("#save_entry_" + i).prop("checked")) {
+			id = i;
+			break;
+		}
+	}
+
+	$("#history_entry_" + i).fadeOut(function() {
+		$("#history_entry_" + id).remove();
+		for (var i = id; i < historyRows; i++) {
+			var newId = i - 1;
+			$("#history_entry_" + i).attr("id", "history_entry_" + newId);
+			$("#save_entry_" + i).attr("id", "save_entry_" + newId);
+			$("#delete_entry_" + i).attr("id", "delete_entry_" + newId);
+		}
+		callback();
+	});
+}
+
 function verifyAutolinkPermission(callback) {
 	chrome.permissions.contains({
 		permissions: [ 'tabs' ],
@@ -583,6 +878,10 @@ function getLocalMessages() {
 	$("#optionsTitle").html(message);
 	message = chrome.i18n.getMessage("optionHistory");
 	$("#optionHistory").html(message);
+	message = chrome.i18n.getMessage("optionHistoryLength");
+	$("#optionHistoryLength").html(message);
+	message = chrome.i18n.getMessage("optionHistoryShowSave");
+	$("#optionHistoryShowSave").html(message);
 	message = chrome.i18n.getMessage("optionContextMenu");
 	$("#optionContextMenu").html(message);
 	message = chrome.i18n.getMessage("optionMetaButtons");
@@ -597,6 +896,8 @@ function getLocalMessages() {
 	$("#optionCrBubble").html(message);
 	message = chrome.i18n.getMessage("optionCrContext");
 	$("#optionCrContext").html(message);
+	message = chrome.i18n.getMessage("optionCrHistory");
+	$("#optionCrHistory").html(message);
 	message = chrome.i18n.getMessage("optionCrOmnibox");
 	$("#optionCrOmnibox").html(message);
 	message = chrome.i18n.getMessage("optionCrCustom");

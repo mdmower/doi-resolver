@@ -50,6 +50,7 @@ function continueOnLoad() {
 	getUrlVariables();
 	getLocalMessages();
 	initLocales(true, buildSelections);
+	populateHistory();
 	startListeners();
 }
 
@@ -238,6 +239,7 @@ function formSubmitHandler() {
 		return;
 	}
 
+	recordDoi(doi);
 	saveSelections();
 	getCitation(doi);
 }
@@ -416,6 +418,48 @@ function renderBib(citation, style, locale, allLocales) {
 	});
 	jqxhrCsl.fail(function() {
 		simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+	});
+}
+
+function populateHistory() {
+	var stgFetch = [
+		"recorded_dois",
+		"history_showsave"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (typeof stg.recorded_dois === 'undefined') {
+			return;
+		}
+
+		// Skip holes in the array (should not occur)
+		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
+			// Use !=, not !==, so that null is caught as well
+			return elm != undefined;
+		});
+
+		var optionHtml = "";
+		var i;
+		for (i = 0; i < stg.recorded_dois.length; i++) {
+			if (stg.recorded_dois[i].save) {
+				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
+			}
+		}
+		if (stg.history_showsave !== true) {
+			for (i = 0; i < stg.recorded_dois.length; i++) {
+				if (!stg.recorded_dois[i].save) {
+					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
+				}
+			}
+		}
+		$("#doiHistory").html(optionHtml);
+	});
+}
+
+function recordDoi(doiInput) {
+	chrome.runtime.sendMessage({
+		cmd: "record_doi",
+		doi: doiInput
 	});
 }
 

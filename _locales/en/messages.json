@@ -123,6 +123,10 @@
 		"description": "Label for default resolver",
 		"message": "Default"
 	},
+	"optionCrHistory": {
+		"description": "Label to choose whether custom resolver is enabled for history page",
+		"message": "History Page"
+	},
 	"optionCrLabelBubble": {
 		"description": "Label for choice of custom or default resolver in bubble",
 		"message": "Resolver: "
@@ -146,6 +150,14 @@
 	"optionHistory": {
 		"description": "Label for history option checkbox",
 		"message": "Retain history of DOIs"
+	},
+	"optionHistoryLength": {
+		"description": "Label for history option to retain up to N history entries",
+		"message": "Number of history entries to retain (1 &le; N &le; 500)"
+	},
+	"optionHistoryShowSave": {
+		"description": "Label for history option to only show saved items in text box drop-downs",
+		"message": "Only include saved entries in text box drop-down"
 	},
 	"optionMetaButtons": {
 		"description": "A setting to enable additional buttons in the popup",

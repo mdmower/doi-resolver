@@ -51,6 +51,7 @@ function continueOnLoad() {
 	getUrlVariables();
 	restoreOptions();
 	prepareColorPickers();
+	populateHistory();
 	startListeners();
 }
 
@@ -141,6 +142,48 @@ function restoreOptions() {
 			$("#bgColorDiv").css("display", "none");
 		}
 	});
+	});
+}
+
+function populateHistory() {
+	var stgFetch = [
+		"recorded_dois",
+		"history_showsave"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (typeof stg.recorded_dois === 'undefined') {
+			return;
+		}
+
+		// Skip holes in the array (should not occur)
+		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
+			// Use !=, not !==, so that null is caught as well
+			return elm != undefined;
+		});
+
+		var optionHtml = "";
+		var i;
+		for (i = 0; i < stg.recorded_dois.length; i++) {
+			if (stg.recorded_dois[i].save) {
+				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
+			}
+		}
+		if (stg.history_showsave !== true) {
+			for (i = 0; i < stg.recorded_dois.length; i++) {
+				if (!stg.recorded_dois[i].save) {
+					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
+				}
+			}
+		}
+		$("#doiHistory").html(optionHtml);
+	});
+}
+
+function recordDoi(doiInput) {
+	chrome.runtime.sendMessage({
+		cmd: "record_doi",
+		doi: doiInput
 	});
 }
 
@@ -323,6 +366,8 @@ function formSubmitHandler() {
 	if (!size || !checkValidDoi(doiInput)) {
 		return;
 	}
+
+	recordDoi(doiInput);
 
 	if (size < 80) {
 		simpleNotification(chrome.i18n.getMessage("invalidQrSizeAlert"));

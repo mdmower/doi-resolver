@@ -106,10 +106,13 @@ function allOptions() {
 		"cr_bubble",
 		"cr_bubble_last",
 		"cr_context",
+		"cr_history",
 		"cr_omnibox",
 		"custom_resolver",
 		"doi_resolver",
 		"history",
+		"history_length",
+		"history_showsave",
 		"meta_buttons",
 		"omnibox_tab",
 		"qr_bgcolor",
@@ -117,6 +120,7 @@ function allOptions() {
 		"qr_fgcolor",
 		"qr_size",
 		"qr_title",
+		"recorded_dois",
 		"shortdoi_resolver",
 		"sync_data",
 		"sync_reset"
@@ -150,10 +154,13 @@ function getDefaultOption(opt) {
 		cr_bubble: "custom",
 		cr_bubble_last: "custom",
 		cr_context: "custom",
+		cr_history: "custom",
 		cr_omnibox: "custom",
 		custom_resolver: false,
 		doi_resolver: "http://dx.doi.org/",
 		history: false,
+		history_length: 15,
+		history_showsave: false,
 		meta_buttons: true,
 		omnibox_tab: "newfgtab",
 		qr_bgcolor: "#ffffff",
@@ -161,6 +168,7 @@ function getDefaultOption(opt) {
 		qr_fgcolor: "#000000",
 		qr_size: "300",
 		qr_title: false,
+		recorded_dois: [],
 		shortdoi_resolver: "http://doi.org/",
 		sync_data: false
 	};
@@ -431,6 +439,77 @@ function resolveDOI(doi, useCustomResolver, tab) {
 	});
 }
 
+function recordDoi(doiInput) {
+	var stgFetch = [
+		"recorded_dois",
+		"history_length"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (typeof stg.recorded_dois === 'undefined') {
+			stg.recorded_dois = getDefaultOption("recorded_dois");
+		}
+		if (typeof stg.history_length === 'undefined') {
+			stg.history_length = getDefaultOption("history_length");
+		}
+
+		var doiObject = {
+			doi: doiInput,
+			save: false,
+			title: ""
+		};
+
+		// Remove holes from the array (should not occur)
+		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
+			// Use !=, not !==, so that null is caught as well
+			return elm != undefined;
+		});
+
+		/* The number of recorded entries may exceed the history length if
+		 * the user has saved N entries and later sets the history length to
+		 * less than N. Do not take action; only handle the case of equal
+		 * history length and number of entries below.
+		 */
+		if (stg.recorded_dois.length > parseInt(stg.history_length)) {
+			return;
+		}
+
+		var i;
+		for (i = 0; i < stg.recorded_dois.length; i++) {
+			if (stg.recorded_dois[i].doi === doiObject.doi) {
+				return;
+			}
+		}
+
+		var shifted = false;
+		if (stg.recorded_dois.length === parseInt(stg.history_length)) {
+			// Do not remove saved entries
+			for (i = 0; i < stg.recorded_dois.length; i++) {
+				if (stg.recorded_dois[i].save !== true) {
+					stg.recorded_dois.splice(i, 1);
+					shifted = true;
+					break;
+				}
+			}
+			if (!shifted) {
+				// All entries are marked for save
+				return;
+			}
+		}
+
+		stg.recorded_dois.push(doiObject);
+
+		chrome.storage.local.set(stg, function() {
+			chrome.runtime.sendMessage({
+				cmd: "doi_recorded",
+				doi: doiObject,
+				doiId: stg.recorded_dois.length - 1,
+				shift: shifted
+			});
+		});
+	});
+}
+
 // Context menu
 function contextMenuMaker() {
 	chrome.contextMenus.create({
@@ -479,12 +558,15 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	case "auto_link":
 		autoLinkDOIs();
 		break;
-	case "toggle_sync":
-		storageListener(false);
-		toggleSync();
+	case "record_doi":
+		recordDoi(request.doi);
 		break;
 	case "record_tab_id":
 		tabRecord(request.id, true);
+		break;
+	case "toggle_sync":
+		storageListener(false);
+		toggleSync();
 		break;
 	default:
 		break;

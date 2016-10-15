@@ -50,6 +50,12 @@
 		<div class="option_container">
 			<h3 class="option_title">History</h3>
 			<input type="checkbox" id="history" /><label id="optionHistory" for="history"></label>
+			<div id="historySubOptions">
+				<input type="checkbox" id="historyShowSave" />
+				<label id="optionHistoryShowSave" for="historyShowSave"></label><br>
+				<input type="number" id="historyLength" max="500" min="1" />
+				<label id="optionHistoryLength" for="historyLength"></label>
+			</div>
 		</div>
 
 		<div class="option_container">
@@ -112,7 +118,11 @@
 					<select type="selection" id="crOmnibox" class="crSelections">
 						<option class="optionCrCustom" value="custom"></option>
 						<option class="optionCrDefault" value="default"></option>
-					</select><span id="optionCrOmnibox" class="crLabels"></span>
+					</select><span id="optionCrOmnibox" class="crLabels"></span><br>
+					<select type="selection" id="crHistory" class="crSelections">
+						<option class="optionCrCustom" value="custom"></option>
+						<option class="optionCrDefault" value="default"></option>
+					</select><span id="optionCrHistory" class="crLabels"></span>
 				</div>
 			</div>
 		</div>
@@ -145,12 +155,14 @@
 	</div>
 
 	<div class="content" id="content_history">
-		<p id="optionsHistoryInfo">
-			History
-		</p>
-		<p id="optionsHistoryList">
-			List
-		</p>
+		<table id="historyList">
+			<tr id="historyHeading">
+				<th class="history_entry_save">Save</th>
+				<th class="history_entry_delete">Delete</th>
+				<th class="history_entry_doi">DOI</th>
+			</tr>
+			<tr id="historySeparator"></tr>
+		</table>
 	</div>
 
 	<div class="content" id="content_about">

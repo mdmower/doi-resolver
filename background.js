@@ -635,19 +635,31 @@ function alListener(tabId, changeInfo, tab) {
 		}
 
 		if (result && tab.url.search(/https?\:\/\//) === 0) {
-			chrome.tabs.executeScript(tabId, {file: "autolink.js"});
+			chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
+				if (chrome.runtime.lastError || results === undefined) {
+					console.log("Autolink failed to run on " + tab.url);
+				}
+			});
 		} else {
 			chrome.permissions.contains({
 				origins: [ 'http://*/*' ]
 			}, function(result) {
 				if (result && tab.url.search(/http\:\/\//) === 0) {
-					chrome.tabs.executeScript(tabId, {file: "autolink.js"});
+					chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
+						if (chrome.runtime.lastError || results === undefined) {
+							console.log("Autolink failed to run on " + tab.url);
+						}
+					});
 				} else {
 					chrome.permissions.contains({
 						origins: [ 'https://*/*' ]
 					}, function(result) {
 						if (result && tab.url.search(/https\:\/\//) === 0) {
-							chrome.tabs.executeScript(tabId, {file: "autolink.js"});
+							chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
+								if (chrome.runtime.lastError || results === undefined) {
+									console.log("Autolink failed to run on " + tab.url);
+								}
+							});
 						}
 					});
 				}

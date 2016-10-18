@@ -389,7 +389,7 @@ function restoreOptions() {
 function minimalOptionsRefresh() {
 	var al = $("#autoLink").prop('checked');
 	var history = $("#history").prop('checked');
-	var histlen = $("#historyLength").val();
+	var historyLength = parseInt($("#historyLength").val());
 	var cm = $("#context").prop('checked');
 	var meta = $("#meta").prop('checked');
 	var cr = $("#customResolver").prop('checked');
@@ -403,10 +403,10 @@ function minimalOptionsRefresh() {
 		$("#historySubOptions").css("display", "none");
 	}
 
-	if (isNaN(parseInt(histlen)) || parseInt(histlen) < 1) {
-		$("#historyLength").val("1");
-	} else if (parseInt(histlen) > 500) {
-		$("#historyLength").val("500");
+	if (isNaN(historyLength) || historyLength < 1) {
+		$("#historyLength").val(1);
+	} else if (historyLength > 500) {
+		$("#historyLength").val(500);
 	}
 
 	if (cm) {

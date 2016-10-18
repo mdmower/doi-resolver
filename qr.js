@@ -89,15 +89,17 @@ function toggleBgColor() {
 }
 
 function qrSizeSave() {
-	if (isNaN($("#qrSizeInput").val())) {
-		var num = $("#qrSizeInput").val().replace(/[^0-9]/g,'');
-		$("#qrSizeInput").val(num);
+	var qrSize = parseInt($("#qrSizeInput").val());
+	if (isNaN(qrSize)) {
+		$("#qrSizeInput").val(300);
+		qrSize = 300;
+	} else if (qrSize < 80) {
+		$("#qrSizeInput").val(80);
+		qrSize = 80;
 	}
 
 	storage.area.get(["qr_size"], function(stg) {
-		var stgQrSize = stg.qr_size;
-		var newQrSize = $("#qrSizeInput").val();
-		if (stgQrSize !== newQrSize) {
+		if (parseInt(stg.qr_size) !== qrSize) {
 			saveOptions();
 		}
 	});
@@ -128,12 +130,15 @@ function restoreOptions() {
 
 	chrome.storage.local.get(["qr_title"], function(stgLocal) {
 	storage.area.get(stgFetch, function(stg) {
-		var qrSize = stg.qr_size;
+		var qrSize = parseInt(stg.qr_size);
 		if (isNaN(qrSize)) {
 			$("#qrSizeInput").val(300);
+		} else if (qrSize < 80) {
+			$("#qrSizeInput").val(80);
 		} else {
 			$("#qrSizeInput").val(qrSize);
 		}
+
 		if (stgLocal.qr_title === true) {
 			$("#qrFetchTitle").prop("checked", true);
 		}
@@ -255,7 +260,7 @@ function prepareColorPickers() {
 function saveOptions() {
 	var options = {
 		qr_bgtrans: $("#qrBgTrans").prop('checked'),
-		qr_size: $("#qrSizeInput").val(),
+		qr_size: parseInt($("#qrSizeInput").val()),
 		qr_fgcolor: $("#qrFgColorInput").val(),
 		qr_bgcolor: $("#qrBgColorInput").val(),
 		qr_title: $("#qrFetchTitle").prop('checked')
@@ -355,7 +360,7 @@ function htmlEscape(str) {
 
 function formSubmitHandler() {
 	var doiInput = encodeURI(trim($("#doiInput").val()));
-	var size = parseInt(encodeURI($("#qrSizeInput").val()));
+	var qrSize = parseInt($("#qrSizeInput").val());
 	var fgcolor = $("#qrFgColorInput").val();
 	var bgcolor = $("#qrBgColorInput").val();
 
@@ -363,18 +368,20 @@ function formSubmitHandler() {
 		bgcolor = null;
 	}
 
-	if (!size || !checkValidDoi(doiInput)) {
+	if (isNaN(qrSize)) {
+		$("#qrSizeInput").val(300);
+		qrSize = 300;
+	} else if (qrSize < 80) {
+		$("#qrSizeInput").val(80);
+		qrSize = 80;
+	}
+
+	if (!checkValidDoi(doiInput)) {
 		return;
 	}
 
 	recordDoi(doiInput);
-
-	if (size < 80) {
-		simpleNotification(chrome.i18n.getMessage("invalidQrSizeAlert"));
-		return;
-	}
-
-	insertQr(doiInput, size, fgcolor, bgcolor);
+	insertQr(doiInput, qrSize, fgcolor, bgcolor);
 }
 
 function insertQr(doiInput, size, fgcolor, bgcolor) {

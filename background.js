@@ -166,7 +166,7 @@ function getDefaultOption(opt) {
 		qr_bgcolor: "#ffffff",
 		qr_bgtrans: false,
 		qr_fgcolor: "#000000",
-		qr_size: "300",
+		qr_size: 300,
 		qr_title: false,
 		recorded_dois: [],
 		shortdoi_resolver: "http://doi.org/",

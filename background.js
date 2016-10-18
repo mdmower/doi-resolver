@@ -634,19 +634,19 @@ function alListener(tabId, changeInfo, tab) {
 			return;
 		}
 
-		if (result && tab.url.indexOf("http") === 0) {
+		if (result && tab.url.search(/https?\:\/\//) === 0) {
 			chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 		} else {
 			chrome.permissions.contains({
 				origins: [ 'http://*/*' ]
 			}, function(result) {
-				if (result && tab.url.indexOf("http") === 0 && tab.url.indexOf("https") < 0) {
+				if (result && tab.url.search(/http\:\/\//) === 0) {
 					chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 				} else {
 					chrome.permissions.contains({
 						origins: [ 'https://*/*' ]
 					}, function(result) {
-						if (result && tab.url.indexOf("https") === 0) {
+						if (result && tab.url.search(/https\:\/\//) === 0) {
 							chrome.tabs.executeScript(tabId, {file: "autolink.js"});
 						}
 					});

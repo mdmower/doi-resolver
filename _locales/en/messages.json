@@ -63,6 +63,10 @@
 		"description": "Label for the currently set resolver URL",
 		"message": "Preview URL tail:"
 	},
+	"historySaveDescription": {
+		"description": "A description of how the save feature works on the history page",
+		"message": "DOIs marked 'Save' will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."
+	},
 	"iconHover": {
 		"description": "The tooltip message displayed to a user when the mouse hovers on the extension's icon",
 		"message": "Resolve DOI code"

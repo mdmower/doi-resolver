@@ -257,9 +257,15 @@ ul {
 }
 
 .history_entry_save {
-	width: 45px;
+	width: 55px;
 }
 
 .history_entry_delete {
 	width: 60px;
+}
+
+.info_mark {
+	display: inline-block;
+	width: 16px;
+	margin-left: 2px;
 }

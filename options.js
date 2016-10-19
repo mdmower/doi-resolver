@@ -937,5 +937,8 @@ function getLocalMessages() {
 	message = chrome.i18n.getMessage("syncDataWipeDescription");
 	$("#syncDataWipeDescription").html(message);
 
+	message = chrome.i18n.getMessage("historySaveDescription");
+	$("#historySaveInfoMark").attr("title", message);
+
 	$("#extensionVersion").html(chrome.app.getDetails().version);
 }

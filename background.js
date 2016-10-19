@@ -375,7 +375,7 @@ function startFeatures() {
 	});
 	chrome.storage.local.get(["auto_link"], function(stg) {
 		if (stg.auto_link === true) {
-			autoLinkDOIs();
+			autolinkDois();
 		}
 	});
 }
@@ -556,7 +556,7 @@ function contextMenuResolve(info) {
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch (request.cmd) {
 	case "auto_link":
-		autoLinkDOIs();
+		autolinkDois();
 		break;
 	case "record_doi":
 		recordDoi(request.doi);
@@ -668,7 +668,7 @@ function alListener(tabId, changeInfo, tab) {
 	});
 }
 
-function autoLinkDOIs() {
+function autolinkDois() {
 	chrome.tabs.onUpdated.removeListener(alListener);
 
 	chrome.permissions.contains({

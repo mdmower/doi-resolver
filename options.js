@@ -139,8 +139,8 @@ function startChangeListeners() {
 	$("#historyLength").on("change", dbSaveOptions);
 	$("#context").on("change", saveOptions);
 	$("#meta").on("change", saveOptions);
-	$("#autoLink").on("change", saveOptions);
-	$("#autoLinkRewrite").on("change", saveOptions);
+	$("#autolink").on("change", saveOptions);
+	$("#autolinkRewrite").on("change", saveOptions);
 	$("#customResolver").on("change", saveOptions);
 	$(".crSelections").on("change", saveOptions);
 	$("#doiResolverInput").on("change", dbSaveOptions);
@@ -148,7 +148,7 @@ function startChangeListeners() {
 	$("#shortDoiResolverInput").on("change", dbSaveOptions);
 	$("#shortDoiResolverInput").on("input", setCrPreviews);
 	$("#omniboxOpento").on("change", saveOptions);
-	$("#autolinkApplyto").on("change", saveOptions);
+	$("#autolinkApplyTo").on("change", saveOptions);
 	$("#syncData").on("change", toggleSync);
 
 	startHistoryChangeListeners();
@@ -162,8 +162,8 @@ function haltChangeListeners() {
 	$("#historyLength").off("change", dbSaveOptions);
 	$("#context").off("change", saveOptions);
 	$("#meta").off("change", saveOptions);
-	$("#autoLink").off("change", saveOptions);
-	$("#autoLinkRewrite").off("change", saveOptions);
+	$("#autolink").off("change", saveOptions);
+	$("#autolinkRewrite").off("change", saveOptions);
 	$("#customResolver").off("change", saveOptions);
 	$(".crSelections").off("change", saveOptions);
 	$("#doiResolverInput").off("change", dbSaveOptions);
@@ -171,7 +171,7 @@ function haltChangeListeners() {
 	$("#shortDoiResolverInput").off("change", dbSaveOptions);
 	$("#shortDoiResolverInput").off("input", setCrPreviews);
 	$("#omniboxOpento").off("change", saveOptions);
-	$("#autolinkApplyto").off("change", saveOptions);
+	$("#autolinkApplyTo").off("change", saveOptions);
 	$("#syncData").off("change", toggleSync);
 
 	haltHistoryChangeListeners();
@@ -217,7 +217,7 @@ function saveOptions() {
 	minimalOptionsRefresh();
 
 	var options = {
-		auto_link_rewrite: $("#autoLinkRewrite").prop('checked'),
+		auto_link_rewrite: $("#autolinkRewrite").prop('checked'),
 		history: $("#history").prop('checked'),
 		history_showsave: $("#historyShowSave").prop('checked'),
 		history_length: parseInt($("#historyLength").val()),
@@ -246,8 +246,8 @@ function saveOptions() {
 	 * These options require permissions setting/checking. Only call them
 	 * if the current setting differs from stored setting
 	 */
-	var alCur = $("#autoLink").prop('checked');
-	var alpCur = $("#autolinkApplyto option:selected").val();
+	var autolinkCurrent = $("#autolink").prop('checked');
+	var autolinkProtocolCurrent = $("#autolinkApplyTo option:selected").val();
 
 	var stgLclFetch = [
 		"auto_link",
@@ -255,12 +255,14 @@ function saveOptions() {
 	];
 
 	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
-		var alBool = stgLocal.auto_link;
-		var alpStr = stgLocal.al_protocol;
+		var autolinkStorage = stgLocal.auto_link;
+		var autolinkProtocolStorage = stgLocal.al_protocol;
 
 		storageListener(false);
-		if (alCur != alBool || alpCur != alpStr) {
-			chrome.storage.local.set(options, setAutolinkPermission);
+		if (autolinkCurrent != autolinkStorage || autolinkProtocolCurrent != autolinkProtocolStorage) {
+			chrome.storage.local.set(options, function() {
+				setAutolinkPermission(autolinkCurrent);
+			});
 		} else {
 			/* Wait for message confirming .local to .sync duplication
 			 * is complete in background before re-enabling storage
@@ -377,8 +379,8 @@ function restoreOptions() {
 		$("#crHistory").val(crhOp);
 		$("#crOmnibox").val(croOp);
 		$("#omniboxOpento").val(otOp);
-		$("#autolinkApplyto").val(alpOp);
-		$("#autoLinkRewrite").prop("checked", alrOp);
+		$("#autolinkApplyTo").val(alpOp);
+		$("#autolinkRewrite").prop("checked", alrOp);
 
 		verifyAutolinkPermission(startChangeListeners);
 	});
@@ -387,7 +389,7 @@ function restoreOptions() {
 
 // Only refresh fields that need updating after save
 function minimalOptionsRefresh() {
-	var al = $("#autoLink").prop('checked');
+	var al = $("#autolink").prop('checked');
 	var history = $("#history").prop('checked');
 	var historyLength = parseInt($("#historyLength").val());
 	var cm = $("#context").prop('checked');
@@ -507,13 +509,14 @@ function setCrPreviews() {
 	$("#shortDoiResolverOutput").html(srPreview);
 }
 
-function autolinkDisplayUpdate(protocol) {
+function autolinkDisplayUpdate(enabled, protocol) {
 	var cr = $("#customResolver").prop('checked');
 	var cra = $("#crAutolink").val();
 
-	if (protocol) {
-		$("#autolinkApplyto").val(protocol);
-		$("#autoLink").prop("checked", true);
+	$("#autolink").prop("checked", enabled);
+
+	if (protocol !== null) {
+		$("#autolinkApplyTo").val(protocol);
 		$("#alProtocol").css("display", "block");
 		if (cr && cra == "custom") {
 			$("#alRewriteLinks").css("display", "block");
@@ -521,13 +524,12 @@ function autolinkDisplayUpdate(protocol) {
 			$("#alRewriteLinks").css("display", "none");
 		}
 	} else {
-		$("#autoLink").prop("checked", false);
 		$("#alProtocol").css("display", "none");
 		$("#alRewriteLinks").css("display", "none");
 	}
 }
 
-function setAutolinkPermission() {
+function setAutolinkPermission(enabled) {
 	/*
 	 * We only want autolinking for user-enabled protocols, but we also don't
 	 * want to burden the user with many alerts requesting permissions. Go
@@ -543,9 +545,8 @@ function setAutolinkPermission() {
 	 */
 
 	haltChangeListeners();
-	var al = $("#autoLink").prop('checked');
 
-	if (al) {
+	if (enabled) {
 		chrome.permissions.request({
 			permissions: [ 'tabs' ],
 			origins: [ 'http://*/*', 'https://*/*' ]
@@ -553,7 +554,7 @@ function setAutolinkPermission() {
 			if (granted) {
 				autolinkShufflePerms();
 			} else {
-				autolinkDisplayUpdate(false);
+				autolinkDisplayUpdate(false, null);
 				startChangeListeners();
 			}
 		});
@@ -563,13 +564,13 @@ function setAutolinkPermission() {
 			origins: [ 'http://*/*', 'https://*/*' ]
 		}, function(removed) {
 			if (removed) {
-				autolinkDisplayUpdate(false);
+				autolinkDisplayUpdate(false, null);
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				startChangeListeners();
 				console.log("Autolink permissions removed");
 			} else {
-				var alp = $("#autolinkApplyto option:selected").val();
-				autolinkDisplayUpdate(alp);
+				var protocol = $("#autolinkApplyTo option:selected").val();
+				autolinkDisplayUpdate(true, protocol);
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				startChangeListeners();
 				console.log("Could not remove autolink permissions");
@@ -580,16 +581,16 @@ function setAutolinkPermission() {
 
 function autolinkShufflePerms() {
 	// Only called if permissions have been granted by user
-	var alp = $("#autolinkApplyto option:selected").val();
+	var protocol = $("#autolinkApplyTo option:selected").val();
 
-	if (alp === "http") {
+	if (protocol === "http") {
 		chrome.permissions.remove({
 			origins: [ 'https://*/*' ]
 		}, function(removed) {
 			chrome.runtime.sendMessage({cmd: "auto_link"});
 			verifyAutolinkPermission(startChangeListeners);
 		});
-	} else if (alp === "https") {
+	} else if (protocol === "https") {
 		chrome.permissions.remove({
 			origins: [ 'http://*/*' ]
 		}, function(removed) {
@@ -842,7 +843,7 @@ function verifyAutolinkPermission(callback) {
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
 		if (result) {
-			autolinkDisplayUpdate("httphttps");
+			autolinkDisplayUpdate(true, "httphttps");
 			callback();
 		} else {
 			chrome.permissions.contains({
@@ -850,7 +851,7 @@ function verifyAutolinkPermission(callback) {
 				origins: [ 'http://*/*' ]
 			}, function(result) {
 				if (result) {
-					autolinkDisplayUpdate("http");
+					autolinkDisplayUpdate(true, "http");
 					callback();
 				} else {
 					chrome.permissions.contains({
@@ -858,10 +859,10 @@ function verifyAutolinkPermission(callback) {
 						origins: [ 'https://*/*' ]
 					}, function(result) {
 						if (result) {
-							autolinkDisplayUpdate("https");
+							autolinkDisplayUpdate(true, "https");
 							callback();
 						} else {
-							autolinkDisplayUpdate(false);
+							autolinkDisplayUpdate(false, null);
 							callback();
 						}
 					});
@@ -914,10 +915,10 @@ function getLocalMessages() {
 	$("#doiOutputUrlExample").html(message);
 	message = chrome.i18n.getMessage("doiOutputUrlExample");
 	$("#shortDoiOutputUrlExample").html(message);
-	message = chrome.i18n.getMessage("optionAutoLink");
-	$("#optionAutoLink").html(message);
-	message = chrome.i18n.getMessage("optionAutoLinkRewrite");
-	$("#optionAutoLinkRewrite").html(message);
+	message = chrome.i18n.getMessage("optionAutolink");
+	$("#optionAutolink").html(message);
+	message = chrome.i18n.getMessage("optionAutolinkRewrite");
+	$("#optionAutolinkRewrite").html(message);
 	message = chrome.i18n.getMessage("optionOmniboxOpento");
 	$("#optionOmniboxOpento").html(message);
 	message = chrome.i18n.getMessage("optionOmniboxOpentoCurtab");
@@ -926,10 +927,10 @@ function getLocalMessages() {
 	$("#optionOmniboxOpentoNewForetab").html(message);
 	message = chrome.i18n.getMessage("optionOmniboxOpentoNewBacktab");
 	$("#optionOmniboxOpentoNewBacktab").html(message);
-	message = chrome.i18n.getMessage("autoLinkInfo");
-	$("#autoLinkInfo").html(message);
-	message = chrome.i18n.getMessage("optionAutolinkApplyto");
-	$("#optionAutolinkApplyto").html(message);
+	message = chrome.i18n.getMessage("optionAutolinkInfo");
+	$("#optionAutolinkInfo").html(message);
+	message = chrome.i18n.getMessage("optionAutolinkApplyTo");
+	$("#optionAutolinkApplyTo").html(message);
 	message = chrome.i18n.getMessage("syncDataInfo");
 	$("#syncDataInfo").html(message);
 	message = chrome.i18n.getMessage("optionSyncData");

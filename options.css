@@ -145,14 +145,15 @@ ul {
 	color: #444;
 }
 
-#autoLinkInfo, #syncDataInfo {
+#optionAutolinkInfo,
+#syncDataInfo {
 	font-size: 0.9em;
 	margin-bottom: 4px;
 }
 
 #historySubOptions,
-#optionAutolinkApplyto,
-#autoLinkRewrite {
+#optionAutolinkApplyTo,
+#autolinkRewrite {
 	margin-left: 26px;
 }
 

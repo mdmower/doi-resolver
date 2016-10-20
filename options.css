@@ -299,3 +299,16 @@ ul {
 	width: 16px;
 	margin-left: 2px;
 }
+
+#historySaveInfoText {
+	font-weight: normal;
+	display: none;
+	position: absolute;
+	z-index: 10;
+	width: 500px;
+	background-color: white;
+	opacity: 0.9;
+	border: 1px solid lightgray;
+	border-radius: 6px;
+	padding: 10px;
+}

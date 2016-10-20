@@ -140,6 +140,17 @@ function startClickListeners() {
 		}
 	});
 
+	var timer;
+	var delay = 400;
+	$("#historySaveInfoMark").hover(function() {
+		timer = setTimeout(function() {
+			$("#historySaveInfoText").css({display: "inline-block"});
+		}, delay);
+	}, function() {
+		clearTimeout(timer);
+		$("#historySaveInfoText").css({display: "none"});
+	});
+
 	$("#syncDataWipeButton").on("click", function() {
 		$("#syncData").prop("checked", false);
 		$("#syncDataWipe").css("display", "none");
@@ -959,9 +970,8 @@ function getLocalMessages() {
 	$("#optionSyncData").html(message);
 	message = chrome.i18n.getMessage("syncDataWipeDescription");
 	$("#syncDataWipeDescription").html(message);
-
-	message = chrome.i18n.getMessage("historySaveDescription");
-	$("#historySaveInfoMark").attr("title", message);
+	message = chrome.i18n.getMessage("historySaveInfoText");
+	$("#historySaveInfoText").html(message);
 
 	$("#extensionVersion").html(chrome.app.getDetails().version);
 }

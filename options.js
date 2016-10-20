@@ -70,7 +70,6 @@ function continueOnLoad() {
 }
 
 function restoreHashPage() {
-	var hashFound = false;
 	var knownHashes = [
 		"options",
 		"history",
@@ -422,7 +421,6 @@ function restoreOptions() {
 
 // Only refresh fields that need updating after save
 function minimalOptionsRefresh() {
-	var al = $("#autolink").prop('checked');
 	var history = $("#history").prop('checked');
 	var historyLength = parseInt($("#historyLength").val());
 	var cm = $("#context").prop('checked');

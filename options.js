@@ -469,11 +469,19 @@ function minimalOptionsRefresh() {
 		$("#customResolverRight").css("display", "none");
 	}
 
-	if (al && cr && cra == "custom") {
-		$("#alRewriteLinks").css("display", "block");
-	} else {
-		$("#alRewriteLinks").css("display", "none");
-	}
+	/* There's no problem with this running async to the rest of
+	 * saveOptions since a change to the autolink setting will
+	 * call autolinkDisplayUpdate(). This minimal refresh is for
+	 * the case of enabling custom resolver when autolink is
+	 * already enabled.
+	 */
+	storage.area.get(["auto_link"], function(stg) {
+		if (stg.auto_link === true && cr && cra == "custom") {
+			$("#alRewriteLinks").css("display", "block");
+		} else {
+			$("#alRewriteLinks").css("display", "none");
+		}
+	});
 }
 
 function storageListener(enable) {

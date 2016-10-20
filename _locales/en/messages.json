@@ -59,6 +59,10 @@
 		"description": "Label for the currently set resolver URL",
 		"message": "Preview URL tail:"
 	},
+	"historySavedEntryLabel": {
+		"description": "A word to indicate an entry has been marked for save; label displayed in the datalist drop-down",
+		"message": "Saved"
+	},
 	"historySaveInfoText": {
 		"description": "A description of how the save feature works on the history page",
 		"message": "DOIs marked 'Save' will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."

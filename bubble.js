@@ -267,10 +267,11 @@ function populateHistory() {
 		});
 
 		var optionHtml = "";
+		var message = chrome.i18n.getMessage("historySavedEntryLabel");
 		var i;
 		for (i = 0; i < stg.recorded_dois.length; i++) {
 			if (stg.recorded_dois[i].save) {
-				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
+				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" label="' + message + '" />';
 			}
 		}
 		if (stg.history_showsave !== true) {
@@ -280,7 +281,6 @@ function populateHistory() {
 				}
 			}
 		}
-
 		$("#doiHistory").html(optionHtml);
 	});
 }

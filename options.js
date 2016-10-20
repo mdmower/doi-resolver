@@ -64,25 +64,47 @@ function storage(firstRun, restore) {
 function continueOnLoad() {
 	getLocalMessages();
 	startClickListeners();
+	restoreHashPage();
 	populateHistory();
 	chrome.storage.onChanged.addListener(storageChangeHandler);
 }
 
+function restoreHashPage() {
+	var hashFound = false;
+	var knownHashes = [
+		"options",
+		"history",
+		"about"
+	];
+
+	for (var i = 0; i < knownHashes.length; i++) {
+		if (location.hash == "#" + knownHashes[i]) {
+			toggleTab(knownHashes[i]);
+			break;
+		}
+	}
+}
+
+function toggleTab(tab) {
+	var contentId = "#content_" + tab;
+	var tabId = "#" + tab + "_tab";
+
+	$(".content").css("display", "none");
+	$(contentId).css("display", "block");
+	$(".tab").removeClass("active");
+	$(tabId).addClass("active");
+	location.hash = tab;
+}
+
 function startClickListeners() {
 	$("#options_tab").on("click", function() {
-		$("#content_options").css("display", "block");
-		$("#content_history").css("display", "none");
-		$("#content_about").css("display", "none");
+		toggleTab("options");
 	});
 	$("#history_tab").on("click", function() {
-		$("#content_options").css("display", "none");
-		$("#content_history").css("display", "block");
-		$("#content_about").css("display", "none");
+		toggleTab("history");
 	});
 	$("#about_tab").on("click", function() {
-		$("#content_options").css("display", "none");
-		$("#content_history").css("display", "none");
-		$("#content_about").css("display", "block");
+		toggleTab("about");
 	});
 
 	$("#doiResolverInputReset").on("click", function() {
@@ -324,7 +346,7 @@ function restoreOptions() {
 
 		if (hOp === true) {
 			$("#history").prop("checked", true);
-			$("#history_tab").css("display", "block");
+			$("#history_tab").css("display", "inline-block");
 			$("#historySubOptions").css("display", "block");
 		} else {
 			$("#history").prop("checked", false);
@@ -398,7 +420,7 @@ function minimalOptionsRefresh() {
 	var cra = $("#crAutolink").val();
 
 	if (history) {
-		$("#history_tab").css("display", "block");
+		$("#history_tab").css("display", "inline-block");
 		$("#historySubOptions").css("display", "block");
 	} else {
 		$("#history_tab").css("display", "none");

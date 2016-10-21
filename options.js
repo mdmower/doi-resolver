@@ -475,7 +475,7 @@ function minimalOptionsRefresh() {
 	 * the case of enabling custom resolver when autolink is
 	 * already enabled.
 	 */
-	storage.area.get(["auto_link"], function(stg) {
+	chrome.storage.local.get(["auto_link"], function(stg) {
 		if (stg.auto_link === true && cr && cra == "custom") {
 			$("#alRewriteLinks").css("display", "block");
 		} else {

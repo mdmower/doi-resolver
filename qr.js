@@ -157,7 +157,7 @@ function populateHistory() {
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		if (typeof stg.recorded_dois === 'undefined') {
+		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 

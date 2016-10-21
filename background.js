@@ -450,7 +450,7 @@ function recordDoi(doiInput) {
 		if (typeof stg.history === 'undefined' || stg.history !== true) {
 			return;
 		}
-		if (typeof stg.recorded_dois === 'undefined') {
+		if (!Array.isArray(stg.recorded_dois)) {
 			stg.recorded_dois = getDefaultOption("recorded_dois");
 		}
 		if (typeof stg.history_length === 'undefined') {

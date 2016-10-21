@@ -662,7 +662,7 @@ function populateHistory() {
 			return;
 		}
 
-		if (typeof stg.recorded_dois === 'undefined') {
+		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 
@@ -765,7 +765,7 @@ function appendHistoryEntry(elm, callback) {
 
 function saveHistoryEntry(id) {
 	storage.area.get(["recorded_dois"], function(stg) {
-		if (typeof stg.recorded_dois === 'undefined') {
+		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 
@@ -790,7 +790,7 @@ function updateHistoryIdentifiers(id) {
 
 function deleteHistoryEntry(id) {
 	storage.area.get(["recorded_dois"], function(stg) {
-		if (typeof stg.recorded_dois === 'undefined') {
+		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 

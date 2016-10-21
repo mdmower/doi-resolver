@@ -139,6 +139,8 @@ function startClickListeners() {
 		}
 	});
 
+	$("#historyClear").on("click", deleteHistory);
+
 	var timer;
 	var delay = 400;
 	$("#historySaveInfoMark").hover(function() {
@@ -735,6 +737,7 @@ function generateHistoryEntry(doiObject, doiId, callback) {
 
 		var anchor = $('<td>');
 		anchor.addClass("history_entry_doi");
+		anchor.attr({colspan: '2'});
 		var anchorLink = $('<a>');
 		anchorLink.attr({ href: url, target: '_blank' });
 		anchorLink.html(doi);
@@ -876,6 +879,15 @@ function shiftHistoryEntries(shift, callback) {
 	});
 }
 
+function deleteHistory() {
+	haltHistoryChangeListeners();
+	chrome.storage.local.set({
+		recorded_dois: []
+	}, function() {
+		populateHistory();
+	});
+}
+
 function verifyAutolinkPermission(callback) {
 	chrome.permissions.contains({
 		permissions: [ 'tabs' ],
@@ -978,6 +990,8 @@ function getLocalMessages() {
 	$("#syncDataWipeDescription").html(message);
 	message = chrome.i18n.getMessage("historySaveInfoText");
 	$("#historySaveInfoText").html(message);
+	message = chrome.i18n.getMessage("historyClear");
+	$("#historyClear").html(message);
 
 	$("#extensionVersion").html(chrome.app.getDetails().version);
 }

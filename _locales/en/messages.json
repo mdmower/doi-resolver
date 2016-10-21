@@ -59,6 +59,10 @@
 		"description": "Label for the currently set resolver URL",
 		"message": "Preview URL tail:"
 	},
+	"historyClear": {
+		"description": "Text for a button that clears all DOI history",
+		"message": "Clear History"
+	},
 	"historySavedEntryLabel": {
 		"description": "A word to indicate an entry has been marked for save; label displayed in the datalist drop-down",
 		"message": "Saved"

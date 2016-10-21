@@ -89,8 +89,9 @@ function continueOnLoad() {
 	chrome.storage.onChanged.addListener(storageChangeHandler);
 	chrome.omnibox.onInputEntered.addListener(omniListener);
 	storageListener(true);
-	cleanupPerms();
-	checkForSettings(startFeatures);
+	cleanupPerms(function () {
+		checkForSettings(startFeatures);
+	});
 	permRemoveListeners();
 }
 
@@ -577,7 +578,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	}
 });
 
-function cleanupPerms() {
+function cleanupPerms(callback) {
 	chrome.permissions.remove({
 		origins: [
 			'http://*.doi.org/',
@@ -591,6 +592,7 @@ function cleanupPerms() {
 		} else {
 			console.log("Unable to cleanup permissions");
 		}
+		callback();
 	});
 }
 

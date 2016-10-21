@@ -512,18 +512,20 @@ function storageChangeHandler(changes, namespace) {
 	if (namespace === "sync" && typeof changes.sync_reset === 'undefined') {
 		var options = [
 			"auto_link_rewrite",
-			"history",
 			"context_menu",
-			"meta_buttons",
-			"custom_resolver",
 			"cr_autolink",
 			"cr_bubble",
 			"cr_context",
 			"cr_history",
 			"cr_omnibox",
+			"custom_resolver",
 			"doi_resolver",
-			"shortdoi_resolver",
-			"omnibox_tab"
+			"history",
+			"history_length",
+			"history_showsave",
+			"meta_buttons",
+			"omnibox_tab",
+			"shortdoi_resolver"
 		];
 		for (var key in changes) {
 			if (changes.hasOwnProperty(key)) {

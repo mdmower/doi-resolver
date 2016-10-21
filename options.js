@@ -22,10 +22,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch (request.cmd) {
 	case "sync_toggle_complete":
 		storage(false, true);
+		// restoreOptions() runs haltHistoryChangeListeners()
 		populateHistory();
 		break;
 	case "settings_dup_complete":
 		storage(false, false);
+		regenerateHistoryLinks();
 		break;
 	case "auto_link_config_complete":
 		// Do nothing
@@ -41,6 +43,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 function storage(firstRun, restore) {
 	if (typeof storage.area === 'undefined') {
 		storage.area = chrome.storage.local;
+	}
+	if (typeof storage.history_links === 'undefined') {
+		storage.history_links = "default";
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
@@ -415,6 +420,8 @@ function restoreOptions() {
 		$("#omniboxOpento").val(otOp);
 		$("#autolinkApplyTo").val(alpOp);
 		$("#autolinkRewrite").prop("checked", alrOp);
+
+		storage.history_links = crhOp;
 
 		verifyAutolinkPermission(startChangeListeners);
 	});
@@ -885,6 +892,16 @@ function deleteHistory() {
 		recorded_dois: []
 	}, function() {
 		populateHistory();
+	});
+}
+
+function regenerateHistoryLinks() {
+	storage.area.get(["cr_history"], function(stg) {
+		if (storage.history_links != stg.cr_history) {
+			storage.history_links = stg.cr_history;
+			haltHistoryChangeListeners();
+			populateHistory();
+		}
 	});
 }
 

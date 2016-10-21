@@ -441,11 +441,15 @@ function resolveDOI(doi, useCustomResolver, tab) {
 
 function recordDoi(doiInput) {
 	var stgFetch = [
-		"recorded_dois",
-		"history_length"
+		"history",
+		"history_length",
+		"recorded_dois"
 	];
 
 	storage.area.get(stgFetch, function(stg) {
+		if (typeof stg.history === 'undefined' || stg.history !== true) {
+			return;
+		}
 		if (typeof stg.recorded_dois === 'undefined') {
 			stg.recorded_dois = getDefaultOption("recorded_dois");
 		}

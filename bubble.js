@@ -19,29 +19,30 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch(request.cmd) {
-		case "sync_toggle_complete":
-			storage(false);
-			break;
-		default:
-			break;
+	switch (request.cmd) {
+	case "sync_toggle_complete":
+		storage(false);
+		break;
+	default:
+		break;
 	}
 });
 
 function storage(firstRun) {
-	if(typeof storage.area === 'undefined') {
+	if (typeof storage.area === 'undefined') {
 		storage.area = chrome.storage.local;
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if(stg["sync_data"] === true) {
+		if (stg.sync_data === true) {
 			storage.area = chrome.storage.sync;
 		} else {
 			storage.area = chrome.storage.local;
 		}
 
-		if(firstRun === true)
+		if (firstRun === true) {
 			continueOnLoad();
+		}
 	});
 }
 
@@ -49,6 +50,7 @@ function continueOnLoad() {
 	restoreOptions();
 	getLocalMessages();
 	showHideOptionalElms();
+	populateHistory();
 	startListeners();
 }
 
@@ -75,16 +77,14 @@ function startListeners() {
 function saveOptions() {
 	var options = {
 		cr_bubble_last: $('input[name="crRadio"]:checked').val()
-	}
+	};
 
 	chrome.storage.local.set(options, null);
 }
 
 function restoreOptions() {
-	var stgFetch = ["cr_bubble_last"];
-
-	storage.area.get(stgFetch, function(stg) {
-		if(stg["cr_bubble_last"] === "custom") {
+	storage.area.get(["cr_bubble_last"], function(stg) {
+		if (stg.cr_bubble_last === "custom") {
 			$("#crRadioBubbleCustom").prop("checked", true);
 		} else {
 			$("#crRadioBubbleDefault").prop("checked", true);
@@ -99,9 +99,11 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (in bubble)
 function checkValidDoi(doiInput) {
-	if(/^10\./.test(doiInput)) {
+	if (!doiInput) {
+		return false;
+	} else if (/^10\./.test(doiInput)) {
 		return true;
-	} else if(/^10\//.test(doiInput)) {
+	} else if (/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -125,21 +127,30 @@ function bubbleMessage(message) {
 // Process the form
 function formSubmitHandler() {
 	var actionType = $("#hiddenButtonInput").val();
-	var doiInput = escape(trim($("#textInput").val()));
+	var doiInput = encodeURI(trim($("#textInput").val()));
 
-	switch(actionType) {
+	switch (actionType) {
 	case "qr":
+		if (checkValidDoi(doiInput)) {
+			recordDoi(doiInput);
+		}
 		qrGen(doiInput);
 		break;
 	case "cite":
+		if (checkValidDoi(doiInput)) {
+			recordDoi(doiInput);
+		}
 		citeDOI(doiInput);
 		break;
 	case "doi":
-		if(doiInput.length == 0 || !checkValidDoi(doiInput)) return;
+		if (!checkValidDoi(doiInput)) {
+			return;
+		}
+		recordDoi(doiInput);
 		resolveURL(doiInput);
 		break;
 	case "options":
-		if(chrome.runtime.openOptionsPage) {
+		if (chrome.runtime.openOptionsPage) {
 			chrome.runtime.openOptionsPage(function() {
 				window.close();
 			});
@@ -165,29 +176,29 @@ function resolveURL(doi) {
 
 	storage.area.get(stgFetch, function(stg) {
 		var url = "";
-		var cr = stg["custom_resolver"];
-		var crb = stg["cr_bubble"];
-		var crbl = stg["cr_bubble_last"];
-		var dr = stg["doi_resolver"];
-		var sr = stg["shortdoi_resolver"];
+		var cr = stg.custom_resolver;
+		var crb = stg.cr_bubble;
+		var crbl = stg.cr_bubble_last;
+		var dr = stg.doi_resolver;
+		var sr = stg.shortdoi_resolver;
 		var useDefaultResolver = true;
 
-		if(cr === true && crb === "custom") {
+		if (cr === true && crb === "custom") {
 			useDefaultResolver = false;
-		} else if(cr === true && crb === 'selectable' && crbl === 'custom') {
+		} else if (cr === true && crb === 'selectable' && crbl === 'custom') {
 			useDefaultResolver = false;
 		}
 
-		if(useDefaultResolver) {
-			if(/^10\./.test(doi)) {
+		if (useDefaultResolver) {
+			if (/^10\./.test(doi)) {
 				url = "http://dx.doi.org/" + doi;
-			} else if(/^10\//.test(doi)) {
+			} else if (/^10\//.test(doi)) {
 				url = "http://doi.org/" + doi.replace(/^10\//,"");
 			}
 		} else {
-			if(/^10\./.test(doi)) {
+			if (/^10\./.test(doi)) {
 				url = dr + doi;
-			} else if(/^10\//.test(doi)) {
+			} else if (/^10\//.test(doi)) {
 				url = sr + doi.replace(/^10\//,"");
 			}
 		}
@@ -220,21 +231,64 @@ function showHideOptionalElms() {
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		var meta = stg["meta_buttons"];
-		var crOp = stg["custom_resolver"];
-		var crbOp = stg["cr_bubble"];
+		var meta = stg.meta_buttons;
+		var crOp = stg.custom_resolver;
+		var crbOp = stg.cr_bubble;
 
-		if(meta === true) {
+		if (meta === true) {
 			$("#metaButtons").css("display", "flex");
 		} else {
 			$("#metaButtons").css("display", "none");
 		}
 
-		if(crOp === true && crbOp === "selectable") {
+		if (crOp === true && crbOp === "selectable") {
 			$("#crRadios").css("display", "block");
 		} else {
 			$("#crRadios").css("display", "none");
 		}
+	});
+}
+
+function populateHistory() {
+	var stgFetch = [
+		"recorded_dois",
+		"history_showsave"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (typeof stg.recorded_dois === 'undefined') {
+			return;
+		}
+
+		// Skip holes in the array (should not occur)
+		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
+			// Use !=, not !==, so that null is caught as well
+			return elm != undefined;
+		});
+
+		var optionHtml = "";
+		var message = chrome.i18n.getMessage("historySavedEntryLabel");
+		var i;
+		for (i = 0; i < stg.recorded_dois.length; i++) {
+			if (stg.recorded_dois[i].save) {
+				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" label="' + message + '" />';
+			}
+		}
+		if (stg.history_showsave !== true) {
+			for (i = 0; i < stg.recorded_dois.length; i++) {
+				if (!stg.recorded_dois[i].save) {
+					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
+				}
+			}
+		}
+		$("#doiHistory").html(optionHtml);
+	});
+}
+
+function recordDoi(doiInput) {
+	chrome.runtime.sendMessage({
+		cmd: "record_doi",
+		doi: doiInput
 	});
 }
 

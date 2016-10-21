@@ -1,258 +1,290 @@
 {
-	"appName": {
-		"description": "(1) The title of the application",
-		"message": "DOI Resolver"
-	},
 	"appDesc": {
-		"description": "(2) A description of what the application does. This extension is used to...",
+		"description": "A description of what the application does. This extension is used to...",
 		"message": "Quickly resolve digital object identifiers to their web destinations"
 	},
-	"iconHover": {
-		"description": "(3) The tooltip message displayed to a user when the mouse hovers on the extension's icon",
-		"message": "Resolve DOI code"
-	},
-	"optionsTitle": {
-		"description": "(4) The title of options page",
-		"message": "DOI Resolver Options"
-	},
-	"optionContextMenu": {
-		"description": "(5) A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
-		"message": "Enable right-click context menu for selected text"
-	},
-	"optionMetaButtons": {
-		"description": "(6) A setting to enable additional buttons in the popup",
-		"message": "Enable additional features in popup"
-	},
-	"optionCustomResolver": {
-		"description": "(7) A setting to enable custom entry of DOI and ShortDOI resolvers",
-		"message": "Use a custom DOI resolver"
-	},
-	"textDoiResolverInput": {
-		"description": "(8) Label for text box where a URL will be entered for DOIs",
-		"message": "URL for DOI resolver:"
-	},
-	"textShortDoiResolverInput": {
-		"description": "(9) Label for text box where a URL will be entered for ShortDOIs",
-		"message": "URL for ShortDOI resolver:"
-	},
-	"doiOutputUrlExample": {
-		"description": "(10) Label for the currently set resolver URL",
-		"message": "Preview URL tail:"
-	},
-	"optionAutoLink": {
-		"description": "(11) A setting to enable the extension to scan every page visited by the user and convert DOI codes into clickable links.",
-		"message": "Automatically turn DOI codes on web pages into links"
-	},
-	"autoLinkInfo": {
-		"description": "(12) Cautionary remarks about the autolink feature",
-		"message": "The autolink feature requires permission to access and modify pages you are viewing.<br>You will need to refresh open tabs for this option to take effect."
-	},
-	"optionsDescription": {
-		"description": "(13) Notice about external services used by the extension and where to submit bug reports",
-		"message": "This extension uses <a href=\"http://dx.doi.org\">dx.doi.org</a>, <a href=\"http://www.datacite.org\">datacite.org</a>, and <a href=\"http://www.crossref.org\">crossref.org</a> to resolve links and obtain metadata."
-	},
-	"resolveSubmit": {
-		"description": "(14) The text that appears on the button to submit a DOI code for resolving",
-		"message": "Go"
-	},
-	"citeSubmit": {
-		"description": "(15) The text that appears on the button to start the citation generator",
-		"message": "Citation"
-	},
-	"contextText": {
-		"description": "(16) When a user highlights a DOI on a webpage and right clicks on the highlighted text, this entry appears in the context menu to resolve the DOI",
-		"message": "Resolve DOI"
-	},
-	"invalidDoiAlert": {
-		"description": "(17) A warning presented to user if the DOI code is not valid",
-		"message": "Not a valid DOI"
-	},
-	"citeTitle": {
-		"description": "(18) The title on the citation generator page",
-		"message": "Citation Generator"
-	},
-	"citeStyle": {
-		"description": "(19) A label next to the style chooser for formatted citations",
-		"message": "Style"
+	"appName": {
+		"description": "The title of the application",
+		"message": "DOI Resolver"
 	},
 	"citeLocale": {
-		"description": "(20) A label next to the locale chooser for formatted citations",
+		"description": "A label next to the locale chooser for formatted citations",
 		"message": "Locale"
 	},
-	"loading": {
-		"description": "(21) A temporary message while resources load",
-		"message": "Loading..."
-	},
-	"noCitationFound": {
-		"description": "(22) A notice to the user that a citation could not be found",
-		"message": "No citation found"
-	},
-	"needCitationPerm": {
-		"description": "(23) A notice to the user that additional permissions must be accepted for the citation generator to work",
-		"message": "Citations are retrieved from crossref.org, datacite.org, and doi.org. These permissions must be accepted before the generator will function."
-	},
-	"qrFetchTitleLabel": {
-		"description": "(24) A setting to fetch the title of the reference in a generated QR code.",
-		"message": "Fetch title of reference for QR code"
-	},
-	"qrSizeInputLabel": {
-		"description": "(25) A label for the size text box on the QR page",
-		"message": "Size"
-	},
-	"invalidQrSizeAlert": {
-		"description": "(26) A warning presented to user if the QR image size entered is too large or too small",
-		"message": "Not a valid size"
-	},
-	"qrDisabled": {
-		"description": "(27) A notice that QR title retrieval is not enabled",
-		"message": "Disabled"
-	},
-	"qrTitleStatus": {
-		"description": "(28) Label for status of title retrieval for QR encoding",
-		"message": "Title retrieval: "
-	},
-	"qrTitleSuccess": {
-		"description": "(29) Successful status of title retrieval for QR encoding",
-		"message": "Found"
-	},
-	"qrTitleFailure": {
-		"description": "(30) Failing status of title retrieval for QR encoding",
-		"message": "No title found"
-	},
-	"qrMessageEncoded": {
-		"description": "(31) Label for message encoded in QR code",
-		"message": "Encoded message: "
-	},
-	"qrSave": {
-		"description": "(32) Instructions on how to save QR image",
-		"message": "Click on the image to save it"
-	},
-	"optionCustomResolverSelection": {
-		"description": "(33) Settings to allow choice of default or custom resolver",
-		"message": "Select resolver for each service:"
-	},
-	"optionCrAutolink": {
-		"description": "(34) Label to choose whether custom resolver is enabled for autolinker",
-		"message": "Autolink"
-	},
-	"optionCrBubble": {
-		"description": "(35) Label to choose whether custom resolver is enabled for bubble",
-		"message": "Popup"
-	},
-	"optionCrContext": {
-		"description": "(36) Label to choose whether custom resolver is enabled for context menu",
-		"message": "Context Menu"
-	},
-	"optionCrOmnibox": {
-		"description": "(37) Label to choose whether custom resolver is enabled for omnibox",
-		"message": "Omnibox"
-	},
-	"optionCrLabelBubble": {
-		"description": "(38) Label for choice of custom or default resolver in bubble",
-		"message": "Resolver: "
-	},
-	"optionCrCustom": {
-		"description": "(39) Label for custom resolver",
-		"message": "Custom"
-	},
-	"optionCrDefault": {
-		"description": "(40) Label for default resolver",
-		"message": "Default"
-	},
-	"optionCrSelectable": {
-		"description": "(41) Label for selectable resolver",
-		"message": "Selectable"
-	},
-	"optionOmniboxOpento": {
-		"description": "(42) Label for selectable option to open omnibox queries in current or new tab",
-		"message": "Omnibox entry should by default open result in:"
-	},
-	"optionOmniboxOpentoCurtab": {
-		"description": "(43) Label for current tab",
-		"message": "Current tab"
-	},
-	"optionOmniboxOpentoNewForetab": {
-		"description": "(44) Label for new foreground tab",
-		"message": "New foreground tab"
-	},
-	"optionOmniboxOpentoNewBacktab": {
-		"description": "(45) Label for new background tab",
-		"message": "New background tab"
-	},
-	"optionAutolinkApplyto": {
-		"description": "(46) Label for selection of protocols where autolink should be applied",
-		"message": "&#8618; Apply autolink feature to pages with protocol(s): "
-	},
-	"syncDataInfo": {
-		"description": "(47) Additional information about sync feature",
-		"message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur. The following options are not included in sync because they require permissions to be accepted by the user before enabling: Autolink, QR title fetch."
-	},
-	"optionSyncData": {
-		"description": "(48) Label for data sync feature",
-		"message": "Synchronize this extension's settings across Chrome installations"
-	},
-	"syncDataWipeDescription": {
-		"description": "(49) Description for sync wipe button",
-		"message": "&#8618; Wipe all synced data and disable Sync"
-	},
-	"optionsSubmit": {
-		"description": "(50) The text that appears on the button to open the Options page",
-		"message": "Options"
-	},
-	"citeStyleFilterLabel": {
-		"description": "(51) The label for the style filter box on the Citations page",
-		"message": "Style filter"
-	},
-	"qrFgColorInputLabel": {
-		"description": "(52) The label for the foreground color text box on the QR page",
-		"message": "Foreground color"
-	},
-	"qrBgColorInputLabel": {
-		"description": "(53) The label for the background color text box on the QR page",
-		"message": "Background color"
-	},
-	"qrBgTransLabel": {
-		"description": "(54) The label for the transparent background check box on the QR page",
-		"message": "Transparent background"
-	},
-	"qrManualTitleLabel": {
-		"description": "(55) The label for the manual title check box on the QR page",
-		"message": "Manually include title of reference"
-	},
-	"qrManualTitleTextLabel": {
-		"description": "(56) The label for the manual title text box on the QR page",
-		"message": "Title"
-	},
-	"qrHeading": {
-		"description": "(57) Title for QR generator page",
-		"message": "QR Code Generator"
-	},
-	"qrSubHeading": {
-		"description": "(58) Subheading message on the QR generator page",
-		"message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
-	},
-	"citeSubHeading": {
-		"description": "(59) Subheading message on the citation generator page",
-		"message": "Generate a formatted citation for a DOI"
-	},
-	"citeStyleLoadFailP1": {
-		"description": "(60) Failure message when style.csl retrieval fails (first part)",
-		"message": "Could not load style "
-	},
-	"citeStyleLoadFailP2": {
-		"description": "(61) Failure message when style.csl retrieval fails (second part)",
-		"message": ".csl from <a href=\"https://github.com/citation-style-language/styles\">GitHub</a>"
-	},
 	"citeLocaleLoadFailP1": {
-		"description": "(62) Failure message when locale.xml retrieval fails (first part)",
+		"description": "Failure message when locale.xml retrieval fails (first part)",
 		"message": "Could not load locales-"
 	},
 	"citeLocaleLoadFailP2": {
-		"description": "(63) Failure message when locale.xml retrieval fails (second part)",
+		"description": "Failure message when locale.xml retrieval fails (second part)",
 		"message": ".xml from <a href=\"https://github.com/citation-style-language/locales\">GitHub</a>"
 	},
+	"citeStyle": {
+		"description": "A label next to the style chooser for formatted citations",
+		"message": "Style"
+	},
+	"citeStyleFilterLabel": {
+		"description": "The label for the style filter box on the Citations page",
+		"message": "Style filter"
+	},
 	"citeStyleGenFail": {
-		"description": "(64) General failure message for citation generation",
+		"description": "General failure message for citation generation",
 		"message": "Citation generation failed"
+	},
+	"citeStyleLoadFailP1": {
+		"description": "Failure message when style.csl retrieval fails (first part)",
+		"message": "Could not load style "
+	},
+	"citeStyleLoadFailP2": {
+		"description": "Failure message when style.csl retrieval fails (second part)",
+		"message": ".csl from <a href=\"https://github.com/citation-style-language/styles\">GitHub</a>"
+	},
+	"citeSubHeading": {
+		"description": "Subheading message on the citation generator page",
+		"message": "Generate a formatted citation for a DOI"
+	},
+	"citeSubmit": {
+		"description": "The text that appears on the button to start the citation generator",
+		"message": "Citation"
+	},
+	"citeTitle": {
+		"description": "The title on the citation generator page",
+		"message": "Citation Generator"
+	},
+	"contextText": {
+		"description": "When a user highlights a DOI on a webpage and right clicks on the highlighted text, this entry appears in the context menu to resolve the DOI",
+		"message": "Resolve DOI"
+	},
+	"doiOutputUrlExample": {
+		"description": "Label for the currently set resolver URL",
+		"message": "Preview URL tail:"
+	},
+	"historyClear": {
+		"description": "Text for a button that clears all DOI history",
+		"message": "Clear History"
+	},
+	"historySavedEntryLabel": {
+		"description": "A word to indicate an entry has been marked for save; label displayed in the datalist drop-down",
+		"message": "Saved"
+	},
+	"historySaveInfoText": {
+		"description": "A description of how the save feature works on the history page",
+		"message": "DOIs marked 'Save' will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."
+	},
+	"iconHover": {
+		"description": "The tooltip message displayed to a user when the mouse hovers on the extension's icon",
+		"message": "Resolve DOI code"
+	},
+	"invalidDoiAlert": {
+		"description": "A warning presented to user if the DOI code is not valid",
+		"message": "Not a valid DOI"
+	},
+	"invalidQrSizeAlert": {
+		"description": "A warning presented to user if the QR image size entered is too large or too small",
+		"message": "Not a valid size"
+	},
+	"loading": {
+		"description": "A temporary message while resources load",
+		"message": "Loading..."
+	},
+	"needCitationPerm": {
+		"description": "A notice to the user that additional permissions must be accepted for the citation generator to work",
+		"message": "Citations are retrieved from crossref.org, datacite.org, and doi.org. These permissions must be accepted before the generator will function."
+	},
+	"noCitationFound": {
+		"description": "A notice to the user that a citation could not be found",
+		"message": "No citation found"
+	},
+	"optionAutolink": {
+		"description": "A setting to enable the extension to scan every page visited by the user and convert DOI codes into clickable links.",
+		"message": "Automatically turn DOI codes on web pages into links"
+	},
+	"optionAutolinkApplyTo": {
+		"description": "Label for selection of protocols where autolink should be applied",
+		"message": "&#8618; Apply autolink feature to pages with protocol(s): "
+	},
+	"optionAutolinkInfo": {
+		"description": "Cautionary remarks about the autolink feature",
+		"message": "The autolink feature requires permission to access and modify pages you are viewing.<br>You will need to refresh open tabs for this option to take effect."
+	},
+	"optionAutolinkRewrite": {
+		"description": "A setting to enable the extension to scan every page visited by the user and rewite dx.doi.org liks to be handled by the custom DOI resolver instead.",
+		"message": "Rewrite existing dx.doi.org links to use the Custom DOI Resolver"
+	},
+	"optionContextMenu": {
+		"description": "A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
+		"message": "Enable right-click context menu for selected text"
+	},
+	"optionCrAutolink": {
+		"description": "Label to choose whether custom resolver is enabled for autolinker",
+		"message": "Autolink"
+	},
+	"optionCrBubble": {
+		"description": "Label to choose whether custom resolver is enabled for bubble",
+		"message": "Popup"
+	},
+	"optionCrContext": {
+		"description": "Label to choose whether custom resolver is enabled for context menu",
+		"message": "Context Menu"
+	},
+	"optionCrCustom": {
+		"description": "Label for custom resolver",
+		"message": "Custom"
+	},
+	"optionCrDefault": {
+		"description": "Label for default resolver",
+		"message": "Default"
+	},
+	"optionCrHistory": {
+		"description": "Label to choose whether custom resolver is enabled for history page",
+		"message": "History Page"
+	},
+	"optionCrLabelBubble": {
+		"description": "Label for choice of custom or default resolver in bubble",
+		"message": "Resolver: "
+	},
+	"optionCrOmnibox": {
+		"description": "Label to choose whether custom resolver is enabled for omnibox",
+		"message": "Omnibox"
+	},
+	"optionCrSelectable": {
+		"description": "Label for selectable resolver",
+		"message": "Selectable"
+	},
+	"optionCustomResolver": {
+		"description": "A setting to enable custom entry of DOI and ShortDOI resolvers",
+		"message": "Use a custom DOI resolver"
+	},
+	"optionCustomResolverSelection": {
+		"description": "Settings to allow choice of default or custom resolver",
+		"message": "Select resolver for each service:"
+	},
+	"optionHistory": {
+		"description": "Label for history option checkbox",
+		"message": "Retain history of DOIs"
+	},
+	"optionHistoryLength": {
+		"description": "Label for history option to retain up to N history entries",
+		"message": "Number of history entries to retain (1 &le; N &le; 500)"
+	},
+	"optionHistoryShowSave": {
+		"description": "Label for history option to only show saved items in text box drop-downs",
+		"message": "Only include saved entries in text box drop-down"
+	},
+	"optionMetaButtons": {
+		"description": "A setting to enable additional buttons in the popup",
+		"message": "Enable additional features in popup"
+	},
+	"optionOmniboxOpento": {
+		"description": "Label for selectable option to open omnibox queries in current or new tab",
+		"message": "Omnibox entry should by default open result in:"
+	},
+	"optionOmniboxOpentoCurtab": {
+		"description": "Label for current tab",
+		"message": "Current tab"
+	},
+	"optionOmniboxOpentoNewBacktab": {
+		"description": "Label for new background tab",
+		"message": "New background tab"
+	},
+	"optionOmniboxOpentoNewForetab": {
+		"description": "Label for new foreground tab",
+		"message": "New foreground tab"
+	},
+	"optionSyncData": {
+		"description": "Label for data sync feature",
+		"message": "Synchronize this extension's settings across Chrome installations"
+	},
+	"optionsDescription": {
+		"description": "Notice about external services used by the extension and where to submit bug reports",
+		"message": "This extension uses <a href=\"http://dx.doi.org\">dx.doi.org</a>, <a href=\"http://www.datacite.org\">datacite.org</a>, and <a href=\"http://www.crossref.org\">crossref.org</a> to resolve links and obtain metadata."
+	},
+	"optionsSubmit": {
+		"description": "The text that appears on the button to open the Options page",
+		"message": "Options"
+	},
+	"optionsTitle": {
+		"description": "The title of options page",
+		"message": "DOI Resolver Options"
+	},
+	"qrBgColorInputLabel": {
+		"description": "The label for the background color text box on the QR page",
+		"message": "Background color"
+	},
+	"qrBgTransLabel": {
+		"description": "The label for the transparent background check box on the QR page",
+		"message": "Transparent background"
+	},
+	"qrDisabled": {
+		"description": "A notice that QR title retrieval is not enabled",
+		"message": "Disabled"
+	},
+	"qrFetchTitleLabel": {
+		"description": "A setting to fetch the title of the reference in a generated QR code.",
+		"message": "Fetch title of reference for QR code"
+	},
+	"qrFgColorInputLabel": {
+		"description": "The label for the foreground color text box on the QR page",
+		"message": "Foreground color"
+	},
+	"qrHeading": {
+		"description": "Title for QR generator page",
+		"message": "QR Code Generator"
+	},
+	"qrManualTitleLabel": {
+		"description": "The label for the manual title check box on the QR page",
+		"message": "Manually include title of reference"
+	},
+	"qrManualTitleTextLabel": {
+		"description": "The label for the manual title text box on the QR page",
+		"message": "Title"
+	},
+	"qrMessageEncoded": {
+		"description": "Label for message encoded in QR code",
+		"message": "Encoded message: "
+	},
+	"qrSave": {
+		"description": "Instructions on how to save QR image",
+		"message": "Click on the image to save it"
+	},
+	"qrSizeInputLabel": {
+		"description": "A label for the size text box on the QR page",
+		"message": "Size"
+	},
+	"qrSubHeading": {
+		"description": "Subheading message on the QR generator page",
+		"message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
+	},
+	"qrTitleFailure": {
+		"description": "Failing status of title retrieval for QR encoding",
+		"message": "No title found"
+	},
+	"qrTitleStatus": {
+		"description": "Label for status of title retrieval for QR encoding",
+		"message": "Title retrieval: "
+	},
+	"qrTitleSuccess": {
+		"description": "Successful status of title retrieval for QR encoding",
+		"message": "Found"
+	},
+	"resolveSubmit": {
+		"description": "The text that appears on the button to submit a DOI code for resolving",
+		"message": "Go"
+	},
+	"syncDataInfo": {
+		"description": "Additional information about sync feature",
+		"message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur. The following options are not included in sync because they require permissions to be accepted by the user before enabling: Autolink, QR title fetch."
+	},
+	"syncDataWipeDescription": {
+		"description": "Description for sync wipe button",
+		"message": "&#8618; Wipe all synced data and disable Sync"
+	},
+	"textDoiResolverInput": {
+		"description": "Label for text box where a URL will be entered for DOIs",
+		"message": "URL for DOI resolver:"
+	},
+	"textShortDoiResolverInput": {
+		"description": "Label for text box where a URL will be entered for ShortDOIs",
+		"message": "URL for ShortDOI resolver:"
 	}
 }

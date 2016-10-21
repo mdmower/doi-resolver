@@ -19,29 +19,30 @@ document.addEventListener('DOMContentLoaded', function () {
 }, false);
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch(request.cmd) {
-		case "sync_toggle_complete":
-			storage(false);
-			break;
-		default:
-			break;
+	switch (request.cmd) {
+	case "sync_toggle_complete":
+		storage(false);
+		break;
+	default:
+		break;
 	}
 });
 
 function storage(firstRun) {
-	if(typeof storage.area === 'undefined') {
+	if (typeof storage.area === 'undefined') {
 		storage.area = chrome.storage.local;
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
-		if(stg["sync_data"] === true) {
+		if (stg.sync_data === true) {
 			storage.area = chrome.storage.sync;
 		} else {
 			storage.area = chrome.storage.local;
 		}
 
-		if(firstRun === true)
+		if (firstRun === true) {
 			continueOnLoad();
+		}
 	});
 }
 
@@ -50,6 +51,7 @@ function continueOnLoad() {
 	getUrlVariables();
 	restoreOptions();
 	prepareColorPickers();
+	populateHistory();
 	startListeners();
 }
 
@@ -79,7 +81,7 @@ function startListeners() {
 }
 
 function toggleBgColor() {
-	if($("#qrBgTrans").prop('checked')) {
+	if ($("#qrBgTrans").prop('checked')) {
 		$("#bgColorDiv").css("display", "none");
 	} else {
 		$("#bgColorDiv").css("display", "block");
@@ -87,15 +89,17 @@ function toggleBgColor() {
 }
 
 function qrSizeSave() {
-	if(isNaN($("#qrSizeInput").val())) {
-		var num = $("#qrSizeInput").val().replace(/[^0-9]/g,'');
-		$("#qrSizeInput").val(num);
+	var qrSize = parseInt($("#qrSizeInput").val());
+	if (isNaN(qrSize)) {
+		$("#qrSizeInput").val(300);
+		qrSize = 300;
+	} else if (qrSize < 80) {
+		$("#qrSizeInput").val(80);
+		qrSize = 80;
 	}
 
 	storage.area.get(["qr_size"], function(stg) {
-		var stgQrSize = stg["qr_size"];
-		var newQrSize = $("#qrSizeInput").val();
-		if(stgQrSize !== newQrSize) {
+		if (parseInt(stg.qr_size) !== qrSize) {
 			saveOptions();
 		}
 	});
@@ -106,14 +110,14 @@ function qrSizeSave() {
 function getUrlVariables() {
 	var vars = [], hash;
 	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-	for(var i = 0; i < hashes.length; i++) {
+	for (var i = 0; i < hashes.length; i++) {
 		hash = hashes[i].split('=');
 		vars.push(hash[0]);
 		vars[hash[0]] = hash[1];
 	}
 
-	var initDOI = vars["doi"];
-	if(initDOI) {
+	var initDOI = vars.doi;
+	if (initDOI) {
 		$("#doiInput").val(initDOI);
 	}
 }
@@ -126,20 +130,66 @@ function restoreOptions() {
 
 	chrome.storage.local.get(["qr_title"], function(stgLocal) {
 	storage.area.get(stgFetch, function(stg) {
-		var qrSize = stg["qr_size"];
-		if(isNaN(qrSize)) {
+		var qrSize = parseInt(stg.qr_size);
+		if (isNaN(qrSize)) {
 			$("#qrSizeInput").val(300);
+		} else if (qrSize < 80) {
+			$("#qrSizeInput").val(80);
 		} else {
 			$("#qrSizeInput").val(qrSize);
 		}
-		if(stgLocal["qr_title"] === true) {
+
+		if (stgLocal.qr_title === true) {
 			$("#qrFetchTitle").prop("checked", true);
 		}
-		if(stg["qr_bgtrans"] === true) {
+		if (stg.qr_bgtrans === true) {
 			$("#qrBgTrans").prop("checked", true);
 			$("#bgColorDiv").css("display", "none");
 		}
 	});
+	});
+}
+
+function populateHistory() {
+	var stgFetch = [
+		"recorded_dois",
+		"history_showsave"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (typeof stg.recorded_dois === 'undefined') {
+			return;
+		}
+
+		// Skip holes in the array (should not occur)
+		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
+			// Use !=, not !==, so that null is caught as well
+			return elm != undefined;
+		});
+
+		var optionHtml = "";
+		var message = chrome.i18n.getMessage("historySavedEntryLabel");
+		var i;
+		for (i = 0; i < stg.recorded_dois.length; i++) {
+			if (stg.recorded_dois[i].save) {
+				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" label="' + message + '" />';
+			}
+		}
+		if (stg.history_showsave !== true) {
+			for (i = 0; i < stg.recorded_dois.length; i++) {
+				if (!stg.recorded_dois[i].save) {
+					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
+				}
+			}
+		}
+		$("#doiHistory").html(optionHtml);
+	});
+}
+
+function recordDoi(doiInput) {
+	chrome.runtime.sendMessage({
+		cmd: "record_doi",
+		doi: doiInput
 	});
 }
 
@@ -156,12 +206,12 @@ function prepareColorPickers() {
 	storage.area.get(stgFetch, function(stg) {
 
 		var qrFgColor = "#000000";
-		var storedQrFgColor = stg["qr_fgcolor"];
-		if(isHexColor(storedQrFgColor)) {
+		var storedQrFgColor = stg.qr_fgcolor;
+		if (isHexColor(storedQrFgColor)) {
 			qrFgColor = storedQrFgColor;
 		} else {
 			chrome.storage.local.set({qr_fgcolor: qrFgColor}, function() {
-				if(typeof chrome.runtime.lastError != 'undefined') {
+				if (typeof chrome.runtime.lastError != 'undefined') {
 					console.log(chrome.runtime.lastError);
 				}
 			});
@@ -169,12 +219,12 @@ function prepareColorPickers() {
 		$("#qrFgColorInput").val(qrFgColor);
 
 		var qrBgColor = "#ffffff";
-		var storedQrBgColor = stg["qr_bgcolor"];
-		if(isHexColor(storedQrBgColor)) {
+		var storedQrBgColor = stg.qr_bgcolor;
+		if (isHexColor(storedQrBgColor)) {
 			qrBgColor = storedQrBgColor;
 		} else {
 			chrome.storage.local.set({qr_bgcolor: qrBgColor}, function() {
-				if(typeof chrome.runtime.lastError != 'undefined') {
+				if (typeof chrome.runtime.lastError != 'undefined') {
 					console.log(chrome.runtime.lastError);
 				}
 			});
@@ -189,7 +239,7 @@ function prepareColorPickers() {
 			replacerClassName: "qrColorReplacerClass",
 			containerClassName: "qrColorContainerClass",
 			change: function(color) {
-				saveOptions()
+				saveOptions();
 			}
 		});
 
@@ -201,7 +251,7 @@ function prepareColorPickers() {
 			replacerClassName: "qrColorReplacerClass",
 			containerClassName: "qrColorContainerClass",
 			change: function(color) {
-				saveOptions()
+				saveOptions();
 			}
 		});
 
@@ -211,23 +261,23 @@ function prepareColorPickers() {
 function saveOptions() {
 	var options = {
 		qr_bgtrans: $("#qrBgTrans").prop('checked'),
-		qr_size: $("#qrSizeInput").val(),
+		qr_size: parseInt($("#qrSizeInput").val()),
 		qr_fgcolor: $("#qrFgColorInput").val(),
 		qr_bgcolor: $("#qrBgColorInput").val(),
 		qr_title: $("#qrFetchTitle").prop('checked')
-	}
+	};
 
 	chrome.storage.local.set(options, null);
 }
 
 function toggleTitleFetch() {
-	if($("#qrManualTitle").prop('checked')) {
+	if ($("#qrManualTitle").prop('checked')) {
 		$("#qrFetchTitle").prop("checked", false);
-		$("#qrFetchTitle").attr("disabled", "disabled");
+		$("#qrFetchTitle").prop("disabled", true);
 		$("#qrManualTitleTextDiv").css("display", "flex");
 		saveOptions();
 	} else {
-		$("#qrFetchTitle").removeAttr("disabled");
+		$("#qrFetchTitle").prop("disabled", false);
 		$("#qrManualTitleTextDiv").css("display", "none");
 	}
 }
@@ -237,9 +287,11 @@ function trim(stringToTrim) {
 }
 
 function checkValidDoi(doiInput) {
-	if(/^10\./.test(doiInput)) {
+	if (!doiInput) {
+		return false;
+	} else if (/^10\./.test(doiInput)) {
 		return true;
-	} else if(/^10\//.test(doiInput)) {
+	} else if (/^10\//.test(doiInput)) {
 		return true;
 	} else {
 		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
@@ -262,7 +314,7 @@ function simpleNotification(message) {
 
 function advancedNotification(elms) {
 	resetSpace();
-	for(var i = 0; i < elms.length; i++) {
+	for (var i = 0; i < elms.length; i++) {
 		elms[i].appendTo($("#notifyDiv"));
 	}
 	$("#notifyDiv").css("display", "block");
@@ -271,11 +323,11 @@ function advancedNotification(elms) {
 function setDoiMetaPermissions() {
 	var perm = $("#qrFetchTitle").prop('checked');
 
-	if(perm) {
+	if (perm) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(granted) {
-			if(granted) {
+			if (granted) {
 				$("#qrFetchTitle").prop("checked", true);
 				saveOptions();
 			} else {
@@ -287,7 +339,7 @@ function setDoiMetaPermissions() {
 		chrome.permissions.remove({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(removed) {
-			if(removed) {
+			if (removed) {
 				$("#qrFetchTitle").prop("checked", false);
 				saveOptions();
 			} else {
@@ -308,22 +360,29 @@ function htmlEscape(str) {
 }
 
 function formSubmitHandler() {
-	var doiInput = escape(trim($("#doiInput").val()));
-	var size = parseInt(escape($("#qrSizeInput").val()));
+	var doiInput = encodeURI(trim($("#doiInput").val()));
+	var qrSize = parseInt($("#qrSizeInput").val());
 	var fgcolor = $("#qrFgColorInput").val();
 	var bgcolor = $("#qrBgColorInput").val();
 
-	if($("#qrBgTrans").prop('checked')) {
+	if ($("#qrBgTrans").prop('checked')) {
 		bgcolor = null;
 	}
 
-	if(!doiInput || !size || !checkValidDoi(doiInput)) return;
-	if(size < 80) {
-		simpleNotification(chrome.i18n.getMessage("invalidQrSizeAlert"));
+	if (isNaN(qrSize)) {
+		$("#qrSizeInput").val(300);
+		qrSize = 300;
+	} else if (qrSize < 80) {
+		$("#qrSizeInput").val(80);
+		qrSize = 80;
+	}
+
+	if (!checkValidDoi(doiInput)) {
 		return;
 	}
 
-	insertQr(doiInput, size, fgcolor, bgcolor);
+	recordDoi(doiInput);
+	insertQr(doiInput, qrSize, fgcolor, bgcolor);
 }
 
 function insertQr(doiInput, size, fgcolor, bgcolor) {
@@ -332,20 +391,20 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 	var stringToEncode = "";
 	var jsonUrl = "http://dx.doi.org/" + doiInput;
 
-	if(/^10\./.test(doiInput)) {
+	if (/^10\./.test(doiInput)) {
 		stringToEncode = "http://dx.doi.org/" + doiInput;
-	} else if(/^10\//.test(doiInput)) {
+	} else if (/^10\//.test(doiInput)) {
 		stringToEncode = "http://doi.org/" + doiInput.replace(/^10\//,"");
 	}
 
 	simpleNotification("Loading...");
 
 	var perm = $("#qrFetchTitle").prop('checked');
-	if(perm) {
+	if (perm) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(granted) {
-			if(granted) {
+			if (granted) {
 				var jqxhr = $.ajax({
 					url: jsonUrl,
 					headers: { Accept: "application/citeproc+json" },
@@ -367,7 +426,7 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 						createQrImage(stringToEncode, size, fgcolor, bgcolor);
 					}
 				});
-				jqxhr.error(function() {
+				jqxhr.fail(function() {
 					updateMessage(stringToEncode, "missing");
 					createQrImage(stringToEncode, size, fgcolor, bgcolor);
 				});
@@ -378,9 +437,9 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 		});
 	} else {
 		var manualTitle = $("#qrManualTitle").prop('checked');
-		if(manualTitle) {
+		if (manualTitle) {
 			var titleString = $("#qrManualTitleText").val();
-			if(titleString != "") {
+			if (titleString !== "") {
 				stringToEncode = titleString + "\n" + stringToEncode;
 			}
 		}
@@ -402,9 +461,8 @@ function createQrImage(text, size, fgcolor, bgcolor) {
 
 function updateMessage(stringToEncode, titleRetrieval) {
 	var titleNotice = "";
-	var statusMessage = "";
 
-	switch(titleRetrieval) {
+	switch (titleRetrieval) {
 	case "found":
 		titleNotice = chrome.i18n.getMessage("qrTitleSuccess");
 		break;
@@ -440,7 +498,7 @@ function updateMessage(stringToEncode, titleRetrieval) {
 
 function linkifyQrImage() {
 	var qrImg = $("#qrDiv img");
-	if(qrImg.length > 0) {
+	if (qrImg.length > 0) {
 		var saveLink = $('<a>').attr("id", "qrImageSaveLink");
 		saveLink.attr("href", qrImg.attr("src"));
 		saveLink.attr("download", "qrImage.png");

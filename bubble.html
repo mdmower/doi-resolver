@@ -22,7 +22,6 @@
 <link rel="stylesheet" type="text/css" href="bubble.css">
 <script type="text/javascript" src="jquery/jquery-min.js"></script>
 <script type="text/javascript" src="bubble.js"></script>
-
 </head>
 
 <body>
@@ -30,7 +29,8 @@
 	<form name="doiForm" id="doiForm">
 		<div id="mainForm">
 			<input type="hidden" id="hiddenButtonInput" />
-			<input type="text" id="textInput" autofocus placeholder="DOI"/>
+			<input type="text" id="textInput" autofocus placeholder="DOI" list="doiHistory" />
+			<datalist id="doiHistory"></datalist>
 			<input type="submit" id="resolveSubmit" />
 		</div>
 		<div id="crRadios">

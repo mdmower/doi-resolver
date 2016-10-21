@@ -1,17 +1,17 @@
 /*!
-    Copyright (C) 2015 Matthew D. Mower
+	Copyright (C) 2015 Matthew D. Mower
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-         http://www.apache.org/licenses/LICENSE-2.0
+		 http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 */
 
 @font-face {
@@ -41,6 +41,7 @@ ul {
 	float: right;
 	width: 128px;
 	height: 128px;
+	margin-right: 15px;
 }
 
 #optionsTitle {
@@ -97,10 +98,6 @@ ul {
 	margin: 2px 0px 2px 26px;
 }
 
-#customResolverRadio {
-	margin: 2px 0px 6px 0px;
-}
-
 #customResolverLeft,
 #customResolverRight {
 	vertical-align: top;
@@ -149,13 +146,20 @@ ul {
 	color: #444;
 }
 
-#autoLinkInfo, #syncDataInfo {
+#optionAutolinkInfo,
+#syncDataInfo {
 	font-size: 0.9em;
 	margin-bottom: 4px;
 }
 
-#optionAutolinkApplyto {
+#historySubOptions,
+#optionAutolinkApplyTo,
+#autolinkRewrite {
 	margin-left: 26px;
+}
+
+#historySubOptions input {
+	margin-top: 4px;
 }
 
 #syncDataWipeDescription {
@@ -163,43 +167,72 @@ ul {
 }
 
 #header {
-	position: relative;
-	height: 128px;
+	height: 50px;
 }
 
 #tabs {
-	position: absolute;
-	height: 42px;
-	width: 700px;
-	float: left;
-	bottom: 0;
+	z-index: 1;
+	padding-left: 10px;
+}
+
+#options_tab::before {
+	z-index: -1;
+}
+#history_tab::before {
+	z-index: -2;
+}
+#about_tab::before {
+	z-index: -3;
 }
 
 .tab {
-	border: 1px solid gray;
-	float: left;
-	width: 80px;
-	line-height: 40px;
+	position: relative;
+	display: inline-block;
+	padding: 1.5em 1.5em 1em;
+	text-decoration: none;
+	margin: 0 -10px;
+	width: 120px;
 	text-align: center;
-	border-radius: 8px;
-	margin-right: 1px;
-	cursor: pointer;
+	cursor: default;
 }
 
-.tab:hover {
-	background-color: #DDD;
+.tab::before {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: .5em;
+	left: 0;
+	border-left: 1px solid gray;
+	border-right: 1px solid gray;
+	border-top: 1px solid gray;
+	border-radius: 5px 5px 0 0;
+	background-color: #ddd;
+	box-shadow: 0 2px hsla(0,0%,100%,.5) inset;
+	transform: perspective(5px) rotateX(2deg);
+	transform-origin: bottom;
+}
+
+.tab.active {
+	z-index: 2;
+}
+
+.tab.active::before {
+	background-color: white;
 }
 
 .content {
 	clear: both;
-	padding: 10px;
-	margin-top: 1px;
+	padding: 20px 10px;
 	border: 1px solid gray;
-	border-radius: 4px;
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-top-right-radius: 4px;
 }
 
-#content_options {
-
+#content_history,
+#history_tab {
+	display: none;
 }
 
 #content_about {
@@ -220,4 +253,68 @@ ul {
 
 .option_title {
 	margin: 0 0 4px 0;
+}
+
+#historyList {
+	border: 0;
+	border-collapse: collapse;
+	width: 100%;
+	table-layout: fixed;
+}
+
+#historyHeading th {
+	text-align: left;
+	padding: 5px;
+	border-bottom: 1px solid black;
+}
+
+#historyHeading th:last-child{
+	width: 200px;
+	text-align: right;
+	padding-right: 0;
+}
+
+#historySeparator {
+	height: 6px;
+}
+
+#historyList td {
+	text-align: left;
+	padding: 5px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#historyList td input,
+#historyList td button,
+#historyList td a {
+	vertical-align: middle;
+}
+
+.history_entry_save {
+	width: 55px;
+}
+
+.history_entry_delete {
+	width: 60px;
+}
+
+.info_mark {
+	display: inline-block;
+	width: 16px;
+	margin-left: 2px;
+}
+
+#historySaveInfoText {
+	font-weight: normal;
+	display: none;
+	position: absolute;
+	z-index: 10;
+	width: 500px;
+	background-color: white;
+	opacity: 0.9;
+	border: 1px solid lightgray;
+	border-radius: 6px;
+	padding: 10px;
 }

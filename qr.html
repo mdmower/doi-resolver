@@ -26,8 +26,8 @@
 <script type="text/javascript" src="spectrum/spectrum.js"></script>
 <script type="text/javascript" src="jq-qrcode/jquery.qrcode-min.js"></script>
 <script type="text/javascript" src="qr.js"></script>
-
 </head>
+
 <body>
 <div id="containerDiv">
 	<div id="heading"></div>
@@ -36,11 +36,12 @@
 	<div id="mainForm">
 		<div id="inputContainer">
 			<label for="doiInput" id="doiInputLabel">DOI</label>
-			<input type="text" id="doiInput" autofocus />
+			<input type="text" id="doiInput" autofocus list="doiHistory" />
+			<datalist id="doiHistory"></datalist>
 		</div>
 		<div id="sizeParam">
 			<label for="qrSizeInput" id="qrSizeInputLabel"></label>
-			<input type="text" id="qrSizeInput" />
+			<input type="number" id="qrSizeInput" min="80" />
 			<div id="pxLabel">px</div>
 		</div>
 		<div id="colorParams">

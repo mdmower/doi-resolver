@@ -27,12 +27,11 @@
 
 <body>
 	<div id="header">
-		<h1 id="optionsTitle"></h1>
 		<div id="tabs">
-			<div class="tab" id="options_tab">Options</div>
+			<div class="tab active" id="options_tab">Options</div>
+			<div class="tab" id="history_tab">History</div>
 			<div class="tab" id="about_tab">About</div>
 		</div>
-		<img id="extLogo" src="icons/icon128.png" />
 	</div>
 
 	<div class="content" id="content_options">
@@ -44,6 +43,17 @@
 				<option id="optionOmniboxOpentoNewForetab" value="newfgtab"></option>
 				<option id="optionOmniboxOpentoNewBacktab" value="newbgtab"></option>
 			</select>
+		</div>
+
+		<div class="option_container">
+			<h3 class="option_title">History</h3>
+			<input type="checkbox" id="history" /><label id="optionHistory" for="history"></label>
+			<div id="historySubOptions">
+				<input type="checkbox" id="historyShowSave" />
+				<label id="optionHistoryShowSave" for="historyShowSave"></label><br>
+				<input type="number" id="historyLength" max="500" min="1" />
+				<label id="optionHistoryLength" for="historyLength"></label>
+			</div>
 		</div>
 
 		<div class="option_container">
@@ -106,22 +116,29 @@
 					<select type="selection" id="crOmnibox" class="crSelections">
 						<option class="optionCrCustom" value="custom"></option>
 						<option class="optionCrDefault" value="default"></option>
-					</select><span id="optionCrOmnibox" class="crLabels"></span>
+					</select><span id="optionCrOmnibox" class="crLabels"></span><br>
+					<select type="selection" id="crHistory" class="crSelections">
+						<option class="optionCrCustom" value="custom"></option>
+						<option class="optionCrDefault" value="default"></option>
+					</select><span id="optionCrHistory" class="crLabels"></span>
 				</div>
 			</div>
 		</div>
 
 		<div class="option_container">
 			<h3 class="option_title">Autolink</h3>
-			<div id="autoLinkInfo"></div>
-			<input type="checkbox" id="autoLink" /><label id="optionAutoLink" for="autoLink"></label>
+			<div id="optionAutolinkInfo"></div>
+			<input type="checkbox" id="autolink" /><label id="optionAutolink" for="autolink"></label>
 			<div id="alProtocol">
-				<span id="optionAutolinkApplyto"></span>
-				<select type="selection" id="autolinkApplyto">
-					<option id="optionAutolinkApplytoHttp" value="http">http</option>
-					<option id="optionAutolinkApplytoHttps" value="https">https</option>
-					<option id="optionAutolinkApplytoHttpHttps" value="httphttps">http &amp; https</option>
+				<span id="optionAutolinkApplyTo"></span>
+				<select type="selection" id="autolinkApplyTo">
+					<option value="http">http</option>
+					<option value="https">https</option>
+					<option value="httphttps">http &amp; https</option>
 				</select>
+			</div>
+			<div id="alRewriteLinks">
+				<input type="checkbox" id="autolinkRewrite" /><label id="optionAutolinkRewrite" for="autolinkRewrite"></label>
 			</div>
 		</div>
 
@@ -135,7 +152,20 @@
 		</div>
 	</div>
 
+	<div class="content" id="content_history">
+		<table id="historyList">
+			<tr id="historyHeading">
+				<th class="history_entry_save">Save<img id="historySaveInfoMark" class="info_mark" src="img/info_mark.png" /><div id="historySaveInfoText"></div></th>
+				<th class="history_entry_delete">Delete</th>
+				<th class="history_entry_doi">DOI</th>
+				<th><button id="historyClear">Clear History</button></th>
+			</tr>
+			<tr id="historySeparator"></tr>
+		</table>
+	</div>
+
 	<div class="content" id="content_about">
+		<img id="extLogo" src="icons/icon128.png" />
 		<p id="optionsVersion">
 			Version <span id="extensionVersion"></span>
 		</p>

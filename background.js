@@ -282,8 +282,8 @@ function storageChangeHandler(changes, namespace) {
 	}
 	*/
 
-	if (namespace === "local") {
-		chrome.storage.local.get(["sync_data"], function(stgLocal) {
+	chrome.storage.local.get(["sync_data"], function(stgLocal) {
+		if (namespace === "local") {
 			if (stgLocal.sync_data === true) {
 				var toSync = {};
 				var syncKeys = (allOptions()).diff(excludeFromSync());
@@ -313,59 +313,65 @@ function storageChangeHandler(changes, namespace) {
 				}
 				chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
 			}
-		});
-	} else if (namespace === "sync") {
-		/*
-		 * If user reset sync before storage migration,
-		 * the value is stored as a string, not a bool
-		 */
-		if (typeof changes.sync_reset !== 'undefined') {
-			var sr = changes.sync_reset.newValue;
-			if (sr === true || sr === "true") {
-				storageListener(false);
-				chrome.storage.local.set({sync_data: false}, toggleSync);
-				return; // No need to perform anything below since wiping
-			}
-		} else if (typeof changes.context_menu !== 'undefined') {
-			toggleContextMenu();
-		}
-
-		/* optionSyncPairs is for sanitizing bools coming from
-		 * pre-storage-migration and pushing back to .sync.
-		 *
-		 * optionLocalPairs is for keeping .local in-sync with
-		 * .sync since toggleSync only switches between storage
-		 * areas when sync disabled; it does not copy values.
-		 */
-		var optionSyncPairs = {};
-		var optionLocalPairs = {};
-		for (var key in changes) {
-			if (changes.hasOwnProperty(key)) {
-				if (changes[key].newValue === 'true') {
-					optionSyncPairs[key] = true;
-					optionLocalPairs[key] = true;
-				} else if (changes[key].newValue === 'false') {
-					optionSyncPairs[key] = false;
-					optionLocalPairs[key] = false;
-				} else if (key !== 'al_protocol') {
-					/* Migration: al_protocol was removed from sync
-					 * since calls to chrome.permissions.request must
-					 * stem from user interaction; thus, autolink
-					 * listeners cannot be refreshed. Ignore since old
-					 * versions of this extension may still alter it.
-					 */
-					optionLocalPairs[key] = changes[key].newValue;
+		} else if (namespace === "sync") {
+			/*
+			 * If user reset sync before storage migration,
+			 * the value is stored as a string, not a bool
+			 */
+			if (typeof changes.sync_reset !== 'undefined') {
+				var sr = changes.sync_reset.newValue;
+				if (sr === true || sr === "true") {
+					storageListener(false);
+					chrome.storage.local.set({sync_data: false}, toggleSync);
+					return; // No need to perform anything below since wiping
 				}
 			}
-		}
 
-		storageListener(false);
-		chrome.storage.sync.set(optionSyncPairs, function() {
-		chrome.storage.local.set(optionLocalPairs, function() {
-			storageListener(true);
-		});
-		});
-	}
+			if (stgLocal.sync_data !== true) {
+				return;
+			}
+
+			if (typeof changes.context_menu !== 'undefined') {
+				toggleContextMenu();
+			}
+
+			/* optionSyncPairs is for sanitizing bools coming from
+			 * pre-storage-migration and pushing back to .sync.
+			 *
+			 * optionLocalPairs is for keeping .local in-sync with
+			 * .sync since toggleSync only switches between storage
+			 * areas when sync disabled; it does not copy values.
+			 */
+			var optionSyncPairs = {};
+			var optionLocalPairs = {};
+			for (var key in changes) {
+				if (changes.hasOwnProperty(key)) {
+					if (changes[key].newValue === 'true') {
+						optionSyncPairs[key] = true;
+						optionLocalPairs[key] = true;
+					} else if (changes[key].newValue === 'false') {
+						optionSyncPairs[key] = false;
+						optionLocalPairs[key] = false;
+					} else if (key !== 'al_protocol') {
+						/* Migration: al_protocol was removed from sync
+						 * since calls to chrome.permissions.request must
+						 * stem from user interaction; thus, autolink
+						 * listeners cannot be refreshed. Ignore since old
+						 * versions of this extension may still alter it.
+						 */
+						optionLocalPairs[key] = changes[key].newValue;
+					}
+				}
+			}
+
+			storageListener(false);
+			chrome.storage.sync.set(optionSyncPairs, function() {
+			chrome.storage.local.set(optionLocalPairs, function() {
+				storageListener(true);
+			});
+			});
+		}
+	});
 }
 
 function startFeatures() {

@@ -503,15 +503,7 @@ function recordDoi(doiInput) {
 		}
 
 		stg.recorded_dois.push(doiObject);
-
-		chrome.storage.local.set(stg, function() {
-			chrome.runtime.sendMessage({
-				cmd: "doi_recorded",
-				doi: doiObject,
-				doiId: stg.recorded_dois.length - 1,
-				shift: shifted
-			});
-		});
+		chrome.storage.local.set(stg, null);
 	});
 }
 

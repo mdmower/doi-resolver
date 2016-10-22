@@ -22,18 +22,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch (request.cmd) {
 	case "sync_toggle_complete":
 		storage(false, true);
-		// restoreOptions() runs haltHistoryChangeListeners()
-		populateHistory();
 		break;
 	case "settings_dup_complete":
 		storage(false, false);
-		regenerateHistoryLinks();
 		break;
 	case "auto_link_config_complete":
 		// Do nothing
-		break;
-	case "doi_recorded":
-		updateHistory(request);
 		break;
 	default:
 		break;
@@ -43,9 +37,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 function storage(firstRun, restore) {
 	if (typeof storage.area === 'undefined') {
 		storage.area = chrome.storage.local;
-	}
-	if (typeof storage.history_links === 'undefined') {
-		storage.history_links = "default";
 	}
 
 	chrome.storage.local.get(["sync_data"], function(stg) {
@@ -61,7 +52,7 @@ function storage(firstRun, restore) {
 			continueOnLoad();
 		}
 		if (restore === true) {
-			restoreOptions();
+			restoreOptions(populateHistory);
 		}
 	});
 }
@@ -70,7 +61,6 @@ function continueOnLoad() {
 	getLocalMessages();
 	startClickListeners();
 	restoreHashPage();
-	populateHistory();
 	chrome.storage.onChanged.addListener(storageChangeHandler);
 }
 
@@ -171,11 +161,10 @@ function startChangeListeners() {
 	 * These can fire onChange events frequently. debounce them to only
 	 * run once per 750ms so Chrome Sync doesn't get too many sync requests.
 	 */
-	var dbSaveOptions = _.debounce(saveOptions, 750);
 
 	$("#history").on("change", saveOptions);
 	$("#historyShowSave").on("change", saveOptions);
-	$("#historyLength").on("change", dbSaveOptions);
+	$("#historyLength").on("change", dbHistoryLengthUpdate);
 	$("#context").on("change", saveOptions);
 	$("#meta").on("change", saveOptions);
 	$("#autolink").on("change", saveOptions);
@@ -189,8 +178,6 @@ function startChangeListeners() {
 	$("#omniboxOpento").on("change", saveOptions);
 	$("#autolinkApplyTo").on("change", saveOptions);
 	$("#syncData").on("change", toggleSync);
-
-	startHistoryChangeListeners();
 }
 
 function haltChangeListeners() {
@@ -198,7 +185,7 @@ function haltChangeListeners() {
 
 	$("#history").off("change", saveOptions);
 	$("#historyShowSave").off("change", saveOptions);
-	$("#historyLength").off("change", dbSaveOptions);
+	$("#historyLength").off("change", dbHistoryLengthUpdate);
 	$("#context").off("change", saveOptions);
 	$("#meta").off("change", saveOptions);
 	$("#autolink").off("change", saveOptions);
@@ -212,8 +199,6 @@ function haltChangeListeners() {
 	$("#omniboxOpento").off("change", saveOptions);
 	$("#autolinkApplyTo").off("change", saveOptions);
 	$("#syncData").off("change", toggleSync);
-
-	haltHistoryChangeListeners();
 }
 
 function startHistoryChangeListeners() {
@@ -252,6 +237,7 @@ function toggleSync() {
 	}
 }
 
+var dbSaveOptions = _.debounce(saveOptions, 750);
 function saveOptions() {
 	minimalOptionsRefresh();
 
@@ -276,9 +262,6 @@ function saveOptions() {
 	/* If history is disabled, remove all history entries */
 	if (!options.history) {
 		options.recorded_dois = [];
-		$(".history_entry").remove();
-	} else {
-		shrinkHistory(options.history_length);
 	}
 
 	/*
@@ -312,7 +295,7 @@ function saveOptions() {
 	});
 }
 
-function restoreOptions() {
+function restoreOptions(callback) {
 	haltChangeListeners();
 
 	var stgLclFetch = [
@@ -421,9 +404,12 @@ function restoreOptions() {
 		$("#autolinkApplyTo").val(alpOp);
 		$("#autolinkRewrite").prop("checked", alrOp);
 
-		storage.history_links = crhOp;
-
-		verifyAutolinkPermission(startChangeListeners);
+		verifyAutolinkPermission(function() {
+			startChangeListeners();
+			if (typeof callback === "function") {
+				callback();
+			}
+		});
 	});
 	});
 }
@@ -431,7 +417,6 @@ function restoreOptions() {
 // Only refresh fields that need updating after save
 function minimalOptionsRefresh() {
 	var history = $("#history").prop('checked');
-	var historyLength = parseInt($("#historyLength").val());
 	var cm = $("#context").prop('checked');
 	var meta = $("#meta").prop('checked');
 	var cr = $("#customResolver").prop('checked');
@@ -443,12 +428,6 @@ function minimalOptionsRefresh() {
 	} else {
 		$("#history_tab").css("display", "none");
 		$("#historySubOptions").css("display", "none");
-	}
-
-	if (isNaN(historyLength) || historyLength < 1) {
-		$("#historyLength").val(1);
-	} else if (historyLength > 500) {
-		$("#historyLength").val(500);
 	}
 
 	if (cm) {
@@ -504,12 +483,32 @@ function storageListener(enable) {
 }
 
 function storageChangeHandler(changes, namespace) {
-	if (storageListener.status !== true) {
-		return;
+	if (namespace === "local") {
+		/* For the purpose of updating the history page, only the local
+		 * namespace needs to be monitored since: 1) local changes are
+		 * written to chrome.storage.local; and 2) changes brought in by
+		 * sync will be copied to chrome.storage.local in the background
+		 *
+		 * Checking history_length and/or history_showsave would be redundant
+		 * since recorded_dois will incorporate these changes
+		 */
+		var changeHistory = (typeof changes.recorded_dois !== 'undefined');
+		var changeHistoryLinks = historyLinksNeedUpdate(changes);
+		if (changeHistory && changeHistoryLinks) {
+			updateHistory(changes.recorded_dois, regenerateHistoryLinks);
+		} else if (changeHistory) {
+			updateHistory(changes.recorded_dois, null);
+		} else if (changeHistoryLinks) {
+			regenerateHistoryLinks();
+		}
 	}
 
 	/* sync_reset is handled in the background page */
 	if (namespace === "sync" && typeof changes.sync_reset === 'undefined') {
+		if (storageListener.status !== true) {
+			return;
+		}
+
 		var options = [
 			"auto_link_rewrite",
 			"context_menu",
@@ -527,11 +526,12 @@ function storageChangeHandler(changes, namespace) {
 			"omnibox_tab",
 			"shortdoi_resolver"
 		];
+
 		for (var key in changes) {
 			if (changes.hasOwnProperty(key)) {
 				if (options.indexOf(key) >= 0) {
-					restoreOptions();
-					break;
+					restoreOptions(null);
+					return;
 				}
 			}
 		}
@@ -653,17 +653,49 @@ function autolinkShufflePerms() {
 	}
 }
 
-function populateHistory() {
-	var stgFetch = [
-		"history",
-		"recorded_dois"
-	];
+/* ToDo: This is overzealous. Could be updated to return true only if an
+ * update really is required. Would require evaluating quite a lot of
+ * change combinations, though.
+ */
+function historyLinksNeedUpdate(changes) {
+	var changeCrHistory = (typeof changes.cr_history !== 'undefined');
+	var changeUrlPrefix = (typeof changes.doi_resolver !== 'undefined' ||
+						   typeof changes.shortdoi_resolver !== 'undefined');
+	var changeCrEnable = (typeof changes.custom_resolver !== 'undefined');
 
-	storage.area.get(stgFetch, function(stg) {
-		if (stg.history !== true) {
-			return;
+	return (changeCrHistory || changeUrlPrefix || changeCrEnable);
+}
+
+function getHistoryUrl(doi) {
+	var cr = $("#customResolver").prop('checked');
+	var crh = $("#crHistory option:selected").val();
+	var dr = $("#doiResolverInput").val();
+	var sr = $("#shortDoiResolverInput").val();
+	var url = "";
+
+	if (cr && crh === "custom") {
+		if (/^10\./.test(doi)) {
+			url = dr + doi;
+		} else if (/^10\//.test(doi)) {
+			url = sr + doi.replace(/^10\//,"");
 		}
+	} else {
+		if (/^10\./.test(doi)) {
+			url = "http://dx.doi.org/" + doi;
+		} else if (/^10\//.test(doi)) {
+			url = "http://doi.org/" + doi.replace(/^10\//,"");
+		}
+	}
 
+	return url;
+}
+
+function populateHistory() {
+	if (!$("#history").prop('checked')) {
+		return;
+	}
+
+	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
@@ -679,90 +711,48 @@ function populateHistory() {
 		var i;
 		for (i = 0; i < stg.recorded_dois.length; i++) {
 			if (!stg.recorded_dois[i].save) {
-				generateHistoryEntry(stg.recorded_dois[i], i, null);
+				$("#historySeparator").after(generateHistoryEntry(stg.recorded_dois[i], i));
 			}
 		}
 		for (i = 0; i < stg.recorded_dois.length; i++) {
 			if (stg.recorded_dois[i].save) {
-				generateHistoryEntry(stg.recorded_dois[i], i, null);
+				$("#historySeparator").after(generateHistoryEntry(stg.recorded_dois[i], i));
 			}
 		}
+
+		startHistoryChangeListeners();
 	});
 }
 
-function generateHistoryEntry(doiObject, doiId, callback) {
-	var stgFetch = [
-		"custom_resolver",
-		"cr_history",
-		"doi_resolver",
-		"history",
-		"shortdoi_resolver"
-	];
+function generateHistoryEntry(doiObject, doiId) {
+	var tr = $('<tr>');
+	tr.addClass('history_entry');
+	tr.attr({id: "history_entry_" + doiId});
 
-	storage.area.get(stgFetch, function(stg) {
-		if (stg.history !== true) {
-			return;
-		}
+	var save = $('<td>');
+	save.addClass('history_entry_save');
+	var saveCheckbox = $('<input/>');
+	saveCheckbox.addClass('history_input_save');
+	saveCheckbox.attr({type: "checkbox", id: "save_entry_" + doiId});
+	saveCheckbox.prop("checked", doiObject.save);
+	save.append([saveCheckbox]);
 
-		var cr = stg.custom_resolver;
-		var crh = stg.cr_history;
-		var dr = stg.doi_resolver;
-		var sr = stg.shortdoi_resolver;
-		var url = "";
-		var doi = doiObject.doi;
+	var trash = $('<td>');
+	trash.addClass('history_entry_delete');
+	var trashButton = $('<button>').html("&#10006;");
+	trashButton.addClass('history_input_delete');
+	trashButton.attr({id: "delete_entry_" + doiId});
+	trash.append([trashButton]);
 
-		if (cr === true && crh === "custom") {
-			if (/^10\./.test(doi)) {
-				url = dr + doi;
-			} else if (/^10\//.test(doi)) {
-				url = sr + doi.replace(/^10\//,"");
-			}
-		} else {
-			if (/^10\./.test(doi)) {
-				url = "http://dx.doi.org/" + doi;
-			} else if (/^10\//.test(doi)) {
-				url = "http://doi.org/" + doi.replace(/^10\//,"");
-			}
-		}
+	var anchor = $('<td>');
+	anchor.addClass("history_entry_doi");
+	anchor.attr({colspan: '2'});
+	var anchorLink = $('<a>');
+	anchorLink.attr({href: getHistoryUrl(doiObject.doi), target: '_blank'});
+	anchorLink.html(doiObject.doi);
+	anchor.append([anchorLink]);
 
-		var tr = $('<tr>');
-		tr.addClass('history_entry');
-		tr.attr({id: "history_entry_" + doiId});
-
-		var save = $('<td>');
-		save.addClass('history_entry_save');
-		var saveCheckbox = $('<input/>');
-		saveCheckbox.addClass('history_input_save');
-		saveCheckbox.attr({type: "checkbox", id: "save_entry_" + doiId});
-		saveCheckbox.prop("checked", doiObject.save);
-		save.append([saveCheckbox]);
-
-		var trash = $('<td>');
-		trash.addClass('history_entry_delete');
-		var trashButton = $('<button>').html("&#10006;");
-		trashButton.addClass('history_input_delete');
-		trashButton.attr({id: "delete_entry_" + doiId});
-		trash.append([trashButton]);
-
-		var anchor = $('<td>');
-		anchor.addClass("history_entry_doi");
-		anchor.attr({colspan: '2'});
-		var anchorLink = $('<a>');
-		anchorLink.attr({ href: url, target: '_blank' });
-		anchorLink.html(doi);
-		anchor.append([anchorLink]);
-
-		appendHistoryEntry(tr.append([save, trash, anchor]), function() {
-			if (callback !== null) {
-				callback();
-			}
-		});
-	});
-}
-
-function appendHistoryEntry(elm, callback) {
-	$("#historySeparator").after(elm);
-	callback();
+	return tr.append([save, trash, anchor]);
 }
 
 function saveHistoryEntry(id) {
@@ -776,134 +766,102 @@ function saveHistoryEntry(id) {
 	});
 }
 
-function updateHistoryIdentifiers(id) {
-	var historyRows = $(".history_entry").length;
-	if (!historyRows || id > historyRows) {
-		return;
-	}
-
-	for (var i = id + 1; i < historyRows + 1; i++) {
-		var newId = i - 1;
-		$("#history_entry_" + i).attr("id", "history_entry_" + newId);
-		$("#save_entry_" + i).attr("id", "save_entry_" + newId);
-		$("#delete_entry_" + i).attr("id", "delete_entry_" + newId);
-	}
-}
-
 function deleteHistoryEntry(id) {
 	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 
-		haltHistoryChangeListeners();
-
-		var delentry = '#history_entry_' + id;
-		$(delentry).fadeOut(function() {
-			$(delentry).remove();
-			stg.recorded_dois.splice(id, 1);
-			chrome.storage.local.set(stg, function() {
-				updateHistoryIdentifiers(id);
-				startHistoryChangeListeners();
-			});
+		stg.recorded_dois.splice(id, 1);
+		$("#history_entry_" + id).fadeOut(function() {
+			chrome.storage.local.set(stg, null);
 		});
 	});
 }
 
-function shrinkHistory(newHistoryLength) {
-	var stgFetch = [
-		"recorded_dois",
-		"history_length"
-	];
+var dbHistoryLengthUpdate = _.debounce(historyLengthUpdate, 750);
+function historyLengthUpdate() {
+	var historyLength = parseInt($("#historyLength").val());
+	if (isNaN(historyLength) || historyLength < 1) {
+		$("#historyLength").val(1);
+	} else if (historyLength > 500) {
+		$("#historyLength").val(500);
+	}
 
-	storage.area.get(stgFetch, function(stg) {
-		if (typeof stg.history_length === 'undefined') {
-			return;
-		}
-		if (newHistoryLength >= stg.history_length) {
-			return;
-		}
-
-		haltHistoryChangeListeners();
-
-		for (var i = 0; i < stg.recorded_dois.length; i++) {
-			if (stg.recorded_dois[i].save !== true) {
-				stg.recorded_dois.splice(i, 1);
-				i--;
+	storage.area.get(["recorded_dois"], function(stg) {
+		if (historyLength >= stg.recorded_dois.length) {
+			saveOptions();
+		} else {
+			for (var i = 0; i < stg.recorded_dois.length; i++) {
+				if (stg.recorded_dois[i].save !== true) {
+					stg.recorded_dois.splice(i, 1);
+					i--;
+				}
+				if (historyLength >= stg.recorded_dois.length) {
+					break;
+				}
 			}
-			if (newHistoryLength >= stg.recorded_dois.length) {
-				break;
-			}
+			chrome.storage.local.set({recorded_dois: stg.recorded_dois}, saveOptions);
 		}
-
-		chrome.storage.local.set({
-			recorded_dois: stg.recorded_dois
-		}, function() {
-			populateHistory();
-		});
 	});
 }
 
-function updateHistory(request) {
-	var shift = request.shift;
-	var doiObject = request.doi;
-	var doiId = request.doiId;
+function updateHistory(changes, callback) {
+	var oldRecords = changes.oldValue;
+	var oldLength = changes.oldValue.length;
+	var newRecords = changes.newValue;
+	var newLength = changes.newValue.length;
+	var i;
 
 	haltHistoryChangeListeners();
-	shiftHistoryEntries(shift, function() {
-		generateHistoryEntry(doiObject, doiId, startHistoryChangeListeners);
-	});
-}
 
-function shiftHistoryEntries(shift, callback) {
-	if (!shift && callback !== null) {
-		callback();
+	if (!Array.isArray(newRecords)) {
+		// Should not get here
+		$(".history_entry").remove();
+		chrome.storage.local.set({recorded_dois: []}, null);
 		return;
-	} else if (!shift) {
-		return;
-	}
+	} else if (newLength === 0) {
+		$(".history_entry").remove();
+	} else if (!Array.isArray(oldRecords)) {
+		$(".history_entry").remove();
+		for (i = 0; i < newLength; i++) {
+			$("#historySeparator").after(generateHistoryEntry(newRecords[i], i));
+		}
+		if (typeof callback === "function") {
+			callback();
+		}
+	} else {
+		for (i = 0; i < oldLength; i++) {
+			if (i < newLength && !_.isEqual(oldRecords[i], newRecords[i])) {
+				$("#history_entry_" + i).replaceWith(generateHistoryEntry(newRecords[i], i));
+			} else if (i >= newLength) {
+				$("#history_entry_" + i).remove();
+			}
+		}
+		for (; i < newLength; i++) {
+			$("#historySeparator").after(generateHistoryEntry(newRecords[i], i));
+		}
 
-	var historyRows = $(".history_entry").length;
-	if (!historyRows) {
-		return;
-	}
-
-	var id = historyRows;
-	for (var i = 0; i < historyRows; i++) {
-		if (!$("#save_entry_" + i).prop("checked")) {
-			id = i;
-			break;
+		// Should not be needed, but ensures stray entries from the history
+		// page are removed if they no longer have references in newRecords
+		for (i = newLength; i < $(".history_entry").length; i++) {
+			$("#history_entry_" + i).remove();
+		}
+		if (typeof callback === "function") {
+			callback();
 		}
 	}
 
-	$("#history_entry_" + i).fadeOut(function() {
-		$("#history_entry_" + id).remove();
-		for (var i = id; i < historyRows; i++) {
-			var newId = i - 1;
-			$("#history_entry_" + i).attr("id", "history_entry_" + newId);
-			$("#save_entry_" + i).attr("id", "save_entry_" + newId);
-			$("#delete_entry_" + i).attr("id", "delete_entry_" + newId);
-		}
-		callback();
-	});
+	startHistoryChangeListeners();
 }
 
 function deleteHistory() {
-	haltHistoryChangeListeners();
-	chrome.storage.local.set({
-		recorded_dois: []
-	}, function() {
-		populateHistory();
-	});
+	chrome.storage.local.set({recorded_dois: []}, null);
 }
 
 function regenerateHistoryLinks() {
-	storage.area.get(["cr_history"], function(stg) {
-		if (storage.history_links != stg.cr_history) {
-			storage.history_links = stg.cr_history;
-			haltHistoryChangeListeners();
-			populateHistory();
-		}
+	$(".history_entry .history_entry_doi a").each(function(index) {
+		$(this).attr({href: getHistoryUrl($(this).html())});
 	});
 }
 

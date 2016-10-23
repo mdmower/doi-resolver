@@ -89,8 +89,9 @@ function continueOnLoad() {
 	chrome.storage.onChanged.addListener(storageChangeHandler);
 	chrome.omnibox.onInputEntered.addListener(omniListener);
 	storageListener(true);
-	cleanupPerms();
-	checkForSettings(startFeatures);
+	cleanupPerms(function () {
+		checkForSettings(startFeatures);
+	});
 	permRemoveListeners();
 }
 
@@ -281,8 +282,8 @@ function storageChangeHandler(changes, namespace) {
 	}
 	*/
 
-	if (namespace === "local") {
-		chrome.storage.local.get(["sync_data"], function(stgLocal) {
+	chrome.storage.local.get(["sync_data"], function(stgLocal) {
+		if (namespace === "local") {
 			if (stgLocal.sync_data === true) {
 				var toSync = {};
 				var syncKeys = (allOptions()).diff(excludeFromSync());
@@ -312,59 +313,65 @@ function storageChangeHandler(changes, namespace) {
 				}
 				chrome.runtime.sendMessage({cmd: "settings_dup_complete"});
 			}
-		});
-	} else if (namespace === "sync") {
-		/*
-		 * If user reset sync before storage migration,
-		 * the value is stored as a string, not a bool
-		 */
-		if (typeof changes.sync_reset !== 'undefined') {
-			var sr = changes.sync_reset.newValue;
-			if (sr === true || sr === "true") {
-				storageListener(false);
-				chrome.storage.local.set({sync_data: false}, toggleSync);
-				return; // No need to perform anything below since wiping
-			}
-		} else if (typeof changes.context_menu !== 'undefined') {
-			toggleContextMenu();
-		}
-
-		/* optionSyncPairs is for sanitizing bools coming from
-		 * pre-storage-migration and pushing back to .sync.
-		 *
-		 * optionLocalPairs is for keeping .local in-sync with
-		 * .sync since toggleSync only switches between storage
-		 * areas when sync disabled; it does not copy values.
-		 */
-		var optionSyncPairs = {};
-		var optionLocalPairs = {};
-		for (var key in changes) {
-			if (changes.hasOwnProperty(key)) {
-				if (changes[key].newValue === 'true') {
-					optionSyncPairs[key] = true;
-					optionLocalPairs[key] = true;
-				} else if (changes[key].newValue === 'false') {
-					optionSyncPairs[key] = false;
-					optionLocalPairs[key] = false;
-				} else if (key !== 'al_protocol') {
-					/* Migration: al_protocol was removed from sync
-					 * since calls to chrome.permissions.request must
-					 * stem from user interaction; thus, autolink
-					 * listeners cannot be refreshed. Ignore since old
-					 * versions of this extension may still alter it.
-					 */
-					optionLocalPairs[key] = changes[key].newValue;
+		} else if (namespace === "sync") {
+			/*
+			 * If user reset sync before storage migration,
+			 * the value is stored as a string, not a bool
+			 */
+			if (typeof changes.sync_reset !== 'undefined') {
+				var sr = changes.sync_reset.newValue;
+				if (sr === true || sr === "true") {
+					storageListener(false);
+					chrome.storage.local.set({sync_data: false}, toggleSync);
+					return; // No need to perform anything below since wiping
 				}
 			}
-		}
 
-		storageListener(false);
-		chrome.storage.sync.set(optionSyncPairs, function() {
-		chrome.storage.local.set(optionLocalPairs, function() {
-			storageListener(true);
-		});
-		});
-	}
+			if (stgLocal.sync_data !== true) {
+				return;
+			}
+
+			if (typeof changes.context_menu !== 'undefined') {
+				toggleContextMenu();
+			}
+
+			/* optionSyncPairs is for sanitizing bools coming from
+			 * pre-storage-migration and pushing back to .sync.
+			 *
+			 * optionLocalPairs is for keeping .local in-sync with
+			 * .sync since toggleSync only switches between storage
+			 * areas when sync disabled; it does not copy values.
+			 */
+			var optionSyncPairs = {};
+			var optionLocalPairs = {};
+			for (var key in changes) {
+				if (changes.hasOwnProperty(key)) {
+					if (changes[key].newValue === 'true') {
+						optionSyncPairs[key] = true;
+						optionLocalPairs[key] = true;
+					} else if (changes[key].newValue === 'false') {
+						optionSyncPairs[key] = false;
+						optionLocalPairs[key] = false;
+					} else if (key !== 'al_protocol') {
+						/* Migration: al_protocol was removed from sync
+						 * since calls to chrome.permissions.request must
+						 * stem from user interaction; thus, autolink
+						 * listeners cannot be refreshed. Ignore since old
+						 * versions of this extension may still alter it.
+						 */
+						optionLocalPairs[key] = changes[key].newValue;
+					}
+				}
+			}
+
+			storageListener(false);
+			chrome.storage.sync.set(optionSyncPairs, function() {
+			chrome.storage.local.set(optionLocalPairs, function() {
+				storageListener(true);
+			});
+			});
+		}
+	});
 }
 
 function startFeatures() {
@@ -450,7 +457,7 @@ function recordDoi(doiInput) {
 		if (typeof stg.history === 'undefined' || stg.history !== true) {
 			return;
 		}
-		if (typeof stg.recorded_dois === 'undefined') {
+		if (!Array.isArray(stg.recorded_dois)) {
 			stg.recorded_dois = getDefaultOption("recorded_dois");
 		}
 		if (typeof stg.history_length === 'undefined') {
@@ -502,15 +509,7 @@ function recordDoi(doiInput) {
 		}
 
 		stg.recorded_dois.push(doiObject);
-
-		chrome.storage.local.set(stg, function() {
-			chrome.runtime.sendMessage({
-				cmd: "doi_recorded",
-				doi: doiObject,
-				doiId: stg.recorded_dois.length - 1,
-				shift: shifted
-			});
-		});
+		chrome.storage.local.set(stg, null);
 	});
 }
 
@@ -577,7 +576,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	}
 });
 
-function cleanupPerms() {
+function cleanupPerms(callback) {
 	chrome.permissions.remove({
 		origins: [
 			'http://*.doi.org/',
@@ -591,6 +590,7 @@ function cleanupPerms() {
 		} else {
 			console.log("Unable to cleanup permissions");
 		}
+		callback();
 	});
 }
 

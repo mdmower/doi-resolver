@@ -631,13 +631,13 @@ function permRemoveListeners() {
 
 // Auto-link
 function alListener(tabId, changeInfo, tab) {
+	if (typeof tab.url !== 'string' || tab.url.indexOf("https://chrome.google.com/webstore") === 0) {
+		return;
+	}
+
 	chrome.permissions.contains({
 		origins: [ 'http://*/*', 'https://*/*' ]
 	}, function(result) {
-		if (result && tab.url.indexOf("https://chrome.google.com/webstore") === 0) {
-			return;
-		}
-
 		if (result && tab.url.search(/https?\:\/\//) === 0) {
 			chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
 				if (chrome.runtime.lastError || results === undefined) {

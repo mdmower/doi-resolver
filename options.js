@@ -136,23 +136,11 @@ function startClickListeners() {
 
 	$("#historyClear").on("click", deleteHistory);
 
-	var timer;
-	var delay = 400;
-	$("#historySaveInfoMark").hover(function() {
-		timer = setTimeout(function() {
-			$("#historySaveInfoText").css({display: "inline-block"});
-		}, delay);
-	}, function() {
-		clearTimeout(timer);
-		$("#historySaveInfoText").css({display: "none"});
-	});
-	$("#autolinkExclusionsInfoMark").hover(function() {
-		timer = setTimeout(function() {
-			$("#autolinkExclusionsInfoText").css({display: "inline-block"});
-		}, delay);
-	}, function() {
-		clearTimeout(timer);
-		$("#autolinkExclusionsInfoText").css({display: "none"});
+	$('.tooltip').tooltipster({
+		theme: 'tooltipster-light',
+		maxWidth: 600,
+		interactive: true,
+		side: ['right', 'top', 'bottom', 'left']
 	});
 
 	$("#syncDataWipeButton").on("click", function() {

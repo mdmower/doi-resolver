@@ -49,6 +49,11 @@ ul {
 	margin-top: 20px;
 }
 
+#optionAutolinkTitle,
+#optionSyncTitle {
+	display: inline-block;
+}
+
 #img_context {
 	height: 145px;
 }
@@ -144,12 +149,6 @@ ul {
 #shortDoiResolverOutput {
 	font-family: monospace;
 	color: #444;
-}
-
-#optionAutolinkInfo,
-#syncDataInfo {
-	font-size: 0.9em;
-	margin-bottom: 4px;
 }
 
 #historySubOptions,
@@ -303,36 +302,33 @@ ul {
 }
 
 .history_entry_save {
-	width: 55px;
+	width: 60px;
 }
 
 .history_entry_delete {
 	width: 60px;
 }
 
-.info_mark {
+.tooltip {
+	border: 1px solid black;
 	display: inline-block;
-	width: 16px;
-	margin-left: 2px;
-}
-
-#historySaveInfoText,
-#autolinkExclusionsInfoText {
-	font-weight: normal;
-	display: none;
-	position: absolute;
-	z-index: 10;
-	max-width: 500px;
-	background-color: #f6f6f6;
-	border: 1px solid lightgray;
+	padding: 1px 3px;
 	border-radius: 6px;
-	padding: 10px;
+	cursor: default;
+	font-weight: normal;
 }
 
-#autolinkExclusionsInfoText {
-	bottom: 0;
+.tooltip_templates {
+	display: none;
 }
 
 #autolinkTestExclusion {
 	width: 400px;
+}
+
+#historySaveInfoText,
+#optionAutolinkInfo,
+#autolinkExclusionsInfoText,
+#syncDataInfo {
+	font-size: 0.9em;
 }

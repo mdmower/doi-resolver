@@ -19,9 +19,12 @@
 <head>
 <title>DOI Resolver Options</title>
 <meta charset="utf-8"/>
+<link rel="stylesheet" type="text/css" href="tooltipster/tooltipster.bundle.min.css" />
+<link rel="stylesheet" type="text/css" href="tooltipster/tooltipster-sideTip-light.min.css" />
 <link rel="stylesheet" type="text/css" href="options.css">
 <script type="text/javascript" src="jquery/jquery-min.js"></script>
 <script type="text/javascript" src="underscore/underscore-min.js"></script>
+<script type="text/javascript" src="tooltipster/tooltipster.bundle.min.js"></script>
 <script type="text/javascript" src="options.js"></script>
 </head>
 
@@ -126,8 +129,7 @@
 		</div>
 
 		<div class="option_container">
-			<h3 class="option_title">Autolink</h3>
-			<div id="optionAutolinkInfo"></div>
+			<h3 class="option_title" id="optionAutolinkTitle">Autolink</h3> <sup id="autolinkInfoMark" class="tooltip" data-tooltip-content="#optionAutolinkInfo">?</sup><br>
 			<input type="checkbox" id="autolink" /><label id="optionAutolink" for="autolink"></label>
 			<div id="alProtocol">
 				<span id="optionAutolinkApplyTo"></span>
@@ -141,7 +143,7 @@
 				<input type="checkbox" id="autolinkRewrite" /><label id="optionAutolinkRewrite" for="autolinkRewrite"></label>
 			</div>
 			<div id="alExclusions">
-				<label id="optionAutolinkExclusions" for="autolinkExclusions">Exclusions:</label><img id="autolinkExclusionsInfoMark" class="info_mark" src="img/info_mark.png" /><div id="autolinkExclusionsInfoText"></div>
+				<label id="optionAutolinkExclusions" for="autolinkExclusions">Exclusions:</label> <sup id="autolinkExclusionsInfoMark" class="tooltip" data-tooltip-content="#autolinkExclusionsInfoText">?</sup>
 				<textarea id="autolinkExclusions" rows="4"></textarea>
 				<div id="autolinkTestExclusionContainer">
 					<label id="optionAutolinkTestExclusion" for="autolinkTestExclusion">Test a URL for exclusion: </label><input type="text" id="autolinkTestExclusion" /> <span id="autolinkTestExclusionResult"></span>
@@ -150,8 +152,7 @@
 		</div>
 
 		<div class="option_container" id="last_option_container">
-			<h3 class="option_title">Sync</h3>
-			<div id="syncDataInfo"></div>
+			<h3 class="option_title" id="optionSyncTitle">Sync</h3> <sup id="syncInfoMark" class="tooltip" data-tooltip-content="#syncDataInfo">?</sup><br>
 			<input type="checkbox" id="syncData" /><label id="optionSyncData" for="syncData"></label>
 			<div id="syncDataWipe">
 				<span id="syncDataWipeDescription"></span> <input type="submit" id="syncDataWipeButton" value="Reset Sync" />
@@ -162,7 +163,7 @@
 	<div class="content" id="content_history">
 		<table id="historyList">
 			<tr id="historyHeading">
-				<th class="history_entry_save">Save<img id="historySaveInfoMark" class="info_mark" src="img/info_mark.png" /><div id="historySaveInfoText"></div></th>
+				<th class="history_entry_save">Save <sup id="historySaveInfoMark" class="tooltip" data-tooltip-content="#historySaveInfoText">?</sup></th>
 				<th class="history_entry_delete">Delete</th>
 				<th class="history_entry_doi">DOI</th>
 				<th><button id="historyClear">Clear History</button></th>
@@ -194,7 +195,14 @@
 			<li><a href="http://underscorejs.org/">underscore.js</a> - <a href="https://github.com/jashkenas/underscore/blob/master/LICENSE">Copyright-only License</a></li>
 			<li><a href="https://bitbucket.org/fbennett/citeproc-js/wiki/Home">citeproc-js</a> - <a href="https://bitbucket.org/fbennett/citeproc-js/raw/default/LICENSE">Common Public Attribution License Version 1.0</a></li>
 			<li><a href="http://citationstyles.org/">Citation Style Language (CSL) citation styles</a> - <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported</a></li>
+			<li><a href="http://iamceege.github.io/tooltipster/">Tooltipster</a> - <a href="https://raw.githubusercontent.com/iamceege/tooltipster/master/LICENSE">MIT license</a></li>
 		</ul>
+	</div>
+	<div class="tooltip_templates">
+		<span id="historySaveInfoText"></span>
+		<span id="optionAutolinkInfo"></span>
+		<span id="autolinkExclusionsInfoText"></span>
+		<span id="syncDataInfo"></span>
 	</div>
 </body>
 </html>

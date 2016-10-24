@@ -181,8 +181,6 @@ function startChangeListeners() {
 }
 
 function haltChangeListeners() {
-	var dbSaveOptions = _.debounce(saveOptions, 750);
-
 	$("#history").off("change", saveOptions);
 	$("#historyShowSave").off("change", saveOptions);
 	$("#historyLength").off("change", dbHistoryLengthUpdate);

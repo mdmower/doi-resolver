@@ -273,9 +273,11 @@ function storageChangeHandler(changes, namespace) {
 		return;
 	}
 
+	var key;
+
 	/* Debugging */
 	/*
-	for (var key in changes) {
+	for (key in changes) {
 		if (changes.hasOwnProperty(key)) {
 			console.log("Option: " + key + ", oldValue: " + changes[key].oldValue + ", newValue: " + changes[key].newValue + ", Namespace: " + namespace);
 		}
@@ -287,7 +289,7 @@ function storageChangeHandler(changes, namespace) {
 			if (stgLocal.sync_data === true) {
 				var toSync = {};
 				var syncKeys = (allOptions()).diff(excludeFromSync());
-				for (var key in changes) {
+				for (key in changes) {
 					if (changes.hasOwnProperty(key)) {
 						if (syncKeys.indexOf(key) >= 0) {
 							toSync[key] = changes[key].newValue;
@@ -344,7 +346,7 @@ function storageChangeHandler(changes, namespace) {
 			 */
 			var optionSyncPairs = {};
 			var optionLocalPairs = {};
-			for (var key in changes) {
+			for (key in changes) {
 				if (changes.hasOwnProperty(key)) {
 					if (changes[key].newValue === 'true') {
 						optionSyncPairs[key] = true;

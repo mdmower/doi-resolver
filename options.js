@@ -146,6 +146,14 @@ function startClickListeners() {
 		clearTimeout(timer);
 		$("#historySaveInfoText").css({display: "none"});
 	});
+	$("#autolinkExclusionsInfoMark").hover(function() {
+		timer = setTimeout(function() {
+			$("#autolinkExclusionsInfoText").css({display: "inline-block"});
+		}, delay);
+	}, function() {
+		clearTimeout(timer);
+		$("#autolinkExclusionsInfoText").css({display: "none"});
+	});
 
 	$("#syncDataWipeButton").on("click", function() {
 		$("#syncData").prop("checked", false);
@@ -177,6 +185,8 @@ function startChangeListeners() {
 	$("#shortDoiResolverInput").on("input", setCrPreviews);
 	$("#omniboxOpento").on("change", saveOptions);
 	$("#autolinkApplyTo").on("change", saveOptions);
+	$("#autolinkExclusions").on("change", dbSaveOptions);
+	$("#autolinkTestExclusion").on("keyup", autolinkTestExclusion);
 	$("#syncData").on("change", toggleSync);
 }
 
@@ -196,6 +206,8 @@ function haltChangeListeners() {
 	$("#shortDoiResolverInput").off("input", setCrPreviews);
 	$("#omniboxOpento").off("change", saveOptions);
 	$("#autolinkApplyTo").off("change", saveOptions);
+	$("#autolinkExclusions").off("change", dbSaveOptions);
+	$("#autolinkTestExclusion").off("keyup", autolinkTestExclusion);
 	$("#syncData").off("change", toggleSync);
 }
 
@@ -241,6 +253,7 @@ function saveOptions() {
 
 	var options = {
 		auto_link_rewrite: $("#autolinkRewrite").prop('checked'),
+		autolink_exclusions: $("#autolinkExclusions").val().split("\n").filter(Boolean),
 		history: $("#history").prop('checked'),
 		history_showsave: $("#historyShowSave").prop('checked'),
 		history_length: parseInt($("#historyLength").val()),
@@ -303,6 +316,7 @@ function restoreOptions(callback) {
 
 	var stgFetch = [
 		"auto_link_rewrite",
+		"autolink_exclusions",
 		"history",
 		"history_length",
 		"history_showsave",
@@ -323,6 +337,7 @@ function restoreOptions(callback) {
 	storage.area.get(stgFetch, function(stg) {
 		var alpOp = stgLocal.al_protocol;
 		var alrOp = stg.auto_link_rewrite;
+		var aleOp = Array.isArray(stg.autolink_exclusions) ? stg.autolink_exclusions : [];
 		var sdOp = stgLocal.sync_data;
 		var hOp = stg.history;
 		var hlOp = stg.history_length;
@@ -341,6 +356,7 @@ function restoreOptions(callback) {
 
 		$("#doiResolverInput").val(drOp);
 		$("#shortDoiResolverInput").val(srOp);
+		$("#autolinkExclusions").val(aleOp.join('\n'));
 
 		if (hOp === true) {
 			$("#history").prop("checked", true);
@@ -499,6 +515,10 @@ function storageChangeHandler(changes, namespace) {
 		} else if (changeHistoryLinks) {
 			regenerateHistoryLinks();
 		}
+
+		if (typeof changes.autolink_exclusions !== 'undefined' && Array.isArray(changes.autolink_exclusions.newValue)) {
+			autolinkTestExclusion();
+		}
 	}
 
 	/* sync_reset is handled in the background page */
@@ -566,6 +586,7 @@ function autolinkDisplayUpdate(enabled, protocol) {
 	if (protocol !== null) {
 		$("#autolinkApplyTo").val(protocol);
 		$("#alProtocol").css("display", "block");
+		$("#alExclusions").css("display", "block");
 		if (cr && cra == "custom") {
 			$("#alRewriteLinks").css("display", "block");
 		} else {
@@ -573,6 +594,7 @@ function autolinkDisplayUpdate(enabled, protocol) {
 		}
 	} else {
 		$("#alProtocol").css("display", "none");
+		$("#alExclusions").css("display", "none");
 		$("#alRewriteLinks").css("display", "none");
 	}
 }
@@ -898,6 +920,47 @@ function verifyAutolinkPermission(callback) {
 	});
 }
 
+function autolinkTestExclusion() {
+	storage.area.get(["autolink_exclusions"], function(stg) {
+		if (!Array.isArray(stg.autolink_exclusions)) {
+			return;
+		}
+
+		var url = encodeURI($("#autolinkTestExclusion").val()).replace(/^https?\:\/\//i, "").toLowerCase();
+		var exclusion = "";
+		var re;
+		var matched = false;
+		for (var i = 0; i < stg.autolink_exclusions.length; i++) {
+			exclusion = stg.autolink_exclusions[i];
+			if (exclusion.slice(-1) === '/' && exclusion.charAt(0) === '/') {
+				try {
+					re = new RegExp(exclusion.slice(1, -1), 'i');
+				} catch(e) {
+					continue;
+				}
+				if (url.match(re)) {
+					matched = true;
+					break;
+				}
+			} else if (url.indexOf(exclusion.toLowerCase()) === 0) {
+				matched = true;
+				break;
+			}
+		}
+
+		var message = "";
+		if (matched) {
+			message = chrome.i18n.getMessage("autolinkExclusionsMatch");
+			$("#autolinkTestExclusionResult").html(message);
+			$("#autolinkTestExclusionResult").css({color: "darkgreen"});
+		} else {
+			message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
+			$("#autolinkTestExclusionResult").html(message);
+			$("#autolinkTestExclusionResult").css({color: "black"});
+		}
+	});
+}
+
 function getLocalMessages() {
 	var message = chrome.i18n.getMessage("optionsTitle");
 	document.title = message;
@@ -967,6 +1030,11 @@ function getLocalMessages() {
 	$("#historySaveInfoText").html(message);
 	message = chrome.i18n.getMessage("historyClear");
 	$("#historyClear").html(message);
+	message = chrome.i18n.getMessage("autolinkExclusionsInfoText");
+	$("#autolinkExclusionsInfoText").html(message);
+
+	message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
+	$("#autolinkTestExclusionResult").html(message);
 
 	$("#extensionVersion").html(chrome.app.getDetails().version);
 }

@@ -154,7 +154,8 @@ ul {
 
 #historySubOptions,
 #optionAutolinkApplyTo,
-#autolinkRewrite {
+#alRewriteLinks,
+#alExclusions {
 	margin-left: 26px;
 }
 
@@ -164,6 +165,15 @@ ul {
 
 #syncDataWipeDescription {
 	margin-left: 26px;
+}
+
+#alExclusions {
+	margin-top: 0.5em;
+	padding-right: 26px;
+}
+
+#autolinkExclusions {
+	width: 100%;
 }
 
 #header {
@@ -306,15 +316,23 @@ ul {
 	margin-left: 2px;
 }
 
-#historySaveInfoText {
+#historySaveInfoText,
+#autolinkExclusionsInfoText {
 	font-weight: normal;
 	display: none;
 	position: absolute;
 	z-index: 10;
-	width: 500px;
-	background-color: white;
-	opacity: 0.95;
+	max-width: 500px;
+	background-color: #f6f6f6;
 	border: 1px solid lightgray;
 	border-radius: 6px;
 	padding: 10px;
+}
+
+#autolinkExclusionsInfoText {
+	bottom: 0;
+}
+
+#autolinkTestExclusion {
+	width: 400px;
 }

@@ -7,6 +7,18 @@
 		"description": "The title of the application",
 		"message": "DOI Resolver"
 	},
+	"autolinkExclusionsInfoText": {
+		"description": "Guidelines for entries in the autolink exclusions text(area) box",
+		"message": "List websites &ndash; one per line &ndash; that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.<br><br><span style=\"text-decoration: underline;\">Normal matching</span>: Websites will be matched based on whether the string matches the <em>beginning</em> of the URL.<br>Example: <strong>example.com/abc</strong> will match http://example.com/abc/def but will not match http://www.example.com/abc/def.<br><br><span style=\"text-decoration: underline;\">Regex matching</span>: Surround an entry by forward slashes (/) to perform a regex match on an entire URL, omitting the protocol.<br>Example: <strong>/(?:www\\.)?example\\.com\\/abc(?:.+)?/</strong> will match both http://example.com/abc/def and http://www.example.com/abc/def."
+	},
+	"autolinkExclusionsMatch": {
+		"description": "Confirm that a URL is matched by one of the autolink exclusions",
+		"message": "Exclusion matched"
+	},
+	"autolinkExclusionsNoMatch": {
+		"description": "Report that no match was found for the URL against the autolink exclusions",
+		"message": "No exclusion matched"
+	},
 	"citeLocale": {
 		"description": "A label next to the locale chooser for formatted citations",
 		"message": "Locale"

@@ -113,7 +113,7 @@
 	},
 	"optionAutolinkApplyTo": {
 		"description": "Label for selection of protocols where autolink should be applied",
-		"message": "&#8618; Apply autolink feature to pages with protocol(s): "
+		"message": "Apply autolink feature to pages with protocol(s): "
 	},
 	"optionAutolinkInfo": {
 		"description": "Cautionary remarks about the autolink feature",

@@ -158,6 +158,17 @@ ul {
 	margin-left: 26px;
 }
 
+#alProtocol,
+#alRewriteLinks,
+#syncDataWipe {
+	margin-top: 4px;
+}
+
+#historyShowSave,
+#autolinkRewrite {
+	margin-left: -1px;
+}
+
 #historySubOptions input {
 	margin-top: 4px;
 }

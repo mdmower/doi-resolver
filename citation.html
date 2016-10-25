@@ -28,12 +28,12 @@
 
 <body>
 <div id="containerDiv">
-	<div id="heading"></div>
-	<div id="subHeading"></div>
+	<div id="citeHeading"></div>
+	<div id="citeSubHeading"></div>
 	<form name="citeForm" id="citeForm">
 		<div id="mainForm">
 			<div id="inputContainer">
-				<label for="doiInput" id="doiInputLabel">DOI</label>
+				<label for="doiInput" id="doiInputLabel"></label>
 				<input type="text" id="doiInput" value="" autofocus list="doiHistory" />
 				<datalist id="doiHistory"></datalist>
 			</div>
@@ -47,7 +47,7 @@
 			<div id="localSubmitContainer">
 				<label for="citeLocale" id="citeLocaleLabel"></label>
 				<select id="citeLocaleInput"></select>
-				<input type="submit" id="submitButton" value="Submit" />
+				<button id="submitButton"></button>
 			</div>
 		</div>
 		<div id="notifyDiv"></div>

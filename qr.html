@@ -17,7 +17,7 @@
 
 <html>
 <head>
-<title>QR Generator</title>
+<title>QR Code Generator</title>
 <meta charset="utf-8"/>
 <link rel='stylesheet' type="text/css" href='spectrum/spectrum.css' />
 <link rel="stylesheet" type="text/css" href="qr.css" />
@@ -30,12 +30,12 @@
 
 <body>
 <div id="containerDiv">
-	<div id="heading"></div>
-	<div id="subHeading"></div>
+	<div id="qrHeading"></div>
+	<div id="qrSubHeading"></div>
 	<form name="doiForm" id="doiForm" style="margin:0;">
 	<div id="mainForm">
 		<div id="inputContainer">
-			<label for="doiInput" id="doiInputLabel">DOI</label>
+			<label for="doiInput" id="doiInputLabel"></label>
 			<input type="text" id="doiInput" autofocus list="doiHistory" />
 			<datalist id="doiHistory"></datalist>
 		</div>
@@ -71,7 +71,7 @@
 				<input type="checkbox" id="qrFetchTitle" />
 				<label id="qrFetchTitleLabel" for="qrFetchTitle"></label>
 			</div>
-			<input type="submit" id="submitButton" value="Submit" />
+			<button id="submitButton"></button>
 		</div>
 	</div>
 	</form>

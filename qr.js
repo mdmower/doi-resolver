@@ -509,21 +509,24 @@ function linkifyQrImage() {
 
 function getLocalMessages() {
 	var message = chrome.i18n.getMessage("qrHeading");
-	$("#heading").html(message);
-	message = chrome.i18n.getMessage("qrSubHeading");
-	$("#subHeading").html(message);
-	message = chrome.i18n.getMessage("qrFgColorInputLabel");
-	$("#qrFgColorInputLabel").html(message);
-	message = chrome.i18n.getMessage("qrBgColorInputLabel");
-	$("#qrBgColorInputLabel").html(message);
-	message = chrome.i18n.getMessage("qrBgTransLabel");
-	$("#qrBgTransLabel").html(message);
-	message = chrome.i18n.getMessage("qrSizeInputLabel");
-	$("#qrSizeInputLabel").html(message);
-	message = chrome.i18n.getMessage("qrManualTitleLabel");
-	$("#qrManualTitleLabel").html(message);
-	message = chrome.i18n.getMessage("qrManualTitleTextLabel");
-	$("#qrManualTitleTextLabel").html(message);
-	message = chrome.i18n.getMessage("qrFetchTitleLabel");
-	$("#qrFetchTitleLabel").html(message);
+	document.title = message;
+
+	var messageIds = [
+		"doiInputLabel",
+		"qrBgColorInputLabel",
+		"qrBgTransLabel",
+		"qrFetchTitleLabel",
+		"qrFgColorInputLabel",
+		"qrHeading",
+		"qrManualTitleLabel",
+		"qrManualTitleTextLabel",
+		"qrSizeInputLabel",
+		"qrSubHeading",
+		"submitButton"
+	];
+
+	for (var i = 0; i < messageIds.length; i++) {
+		message = chrome.i18n.getMessage(messageIds[i]);
+		$('#' + messageIds[i]).html(message);
+	}
 }

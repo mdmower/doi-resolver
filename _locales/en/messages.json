@@ -19,7 +19,11 @@
 		"description": "Report that no match was found for the URL against the autolink exclusions",
 		"message": "No exclusion matched"
 	},
-	"citeLocale": {
+	"citeHeading": {
+		"description": "The title on the citation generator page",
+		"message": "Citation Generator"
+	},
+	"citeLocaleLabel": {
 		"description": "A label next to the locale chooser for formatted citations",
 		"message": "Locale"
 	},
@@ -59,13 +63,13 @@
 		"description": "The text that appears on the button to start the citation generator",
 		"message": "Citation"
 	},
-	"citeTitle": {
-		"description": "The title on the citation generator page",
-		"message": "Citation Generator"
-	},
 	"contextText": {
 		"description": "When a user highlights a DOI on a webpage and right clicks on the highlighted text, this entry appears in the context menu to resolve the DOI",
 		"message": "Resolve DOI"
+	},
+	"doiInputLabel": {
+		"description": "Label for text input to indicate a DOI should go here",
+		"message": "DOI"
 	},
 	"doiOutputUrlExample": {
 		"description": "Label for the currently set resolver URL",
@@ -299,6 +303,10 @@
 		"description": "A label for the size text box on the QR page",
 		"message": "Size"
 	},
+	"qrSubmit": {
+		"description": "Text for the button to open QR page",
+		"message": "QR Code"
+	},
 	"qrSubHeading": {
 		"description": "Subheading message on the QR generator page",
 		"message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
@@ -323,6 +331,10 @@
 		"description": "The text that appears on the button to submit a DOI code for resolving",
 		"message": "Go"
 	},
+	"submitButton": {
+		"description": "The text that appears on the button to submit a form",
+		"message": "Submit"
+	},
 	"syncDataInfo": {
 		"description": "Additional information about sync feature",
 		"message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur. The following options are not included in sync because they require permissions to be accepted by the user before enabling: Autolink, QR title fetch."
@@ -335,10 +347,6 @@
 		"description": "Description for sync wipe button",
 		"message": "&#8618; Wipe all synced data and disable Sync"
 	},
-	"tableHeadingSave": {
-		"description": "Heading on history page for Save column",
-		"message": "Save"
-	},
 	"tableHeadingDelete": {
 		"description": "Heading on history page for Delete column",
 		"message": "Delete"
@@ -346,6 +354,10 @@
 	"tableHeadingDoi": {
 		"description": "Heading on history page for DOI column",
 		"message": "DOI"
+	},
+	"tableHeadingSave": {
+		"description": "Heading on history page for Save column",
+		"message": "Save"
 	},
 	"textDoiResolverInput": {
 		"description": "Label for text box where a URL will be entered for DOIs",

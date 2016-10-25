@@ -952,104 +952,75 @@ function autolinkTestExclusion() {
 function getLocalMessages() {
 	var message = chrome.i18n.getMessage("optionsTitle");
 	document.title = message;
-	message = chrome.i18n.getMessage("optionsTitle");
-	$("#optionsTitle").html(message);
-	message = chrome.i18n.getMessage("optionHistory");
-	$("#optionHistory").html(message);
-	message = chrome.i18n.getMessage("optionHistoryLength");
-	$("#optionHistoryLength").html(message);
-	message = chrome.i18n.getMessage("optionHistoryShowSave");
-	$("#optionHistoryShowSave").html(message);
-	message = chrome.i18n.getMessage("optionContextMenu");
-	$("#optionContextMenu").html(message);
-	message = chrome.i18n.getMessage("optionMetaButtons");
-	$("#optionMetaButtons").html(message);
-	message = chrome.i18n.getMessage("optionCustomResolver");
-	$("#optionCustomResolver").html(message);
-	message = chrome.i18n.getMessage("optionCustomResolverSelection");
-	$("#optionCustomResolverSelection").html(message);
-	message = chrome.i18n.getMessage("optionCrAutolink");
-	$("#optionCrAutolink").html(message);
-	message = chrome.i18n.getMessage("optionCrBubble");
-	$("#optionCrBubble").html(message);
-	message = chrome.i18n.getMessage("optionCrContext");
-	$("#optionCrContext").html(message);
-	message = chrome.i18n.getMessage("optionCrHistory");
-	$("#optionCrHistory").html(message);
-	message = chrome.i18n.getMessage("optionCrOmnibox");
-	$("#optionCrOmnibox").html(message);
-	message = chrome.i18n.getMessage("optionCrCustom");
-	$(".optionCrCustom").html(message);
-	message = chrome.i18n.getMessage("optionCrDefault");
-	$(".optionCrDefault").html(message);
-	message = chrome.i18n.getMessage("optionCrSelectable");
-	$(".optionCrSelectable").html(message);
-	message = chrome.i18n.getMessage("textDoiResolverInput");
-	$("#textDoiResolverInput").html(message);
-	message = chrome.i18n.getMessage("textShortDoiResolverInput");
-	$("#textShortDoiResolverInput").html(message);
-	message = chrome.i18n.getMessage("doiOutputUrlExample");
-	$("#doiOutputUrlExample").html(message);
-	message = chrome.i18n.getMessage("doiOutputUrlExample");
-	$("#shortDoiOutputUrlExample").html(message);
-	message = chrome.i18n.getMessage("optionAutolink");
-	$("#optionAutolink").html(message);
-	message = chrome.i18n.getMessage("optionAutolinkRewrite");
-	$("#optionAutolinkRewrite").html(message);
-	message = chrome.i18n.getMessage("optionOmniboxOpento");
-	$("#optionOmniboxOpento").html(message);
-	message = chrome.i18n.getMessage("optionOmniboxOpentoCurtab");
-	$("#optionOmniboxOpentoCurtab").html(message);
-	message = chrome.i18n.getMessage("optionOmniboxOpentoNewForetab");
-	$("#optionOmniboxOpentoNewForetab").html(message);
-	message = chrome.i18n.getMessage("optionOmniboxOpentoNewBacktab");
-	$("#optionOmniboxOpentoNewBacktab").html(message);
-	message = chrome.i18n.getMessage("optionAutolinkInfo");
-	$("#optionAutolinkInfo").html(message);
-	message = chrome.i18n.getMessage("optionAutolinkApplyTo");
-	$("#optionAutolinkApplyTo").html(message);
-	message = chrome.i18n.getMessage("syncDataInfo");
-	$("#syncDataInfo").html(message);
-	message = chrome.i18n.getMessage("optionSyncData");
-	$("#optionSyncData").html(message);
-	message = chrome.i18n.getMessage("syncDataWipeDescription");
-	$("#syncDataWipeDescription").html(message);
-	message = chrome.i18n.getMessage("historySaveInfoText");
-	$("#historySaveInfoText").html(message);
-	message = chrome.i18n.getMessage("historyClear");
-	$("#historyClear").html(message);
-	message = chrome.i18n.getMessage("autolinkExclusionsInfoText");
-	$("#autolinkExclusionsInfoText").html(message);
-	message = chrome.i18n.getMessage("headingAutolink");
-	$("#headingAutolink").html(message);
-	message = chrome.i18n.getMessage("headingContextMenu");
-	$("#headingContextMenu").html(message);
-	message = chrome.i18n.getMessage("headingCustomResolver");
-	$("#headingCustomResolver").html(message);
-	message = chrome.i18n.getMessage("headingHistory");
-	$("#headingHistory").html(message);
-	message = chrome.i18n.getMessage("headingMeta");
-	$("#headingMeta").html(message);
-	message = chrome.i18n.getMessage("headingOmnibox");
-	$("#headingOmnibox").html(message);
-	message = chrome.i18n.getMessage("headingSync");
-	$("#headingSync").html(message);
-	message = chrome.i18n.getMessage("syncDataWipeButton");
-	$("#syncDataWipeButton").html(message);
-	message = chrome.i18n.getMessage("optionAutolinkExclusions");
-	$("#optionAutolinkExclusions").html(message);
-	message = chrome.i18n.getMessage("optionAutolinkTestExclusion");
-	$("#optionAutolinkTestExclusion").html(message);
-	message = chrome.i18n.getMessage("tableHeadingDelete");
-	$("#tableHeadingDelete").html(message);
-	message = chrome.i18n.getMessage("tableHeadingDoi");
-	$("#tableHeadingDoi").html(message);
-	message = chrome.i18n.getMessage("tableHeadingSave");
-	$("#tableHeadingSave").html(message);
+
+	var messageIds = [
+		"autolinkExclusionsInfoText",
+		"headingAutolink",
+		"headingContextMenu",
+		"headingCustomResolver",
+		"headingHistory",
+		"headingMeta",
+		"headingOmnibox",
+		"headingSync",
+		"historyClear",
+		"historySaveInfoText",
+		"optionAutolink",
+		"optionAutolinkApplyTo",
+		"optionAutolinkExclusions",
+		"optionAutolinkInfo",
+		"optionAutolinkRewrite",
+		"optionAutolinkTestExclusion",
+		"optionContextMenu",
+		"optionCrAutolink",
+		"optionCrBubble",
+		"optionCrContext",
+		"optionCrHistory",
+		"optionCrOmnibox",
+		"optionCustomResolver",
+		"optionCustomResolverSelection",
+		"optionHistory",
+		"optionHistoryLength",
+		"optionHistoryShowSave",
+		"optionMetaButtons",
+		"optionOmniboxOpento",
+		"optionOmniboxOpentoCurtab",
+		"optionOmniboxOpentoNewBacktab",
+		"optionOmniboxOpentoNewForetab",
+		"optionsTitle",
+		"optionSyncData",
+		"syncDataInfo",
+		"syncDataWipeButton",
+		"syncDataWipeDescription",
+		"tableHeadingDelete",
+		"tableHeadingDoi",
+		"tableHeadingSave",
+		"textDoiResolverInput",
+		"textShortDoiResolverInput"
+	];
+
+	var i;
+	for (i = 0; i < messageIds.length; i++) {
+		message = chrome.i18n.getMessage(messageIds[i]);
+		$('#' + messageIds[i]).html(message);
+	}
+
+	messageIds = [
+		"optionCrCustom",
+		"optionCrDefault",
+		"optionCrSelectable"
+	];
+
+	for (i = 0; i < messageIds.length; i++) {
+		message = chrome.i18n.getMessage(messageIds[i]);
+		$('.' + messageIds[i]).html(message);
+	}
 
 	message = chrome.i18n.getMessage("resetButton");
 	$("#doiResolverInputReset").html(message);
 	$("#shortDoiResolverInputReset").html(message);
+	message = chrome.i18n.getMessage("doiOutputUrlExample");
+	$("#doiOutputUrlExample").html(message);
+	$("#shortDoiOutputUrlExample").html(message);
 	message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
 	$("#autolinkTestExclusionResult").html(message);
 

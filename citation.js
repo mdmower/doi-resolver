@@ -465,12 +465,20 @@ function recordDoi(doiInput) {
 }
 
 function getLocalMessages() {
-	var message = chrome.i18n.getMessage("citeTitle");
-	$("#heading").html(message);
-	message = chrome.i18n.getMessage("citeSubHeading");
-	$("#subHeading").html(message);
-	message = chrome.i18n.getMessage("citeLocale");
-	$("#citeLocaleLabel").html(message);
-	message = chrome.i18n.getMessage("citeStyleFilterLabel");
-	$("#citeStyleFilterLabel").html(message);
+	var message = chrome.i18n.getMessage("citeHeading");
+	document.title = message;
+
+	var messageIds = [
+		"doiInputLabel",
+		"citeHeading",
+		"citeLocaleLabel",
+		"citeStyleFilterLabel",
+		"citeSubHeading",
+		"submitButton"
+	];
+
+	for (var i = 0; i < messageIds.length; i++) {
+		message = chrome.i18n.getMessage(messageIds[i]);
+		$('#' + messageIds[i]).html(message);
+	}
 }

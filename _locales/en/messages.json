@@ -7,7 +7,23 @@
 		"description": "The title of the application",
 		"message": "DOI Resolver"
 	},
-	"citeLocale": {
+	"autolinkExclusionsInfoText": {
+		"description": "Guidelines for entries in the autolink exclusions text(area) box",
+		"message": "List websites &ndash; one per line &ndash; that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.<br><br><span style=\"text-decoration: underline;\">Normal matching</span>: Websites will be matched based on whether the string matches the <em>beginning</em> of the URL.<br>Example: <strong>example.com/abc</strong> will match http://example.com/abc/def but will not match http://www.example.com/abc/def.<br><br><span style=\"text-decoration: underline;\">Regex matching</span>: Surround an entry by forward slashes (/) to perform a regex match on an entire URL, omitting the protocol.<br>Example: <strong>/(?:www\\.)?example\\.com\\/abc(?:.+)?/</strong> will match both http://example.com/abc/def and http://www.example.com/abc/def."
+	},
+	"autolinkExclusionsMatch": {
+		"description": "Confirm that a URL is matched by one of the autolink exclusions",
+		"message": "Exclusion matched"
+	},
+	"autolinkExclusionsNoMatch": {
+		"description": "Report that no match was found for the URL against the autolink exclusions",
+		"message": "No exclusion matched"
+	},
+	"citeHeading": {
+		"description": "The title on the citation generator page",
+		"message": "Citation Generator"
+	},
+	"citeLocaleLabel": {
 		"description": "A label next to the locale chooser for formatted citations",
 		"message": "Locale"
 	},
@@ -47,17 +63,45 @@
 		"description": "The text that appears on the button to start the citation generator",
 		"message": "Citation"
 	},
-	"citeTitle": {
-		"description": "The title on the citation generator page",
-		"message": "Citation Generator"
-	},
 	"contextText": {
 		"description": "When a user highlights a DOI on a webpage and right clicks on the highlighted text, this entry appears in the context menu to resolve the DOI",
 		"message": "Resolve DOI"
 	},
+	"doiInputLabel": {
+		"description": "Label for text input to indicate a DOI should go here",
+		"message": "DOI"
+	},
 	"doiOutputUrlExample": {
 		"description": "Label for the currently set resolver URL",
 		"message": "Preview URL tail:"
+	},
+	"headingAutolink": {
+		"description": "Heading on options page for Autolink",
+		"message": "Autolink"
+	},
+	"headingContextMenu": {
+		"description": "Heading on options page for the Context Menu",
+		"message": "Context Menu"
+	},
+	"headingCustomResolver": {
+		"description": "Heading on options page for the Custom DOI Resolver",
+		"message": "Custom DOI Resolver"
+	},
+	"headingHistory": {
+		"description": "Heading on options page for History",
+		"message": "History"
+	},
+	"headingMeta": {
+		"description": "Heading on options page for QR and Citation Features",
+		"message": "QR and Citation Features"
+	},
+	"headingOmnibox": {
+		"description": "Heading on options page for Omnibox",
+		"message": "Omnibox"
+	},
+	"headingSync": {
+		"description": "Heading on options page for Sync",
+		"message": "Sync"
 	},
 	"historyClear": {
 		"description": "Text for a button that clears all DOI history",
@@ -101,15 +145,23 @@
 	},
 	"optionAutolinkApplyTo": {
 		"description": "Label for selection of protocols where autolink should be applied",
-		"message": "&#8618; Apply autolink feature to pages with protocol(s): "
+		"message": "Apply autolink feature to pages with protocol(s): "
+	},
+	"optionAutolinkExclusions": {
+		"description": "Label for textbox area to enter exclusions for the autolink feature",
+		"message": "Exclusions:"
 	},
 	"optionAutolinkInfo": {
 		"description": "Cautionary remarks about the autolink feature",
-		"message": "The autolink feature requires permission to access and modify pages you are viewing.<br>You will need to refresh open tabs for this option to take effect."
+		"message": "The autolink feature requires permission to access and modify pages you are viewing. You will need to refresh open tabs for this option to take effect."
 	},
 	"optionAutolinkRewrite": {
 		"description": "A setting to enable the extension to scan every page visited by the user and rewite dx.doi.org liks to be handled by the custom DOI resolver instead.",
 		"message": "Rewrite existing dx.doi.org links to use the Custom DOI Resolver"
+	},
+	"optionAutolinkTestExclusion": {
+		"description": "Label for text input to verify whether a URL will be matched by an autolink exclusion",
+		"message": "Test a URL for exclusion:"
 	},
 	"optionContextMenu": {
 		"description": "A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
@@ -251,6 +303,10 @@
 		"description": "A label for the size text box on the QR page",
 		"message": "Size"
 	},
+	"qrSubmit": {
+		"description": "Text for the button to open QR page",
+		"message": "QR Code"
+	},
 	"qrSubHeading": {
 		"description": "Subheading message on the QR generator page",
 		"message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
@@ -267,17 +323,41 @@
 		"description": "Successful status of title retrieval for QR encoding",
 		"message": "Found"
 	},
+	"resetButton": {
+		"description": "The text on a reset button",
+		"message": "Reset"
+	},
 	"resolveSubmit": {
 		"description": "The text that appears on the button to submit a DOI code for resolving",
 		"message": "Go"
+	},
+	"submitButton": {
+		"description": "The text that appears on the button to submit a form",
+		"message": "Submit"
 	},
 	"syncDataInfo": {
 		"description": "Additional information about sync feature",
 		"message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur. The following options are not included in sync because they require permissions to be accepted by the user before enabling: Autolink, QR title fetch."
 	},
+	"syncDataWipeButton": {
+		"description": "Text for sync wipe button",
+		"message": "Reset Sync"
+	},
 	"syncDataWipeDescription": {
 		"description": "Description for sync wipe button",
 		"message": "&#8618; Wipe all synced data and disable Sync"
+	},
+	"tableHeadingDelete": {
+		"description": "Heading on history page for Delete column",
+		"message": "Delete"
+	},
+	"tableHeadingDoi": {
+		"description": "Heading on history page for DOI column",
+		"message": "DOI"
+	},
+	"tableHeadingSave": {
+		"description": "Heading on history page for Save column",
+		"message": "Save"
 	},
 	"textDoiResolverInput": {
 		"description": "Label for text box where a URL will be entered for DOIs",

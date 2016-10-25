@@ -293,16 +293,19 @@ function recordDoi(doiInput) {
 }
 
 function getLocalMessages() {
-	var message = chrome.i18n.getMessage("resolveSubmit");
-	$("#resolveSubmit").attr("value", message);
-	message = chrome.i18n.getMessage("citeSubmit");
-	$("#citeSubmit").attr("value", message);
-	message = chrome.i18n.getMessage("optionsSubmit");
-	$("#optionsSubmit").attr("value", message);
-	message = chrome.i18n.getMessage("optionCrLabelBubble");
-	$("#optionCrLabelBubble").html(message);
-	message = chrome.i18n.getMessage("optionCrCustom");
-	$("#optionCrCustom").html(message);
-	message = chrome.i18n.getMessage("optionCrDefault");
-	$("#optionCrDefault").html(message);
+	var messageIds = [
+		"citeSubmit",
+		"optionCrCustom",
+		"optionCrDefault",
+		"optionCrLabelBubble",
+		"optionsSubmit",
+		"qrSubmit",
+		"resolveSubmit"
+	];
+
+	var message = "";
+	for (var i = 0; i < messageIds.length; i++) {
+		message = chrome.i18n.getMessage(messageIds[i]);
+		$('#' + messageIds[i]).html(message);
+	}
 }

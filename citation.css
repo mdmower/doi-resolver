@@ -27,13 +27,13 @@ body {
 	color: #303942;
 }
 
-#heading {
+#citeHeading {
 	width: 468px;
 	font-size: 1.2em;
 	margin: 0 5px;
 }
 
-#subHeading {
+#citeSubHeading {
 	width: 468px;
 	font-size: 0.9em;
 	margin: 2px 5px;

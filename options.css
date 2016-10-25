@@ -146,16 +146,22 @@ ul {
 	color: #444;
 }
 
-#optionAutolinkInfo,
-#syncDataInfo {
-	font-size: 0.9em;
-	margin-bottom: 4px;
-}
-
 #historySubOptions,
 #optionAutolinkApplyTo,
-#autolinkRewrite {
+#alRewriteLinks,
+#alExclusions {
 	margin-left: 26px;
+}
+
+#alProtocol,
+#alRewriteLinks,
+#syncDataWipe {
+	margin-top: 4px;
+}
+
+#historyShowSave,
+#autolinkRewrite {
+	margin-left: -1px;
 }
 
 #historySubOptions input {
@@ -164,6 +170,15 @@ ul {
 
 #syncDataWipeDescription {
 	margin-left: 26px;
+}
+
+#alExclusions {
+	margin-top: 0.5em;
+	padding-right: 26px;
+}
+
+#autolinkExclusions {
+	width: 100%;
 }
 
 #header {
@@ -266,6 +281,7 @@ ul {
 	text-align: left;
 	padding: 5px;
 	border-bottom: 1px solid black;
+	vertical-align: bottom;
 }
 
 #historyHeading th:last-child{
@@ -293,28 +309,38 @@ ul {
 }
 
 .history_entry_save {
-	width: 55px;
+	width: 60px;
 }
 
 .history_entry_delete {
 	width: 60px;
 }
 
-.info_mark {
+.tooltip {
+	border: 1px solid black;
 	display: inline-block;
-	width: 16px;
-	margin-left: 2px;
+	padding: 1px 3px;
+	border-radius: 6px;
+	cursor: default;
+	font-weight: normal;
 }
 
-#historySaveInfoText {
-	font-weight: normal;
+#headingAutolink,
+#headingSync {
+	display: inline-block;
+}
+
+.tooltip_templates {
 	display: none;
-	position: absolute;
-	z-index: 10;
-	width: 500px;
-	background-color: white;
-	opacity: 0.95;
-	border: 1px solid lightgray;
-	border-radius: 6px;
-	padding: 10px;
+}
+
+#autolinkTestExclusion {
+	width: 400px;
+}
+
+#historySaveInfoText,
+#optionAutolinkInfo,
+#autolinkExclusionsInfoText,
+#syncDataInfo {
+	font-size: 0.9em;
 }

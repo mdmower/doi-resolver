@@ -100,6 +100,7 @@ function allOptions() {
 		"al_protocol",
 		"auto_link",
 		"auto_link_rewrite",
+		"autolink_exclusions",
 		"cite_locale",
 		"cite_style",
 		"context_menu",
@@ -148,6 +149,7 @@ function getDefaultOption(opt) {
 		al_protocol: "http",
 		auto_link: false,
 		auto_link_rewrite: false,
+		autolink_exclusions: [],
 		cite_locale: "auto",
 		cite_style: "bibtex",
 		context_menu: true,
@@ -273,9 +275,11 @@ function storageChangeHandler(changes, namespace) {
 		return;
 	}
 
+	var key;
+
 	/* Debugging */
 	/*
-	for (var key in changes) {
+	for (key in changes) {
 		if (changes.hasOwnProperty(key)) {
 			console.log("Option: " + key + ", oldValue: " + changes[key].oldValue + ", newValue: " + changes[key].newValue + ", Namespace: " + namespace);
 		}
@@ -287,7 +291,7 @@ function storageChangeHandler(changes, namespace) {
 			if (stgLocal.sync_data === true) {
 				var toSync = {};
 				var syncKeys = (allOptions()).diff(excludeFromSync());
-				for (var key in changes) {
+				for (key in changes) {
 					if (changes.hasOwnProperty(key)) {
 						if (syncKeys.indexOf(key) >= 0) {
 							toSync[key] = changes[key].newValue;
@@ -344,7 +348,7 @@ function storageChangeHandler(changes, namespace) {
 			 */
 			var optionSyncPairs = {};
 			var optionLocalPairs = {};
-			for (var key in changes) {
+			for (key in changes) {
 				if (changes.hasOwnProperty(key)) {
 					if (changes[key].newValue === 'true') {
 						optionSyncPairs[key] = true;
@@ -631,37 +635,65 @@ function permRemoveListeners() {
 
 // Auto-link
 function alListener(tabId, changeInfo, tab) {
-	chrome.permissions.contains({
-		origins: [ 'http://*/*', 'https://*/*' ]
-	}, function(result) {
-		if (result && tab.url.indexOf("https://chrome.google.com/webstore") === 0) {
+	if (typeof tab.url !== 'string' || tab.url.indexOf("https://chrome.google.com/webstore") === 0) {
+		return;
+	}
+
+	storage.area.get(["autolink_exclusions"], function(stg) {
+		if (!Array.isArray(stg.autolink_exclusions)) {
 			return;
 		}
 
-		if (result && tab.url.search(/https?\:\/\//) === 0) {
+		var url = encodeURI(tab.url).replace(/^https?\:\/\//i, "").toLowerCase();
+		var exclusion = "";
+		var re;
+		for (var i = 0; i < stg.autolink_exclusions.length; i++) {
+			exclusion = stg.autolink_exclusions[i];
+			if (exclusion.slice(-1) === '/' && exclusion.charAt(0) === '/') {
+				try {
+					re = new RegExp(exclusion.slice(1, -1), 'i');
+				} catch(e) {
+					continue;
+				}
+				if (url.match(re)) {
+					return;
+				}
+			} else if (url.indexOf(exclusion.toLowerCase()) === 0) {
+				return;
+			}
+		}
+		applyAutolinkToPage(tab.url, tabId);
+	});
+}
+
+function applyAutolinkToPage(url, tabId) {
+	chrome.permissions.contains({
+		origins: [ 'http://*/*', 'https://*/*' ]
+	}, function(result) {
+		if (result && url.search(/https?\:\/\//) === 0) {
 			chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
 				if (chrome.runtime.lastError || results === undefined) {
-					console.log("Autolink failed to run on " + tab.url);
+					console.log("Autolink failed to run on " + url);
 				}
 			});
 		} else {
 			chrome.permissions.contains({
 				origins: [ 'http://*/*' ]
 			}, function(result) {
-				if (result && tab.url.search(/http\:\/\//) === 0) {
+				if (result && url.search(/http\:\/\//) === 0) {
 					chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
 						if (chrome.runtime.lastError || results === undefined) {
-							console.log("Autolink failed to run on " + tab.url);
+							console.log("Autolink failed to run on " + url);
 						}
 					});
 				} else {
 					chrome.permissions.contains({
 						origins: [ 'https://*/*' ]
 					}, function(result) {
-						if (result && tab.url.search(/https\:\/\//) === 0) {
+						if (result && url.search(/https\:\/\//) === 0) {
 							chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
 								if (chrome.runtime.lastError || results === undefined) {
-									console.log("Autolink failed to run on " + tab.url);
+									console.log("Autolink failed to run on " + url);
 								}
 							});
 						}

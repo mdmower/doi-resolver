@@ -187,7 +187,7 @@ function getDefaultOption(opt) {
 
 function checkForSettings(callback) {
 	var key;
-	var options = (allOptions()).diff(["sync_reset"]);
+	var options = allOptions().diff(["sync_reset"]);
 	var newOptions = {};
 	var updateSettings = false;
 
@@ -214,7 +214,7 @@ function checkForSettings(callback) {
  */
 function toggleSync() {
 	var key;
-	var syncKeys = (allOptions()).diff(excludeFromSync());
+	var syncKeys = allOptions().diff(excludeFromSync());
 	var dupOptions = {};
 
 	chrome.storage.local.get(null, function(stgLocal) {
@@ -290,7 +290,7 @@ function storageChangeHandler(changes, namespace) {
 		if (namespace === "local") {
 			if (stgLocal.sync_data === true) {
 				var toSync = {};
-				var syncKeys = (allOptions()).diff(excludeFromSync());
+				var syncKeys = allOptions().diff(excludeFromSync());
 				for (key in changes) {
 					if (changes.hasOwnProperty(key)) {
 						if (syncKeys.indexOf(key) >= 0) {

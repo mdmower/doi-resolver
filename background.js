@@ -718,7 +718,6 @@ function autolinkDois() {
 			}, function() {
 				chrome.tabs.onUpdated.addListener(alListener);
 				console.log('Autolink listeners enabled for http and https');
-				chrome.runtime.sendMessage({cmd: "auto_link_config_complete"});
 			});
 		} else {
 			chrome.permissions.contains({
@@ -732,7 +731,6 @@ function autolinkDois() {
 					}, function() {
 						chrome.tabs.onUpdated.addListener(alListener);
 						console.log('Autolink listeners enabled for http');
-						chrome.runtime.sendMessage({cmd: "auto_link_config_complete"});
 					});
 				} else {
 					chrome.permissions.contains({
@@ -746,12 +744,10 @@ function autolinkDois() {
 							}, function() {
 								chrome.tabs.onUpdated.addListener(alListener);
 								console.log('Autolink listeners enabled for https');
-								chrome.runtime.sendMessage({cmd: "auto_link_config_complete"});
 							});
 						} else {
 							chrome.storage.local.set({ auto_link: false }, function() {
 								console.log('Autolink listeners disabled');
-								chrome.runtime.sendMessage({cmd: "auto_link_config_complete"});
 							});
 						}
 					});

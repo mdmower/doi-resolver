@@ -26,9 +26,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	case "settings_dup_complete":
 		storage(false, false);
 		break;
-	case "auto_link_config_complete":
-		// Do nothing
-		break;
 	default:
 		break;
 	}

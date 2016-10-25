@@ -1020,7 +1020,36 @@ function getLocalMessages() {
 	$("#historyClear").html(message);
 	message = chrome.i18n.getMessage("autolinkExclusionsInfoText");
 	$("#autolinkExclusionsInfoText").html(message);
+	message = chrome.i18n.getMessage("headingAutolink");
+	$("#headingAutolink").html(message);
+	message = chrome.i18n.getMessage("headingContextMenu");
+	$("#headingContextMenu").html(message);
+	message = chrome.i18n.getMessage("headingCustomResolver");
+	$("#headingCustomResolver").html(message);
+	message = chrome.i18n.getMessage("headingHistory");
+	$("#headingHistory").html(message);
+	message = chrome.i18n.getMessage("headingMeta");
+	$("#headingMeta").html(message);
+	message = chrome.i18n.getMessage("headingOmnibox");
+	$("#headingOmnibox").html(message);
+	message = chrome.i18n.getMessage("headingSync");
+	$("#headingSync").html(message);
+	message = chrome.i18n.getMessage("syncDataWipeButton");
+	$("#syncDataWipeButton").html(message);
+	message = chrome.i18n.getMessage("optionAutolinkExclusions");
+	$("#optionAutolinkExclusions").html(message);
+	message = chrome.i18n.getMessage("optionAutolinkTestExclusion");
+	$("#optionAutolinkTestExclusion").html(message);
+	message = chrome.i18n.getMessage("tableHeadingDelete");
+	$("#tableHeadingDelete").html(message);
+	message = chrome.i18n.getMessage("tableHeadingDoi");
+	$("#tableHeadingDoi").html(message);
+	message = chrome.i18n.getMessage("tableHeadingSave");
+	$("#tableHeadingSave").html(message);
 
+	message = chrome.i18n.getMessage("resetButton");
+	$("#doiResolverInputReset").html(message);
+	$("#shortDoiResolverInputReset").html(message);
 	message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
 	$("#autolinkTestExclusionResult").html(message);
 

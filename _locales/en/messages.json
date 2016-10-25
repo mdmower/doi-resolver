@@ -71,6 +71,34 @@
 		"description": "Label for the currently set resolver URL",
 		"message": "Preview URL tail:"
 	},
+	"headingAutolink": {
+		"description": "Heading on options page for Autolink",
+		"message": "Autolink"
+	},
+	"headingContextMenu": {
+		"description": "Heading on options page for the Context Menu",
+		"message": "Context Menu"
+	},
+	"headingCustomResolver": {
+		"description": "Heading on options page for the Custom DOI Resolver",
+		"message": "Custom DOI Resolver"
+	},
+	"headingHistory": {
+		"description": "Heading on options page for History",
+		"message": "History"
+	},
+	"headingMeta": {
+		"description": "Heading on options page for QR and Citation Features",
+		"message": "QR and Citation Features"
+	},
+	"headingOmnibox": {
+		"description": "Heading on options page for Omnibox",
+		"message": "Omnibox"
+	},
+	"headingSync": {
+		"description": "Heading on options page for Sync",
+		"message": "Sync"
+	},
 	"historyClear": {
 		"description": "Text for a button that clears all DOI history",
 		"message": "Clear History"
@@ -115,6 +143,10 @@
 		"description": "Label for selection of protocols where autolink should be applied",
 		"message": "Apply autolink feature to pages with protocol(s): "
 	},
+	"optionAutolinkExclusions": {
+		"description": "Label for textbox area to enter exclusions for the autolink feature",
+		"message": "Exclusions:"
+	},
 	"optionAutolinkInfo": {
 		"description": "Cautionary remarks about the autolink feature",
 		"message": "The autolink feature requires permission to access and modify pages you are viewing. You will need to refresh open tabs for this option to take effect."
@@ -122,6 +154,10 @@
 	"optionAutolinkRewrite": {
 		"description": "A setting to enable the extension to scan every page visited by the user and rewite dx.doi.org liks to be handled by the custom DOI resolver instead.",
 		"message": "Rewrite existing dx.doi.org links to use the Custom DOI Resolver"
+	},
+	"optionAutolinkTestExclusion": {
+		"description": "Label for text input to verify whether a URL will be matched by an autolink exclusion",
+		"message": "Test a URL for exclusion:"
 	},
 	"optionContextMenu": {
 		"description": "A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
@@ -279,6 +315,10 @@
 		"description": "Successful status of title retrieval for QR encoding",
 		"message": "Found"
 	},
+	"resetButton": {
+		"description": "The text on a reset button",
+		"message": "Reset"
+	},
 	"resolveSubmit": {
 		"description": "The text that appears on the button to submit a DOI code for resolving",
 		"message": "Go"
@@ -287,9 +327,25 @@
 		"description": "Additional information about sync feature",
 		"message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur. The following options are not included in sync because they require permissions to be accepted by the user before enabling: Autolink, QR title fetch."
 	},
+	"syncDataWipeButton": {
+		"description": "Text for sync wipe button",
+		"message": "Reset Sync"
+	},
 	"syncDataWipeDescription": {
 		"description": "Description for sync wipe button",
 		"message": "&#8618; Wipe all synced data and disable Sync"
+	},
+	"tableHeadingSave": {
+		"description": "Heading on history page for Save column",
+		"message": "Save"
+	},
+	"tableHeadingDelete": {
+		"description": "Heading on history page for Delete column",
+		"message": "Delete"
+	},
+	"tableHeadingDoi": {
+		"description": "Heading on history page for DOI column",
+		"message": "DOI"
 	},
 	"textDoiResolverInput": {
 		"description": "Label for text box where a URL will be entered for DOIs",

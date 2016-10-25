@@ -39,7 +39,7 @@
 
 	<div class="content" id="content_options">
 		<div class="option_container">
-			<h3 class="option_title">Omnibox</h3>
+			<h3 class="option_title" id="headingOmnibox"></h3>
 			<span id="optionOmniboxOpento"></span>
 			<select type="selection" id="omniboxOpento">
 				<option id="optionOmniboxOpentoCurtab" value="curtab"></option>
@@ -49,7 +49,7 @@
 		</div>
 
 		<div class="option_container">
-			<h3 class="option_title">History</h3>
+			<h3 class="option_title" id="headingHistory"></h3>
 			<input type="checkbox" id="history" /><label id="optionHistory" for="history"></label>
 			<div id="historySubOptions">
 				<input type="checkbox" id="historyShowSave" />
@@ -60,7 +60,7 @@
 		</div>
 
 		<div class="option_container">
-			<h3 class="option_title">Context Menu</h3>
+			<h3 class="option_title" id="headingContextMenu"></h3>
 			<input type="checkbox" id="context" /><label id="optionContextMenu" for="context"></label>
 			<div id="img_context">
 				<div id="img_context_off"></div>
@@ -69,7 +69,7 @@
 		</div>
 
 		<div class="option_container">
-			<h3 class="option_title">QR and Citation Features</h3>
+			<h3 class="option_title" id="headingMeta"></h3>
 			<input type="checkbox" id="meta" /><label id="optionMetaButtons" for="meta"></label>
 			<div id="img_bubblemeta">
 				<div id="img_bubblemeta_off"></div>
@@ -78,7 +78,7 @@
 		</div>
 
 		<div class="option_container">
-			<h3 class="option_title">Custom DOI Resolver</h3>
+			<h3 class="option_title" id="headingCustomResolver"></h3>
 			<input type="checkbox" id="customResolver" /><label id="optionCustomResolver" for="customResolver"></label><br>
 			<div class="row">
 				<div id="customResolverLeft">
@@ -86,7 +86,7 @@
 						<div class="cr_input_container">
 							<label id="textDoiResolverInput" for="doiResolverInput"></label><br>
 							<input type="text" id="doiResolverInput" value="" />
-							<input type="submit" id="doiResolverInputReset" value="Reset" /><br>
+							<button id="doiResolverInputReset"></button><br>
 							<div class="cr_preview">
 								<span id="doiOutputUrlExample"></span> <span id="doiResolverOutput"></span>
 							</div>
@@ -94,7 +94,7 @@
 						<div class="cr_input_container">
 							<label id="textShortDoiResolverInput" for="shortDoiResolverInput"></label><br>
 							<input type="text" id="shortDoiResolverInput" value="" />
-							<input type="submit" id="shortDoiResolverInputReset" value="Reset" />
+							<button id="shortDoiResolverInputReset"></button><br>
 							<div class="cr_preview">
 								<span id="shortDoiOutputUrlExample"></span> <span id="shortDoiResolverOutput"></span>
 							</div>
@@ -129,7 +129,7 @@
 		</div>
 
 		<div class="option_container">
-			<h3 class="option_title" id="optionAutolinkTitle">Autolink</h3> <sup id="autolinkInfoMark" class="tooltip" data-tooltip-content="#optionAutolinkInfo">?</sup><br>
+			<h3 class="option_title" id="headingAutolink"></h3> <sup id="autolinkInfoMark" class="tooltip" data-tooltip-content="#optionAutolinkInfo">?</sup><br>
 			<input type="checkbox" id="autolink" /><label id="optionAutolink" for="autolink"></label>
 			<div id="alProtocol">
 				<label id="optionAutolinkApplyTo" for="autolinkApplyTo"></label>
@@ -143,19 +143,19 @@
 				<input type="checkbox" id="autolinkRewrite" /><label id="optionAutolinkRewrite" for="autolinkRewrite"></label>
 			</div>
 			<div id="alExclusions">
-				<label id="optionAutolinkExclusions" for="autolinkExclusions">Exclusions:</label> <sup id="autolinkExclusionsInfoMark" class="tooltip" data-tooltip-content="#autolinkExclusionsInfoText">?</sup>
+				<label id="optionAutolinkExclusions" for="autolinkExclusions"></label> <sup id="autolinkExclusionsInfoMark" class="tooltip" data-tooltip-content="#autolinkExclusionsInfoText">?</sup>
 				<textarea id="autolinkExclusions" rows="4"></textarea>
 				<div id="autolinkTestExclusionContainer">
-					<label id="optionAutolinkTestExclusion" for="autolinkTestExclusion">Test a URL for exclusion: </label><input type="text" id="autolinkTestExclusion" /> <span id="autolinkTestExclusionResult"></span>
+					<label id="optionAutolinkTestExclusion" for="autolinkTestExclusion"></label> <input type="text" id="autolinkTestExclusion" /> <span id="autolinkTestExclusionResult"></span>
 				</div>
 			</div>
 		</div>
 
 		<div class="option_container" id="last_option_container">
-			<h3 class="option_title" id="optionSyncTitle">Sync</h3> <sup id="syncInfoMark" class="tooltip" data-tooltip-content="#syncDataInfo">?</sup><br>
+			<h3 class="option_title" id="headingSync"></h3> <sup id="syncInfoMark" class="tooltip" data-tooltip-content="#syncDataInfo">?</sup><br>
 			<input type="checkbox" id="syncData" /><label id="optionSyncData" for="syncData"></label>
 			<div id="syncDataWipe">
-				<span id="syncDataWipeDescription"></span> <input type="submit" id="syncDataWipeButton" value="Reset Sync" />
+				<span id="syncDataWipeDescription"></span> <button id="syncDataWipeButton"></button>
 			</div>
 		</div>
 	</div>
@@ -163,10 +163,10 @@
 	<div class="content" id="content_history">
 		<table id="historyList">
 			<tr id="historyHeading">
-				<th class="history_entry_save">Save <sup id="historySaveInfoMark" class="tooltip" data-tooltip-content="#historySaveInfoText">?</sup></th>
-				<th class="history_entry_delete">Delete</th>
-				<th class="history_entry_doi">DOI</th>
-				<th><button id="historyClear">Clear History</button></th>
+				<th class="history_entry_save"><span id="tableHeadingSave"></span> <sup id="historySaveInfoMark" class="tooltip" data-tooltip-content="#historySaveInfoText">?</sup></th>
+				<th class="history_entry_delete"><span id="tableHeadingDelete"></span></th>
+				<th class="history_entry_doi"><span id="tableHeadingDoi"></span></th>
+				<th><button id="historyClear"></button></th>
 			</tr>
 			<tr id="historySeparator"></tr>
 		</table>

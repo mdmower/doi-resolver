@@ -49,11 +49,6 @@ ul {
 	margin-top: 20px;
 }
 
-#optionAutolinkTitle,
-#optionSyncTitle {
-	display: inline-block;
-}
-
 #img_context {
 	height: 145px;
 }
@@ -286,6 +281,7 @@ ul {
 	text-align: left;
 	padding: 5px;
 	border-bottom: 1px solid black;
+	vertical-align: bottom;
 }
 
 #historyHeading th:last-child{
@@ -327,6 +323,11 @@ ul {
 	border-radius: 6px;
 	cursor: default;
 	font-weight: normal;
+}
+
+#headingAutolink,
+#headingSync {
+	display: inline-block;
 }
 
 .tooltip_templates {

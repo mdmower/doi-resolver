@@ -581,20 +581,29 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 function cleanupPerms(callback) {
-	chrome.permissions.remove({
-		origins: [
+	chrome.storage.local.get(["auto_link"], function(stg) {
+		var removeOrigins = [
 			'http://*.doi.org/',
 			'http://*.crossref.org/',
 			'http://*.datacite.org/',
 			'https://raw.githubusercontent.com/'
-		]
-	}, function(removed) {
-		if (removed) {
-			console.log("Permissions cleaned");
-		} else {
-			console.log("Unable to cleanup permissions");
+		];
+
+		if (stg.auto_link !== true) {
+			removeOrigins.push('http://*/*');
+			removeOrigins.push('https://*/*');
 		}
-		callback();
+
+		chrome.permissions.remove({
+			origins: removeOrigins
+		}, function(removed) {
+			if (removed) {
+				console.log("Permissions cleaned");
+			} else {
+				console.log("Unable to cleanup permissions");
+			}
+			callback();
+		});
 	});
 }
 

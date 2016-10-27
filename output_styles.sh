@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2015 Matthew D. Mower
+# Copyright (C) 2016 Matthew D. Mower
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

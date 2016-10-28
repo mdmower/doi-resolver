@@ -156,7 +156,7 @@
 		"message": "The autolink feature requires permission to access and modify pages you are viewing. You will need to refresh open tabs for this option to take effect."
 	},
 	"optionAutolinkRewrite": {
-		"description": "A setting to enable the extension to scan every page visited by the user and rewite dx.doi.org liks to be handled by the custom DOI resolver instead.",
+		"description": "A setting to enable the extension to scan every page visited by the user and rewite doi.org and dx.doi.org liks to be handled by the custom DOI resolver instead.",
 		"message": "Rewrite existing dx.doi.org links to use the Custom DOI Resolver"
 	},
 	"optionAutolinkTestExclusion": {

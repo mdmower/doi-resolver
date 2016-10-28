@@ -29,7 +29,7 @@ function storage() {
 	}
 	if (typeof storage.findUrl === 'undefined') {
 		// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
-		storage.findUrl = /^(?:https?\:\/\/)dx\.doi\.org\/(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)$/ig;
+		storage.findUrl = /^(?:https?\:\/\/)(?:dx\.)?doi\.org\/(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)$/ig;
 	}
 	if (typeof storage.autolinkRewrite === 'undefined') {
 		storage.autolinkRewrite = false;

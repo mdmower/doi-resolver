@@ -539,6 +539,9 @@ function toggleContextMenu() {
 
 function contextMenuResolve(info) {
 	var doiInput = encodeURI(trim(info.selectionText));
+	var doiPrefixRegEx = new RegExp("^doi\:?", "ig");
+	doiInput = doiInput.replace(doiPrefixRegEx, '');
+
 	if (!checkValidDoi(doiInput)) {
 		return;
 	}
@@ -778,6 +781,9 @@ function omniListener(text, disposition) {
 		console.log('omnibox: ' + text);
 
 		var doiInput = encodeURI(trim(text));
+		var doiPrefixRegEx = new RegExp("^doi\:?", "ig");
+		doiInput = doiInput.replace(doiPrefixRegEx, '');
+
 		if (!checkValidDoi(doiInput)) {
 			return;
 		}

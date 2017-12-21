@@ -73,9 +73,9 @@ function replaceDOIsWithLinks() {
 function replaceInElement(element, find, replace) {
 	// don't touch these elements
 	var forbiddenTags = ["a", "input", "script", "style", "textarea"];
-	for (var i = element.childNodes.length; i-- > 0;) {
+	for (var i = element.childNodes.length - 1; i >= 0; i--) {
 		var child = element.childNodes[i];
-		if (child.nodeType == 1) { // ELEMENT_NODE
+		if (child.nodeType === Node.ELEMENT_NODE) {
 			if (forbiddenTags.indexOf(child.nodeName.toLowerCase()) < 0) {
 				replaceInElement(child, find, replace);
 			} else if (storage.autolinkRewrite && child.nodeName.toLowerCase() == "a") {
@@ -83,19 +83,20 @@ function replaceInElement(element, find, replace) {
 					child.href = child.href.replace(storage.findUrl, storage.urlPrefix + "$1");
 				}
 			}
-		} else if (child.nodeType == 3) { // TEXT_NODE
+		} else if (child.nodeType === Node.TEXT_NODE) {
 			replaceInText(child, find, replace);
 		}
 	}
 }
 
 function replaceInText(text, find, replace) {
-	var match;
 	var matches = [];
-	while ((match = find.exec(text.data)) !== null) {
+	var match = find.exec(text.data);
+	while (match !== null) {
 		matches.push(match);
+		match = find.exec(text.data);
 	}
-	for (var i = matches.length; i-- > 0;) {
+	for (var i = matches.length - 1; i >= 0; i--) {
 		match = matches[i];
 		text.splitText(match.index);
 		text.nextSibling.splitText(match[0].length);

@@ -393,7 +393,7 @@ function startFeatures() {
 
 // Remove spaces and punctuation from beginning and end of input
 function trim(stringToTrim) {
-	return stringToTrim.replace(/doi:|\s+|[\.!\?,]$|[\.!\?,]\s+$/g,"");
+	return stringToTrim.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/ig, "");
 }
 
 // Check that DOI is valid and warn user if not (alert)

@@ -235,7 +235,7 @@ function filterByText(select, text) {
 }
 
 function trim(stringToTrim) {
-	return stringToTrim.replace(/doi:|\s+|[\.!\?,]$|[\.!\?,]\s+$/g, "");
+	return stringToTrim.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/ig, "");
 }
 
 function formSubmitHandler() {

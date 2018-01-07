@@ -62,6 +62,10 @@ body {
 	overflow-x: auto;
 }
 
+#styleList option {
+	height: 1ex;
+}
+
 #stylesFilterContainer {
 	margin-bottom: 4px;
 }

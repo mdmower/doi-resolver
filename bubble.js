@@ -55,28 +55,36 @@ function continueOnLoad() {
 }
 
 function startListeners() {
-	$("#resolveSubmit").click(function() {
-		$("#hiddenButtonInput").val("doi");
+	var resolveSubmit = document.getElementById("resolveSubmit");
+	resolveSubmit.addEventListener("click", function() {
+		document.getElementById("hiddenButtonInput").value = "doi";
 	});
-	$("#citeSubmit").click(function() {
-		$("#hiddenButtonInput").val("cite");
+	var citeSubmit = document.getElementById("citeSubmit");
+	citeSubmit.addEventListener("click", function() {
+		document.getElementById("hiddenButtonInput").value = "cite";
 	});
-	$("#qrSubmit").click(function() {
-		$("#hiddenButtonInput").val("qr");
+	var qrSubmit = document.getElementById("qrSubmit");
+	qrSubmit.addEventListener("click", function() {
+		document.getElementById("hiddenButtonInput").value = "qr";
 	});
-	$("#optionsSubmit").click(function() {
-		$("#hiddenButtonInput").val("options");
+	var optionsSubmit = document.getElementById("optionsSubmit");
+	optionsSubmit.addEventListener("click", function() {
+		document.getElementById("hiddenButtonInput").value = "options";
 	});
-	$('#doiForm').submit(function () {
+	var doiForm = document.getElementById("doiForm");
+	doiForm.addEventListener("submit", function(event) {
+		event.preventDefault();
 		formSubmitHandler();
-		return false;
 	});
-	$("input[name='crRadio']").on("click", saveOptions);
+	var crRadioOptions = Array.from(document.querySelectorAll('input[name="crRadio"]'));
+	crRadioOptions.forEach(function(crRadio) {
+		crRadio.addEventListener("click", saveOptions);
+	});
 }
 
 function saveOptions() {
 	var options = {
-		cr_bubble_last: $('input[name="crRadio"]:checked').val()
+		cr_bubble_last: document.querySelector('input[name="crRadio"]:checked').value
 	};
 
 	chrome.storage.local.set(options, null);
@@ -85,9 +93,9 @@ function saveOptions() {
 function restoreOptions() {
 	storage.area.get(["cr_bubble_last"], function(stg) {
 		if (stg.cr_bubble_last === "custom") {
-			$("#crRadioBubbleCustom").prop("checked", true);
+			document.getElementById("crRadioBubbleCustom").checked = true;
 		} else {
-			$("#crRadioBubbleDefault").prop("checked", true);
+			document.getElementById("crRadioBubbleDefault").checked = true;
 		}
 	});
 }
@@ -113,21 +121,23 @@ function checkValidDoi(doiInput) {
 
 // Clear message space
 function resetMessageSpace() {
-	$("#messageDiv").empty();
-	$("#messageDiv").css("display", "none");
+	var messageDiv = document.getElementById("messageDiv");
+	messageDiv.innerHTML = "";
+	messageDiv.style.display = "none";
 }
 
 // General messaging area in bubble
 function bubbleMessage(message) {
 	resetMessageSpace();
-	$("#messageDiv").css("display", "block");
-	$("#messageDiv").html(message);
+	var messageDiv = document.getElementById("messageDiv");
+	messageDiv.innerHTML = message;
+	messageDiv.style.display = "block";
 }
 
 // Process the form
 function formSubmitHandler() {
-	var actionType = $("#hiddenButtonInput").val();
-	var doiInput = encodeURI(trim($("#textInput").val()));
+	var actionType = document.getElementById("hiddenButtonInput").value;
+	var doiInput = encodeURI(trim(document.getElementById("textInput").value));
 
 	switch (actionType) {
 	case "qr":
@@ -236,15 +246,15 @@ function showHideOptionalElms() {
 		var crbOp = stg.cr_bubble;
 
 		if (meta === true) {
-			$("#metaButtons").css("display", "flex");
+			document.getElementById("metaButtons").style.display = "flex";
 		} else {
-			$("#metaButtons").css("display", "none");
+			document.getElementById("metaButtons").style.display = "none";
 		}
 
 		if (crOp === true && crbOp === "selectable") {
-			$("#crRadios").css("display", "block");
+			document.getElementById("crRadios").style.display = "block";
 		} else {
-			$("#crRadios").css("display", "none");
+			document.getElementById("crRadios").style.display = "none";
 		}
 	});
 }
@@ -281,7 +291,7 @@ function populateHistory() {
 				}
 			}
 		}
-		$("#doiHistory").html(optionHtml);
+		document.getElementById("doiHistory").innerHTML = optionHtml;
 	});
 }
 
@@ -306,6 +316,6 @@ function getLocalMessages() {
 	var message = "";
 	for (var i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
-		$('#' + messageIds[i]).html(message);
+		document.getElementById(messageIds[i]).innerHTML = message;
 	}
 }

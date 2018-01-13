@@ -107,11 +107,7 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (in bubble)
 function checkValidDoi(doiInput) {
-	if (!doiInput) {
-		return false;
-	} else if (/^10\./.test(doiInput)) {
-		return true;
-	} else if (/^10\//.test(doiInput)) {
+	if (/^10[\.\/]/.test(doiInput)) {
 		return true;
 	} else {
 		bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));

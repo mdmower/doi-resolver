@@ -398,9 +398,7 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid and warn user if not (alert)
 function checkValidDoi(doiInput) {
-	if (/^10\./.test(doiInput)) {
-		return true;
-	} else if (/^10\//.test(doiInput)) {
+	if (/^10[\.\/]/.test(doiInput)) {
 		return true;
 	} else {
 		alert(chrome.i18n.getMessage("invalidDoiAlert"));

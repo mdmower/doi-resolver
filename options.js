@@ -14,7 +14,7 @@
 	limitations under the License.
 */
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
 	storage(true, true);
 }, false);
 
@@ -32,7 +32,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 });
 
 function storage(firstRun, restore) {
-	if (typeof storage.area === 'undefined') {
+	if (typeof storage.area === "undefined") {
 		storage.area = chrome.storage.local;
 	}
 
@@ -77,61 +77,67 @@ function restoreHashPage() {
 }
 
 function toggleTab(tab) {
-	var contentId = "#content_" + tab;
-	var tabId = "#" + tab + "_tab";
-
-	$(".content").css("display", "none");
-	$(contentId).css("display", "block");
-	$(".tab").removeClass("active");
-	$(tabId).addClass("active");
+	Array.from(document.getElementsByClassName("content")).forEach(function(elm) {
+		elm.style.display = "none";
+	});
+	Array.from(document.getElementsByClassName("tab")).forEach(function(elm) {
+		elm.classList.remove("active");
+	});
+	document.getElementById(tab + "_tab").classList.add("active");
+	document.getElementById("content_" + tab).style.display = "block";
 	location.hash = tab;
 }
 
 function startClickListeners() {
-	$("#options_tab").on("click", function() {
-		toggleTab("options");
-	});
-	$("#history_tab").on("click", function() {
-		toggleTab("history");
-	});
-	$("#about_tab").on("click", function() {
-		toggleTab("about");
+	document.getElementById("tabs").addEventListener("click", function() {
+		if(/_tab$/.test(event.target.id))
+			toggleTab(event.target.id.replace(/_tab$/, ""));
 	});
 
-	$("#doiResolverInputReset").on("click", function() {
-		if ($("#doiResolverInput").val() !== "http://dx.doi.org/") {
-			$("#doiResolverInput").val("http://dx.doi.org/").trigger("input").trigger("change");
+	document.getElementById("doiResolverInputReset").addEventListener("click", function() {
+		var input = document.getElementById("doiResolverInput");
+		if (input.value !== "http://dx.doi.org/") {
+			var change = new Event("change");
+			input.value = "http://dx.doi.org/";
+			input.dispatchEvent(change);
 		}
 	});
-	$("#shortDoiResolverInputReset").on("click", function() {
-		if ($("#shortDoiResolverInput").val() !== "http://doi.org/") {
-			$("#shortDoiResolverInput").val("http://doi.org/").trigger("input").trigger("change");
-		}
-	});
-
-	$("#img_context_off").on("click", function() {
-		if ($("#context").prop('checked')) {
-			$("#context").prop("checked", false).trigger("change");
-		}
-	});
-	$("#img_context_on").on("click", function() {
-		if (!($("#context").prop('checked'))) {
-			$("#context").prop("checked", true).trigger("change");
+	document.getElementById("shortDoiResolverInputReset").addEventListener("click", function() {
+		var input = document.getElementById("shortDoiResolverInput");
+		if (input.value !== "http://doi.org/") {
+			var change = new Event("change");
+			input.value = "http://doi.org/";
+			input.dispatchEvent(change);
 		}
 	});
 
-	$("#img_bubblemeta_off").on("click", function() {
-		if ($("#meta").prop('checked')) {
-			$("#meta").prop("checked", false).trigger("change");
+	document.getElementById("img_context_off").addEventListener("click", function() {
+		var input = document.getElementById("context");
+		if (input.checked) {
+			input.click();
 		}
 	});
-	$("#img_bubblemeta_on").on("click", function() {
-		if (!($("#meta").prop('checked'))) {
-			$("#meta").prop("checked", true).trigger("change");
+	document.getElementById("img_context_on").addEventListener("click", function() {
+		var input = document.getElementById("context");
+		if (!input.checked) {
+			input.click();
 		}
 	});
 
-	$("#historyClear").on("click", deleteHistory);
+	document.getElementById("img_bubblemeta_off").addEventListener("click", function() {
+		var input = document.getElementById("meta");
+		if (input.checked) {
+			input.click();
+		}
+	});
+	document.getElementById("img_bubblemeta_on").addEventListener("click", function() {
+		var input = document.getElementById("meta");
+		if (!input.checked) {
+			input.click();
+		}
+	});
+
+	document.getElementById("historyClear").addEventListener("click", deleteHistory);
 
 	$('.tooltip').tooltipster({
 		theme: 'tooltipster-light',
@@ -140,91 +146,83 @@ function startClickListeners() {
 		side: ['right', 'top', 'bottom', 'left']
 	});
 
-	$("#syncDataWipeButton").on("click", function() {
-		$("#syncData").prop("checked", false);
-		$("#syncDataWipe").css("display", "none");
+	document.getElementById("syncDataWipeButton").addEventListener("click", function() {
+		document.getElementById("syncData").checked = false;
 		/* background listens for sync_reset == true */
 		chrome.storage.sync.set({sync_reset: true}, null);
 	});
 }
 
-function startChangeListeners() {
+function getSaveMap() {
 	/*
 	 * doiResolverInput, shortDoiResolverInput, historyLength
 	 * These can fire onChange events frequently. debounce them to only
 	 * run once per 750ms so Chrome Sync doesn't get too many sync requests.
 	 */
+	return [
+		{ selector: "#history", func: saveOptions },
+		{ selector: "#historyShowSave", func: saveOptions },
+		{ selector: "#historyLength", func: dbHistoryLengthUpdate },
+		{ selector: "#context", func: saveOptions },
+		{ selector: "#meta", func: saveOptions },
+		{ selector: "#autolink", func: saveOptions },
+		{ selector: "#autolinkRewrite", func: saveOptions },
+		{ selector: "#customResolver", func: saveOptions },
+		{ selector: ".crSelections", func: saveOptions },
+		{ selector: "#doiResolverInput", func: dbSaveOptions },
+		{ selector: "#doiResolverInput", func: setCrPreviews },
+		{ selector: "#shortDoiResolverInput", func: dbSaveOptions },
+		{ selector: "#shortDoiResolverInput", func: setCrPreviews },
+		{ selector: "#omniboxOpento", func: saveOptions },
+		{ selector: "#autolinkApplyTo", func: saveOptions },
+		{ selector: "#autolinkExclusions", func: dbSaveOptions },
+		{ selector: "#autolinkTestExclusion", func: autolinkTestExclusion },
+		{ selector: "#syncData", func: toggleSync }
+	];
+}
 
-	$("#history").on("change", saveOptions);
-	$("#historyShowSave").on("change", saveOptions);
-	$("#historyLength").on("change", dbHistoryLengthUpdate);
-	$("#context").on("change", saveOptions);
-	$("#meta").on("change", saveOptions);
-	$("#autolink").on("change", saveOptions);
-	$("#autolinkRewrite").on("change", saveOptions);
-	$("#customResolver").on("change", saveOptions);
-	$(".crSelections").on("change", saveOptions);
-	$("#doiResolverInput").on("change", dbSaveOptions);
-	$("#doiResolverInput").on("input", setCrPreviews);
-	$("#shortDoiResolverInput").on("change", dbSaveOptions);
-	$("#shortDoiResolverInput").on("input", setCrPreviews);
-	$("#omniboxOpento").on("change", saveOptions);
-	$("#autolinkApplyTo").on("change", saveOptions);
-	$("#autolinkExclusions").on("change", dbSaveOptions);
-	$("#autolinkTestExclusion").on("keyup", autolinkTestExclusion);
-	$("#syncData").on("change", toggleSync);
+function startChangeListeners() {
+	getSaveMap().forEach(function(map) {
+		Array.from(document.querySelectorAll(map.selector)).forEach(function(elm) {
+			elm.addEventListener("change", map.func);
+		});
+	});
 }
 
 function haltChangeListeners() {
-	$("#history").off("change", saveOptions);
-	$("#historyShowSave").off("change", saveOptions);
-	$("#historyLength").off("change", dbHistoryLengthUpdate);
-	$("#context").off("change", saveOptions);
-	$("#meta").off("change", saveOptions);
-	$("#autolink").off("change", saveOptions);
-	$("#autolinkRewrite").off("change", saveOptions);
-	$("#customResolver").off("change", saveOptions);
-	$(".crSelections").off("change", saveOptions);
-	$("#doiResolverInput").off("change", dbSaveOptions);
-	$("#doiResolverInput").off("input", setCrPreviews);
-	$("#shortDoiResolverInput").off("change", dbSaveOptions);
-	$("#shortDoiResolverInput").off("input", setCrPreviews);
-	$("#omniboxOpento").off("change", saveOptions);
-	$("#autolinkApplyTo").off("change", saveOptions);
-	$("#autolinkExclusions").off("change", dbSaveOptions);
-	$("#autolinkTestExclusion").off("keyup", autolinkTestExclusion);
-	$("#syncData").off("change", toggleSync);
+	getSaveMap().forEach(function(map) {
+		Array.from(document.querySelectorAll(map.selector)).forEach(function(elm) {
+			elm.removeEventListener("change", map.func);
+		});
+	});
 }
 
 function startHistoryChangeListeners() {
-	$('.history_input_save').on("change", function() {
-		var arrid = parseInt(this.id.substr("save_entry_".length));
-		saveHistoryEntry(arrid);
+	Array.from(document.getElementsByClassName("history_input_save")).forEach(function(elm) {
+		elm.addEventListener("change", saveHistoryEntry);
 	});
-	$('.history_input_delete').on("click", function() {
-		var arrid = parseInt(this.id.substr("delete_entry_".length));
-		deleteHistoryEntry(arrid);
+	Array.from(document.getElementsByClassName("history_input_delete")).forEach(function(elm) {
+		elm.addEventListener("click", deleteHistoryEntry);
 	});
 }
 
 function haltHistoryChangeListeners() {
-	$('.history_input_save').off("change");
-	$('.history_input_delete').off("click");
+	Array.from(document.getElementsByClassName("history_input_save")).forEach(function(elm) {
+		elm.removeEventListener("change", saveHistoryEntry);
+	});
+	Array.from(document.getElementsByClassName("history_input_delete")).forEach(function(elm) {
+		elm.removeEventListener("click", deleteHistoryEntry);
+	});
 }
 
 function toggleSync() {
-	var sd = $("#syncData").prop('checked');
-	if (sd) {
-		$("#syncDataWipe").css("display", "block");
-
+	if (document.getElementById("syncData").checked) {
 		chrome.storage.sync.set({sync_reset: false}, function() {
 			chrome.storage.local.set({sync_data: true}, function() {
 				chrome.runtime.sendMessage({cmd: "toggle_sync"});
 			});
 		});
 	} else {
-		$("#syncDataWipe").css("display", "none");
-
 		storageListener(false);
 		chrome.storage.local.set({sync_data: false}, function() {
 			chrome.runtime.sendMessage({cmd: "toggle_sync"});
@@ -237,22 +235,22 @@ function saveOptions() {
 	minimalOptionsRefresh();
 
 	var options = {
-		auto_link_rewrite: $("#autolinkRewrite").prop('checked'),
-		autolink_exclusions: $("#autolinkExclusions").val().split("\n").filter(Boolean),
-		history: $("#history").prop('checked'),
-		history_showsave: $("#historyShowSave").prop('checked'),
-		history_length: parseInt($("#historyLength").val()),
-		context_menu: $("#context").prop('checked'),
-		meta_buttons: $("#meta").prop('checked'),
-		custom_resolver: $("#customResolver").prop('checked'),
-		cr_autolink: $("#crAutolink option:selected").val(),
-		cr_bubble: $("#crBubble option:selected").val(),
-		cr_context: $("#crContext option:selected").val(),
-		cr_history: $("#crHistory option:selected").val(),
-		cr_omnibox: $("#crOmnibox option:selected").val(),
-		doi_resolver: $("#doiResolverInput").val(),
-		shortdoi_resolver: $("#shortDoiResolverInput").val(),
-		omnibox_tab: $("#omniboxOpento option:selected").val()
+		auto_link_rewrite: document.getElementById("autolinkRewrite").checked,
+		autolink_exclusions: document.getElementById("autolinkExclusions").value.split("\n").filter(Boolean),
+		history: document.getElementById("history").checked,
+		history_showsave: document.getElementById("historyShowSave").checked,
+		history_length: Number(document.getElementById("historyLength").value),
+		context_menu: document.getElementById("context").checked,
+		meta_buttons: document.getElementById("meta").checked,
+		custom_resolver: document.getElementById("customResolver").checked,
+		cr_autolink: document.getElementById("crAutolink").value,
+		cr_bubble: document.getElementById("crBubble").value,
+		cr_context: document.getElementById("crContext").value,
+		cr_history: document.getElementById("crHistory").value,
+		cr_omnibox: document.getElementById("crOmnibox").value,
+		doi_resolver: document.getElementById("doiResolverInput").value,
+		shortdoi_resolver: document.getElementById("shortDoiResolverInput").value,
+		omnibox_tab: document.getElementById("omniboxOpento").value
 	};
 
 	/* If history is disabled, remove all history entries */
@@ -264,8 +262,8 @@ function saveOptions() {
 	 * These options require permissions setting/checking. Only call them
 	 * if the current setting differs from stored setting
 	 */
-	var autolinkCurrent = $("#autolink").prop('checked');
-	var autolinkProtocolCurrent = $("#autolinkApplyTo option:selected").val();
+	var autolinkCurrent = document.getElementById("autolink").checked;
+	var autolinkProtocolCurrent = document.getElementById("autolinkApplyTo").value;
 
 	var stgLclFetch = [
 		"auto_link",
@@ -320,88 +318,33 @@ function restoreOptions(callback) {
 
 	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
 	storage.area.get(stgFetch, function(stg) {
-		var alpOp = stgLocal.al_protocol;
-		var alrOp = stg.auto_link_rewrite;
-		var aleOp = Array.isArray(stg.autolink_exclusions) ? stg.autolink_exclusions : [];
-		var sdOp = stgLocal.sync_data;
-		var hOp = stg.history;
-		var hlOp = stg.history_length;
-		var hssOp = stg.history_showsave;
-		var cmOp = stg.context_menu;
-		var metaOp = stg.meta_buttons;
-		var crOp = stg.custom_resolver;
-		var craOp = stg.cr_autolink;
-		var crbOp = stg.cr_bubble;
-		var crcOp = stg.cr_context;
-		var crhOp = stg.cr_history;
-		var croOp = stg.cr_omnibox;
-		var drOp = stg.doi_resolver;
-		var srOp = stg.shortdoi_resolver;
-		var otOp = stg.omnibox_tab;
+		document.getElementById("doiResolverInput").value = stg.doi_resolver;
+		document.getElementById("shortDoiResolverInput").value = stg.shortdoi_resolver;
+		document.getElementById("history").checked = stg.history;
+		document.getElementById("history_tab").style.display = stg.history ? "inline-block" : "none";
+		document.getElementById("historyShowSave").checked = stg.history_showsave;
+		document.getElementById("historyLength").value = stg.history_length;
+		document.getElementById("context").checked = stg.context_menu;
+		document.getElementById("meta").checked = stg.meta_buttons;
+		document.getElementById("customResolver").checked = stg.custom_resolver;
+		document.getElementById("syncData").checked = stgLocal.sync_data;
+		document.getElementById("crAutolink").value = stg.cr_autolink;
+		document.getElementById("crBubble").value = stg.cr_bubble;
+		document.getElementById("crContext").value = stg.cr_context;
+		document.getElementById("crHistory").value = stg.cr_history;
+		document.getElementById("crOmnibox").value = stg.cr_omnibox;
+		document.getElementById("omniboxOpento").value = stg.omnibox_tab;
+		document.getElementById("autolinkApplyTo").value = stgLocal.al_protocol;
+		document.getElementById("autolinkRewrite").checked = stg.auto_link_rewrite;
 
-		$("#doiResolverInput").val(drOp);
-		$("#shortDoiResolverInput").val(srOp);
-		$("#autolinkExclusions").val(aleOp.join('\n'));
+		var autolinkExclusions = Array.isArray(stg.autolink_exclusions) ? stg.autolink_exclusions : [];
+		document.getElementById("autolinkExclusions").value = autolinkExclusions.join("\n");
 
-		if (hOp === true) {
-			$("#history").prop("checked", true);
-			$("#history_tab").css("display", "inline-block");
-			$("#historySubOptions").css("display", "block");
-		} else {
-			$("#history").prop("checked", false);
-			$("#history_tab").css("display", "none");
-			$("#historySubOptions").css("display", "none");
+		// Depends on text fields being filled already, so call after #doiResolverInput
+		// and #shortDoiResolverInput have been set.
+		if (stg.custom_resolver) {
+			setCrPreviews();
 		}
-		$("#historyShowSave").prop("checked", hssOp);
-		$("#historyLength").val(hlOp);
-
-		if (cmOp === true) {
-			$("#context").prop("checked", true);
-			$("#img_context_on").css("border-color", "#404040");
-			$("#img_context_off").css("border-color", "white");
-		} else {
-			$("#context").prop("checked", false);
-			$("#img_context_on").css("border-color", "white");
-			$("#img_context_off").css("border-color", "#404040");
-		}
-
-		if (metaOp === true) {
-			$("#meta").prop("checked", true);
-			$("#img_bubblemeta_on").css("border-color", "#404040");
-			$("#img_bubblemeta_off").css("border-color", "white");
-		} else {
-			$("#meta").prop("checked", false);
-			$("#img_bubblemeta_on").css("border-color", "white");
-			$("#img_bubblemeta_off").css("border-color", "#404040");
-		}
-
-		if (crOp === true) {
-			$("#customResolver").prop("checked", true);
-			$("#customResolverLeft").css("display", "inline-block");
-			$("#customResolverRight").css("display", "inline-block");
-			setCrPreviews(); // Depends on text fields being filled already
-		} else {
-			$("#customResolver").prop("checked", false);
-			$("#customResolverLeft").css("display", "none");
-			$("#customResolverRight").css("display", "none");
-		}
-
-		if (sdOp === true) {
-			$("#syncData").prop("checked", true);
-			$("#syncDataWipe").css("display", "block");
-		} else {
-			$("#syncData").prop("checked", false);
-			$("#syncDataWipe").css("display", "none");
-		}
-
-		$("#crAutolink").val(craOp);
-		$("#crBubble").val(crbOp);
-		$("#crContext").val(crcOp);
-		$("#crHistory").val(crhOp);
-		$("#crOmnibox").val(croOp);
-		$("#omniboxOpento").val(otOp);
-		$("#autolinkApplyTo").val(alpOp);
-		$("#autolinkRewrite").prop("checked", alrOp);
 
 		verifyAutolinkPermission(function() {
 			startChangeListeners();
@@ -415,43 +358,14 @@ function restoreOptions(callback) {
 
 // Only refresh fields that need updating after save
 function minimalOptionsRefresh() {
-	var history = $("#history").prop('checked');
-	var cm = $("#context").prop('checked');
-	var meta = $("#meta").prop('checked');
-	var cr = $("#customResolver").prop('checked');
-	var cra = $("#crAutolink").val();
+	var history = document.getElementById("history").checked;
+	var customResolver = document.getElementById("customResolver").checked;
+	var crAutolink = document.getElementById("crAutolink").value;
 
-	if (history) {
-		$("#history_tab").css("display", "inline-block");
-		$("#historySubOptions").css("display", "block");
-	} else {
-		$("#history_tab").css("display", "none");
-		$("#historySubOptions").css("display", "none");
-	}
+	document.getElementById("history_tab").style.display = history ? "inline-block" : "none";
 
-	if (cm) {
-		$("#img_context_on").css("border-color", "#404040");
-		$("#img_context_off").css("border-color", "white");
-	} else {
-		$("#img_context_on").css("border-color", "white");
-		$("#img_context_off").css("border-color", "#404040");
-	}
-
-	if (meta) {
-		$("#img_bubblemeta_on").css("border-color", "#404040");
-		$("#img_bubblemeta_off").css("border-color", "white");
-	} else {
-		$("#img_bubblemeta_on").css("border-color", "white");
-		$("#img_bubblemeta_off").css("border-color", "#404040");
-	}
-
-	if (cr) {
-		$("#customResolverLeft").css("display", "inline-block");
-		$("#customResolverRight").css("display", "inline-block");
+	if (customResolver) {
 		setCrPreviews();
-	} else {
-		$("#customResolverLeft").css("display", "none");
-		$("#customResolverRight").css("display", "none");
 	}
 
 	/* There's no problem with this running async to the rest of
@@ -461,24 +375,13 @@ function minimalOptionsRefresh() {
 	 * already enabled.
 	 */
 	chrome.storage.local.get(["auto_link"], function(stg) {
-		if (stg.auto_link === true && cr && cra == "custom") {
-			$("#alRewriteLinks").css("display", "block");
-		} else {
-			$("#alRewriteLinks").css("display", "none");
-		}
+		var showAlRewriteLinks = stg.auto_link && customResolver && crAutolink === "custom";
+		document.getElementById("alRewriteLinks").style.display = showAlRewriteLinks ? "block" : "none";
 	});
 }
 
 function storageListener(enable) {
-	if (typeof storageListener.status === 'undefined') {
-		storageListener.status = true;
-	}
-
-	if (enable) {
-		storageListener.status = true;
-	} else {
-		storageListener.status = false;
-	}
+	storageListener.status = Boolean(enable);
 }
 
 function storageChangeHandler(changes, namespace) {
@@ -491,7 +394,7 @@ function storageChangeHandler(changes, namespace) {
 		 * Checking history_length and/or history_showsave would be redundant
 		 * since recorded_dois will incorporate these changes
 		 */
-		var changeHistory = (typeof changes.recorded_dois !== 'undefined');
+		var changeHistory = (typeof changes.recorded_dois !== "undefined");
 		var changeHistoryLinks = historyLinksNeedUpdate(changes);
 		if (changeHistory && changeHistoryLinks) {
 			updateHistory(changes.recorded_dois, regenerateHistoryLinks);
@@ -501,13 +404,13 @@ function storageChangeHandler(changes, namespace) {
 			regenerateHistoryLinks();
 		}
 
-		if (typeof changes.autolink_exclusions !== 'undefined' && Array.isArray(changes.autolink_exclusions.newValue)) {
+		if (typeof changes.autolink_exclusions !== "undefined" && Array.isArray(changes.autolink_exclusions.newValue)) {
 			autolinkTestExclusion();
 		}
 	}
 
 	/* sync_reset is handled in the background page */
-	if (namespace === "sync" && typeof changes.sync_reset === 'undefined') {
+	if (namespace === "sync" && typeof changes.sync_reset === "undefined") {
 		if (storageListener.status !== true) {
 			return;
 		}
@@ -542,8 +445,8 @@ function storageChangeHandler(changes, namespace) {
 }
 
 function setCrPreviews() {
-	var drInput = $("#doiResolverInput").val();
-	var srInput = $("#shortDoiResolverInput").val();
+	var drInput = document.getElementById("doiResolverInput").value;
+	var srInput = document.getElementById("shortDoiResolverInput").value;
 	var drPreview = "";
 	var srPreview = "";
 
@@ -558,29 +461,23 @@ function setCrPreviews() {
 		srPreview = "&hellip;" + srInput.slice(-10, srInput.length) + "dws9sz";
 	}
 
-	$("#doiResolverOutput").html(drPreview);
-	$("#shortDoiResolverOutput").html(srPreview);
+	document.getElementById("doiResolverOutput").innerHTML = drPreview;
+	document.getElementById("shortDoiResolverOutput").innerHTML = srPreview;
 }
 
 function autolinkDisplayUpdate(enabled, protocol) {
-	var cr = $("#customResolver").prop('checked');
-	var cra = $("#crAutolink").val();
+	var customResolver = document.getElementById("customResolver").checked;
+	var crAutolink = document.getElementById("crAutolink").value;
 
-	$("#autolink").prop("checked", enabled);
+	document.getElementById("autolink").checked = enabled;
+	document.getElementById("alProtocol").style.display = enabled ? "block" : "none";
+	document.getElementById("alExclusions").style.display = enabled ? "block" : "none";
+
+	var showAlRewriteLinks = enabled && customResolver && crAutolink === "custom";
+	document.getElementById("alRewriteLinks").style.display = showAlRewriteLinks ? "block" : "none";
 
 	if (protocol !== null) {
-		$("#autolinkApplyTo").val(protocol);
-		$("#alProtocol").css("display", "block");
-		$("#alExclusions").css("display", "block");
-		if (cr && cra == "custom") {
-			$("#alRewriteLinks").css("display", "block");
-		} else {
-			$("#alRewriteLinks").css("display", "none");
-		}
-	} else {
-		$("#alProtocol").css("display", "none");
-		$("#alExclusions").css("display", "none");
-		$("#alRewriteLinks").css("display", "none");
+		document.getElementById("autolinkApplyTo").value = protocol;
 	}
 }
 
@@ -603,8 +500,8 @@ function setAutolinkPermission(enabled) {
 
 	if (enabled) {
 		chrome.permissions.request({
-			permissions: [ 'tabs' ],
-			origins: [ 'http://*/*', 'https://*/*' ]
+			permissions: [ "tabs" ],
+			origins: [ "http://*/*", "https://*/*" ]
 		}, function(granted) {
 			if (granted) {
 				autolinkShufflePerms();
@@ -615,8 +512,8 @@ function setAutolinkPermission(enabled) {
 		});
 	} else {
 		chrome.permissions.remove({
-			permissions: [ 'tabs' ],
-			origins: [ 'http://*/*', 'https://*/*' ]
+			permissions: [ "tabs" ],
+			origins: [ "http://*/*", "https://*/*" ]
 		}, function(removed) {
 			if (removed) {
 				autolinkDisplayUpdate(false, null);
@@ -624,7 +521,7 @@ function setAutolinkPermission(enabled) {
 				startChangeListeners();
 				console.log("Autolink permissions removed");
 			} else {
-				var protocol = $("#autolinkApplyTo option:selected").val();
+				var protocol = document.getElementById("autolinkApplyTo").value;
 				autolinkDisplayUpdate(true, protocol);
 				chrome.runtime.sendMessage({cmd: "auto_link"});
 				startChangeListeners();
@@ -636,18 +533,18 @@ function setAutolinkPermission(enabled) {
 
 function autolinkShufflePerms() {
 	// Only called if permissions have been granted by user
-	var protocol = $("#autolinkApplyTo option:selected").val();
+	var protocol = document.getElementById("autolinkApplyTo").value;
 
 	if (protocol === "http") {
 		chrome.permissions.remove({
-			origins: [ 'https://*/*' ]
+			origins: [ "https://*/*" ]
 		}, function(removed) {
 			chrome.runtime.sendMessage({cmd: "auto_link"});
 			verifyAutolinkPermission(startChangeListeners);
 		});
 	} else if (protocol === "https") {
 		chrome.permissions.remove({
-			origins: [ 'http://*/*' ]
+			origins: [ "http://*/*" ]
 		}, function(removed) {
 			chrome.runtime.sendMessage({cmd: "auto_link"});
 			verifyAutolinkPermission(startChangeListeners);
@@ -663,19 +560,19 @@ function autolinkShufflePerms() {
  * change combinations, though.
  */
 function historyLinksNeedUpdate(changes) {
-	var changeCrHistory = (typeof changes.cr_history !== 'undefined');
-	var changeUrlPrefix = (typeof changes.doi_resolver !== 'undefined' ||
-						   typeof changes.shortdoi_resolver !== 'undefined');
-	var changeCrEnable = (typeof changes.custom_resolver !== 'undefined');
+	var changeCrHistory = (typeof changes.cr_history !== "undefined");
+	var changeUrlPrefix = (typeof changes.doi_resolver !== "undefined" ||
+						   typeof changes.shortdoi_resolver !== "undefined");
+	var changeCrEnable = (typeof changes.custom_resolver !== "undefined");
 
 	return (changeCrHistory || changeUrlPrefix || changeCrEnable);
 }
 
 function getHistoryUrl(doi) {
-	var cr = $("#customResolver").prop('checked');
-	var crh = $("#crHistory option:selected").val();
-	var dr = $("#doiResolverInput").val();
-	var sr = $("#shortDoiResolverInput").val();
+	var cr = document.getElementById("customResolver").checked;
+	var crh = document.getElementById("crHistory").value;
+	var dr = document.getElementById("doiResolverInput").value;
+	var sr = document.getElementById("shortDoiResolverInput").value;
 	var url = "";
 
 	if (cr && crh === "custom") {
@@ -696,7 +593,7 @@ function getHistoryUrl(doi) {
 }
 
 function populateHistory() {
-	if (!$("#history").prop('checked')) {
+	if (!document.getElementById("history").checked) {
 		return;
 	}
 
@@ -705,7 +602,7 @@ function populateHistory() {
 			return;
 		}
 
-		$(".history_entry").remove();
+		removeAllHistoryEntries();
 
 		// Skip holes in the array (should not occur)
 		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
@@ -713,15 +610,18 @@ function populateHistory() {
 			return elm != undefined;
 		});
 
-		var i;
+		var historySeparator = document.getElementById("historySeparator");
+		var i, historyEntry;
 		for (i = 0; i < stg.recorded_dois.length; i++) {
 			if (!stg.recorded_dois[i].save) {
-				$("#historySeparator").after(generateHistoryEntry(stg.recorded_dois[i], i));
+				historyEntry = generateHistoryEntry(stg.recorded_dois[i], i);
+				historySeparator.parentNode.insertBefore(historyEntry, historySeparator.nextSibling);
 			}
 		}
 		for (i = 0; i < stg.recorded_dois.length; i++) {
 			if (stg.recorded_dois[i].save) {
-				$("#historySeparator").after(generateHistoryEntry(stg.recorded_dois[i], i));
+				historyEntry = generateHistoryEntry(stg.recorded_dois[i], i);
+				historySeparator.parentNode.insertBefore(historyEntry, historySeparator.nextSibling);
 			}
 		}
 
@@ -730,67 +630,79 @@ function populateHistory() {
 }
 
 function generateHistoryEntry(doiObject, doiId) {
-	var tr = $('<tr>');
-	tr.addClass('history_entry');
-	tr.attr({id: "history_entry_" + doiId});
+	var tr = document.createElement("tr");
+	tr.setAttribute("class", "history_entry");
+	tr.setAttribute("id", "history_entry_" + doiId);
 
-	var save = $('<td>');
-	save.addClass('history_entry_save');
-	var saveCheckbox = $('<input/>');
-	saveCheckbox.addClass('history_input_save');
-	saveCheckbox.attr({type: "checkbox", id: "save_entry_" + doiId});
-	saveCheckbox.prop("checked", doiObject.save);
-	save.append([saveCheckbox]);
+	var save = document.createElement("td");
+	save.setAttribute("class", "history_entry_save");
+	var saveCheckbox = document.createElement("input");
+	saveCheckbox.setAttribute("class", "history_input_save");
+	saveCheckbox.setAttribute("type", "checkbox");
+	saveCheckbox.setAttribute("id", "save_entry_" + doiId);
+	saveCheckbox.checked = doiObject.save;
+	save.appendChild(saveCheckbox);
 
-	var trash = $('<td>');
-	trash.addClass('history_entry_delete');
-	var trashButton = $('<button>').html("&#10006;");
-	trashButton.addClass('history_input_delete');
-	trashButton.attr({id: "delete_entry_" + doiId});
-	trash.append([trashButton]);
+	var trash = document.createElement("td");
+	trash.setAttribute("class", "history_entry_delete");
+	var trashButton = document.createElement("button");
+	trashButton.setAttribute("class", "history_input_delete");
+	trashButton.setAttribute("id", "delete_entry_" + doiId);
+	trashButton.innerHTML = "&#10006;";
+	trash.appendChild(trashButton);
 
-	var anchor = $('<td>');
-	anchor.addClass("history_entry_doi");
-	anchor.attr({colspan: '2'});
-	var anchorLink = $('<a>');
-	anchorLink.attr({href: getHistoryUrl(doiObject.doi), target: '_blank'});
-	anchorLink.html(doiObject.doi);
-	anchor.append([anchorLink]);
+	var anchor = document.createElement("td");
+	anchor.setAttribute("class", "history_entry_doi");
+	anchor.setAttribute("colspan", "2");
+	var anchorLink = document.createElement("a");
+	anchorLink.setAttribute("href", getHistoryUrl(doiObject.doi));
+	anchorLink.setAttribute("target", "_blank");
+	anchorLink.innerHTML = doiObject.doi;
+	anchor.appendChild(anchorLink);
 
-	return tr.append([save, trash, anchor]);
+	tr.appendChild(save);
+	tr.appendChild(trash);
+	tr.appendChild(anchor);
+
+	return tr;
 }
 
-function saveHistoryEntry(id) {
+function saveHistoryEntry() {
+	var id = Number(this.id.substr("save_entry_".length));
+
 	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 
-		stg.recorded_dois[id].save = $("#save_entry_" + id).prop("checked");
+		stg.recorded_dois[id].save = document.getElementById("save_entry_" + id).checked;
 		chrome.storage.local.set(stg, null);
 	});
 }
 
-function deleteHistoryEntry(id) {
+function deleteHistoryEntry() {
+	var id = Number(this.id.substr("delete_entry_".length));
+
 	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 
 		stg.recorded_dois.splice(id, 1);
-		$("#history_entry_" + id).fadeOut(function() {
+		document.getElementById("history_entry_" + id).classList.add("fadeOut");
+		setTimeout(function() {
 			chrome.storage.local.set(stg, null);
-		});
+		}, 300); // 300ms matches opacity transition in css
 	});
 }
 
 var dbHistoryLengthUpdate = _.debounce(historyLengthUpdate, 750);
 function historyLengthUpdate() {
-	var historyLength = parseInt($("#historyLength").val());
+	var historyLength = Number(document.getElementById("historyLength").value);
 	if (isNaN(historyLength) || historyLength < 1) {
-		$("#historyLength").val(1);
+		document.getElementById("historyLength").value = 1;
 	} else if (historyLength > 500) {
-		$("#historyLength").val(500);
+		document.getElementById("historyLength").value = 500;
 	}
 
 	storage.area.get(["recorded_dois"], function(stg) {
@@ -811,26 +723,35 @@ function historyLengthUpdate() {
 	});
 }
 
+function removeAllHistoryEntries() {
+	var historyEntries = document.getElementsByClassName("history_entry");
+	while (historyEntries.length > 0) {
+		historyEntries[0].parentNode.removeChild(historyEntries[0]);
+	}
+}
+
 function updateHistory(changes, callback) {
 	var oldRecords = changes.oldValue;
 	var oldLength = changes.oldValue.length;
 	var newRecords = changes.newValue;
 	var newLength = changes.newValue.length;
-	var i;
+	var i, newHistoryEntry, oldHistoryEntry;
 
+	var historySeparator = document.getElementById("historySeparator");
 	haltHistoryChangeListeners();
 
 	if (!Array.isArray(newRecords)) {
 		// Should not get here
-		$(".history_entry").remove();
+		removeAllHistoryEntries();
 		chrome.storage.local.set({recorded_dois: []}, null);
 		return;
 	} else if (newLength === 0) {
-		$(".history_entry").remove();
+		removeAllHistoryEntries();
 	} else if (!Array.isArray(oldRecords)) {
-		$(".history_entry").remove();
+		removeAllHistoryEntries();
 		for (i = 0; i < newLength; i++) {
-			$("#historySeparator").after(generateHistoryEntry(newRecords[i], i));
+			newHistoryEntry = generateHistoryEntry(newRecords[i], i);
+			historySeparator.parentNode.insertBefore(newHistoryEntry, historySeparator.nextSibling);
 		}
 		if (typeof callback === "function") {
 			callback();
@@ -838,20 +759,20 @@ function updateHistory(changes, callback) {
 	} else {
 		for (i = 0; i < oldLength; i++) {
 			if (i < newLength && !_.isEqual(oldRecords[i], newRecords[i])) {
-				$("#history_entry_" + i).replaceWith(generateHistoryEntry(newRecords[i], i));
+				newHistoryEntry = generateHistoryEntry(newRecords[i], i);
+				oldHistoryEntry = document.getElementById("history_entry_" + i);
+				oldHistoryEntry.parentNode.insertBefore(newHistoryEntry, oldHistoryEntry);
+				oldHistoryEntry.parentNode.removeChild(oldHistoryEntry);
 			} else if (i >= newLength) {
-				$("#history_entry_" + i).remove();
+				oldHistoryEntry = document.getElementById("history_entry_" + i);
+				oldHistoryEntry.parentNode.removeChild(oldHistoryEntry);
 			}
 		}
 		for (; i < newLength; i++) {
-			$("#historySeparator").after(generateHistoryEntry(newRecords[i], i));
+			newHistoryEntry = generateHistoryEntry(newRecords[i], i);
+			historySeparator.parentNode.insertBefore(newHistoryEntry, historySeparator.nextSibling);
 		}
 
-		// Should not be needed, but ensures stray entries from the history
-		// page are removed if they no longer have references in newRecords
-		for (i = newLength; i < $(".history_entry").length; i++) {
-			$("#history_entry_" + i).remove();
-		}
 		if (typeof callback === "function") {
 			callback();
 		}
@@ -865,31 +786,31 @@ function deleteHistory() {
 }
 
 function regenerateHistoryLinks() {
-	$(".history_entry .history_entry_doi a").each(function(index) {
-		$(this).attr({href: getHistoryUrl($(this).html())});
+	Array.from(document.querySelectorAll(".history_entry .history_entry_doi a")).forEach(function(elm) {
+		elm.setAttribute("href", getHistoryUrl(elm.innerHTML));
 	});
 }
 
 function verifyAutolinkPermission(callback) {
 	chrome.permissions.contains({
-		permissions: [ 'tabs' ],
-		origins: [ 'http://*/*', 'https://*/*' ]
+		permissions: [ "tabs" ],
+		origins: [ "http://*/*", "https://*/*" ]
 	}, function(result) {
 		if (result) {
 			autolinkDisplayUpdate(true, "httphttps");
 			callback();
 		} else {
 			chrome.permissions.contains({
-				permissions: [ 'tabs' ],
-				origins: [ 'http://*/*' ]
+				permissions: [ "tabs" ],
+				origins: [ "http://*/*" ]
 			}, function(result) {
 				if (result) {
 					autolinkDisplayUpdate(true, "http");
 					callback();
 				} else {
 					chrome.permissions.contains({
-						permissions: [ 'tabs' ],
-						origins: [ 'https://*/*' ]
+						permissions: [ "tabs" ],
+						origins: [ "https://*/*" ]
 					}, function(result) {
 						if (result) {
 							autolinkDisplayUpdate(true, "https");
@@ -911,15 +832,15 @@ function autolinkTestExclusion() {
 			return;
 		}
 
-		var url = encodeURI($("#autolinkTestExclusion").val()).replace(/^https?\:\/\//i, "").toLowerCase();
+		var url = encodeURI(document.getElementById("autolinkTestExclusion").value).replace(/^https?\:\/\//i, "").toLowerCase();
 		var exclusion = "";
 		var re;
 		var matched = false;
 		for (var i = 0; i < stg.autolink_exclusions.length; i++) {
 			exclusion = stg.autolink_exclusions[i];
-			if (exclusion.slice(-1) === '/' && exclusion.charAt(0) === '/') {
+			if (exclusion.slice(-1) === "/" && exclusion.charAt(0) === "/") {
 				try {
-					re = new RegExp(exclusion.slice(1, -1), 'i');
+					re = new RegExp(exclusion.slice(1, -1), "i");
 				} catch(e) {
 					continue;
 				}
@@ -936,12 +857,12 @@ function autolinkTestExclusion() {
 		var message = "";
 		if (matched) {
 			message = chrome.i18n.getMessage("autolinkExclusionsMatch");
-			$("#autolinkTestExclusionResult").html(message);
-			$("#autolinkTestExclusionResult").css({color: "darkgreen"});
+			document.getElementById("autolinkTestExclusionResult").innerHTML = message;
+			document.getElementById("autolinkTestExclusionResult").style.color = "darkgreen";
 		} else {
 			message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
-			$("#autolinkTestExclusionResult").html(message);
-			$("#autolinkTestExclusionResult").css({color: "black"});
+			document.getElementById("autolinkTestExclusionResult").innerHTML = message;
+			document.getElementById("autolinkTestExclusionResult").style.color = "black";
 		}
 	});
 }
@@ -983,7 +904,6 @@ function getLocalMessages() {
 		"optionOmniboxOpentoCurtab",
 		"optionOmniboxOpentoNewBacktab",
 		"optionOmniboxOpentoNewForetab",
-		"optionsTitle",
 		"optionSyncData",
 		"syncDataInfo",
 		"syncDataWipeButton",
@@ -998,7 +918,7 @@ function getLocalMessages() {
 	var i;
 	for (i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
-		$('#' + messageIds[i]).html(message);
+		document.getElementById(messageIds[i]).innerHTML = message;
 	}
 
 	messageIds = [
@@ -1009,17 +929,19 @@ function getLocalMessages() {
 
 	for (i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
-		$('.' + messageIds[i]).html(message);
+		Array.from(document.getElementsByClassName(messageIds[i])).forEach(function(elm) {
+			elm.innerHTML = message;
+		});
 	}
 
 	message = chrome.i18n.getMessage("resetButton");
-	$("#doiResolverInputReset").html(message);
-	$("#shortDoiResolverInputReset").html(message);
+	document.getElementById("doiResolverInputReset").innerHTML = message;
+	document.getElementById("shortDoiResolverInputReset").innerHTML = message;
 	message = chrome.i18n.getMessage("doiOutputUrlExample");
-	$("#doiOutputUrlExample").html(message);
-	$("#shortDoiOutputUrlExample").html(message);
+	document.getElementById("doiOutputUrlExample").innerHTML = message;
+	document.getElementById("shortDoiOutputUrlExample").innerHTML = message;
 	message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
-	$("#autolinkTestExclusionResult").html(message);
+	document.getElementById("autolinkTestExclusionResult").innerHTML = message;
 
-	$("#extensionVersion").html(chrome.app.getDetails().version);
+	document.getElementById("extensionVersion").innerHTML = chrome.app.getDetails().version;
 }

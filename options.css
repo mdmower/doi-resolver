@@ -38,11 +38,6 @@ ul {
 	margin-right: 15px;
 }
 
-#optionsTitle {
-	float: left;
-	margin-top: 20px;
-}
-
 #img_context {
 	height: 145px;
 }
@@ -57,7 +52,6 @@ ul {
 #img_bubblemeta_on {
 	float: left;
 	margin: 2px 0px 2px 26px;
-	border: 2px solid white;
 	border-radius: 4px;
 	background-repeat: no-repeat;
 	background-position: center;
@@ -68,24 +62,44 @@ ul {
 	background-image: url('img/context_off.png');
 	width: 372px;
 	height: 99px;
+	border: 2px solid #404040;
 }
 
 #img_context_on {
 	background-image: url('img/context_on.png');
 	width: 379px;
 	height: 129px;
+	border: 2px solid white;
+}
+
+#context:checked ~ #img_context > #img_context_off {
+	border-color: white;
+}
+
+#context:checked ~ #img_context > #img_context_on {
+	border-color: #404040;
 }
 
 #img_bubblemeta_off {
 	background-image: url('img/bubble_minimal.png');
 	width: 256px;
 	height: 27px;
+	border: 2px solid #404040;
 }
 
 #img_bubblemeta_on {
 	background-image: url('img/bubble_meta.png');
 	width: 256px;
 	height: 52px;
+	border: 2px solid white;
+}
+
+#meta:checked ~ #img_bubblemeta > #img_bubblemeta_off {
+	border-color: white;
+}
+
+#meta:checked ~ #img_bubblemeta > #img_bubblemeta_on {
+	border-color: #404040;
 }
 
 #customResolverFields {
@@ -102,10 +116,17 @@ ul {
 
 #customResolverLeft {
 	width: 500px;
+	display: none;
 }
 
 #customResolverRight {
 	width: 300px;
+	display: none;
+}
+
+#customResolver:checked ~ .row > #customResolverLeft,
+#customResolver:checked ~ .row > #customResolverRight {
+	display: inline-block;
 }
 
 .crLabels {
@@ -153,9 +174,25 @@ ul {
 	margin-top: 4px;
 }
 
+#syncDataWipe {
+	display: none;
+}
+
+#syncData:checked ~ #syncDataWipe {
+	display: block;
+}
+
 #historyShowSave,
 #autolinkRewrite {
 	margin-left: -1px;
+}
+
+#historySubOptions {
+	display: none;
+}
+
+#history:checked ~ #historySubOptions {
+	display: block;
 }
 
 #historySubOptions input {
@@ -308,6 +345,15 @@ ul {
 
 .history_entry_delete {
 	width: 60px;
+}
+
+[id^="history_entry_"] {
+	transition: opacity 300ms linear;
+	opacity: 1;
+}
+
+[id^="history_entry_"].fadeOut {
+	opacity: 0;
 }
 
 .tooltip {

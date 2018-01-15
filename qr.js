@@ -62,18 +62,17 @@ function startListeners() {
 	 */
 	var dbQrSizeSave = _.debounce(qrSizeSave, 750);
 
-
-	$("#doiForm").submit(function () {
+	document.getElementById("doiForm").addEventListener("submit", function (event) {
 		formSubmitHandler();
-		return false;
+		event.preventDefault();
 	});
-	$("#qrBgTrans").on("change", function() {
+	document.getElementById("qrBgTrans").addEventListener("change", function () {
 		toggleBgColor();
 		saveOptions();
 	});
-	$("#qrFetchTitle").on("change", setDoiMetaPermissions);
-	$("#qrSizeInput").on("change input", dbQrSizeSave);
-	$("#qrManualTitle").on("change", toggleTitleFetch);
+	document.getElementById("qrFetchTitle").addEventListener("change", setDoiMetaPermissions);
+	document.getElementById("qrSizeInput").addEventListener("input", dbQrSizeSave);
+	document.getElementById("qrManualTitle").addEventListener("change", toggleTitleFetch);
 
 	chrome.tabs.getCurrent(function(tab) {
 		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
@@ -81,20 +80,17 @@ function startListeners() {
 }
 
 function toggleBgColor() {
-	if ($("#qrBgTrans").prop('checked')) {
-		$("#bgColorDiv").css("display", "none");
-	} else {
-		$("#bgColorDiv").css("display", "block");
-	}
+	var qrBgTrans = document.getElementById("qrBgTrans").checked;
+	document.getElementById("bgColorDiv").style.display = qrBgTrans ? "none" : "block";
 }
 
 function qrSizeSave() {
-	var qrSize = parseInt($("#qrSizeInput").val());
+	var qrSize = Number(document.getElementById("qrSizeInput").value);
 	if (isNaN(qrSize)) {
-		$("#qrSizeInput").val(300);
+		document.getElementById("qrSizeInput").value = 300;
 		qrSize = 300;
 	} else if (qrSize < 80) {
-		$("#qrSizeInput").val(80);
+		document.getElementById("qrSizeInput").value = 80;
 		qrSize = 80;
 	}
 
@@ -118,7 +114,7 @@ function getUrlVariables() {
 
 	var initDOI = vars.doi;
 	if (initDOI) {
-		$("#doiInput").val(initDOI);
+		document.getElementById("doiInput").value = initDOI;
 	}
 }
 
@@ -132,20 +128,16 @@ function restoreOptions() {
 	storage.area.get(stgFetch, function(stg) {
 		var qrSize = parseInt(stg.qr_size);
 		if (isNaN(qrSize)) {
-			$("#qrSizeInput").val(300);
+			document.getElementById("qrSizeInput").value = 300;
 		} else if (qrSize < 80) {
-			$("#qrSizeInput").val(80);
+			document.getElementById("qrSizeInput").value = 80;
 		} else {
-			$("#qrSizeInput").val(qrSize);
+			document.getElementById("qrSizeInput").value = qrSize;
 		}
 
-		if (stgLocal.qr_title === true) {
-			$("#qrFetchTitle").prop("checked", true);
-		}
-		if (stg.qr_bgtrans === true) {
-			$("#qrBgTrans").prop("checked", true);
-			$("#bgColorDiv").css("display", "none");
-		}
+		document.getElementById("qrFetchTitle").checked = Boolean(stgLocal.qr_title);
+		document.getElementById("qrBgTrans").checked = Boolean(stg.qr_bgtrans);
+		document.getElementById("bgColorDiv").style.display = stg.qr_bgtrans ? "none" : "block";
 	});
 	});
 }
@@ -182,7 +174,7 @@ function populateHistory() {
 				}
 			}
 		}
-		$("#doiHistory").html(optionHtml);
+		document.getElementById("doiHistory").innerHTML = optionHtml;
 	});
 }
 
@@ -216,7 +208,7 @@ function prepareColorPickers() {
 				}
 			});
 		}
-		$("#qrFgColorInput").val(qrFgColor);
+		document.getElementById("qrFgColorInput").value = qrFgColor;
 
 		var qrBgColor = "#ffffff";
 		var storedQrBgColor = stg.qr_bgcolor;
@@ -229,7 +221,7 @@ function prepareColorPickers() {
 				}
 			});
 		}
-		$("#qrBgColorInput").val(qrBgColor);
+		document.getElementById("qrBgColorInput").value = qrBgColor;
 
 		$("#qrFgColorInput").spectrum({
 			color: qrFgColor,
@@ -260,25 +252,28 @@ function prepareColorPickers() {
 
 function saveOptions() {
 	var options = {
-		qr_bgtrans: $("#qrBgTrans").prop('checked'),
-		qr_size: parseInt($("#qrSizeInput").val()),
-		qr_fgcolor: $("#qrFgColorInput").val(),
-		qr_bgcolor: $("#qrBgColorInput").val(),
-		qr_title: $("#qrFetchTitle").prop('checked')
+		qr_bgtrans: document.getElementById("qrBgTrans").checked,
+		qr_size: Number(document.getElementById("qrSizeInput").value),
+		qr_fgcolor: document.getElementById("qrFgColorInput").value,
+		qr_bgcolor: document.getElementById("qrBgColorInput").value,
+		qr_title: document.getElementById("qrFetchTitle").checked
 	};
 
 	chrome.storage.local.set(options, null);
 }
 
 function toggleTitleFetch() {
-	if ($("#qrManualTitle").prop('checked')) {
-		$("#qrFetchTitle").prop("checked", false);
-		$("#qrFetchTitle").prop("disabled", true);
-		$("#qrManualTitleTextDiv").css("display", "flex");
+	var qrFetchTitle = document.getElementById("qrFetchTitle");
+	var qrManualTitleTextDiv = document.getElementById("qrManualTitleTextDiv");
+
+	if (document.getElementById("qrManualTitle").checked) {
+		qrFetchTitle.checked = false;
+		qrFetchTitle.disabled = true;
+		qrManualTitleTextDiv.style.display = "flex";
 		saveOptions();
 	} else {
-		$("#qrFetchTitle").prop("disabled", false);
-		$("#qrManualTitleTextDiv").css("display", "none");
+		qrFetchTitle.disabled = false;
+		qrManualTitleTextDiv.style.display = "none";
 	}
 }
 
@@ -296,80 +291,63 @@ function checkValidDoi(doiInput) {
 }
 
 function resetSpace() {
-	$("#notifyDiv").html("");
-	$("#notifyDiv").css("display", "none");
-	$("#qrDiv").html("");
-	$("#qrDiv").css("display", "none");
+	var notifyDiv = document.getElementById("notifyDiv");
+	var qrDiv = document.getElementById("qrDiv");
+	notifyDiv.innerHTML = "";
+	notifyDiv.style.display = "none";
+	qrDiv.innerHTML = "";
+	qrDiv.style.display = "none";
 }
 
 function simpleNotification(message) {
 	resetSpace();
-	$("#notifyDiv").html(message);
-	$("#notifyDiv").css("display", "block");
+	document.getElementById("notifyDiv").innerHTML = message;
+	document.getElementById("notifyDiv").style.display = "block";
 }
 
 function advancedNotification(elms) {
 	resetSpace();
+	var notifyDiv = document.getElementById("notifyDiv");
 	for (var i = 0; i < elms.length; i++) {
-		elms[i].appendTo($("#notifyDiv"));
+		notifyDiv.appendChild(elms[i]);
 	}
-	$("#notifyDiv").css("display", "block");
+	notifyDiv.style.display = "block";
 }
 
 function setDoiMetaPermissions() {
-	var perm = $("#qrFetchTitle").prop('checked');
-
-	if (perm) {
+	var qrFetchTitle = document.getElementById("qrFetchTitle");
+	if (qrFetchTitle.checked) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(granted) {
-			if (granted) {
-				$("#qrFetchTitle").prop("checked", true);
-				saveOptions();
-			} else {
-				$("#qrFetchTitle").prop("checked", false);
-				saveOptions();
-			}
+			qrFetchTitle.checked = granted;
+			saveOptions();
 		});
 	} else {
 		chrome.permissions.remove({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(removed) {
-			if (removed) {
-				$("#qrFetchTitle").prop("checked", false);
-				saveOptions();
-			} else {
-				$("#qrFetchTitle").prop("checked", true);
-				saveOptions();
-			}
+			qrFetchTitle.checked = !removed;
+			saveOptions();
 		});
 	}
 }
 
-function htmlEscape(str) {
-	return String(str)
-		.replace(/&/g, '&amp;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;');
-}
-
 function formSubmitHandler() {
-	var doiInput = encodeURI(trim($("#doiInput").val()));
-	var qrSize = parseInt($("#qrSizeInput").val());
-	var fgcolor = $("#qrFgColorInput").val();
-	var bgcolor = $("#qrBgColorInput").val();
+	var doiInput = encodeURI(trim(document.getElementById("doiInput").value));
+	var qrSize = Number(document.getElementById("qrSizeInput").value);
+	var fgcolor = document.getElementById("qrFgColorInput").value;
+	var bgcolor = document.getElementById("qrBgColorInput").value;
 
-	if ($("#qrBgTrans").prop('checked')) {
+	if (document.getElementById("qrBgTrans").checked) {
 		bgcolor = null;
 	}
 
 	if (isNaN(qrSize)) {
-		$("#qrSizeInput").val(300);
+		document.getElementById("qrSizeInput").value = 300;
 		qrSize = 300;
 	} else if (qrSize < 80) {
-		$("#qrSizeInput").val(80);
+		document.getElementById("qrSizeInput").value = 80;
 		qrSize = 80;
 	}
 
@@ -395,34 +373,41 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 
 	simpleNotification("Loading...");
 
-	var perm = $("#qrFetchTitle").prop('checked');
-	if (perm) {
+	if (document.getElementById("qrFetchTitle").checked) {
 		chrome.permissions.request({
 			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
 		}, function(granted) {
 			if (granted) {
-				var jqxhr = $.ajax({
-					url: jsonUrl,
-					headers: { Accept: "application/citeproc+json" },
-					dataType: "text",
-					type: "GET",
+				var fetchHeaders = new Headers();
+				fetchHeaders.append("Accept", "application/citeproc+json");
+
+				var fetchInit = {
+					method: 'GET',
+					headers: fetchHeaders,
 					cache: false
-				});
-				jqxhr.done(function() {
+				};
+
+				var fetchRequest = new Request(jsonUrl, fetchInit);
+
+				fetch(fetchRequest)
+				.then(function(response) {
+					return response.json();
+				})
+				.then(function(json) {
 					try {
-						var doiTitle = JSON.parse(jqxhr.responseText).title;
-						doiTitle = doiTitle.replace(/<subtitle>(.*)<\/subtitle>/," - $1");
-						doiTitle = doiTitle.replace(/<alt-title>(.*)<\/alt-title>/,"");
-						doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/,"$1");
+						var doiTitle = json.title;
+						doiTitle = doiTitle.replace(/<subtitle>(.*)<\/subtitle>/, " - $1");
+						doiTitle = doiTitle.replace(/<alt-title>(.*)<\/alt-title>/, "");
+						doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/, "$1");
 						stringToEncode = doiTitle + "\n" + stringToEncode;
 						updateMessage(stringToEncode, "found");
 						createQrImage(stringToEncode, size, fgcolor, bgcolor);
-					} catch(e) {
+					} catch(ex) {
 						updateMessage(stringToEncode, "missing");
 						createQrImage(stringToEncode, size, fgcolor, bgcolor);
 					}
-				});
-				jqxhr.fail(function() {
+				})
+				.catch(function(error) {
 					updateMessage(stringToEncode, "missing");
 					createQrImage(stringToEncode, size, fgcolor, bgcolor);
 				});
@@ -432,9 +417,8 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 			}
 		});
 	} else {
-		var manualTitle = $("#qrManualTitle").prop('checked');
-		if (manualTitle) {
-			var titleString = $("#qrManualTitleText").val();
+		if (document.getElementById("qrManualTitle").checked) {
+			var titleString = document.getElementById("qrManualTitleText").value;
 			if (titleString !== "") {
 				stringToEncode = titleString + "\n" + stringToEncode;
 			}
@@ -474,33 +458,42 @@ function updateMessage(stringToEncode, titleRetrieval) {
 	}
 
 	var statusMessage = [];
-	var tmp = $('<span>').attr("class", "notifyHeading");
-	tmp.html(chrome.i18n.getMessage("qrTitleStatus"));
+	var tmp = document.createElement("span");
+	tmp.setAttribute("class", "notifyHeading");
+	tmp.innerHTML = chrome.i18n.getMessage("qrTitleStatus");
 	statusMessage.push(tmp);
-	tmp = $('<span>').attr("class", "notifyContent");
-	tmp.html(titleNotice);
+	tmp = document.createElement("span");
+	tmp.setAttribute("class", "notifyContent");
+	tmp.innerHTML = titleNotice;
 	statusMessage.push(tmp);
-	tmp = $('<br>');
+	tmp = document.createElement("br");
 	statusMessage.push(tmp);
-	tmp = $('<span>').attr("class", "notifyHeading");
-	tmp.html(chrome.i18n.getMessage("qrMessageEncoded"));
+	tmp = document.createElement("span");
+	tmp.setAttribute("class", "notifyHeading");
+	tmp.innerHTML = chrome.i18n.getMessage("qrMessageEncoded");
 	statusMessage.push(tmp);
-	tmp = $('<span>').attr("class", "notifyContent");
-	tmp.html(htmlEscape(stringToEncode));
+	tmp = document.createElement("span");
+	tmp.setAttribute("class", "notifyContent");
+	tmp.innerHTML = stringToEncode;
 	statusMessage.push(tmp);
 
 	advancedNotification(statusMessage);
 }
 
 function linkifyQrImage() {
-	var qrImg = $("#qrDiv img");
-	if (qrImg.length > 0) {
-		var saveLink = $('<a>').attr("id", "qrImageSaveLink");
-		saveLink.attr("href", qrImg.attr("src"));
-		saveLink.attr("download", "qrImage.png");
-		qrImg.wrap(saveLink);
-		$("#qrDiv").css("display", "block");
+	var qrImg = document.querySelector("#qrDiv img");
+	if (qrImg === null) {
+		return;
 	}
+
+	var saveLink = document.createElement("a");
+	saveLink.setAttribute("id", "qrImageSaveLink");
+	saveLink.setAttribute("href", qrImg.src);
+	saveLink.setAttribute("download", "qrImage.png");
+
+	var insertedLink = qrImg.parentNode.insertBefore(saveLink, qrImg);
+	insertedLink.appendChild(qrImg);
+	document.getElementById("qrDiv").style.display = "block";
 }
 
 function getLocalMessages() {
@@ -523,6 +516,6 @@ function getLocalMessages() {
 
 	for (var i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
-		$('#' + messageIds[i]).html(message);
+		document.getElementById(messageIds[i]).innerHTML = message;
 	}
 }

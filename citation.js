@@ -302,9 +302,9 @@ function getCitation(doi) {
 
 	chrome.permissions.request({
 		origins: [
-			'http://*.doi.org/',
-			'http://*.crossref.org/',
-			'http://*.datacite.org/',
+			'https://*.doi.org/',
+			'https://*.crossref.org/',
+			'https://*.datacite.org/',
 			'https://raw.githubusercontent.com/'
 		]
 	}, function(granted) {
@@ -318,7 +318,7 @@ function getCitation(doi) {
 				cache: false
 			};
 
-			var fetchRequest = new Request("http://dx.doi.org/" + doi, fetchInit);
+			var fetchRequest = new Request("https://dx.doi.org/" + doi, fetchInit);
 
 			fetch(fetchRequest)
 			.then(function(response) {

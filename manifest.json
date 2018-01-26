@@ -22,9 +22,9 @@
 		"keyword": "doi"
 	},
 	"optional_permissions": [
-		"http://*.doi.org/",
-		"http://*.crossref.org/",
-		"http://*.datacite.org/",
+		"https://*.doi.org/",
+		"https://*.crossref.org/",
+		"https://*.datacite.org/",
 		"https://raw.githubusercontent.com/",
 		"https://*/*",
 		"http://*/*",

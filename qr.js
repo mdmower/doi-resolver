@@ -102,7 +102,7 @@ function qrSizeSave() {
 }
 
 // Read a page's GET URL variables and return them as an associative array.
-// http://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
+// https://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
 function getUrlVariables() {
 	var vars = [], hash;
 	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
@@ -318,14 +318,22 @@ function setDoiMetaPermissions() {
 	var qrFetchTitle = document.getElementById("qrFetchTitle");
 	if (qrFetchTitle.checked) {
 		chrome.permissions.request({
-			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
+			origins: [
+				'https://*.doi.org/',
+				'https://*.crossref.org/',
+				'https://*.datacite.org/'
+			]
 		}, function(granted) {
 			qrFetchTitle.checked = granted;
 			saveOptions();
 		});
 	} else {
 		chrome.permissions.remove({
-			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
+			origins: [
+				'https://*.doi.org/',
+				'https://*.crossref.org/',
+				'https://*.datacite.org/'
+			]
 		}, function(removed) {
 			qrFetchTitle.checked = !removed;
 			saveOptions();
@@ -363,19 +371,23 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 	resetSpace();
 
 	var stringToEncode = "";
-	var jsonUrl = "http://dx.doi.org/" + doiInput;
+	var jsonUrl = "https://dx.doi.org/" + doiInput;
 
 	if (/^10\./.test(doiInput)) {
-		stringToEncode = "http://dx.doi.org/" + doiInput;
+		stringToEncode = "https://dx.doi.org/" + doiInput;
 	} else if (/^10\//.test(doiInput)) {
-		stringToEncode = "http://doi.org/" + doiInput.replace(/^10\//,"");
+		stringToEncode = "https://doi.org/" + doiInput.replace(/^10\//,"");
 	}
 
 	simpleNotification("Loading...");
 
 	if (document.getElementById("qrFetchTitle").checked) {
 		chrome.permissions.request({
-			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
+			origins: [
+				'https://*.doi.org/',
+				'https://*.crossref.org/',
+				'https://*.datacite.org/'
+			]
 		}, function(granted) {
 			if (granted) {
 				var fetchHeaders = new Headers();

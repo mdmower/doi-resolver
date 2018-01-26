@@ -197,9 +197,9 @@ function resolveURL(doi) {
 
 		if (useDefaultResolver) {
 			if (/^10\./.test(doi)) {
-				url = "http://dx.doi.org/" + doi;
+				url = "https://dx.doi.org/" + doi;
 			} else if (/^10\//.test(doi)) {
-				url = "http://doi.org/" + doi.replace(/^10\//,"");
+				url = "https://doi.org/" + doi.replace(/^10\//,"");
 			}
 		} else {
 			if (/^10\./.test(doi)) {

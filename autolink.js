@@ -21,7 +21,7 @@ function storage() {
 		storage.area = chrome.storage.local;
 	}
 	if (typeof storage.urlPrefix === 'undefined') {
-		storage.urlPrefix = "http://dx.doi.org/";
+		storage.urlPrefix = "https://dx.doi.org/";
 	}
 	if (typeof storage.findDoi === 'undefined') {
 		// https://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
@@ -59,7 +59,7 @@ function storage() {
 	});
 }
 
-// http://stackoverflow.com/questions/1444409/in-javascript-how-can-i-replace-text-in-an-html-page-without-affecting-the-tags
+// https://stackoverflow.com/questions/1444409/in-javascript-how-can-i-replace-text-in-an-html-page-without-affecting-the-tags
 function replaceDOIsWithLinks() {
 	replaceInElement(document.body, storage.findDoi, function(match) {
 		var link = document.createElement('a');

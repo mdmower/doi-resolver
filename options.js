@@ -96,17 +96,17 @@ function startClickListeners() {
 
 	document.getElementById("doiResolverInputReset").addEventListener("click", function() {
 		var input = document.getElementById("doiResolverInput");
-		if (input.value !== "http://dx.doi.org/") {
+		if (input.value !== "https://dx.doi.org/") {
 			var change = new Event("change");
-			input.value = "http://dx.doi.org/";
+			input.value = "https://dx.doi.org/";
 			input.dispatchEvent(change);
 		}
 	});
 	document.getElementById("shortDoiResolverInputReset").addEventListener("click", function() {
 		var input = document.getElementById("shortDoiResolverInput");
-		if (input.value !== "http://doi.org/") {
+		if (input.value !== "https://doi.org/") {
 			var change = new Event("change");
-			input.value = "http://doi.org/";
+			input.value = "https://doi.org/";
 			input.dispatchEvent(change);
 		}
 	});
@@ -583,9 +583,9 @@ function getHistoryUrl(doi) {
 		}
 	} else {
 		if (/^10\./.test(doi)) {
-			url = "http://dx.doi.org/" + doi;
+			url = "https://dx.doi.org/" + doi;
 		} else if (/^10\//.test(doi)) {
-			url = "http://doi.org/" + doi.replace(/^10\//,"");
+			url = "https://doi.org/" + doi.replace(/^10\//,"");
 		}
 	}
 

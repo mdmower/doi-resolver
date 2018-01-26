@@ -160,7 +160,7 @@ function getDefaultOption(opt) {
 		cr_history: "custom",
 		cr_omnibox: "custom",
 		custom_resolver: false,
-		doi_resolver: "http://dx.doi.org/",
+		doi_resolver: "https://dx.doi.org/",
 		history: false,
 		history_length: 15,
 		history_showsave: false,
@@ -172,7 +172,7 @@ function getDefaultOption(opt) {
 		qr_size: 300,
 		qr_title: false,
 		recorded_dois: [],
-		shortdoi_resolver: "http://doi.org/",
+		shortdoi_resolver: "https://doi.org/",
 		sync_data: false
 	};
 	/* sync_reset is not stored locally
@@ -430,8 +430,8 @@ function resolveDOI(doi, useCustomResolver, tab) {
 			if (/^10\./.test(doi)) str = dr + doi;
 			else if (/^10\//.test(doi)) str = sr + doi.replace(/^10\//,"");
 		} else {
-			if (/^10\./.test(doi)) str = "http://dx.doi.org/" + doi;
-			else if (/^10\//.test(doi)) str = "http://doi.org/" + doi.replace(/^10\//,"");
+			if (/^10\./.test(doi)) str = "https://dx.doi.org/" + doi;
+			else if (/^10\//.test(doi)) str = "https://doi.org/" + doi.replace(/^10\//,"");
 		}
 
 		switch (tab) {
@@ -584,9 +584,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 function cleanupPerms(callback) {
 	chrome.storage.local.get(["auto_link"], function(stg) {
 		var removeOrigins = [
-			'http://*.doi.org/',
-			'http://*.crossref.org/',
-			'http://*.datacite.org/',
+			'https://*.doi.org/',
+			'https://*.crossref.org/',
+			'https://*.datacite.org/',
 			'https://raw.githubusercontent.com/'
 		];
 
@@ -626,9 +626,9 @@ function permRemoveListeners() {
 		if (typeof tabRecord.openTabs != 'undefined' && tabRecord.openTabs.indexOf(tabId) >= 0) {
 			chrome.permissions.remove({
 				origins: [
-					'http://*.doi.org/',
-					'http://*.crossref.org/',
-					'http://*.datacite.org/',
+					'https://*.doi.org/',
+					'https://*.crossref.org/',
+					'https://*.datacite.org/',
 					'https://raw.githubusercontent.com/'
 				]
 			}, function(removed) {

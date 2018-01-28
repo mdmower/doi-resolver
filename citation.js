@@ -61,7 +61,8 @@ function startListeners() {
 	});
 
 	chrome.tabs.getCurrent(function(tab) {
-		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
+		var tabRecord = chrome.extension.getBackgroundPage().tabRecord;
+		tabRecord(tab.id, true);
 	});
 }
 

@@ -569,9 +569,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	case "auto_link":
 		autolinkDois();
 		break;
-	case "record_tab_id":
-		tabRecord(request.id, true);
-		break;
 	case "toggle_sync":
 		storageListener(false);
 		toggleSync();

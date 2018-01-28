@@ -606,7 +606,7 @@ function cleanupPerms(callback) {
 }
 
 function tabRecord(id, add) {
-	if (typeof tabRecord.openTabs === 'undefined') {
+	if (typeof tabRecord.openTabs === "undefined") {
 		tabRecord.openTabs = [];
 	}
 
@@ -618,24 +618,36 @@ function tabRecord(id, add) {
 	}
 }
 
+function removeQrCitePermissions() {
+	chrome.permissions.remove({
+		origins: [
+			"https://*.doi.org/",
+			"https://*.crossref.org/",
+			"https://*.datacite.org/",
+			"https://raw.githubusercontent.com/"
+		]
+	}, function(removed) {
+		if (removed) {
+			console.log("Removed qr/citation-related permissions");
+		} else {
+			console.log("Unable to remove qr/citation-related permissions");
+		}
+	});
+}
+
 function permRemoveListeners() {
-	chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
-		if (typeof tabRecord.openTabs != 'undefined' && tabRecord.openTabs.indexOf(tabId) >= 0) {
-			chrome.permissions.remove({
-				origins: [
-					'https://*.doi.org/',
-					'https://*.crossref.org/',
-					'https://*.datacite.org/',
-					'https://raw.githubusercontent.com/'
-				]
-			}, function(removed) {
-				if (removed) {
-					console.log("Removed qr/citation-related permissions");
-				} else {
-					console.log("Unable to remove qr/citation-related permissions");
-				}
-			});
-			tabRecord(tabId, false);
+	chrome.tabs.onRemoved.addListener(function(tabId) {
+		if (!Array.isArray(tabRecord.openTabs) || tabRecord.openTabs.length === 0) {
+			return;
+		}
+
+		if (tabRecord.openTabs.indexOf(tabId) >= 0) {
+			if (tabRecord.openTabs.length === 1) {
+				removeQrCitePermissions();
+				tabRecord.openTabs = [];
+			} else {
+				tabRecord(tabId, false);
+			}
 		}
 	});
 }

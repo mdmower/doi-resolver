@@ -517,13 +517,13 @@ function setAutolinkPermission(enabled) {
 		}, function(removed) {
 			if (removed) {
 				autolinkDisplayUpdate(false, null);
-				chrome.runtime.sendMessage({cmd: "auto_link"});
+				chrome.extension.getBackgroundPage().autolinkDois();
 				startChangeListeners();
 				console.log("Autolink permissions removed");
 			} else {
 				var protocol = document.getElementById("autolinkApplyTo").value;
 				autolinkDisplayUpdate(true, protocol);
-				chrome.runtime.sendMessage({cmd: "auto_link"});
+				chrome.extension.getBackgroundPage().autolinkDois();
 				startChangeListeners();
 				console.log("Could not remove autolink permissions");
 			}
@@ -539,18 +539,18 @@ function autolinkShufflePerms() {
 		chrome.permissions.remove({
 			origins: [ "https://*/*" ]
 		}, function(removed) {
-			chrome.runtime.sendMessage({cmd: "auto_link"});
+			chrome.extension.getBackgroundPage().autolinkDois();
 			verifyAutolinkPermission(startChangeListeners);
 		});
 	} else if (protocol === "https") {
 		chrome.permissions.remove({
 			origins: [ "http://*/*" ]
 		}, function(removed) {
-			chrome.runtime.sendMessage({cmd: "auto_link"});
+			chrome.extension.getBackgroundPage().autolinkDois();
 			verifyAutolinkPermission(startChangeListeners);
 		});
 	} else {
-		chrome.runtime.sendMessage({cmd: "auto_link"});
+		chrome.extension.getBackgroundPage().autolinkDois();
 		verifyAutolinkPermission(startChangeListeners);
 	}
 }

@@ -566,9 +566,6 @@ function contextMenuResolve(info) {
 // Message passing
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch (request.cmd) {
-	case "auto_link":
-		autolinkDois();
-		break;
 	case "toggle_sync":
 		storageListener(false);
 		toggleSync();

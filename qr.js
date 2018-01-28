@@ -48,7 +48,7 @@ function storage(firstRun) {
 
 function continueOnLoad() {
 	getLocalMessages();
-	getUrlVariables();
+	initializeDoiInput();
 	restoreOptions();
 	prepareColorPickers();
 	populateHistory();
@@ -102,21 +102,23 @@ function qrSizeSave() {
 	});
 }
 
-// Read a page's GET URL variables and return them as an associative array.
-// https://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
-function getUrlVariables() {
-	var vars = [], hash;
-	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-	for (var i = 0; i < hashes.length; i++) {
-		hash = hashes[i].split('=');
-		vars.push(hash[0]);
-		vars[hash[0]] = hash[1];
+function queryStringToJSON(query) {
+	if (!query) {
+		return {};
 	}
 
-	var initDOI = vars.doi;
-	if (initDOI) {
-		document.getElementById("doiInput").value = initDOI;
-	}
+	var result = {};
+	var pairs = query.slice(1).split('&');
+	pairs.forEach(function(pair) {
+		pair = pair.split('=');
+		result[pair[0]] = decodeURIComponent(pair[1] || '');
+	});
+
+	return JSON.parse(JSON.stringify(result));
+}
+
+function initializeDoiInput() {
+	document.getElementById("doiInput").value = queryStringToJSON(location.search).doi || '';
 }
 
 function restoreOptions() {

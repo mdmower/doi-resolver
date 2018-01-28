@@ -217,6 +217,8 @@ function toggleSync() {
 	var syncKeys = allOptions().diff(excludeFromSync());
 	var dupOptions = {};
 
+	storageListener(false);
+
 	chrome.storage.local.get(null, function(stgLocal) {
 	chrome.storage.sync.get(null, function(stgSync) {
 		var syncEnabled = (typeof stgLocal.sync_data === "boolean") ? stgLocal.sync_data : true;
@@ -325,7 +327,6 @@ function storageChangeHandler(changes, namespace) {
 			if (typeof changes.sync_reset !== 'undefined') {
 				var sr = changes.sync_reset.newValue;
 				if (sr === true || sr === "true") {
-					storageListener(false);
 					chrome.storage.local.set({sync_data: false}, toggleSync);
 					return; // No need to perform anything below since wiping
 				}
@@ -562,18 +563,6 @@ function contextMenuResolve(info) {
 		}
 	});
 }
-
-// Message passing
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch (request.cmd) {
-	case "toggle_sync":
-		storageListener(false);
-		toggleSync();
-		break;
-	default:
-		break;
-	}
-});
 
 function cleanupPerms(callback) {
 	chrome.storage.local.get(["auto_link"], function(stg) {

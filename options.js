@@ -219,13 +219,13 @@ function toggleSync() {
 	if (document.getElementById("syncData").checked) {
 		chrome.storage.sync.set({sync_reset: false}, function() {
 			chrome.storage.local.set({sync_data: true}, function() {
-				chrome.runtime.sendMessage({cmd: "toggle_sync"});
+				chrome.extension.getBackgroundPage().toggleSync();
 			});
 		});
 	} else {
 		storageListener(false);
 		chrome.storage.local.set({sync_data: false}, function() {
-			chrome.runtime.sendMessage({cmd: "toggle_sync"});
+			chrome.extension.getBackgroundPage().toggleSync();
 		});
 	}
 }

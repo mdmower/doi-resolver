@@ -251,7 +251,12 @@ function formSubmitHandler() {
 		return;
 	}
 
-	recordDoi(doi);
+	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
+	recordDoi(doi)
+	.catch((errMsg) => {
+		console.log(errMsg);
+	});
+
 	saveSelections();
 	getCitation(doi);
 }
@@ -455,13 +460,6 @@ function populateHistory() {
 			}
 		}
 		document.getElementById("doiHistory").innerHTML = optionHtml;
-	});
-}
-
-function recordDoi(doi) {
-	chrome.runtime.sendMessage({
-		cmd: "record_doi",
-		doi: doi
 	});
 }
 

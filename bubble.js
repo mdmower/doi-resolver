@@ -125,18 +125,25 @@ function formSubmitHandler() {
 	var actionType = document.getElementById("hiddenButtonInput").value;
 	var doiInput = encodeURI(trim(document.getElementById("textInput").value));
 	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
+	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
 
 	switch (actionType) {
 	case "qr":
 		if (checkValidDoi(doiInput)) {
-			recordDoi(doiInput);
+			recordDoi(doiInput)
+			.catch((errMsg) => {
+				console.log(errMsg);
+			});
 		}
 		// Allow tab to open with invalid DOI
 		qrGen(doiInput);
 		break;
 	case "cite":
 		if (checkValidDoi(doiInput)) {
-			recordDoi(doiInput);
+			recordDoi(doiInput)
+			.catch((errMsg) => {
+				console.log(errMsg);
+			});
 		}
 		// Allow tab to open with invalid DOI
 		citeDOI(doiInput);
@@ -146,7 +153,10 @@ function formSubmitHandler() {
 			bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
 			return;
 		}
-		recordDoi(doiInput);
+		recordDoi(doiInput)
+		.catch((errMsg) => {
+			console.log(errMsg);
+		});
 		resolveURL(doiInput);
 		break;
 	case "options":
@@ -282,13 +292,6 @@ function populateHistory() {
 			}
 		}
 		document.getElementById("doiHistory").innerHTML = optionHtml;
-	});
-}
-
-function recordDoi(doiInput) {
-	chrome.runtime.sendMessage({
-		cmd: "record_doi",
-		doi: doiInput
 	});
 }
 

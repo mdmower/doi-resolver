@@ -444,69 +444,76 @@ function resolveDOI(doi, useCustomResolver, tab) {
 }
 
 function recordDoi(doiInput) {
-	var stgFetch = [
-		"history",
-		"history_length",
-		"recorded_dois"
-	];
+	return new Promise((resolve, reject) => {
 
-	storage.area.get(stgFetch, function(stg) {
-		if (typeof stg.history === 'undefined' || stg.history !== true) {
-			return;
-		}
-		if (!Array.isArray(stg.recorded_dois)) {
-			stg.recorded_dois = getDefaultOption("recorded_dois");
-		}
-		if (typeof stg.history_length === 'undefined') {
-			stg.history_length = getDefaultOption("history_length");
-		}
+		var stgFetch = [
+			"history",
+			"history_length",
+			"recorded_dois"
+		];
 
-		var doiObject = {
-			doi: doiInput,
-			save: false,
-			title: ""
-		};
-
-		// Remove holes from the array (should not occur)
-		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
-			// Use !=, not !==, so that null is caught as well
-			return elm != undefined;
-		});
-
-		/* The number of recorded entries may exceed the history length if
-		 * the user has saved N entries and later sets the history length to
-		 * less than N. Do not take action; only handle the case of equal
-		 * history length and number of entries below.
-		 */
-		if (stg.recorded_dois.length > parseInt(stg.history_length)) {
-			return;
-		}
-
-		var i;
-		for (i = 0; i < stg.recorded_dois.length; i++) {
-			if (stg.recorded_dois[i].doi === doiObject.doi) {
-				return;
+		storage.area.get(stgFetch, function(stg) {
+			// Exit quietly if history not enabled
+			if (typeof stg.history === "undefined" || stg.history !== true) {
+				return resolve();
 			}
-		}
+			if (!Array.isArray(stg.recorded_dois)) {
+				stg.recorded_dois = getDefaultOption("recorded_dois");
+			}
+			if (typeof stg.history_length === "undefined") {
+				stg.history_length = getDefaultOption("history_length");
+			}
 
-		var shifted = false;
-		if (stg.recorded_dois.length === parseInt(stg.history_length)) {
-			// Do not remove saved entries
+			var doiObject = {
+				doi: doiInput,
+				save: false,
+				title: ""
+			};
+
+			// Remove holes from the array (should not occur)
+			stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
+				// Use !=, not !==, so that null is caught as well
+				return elm != undefined;
+			});
+
+			/* The number of recorded entries may exceed the history length if
+			 * the user has saved N entries and later sets the history length to
+			 * less than N. Do not take action; only handle the case of equal
+			 * history length and number of entries below.
+			 */
+			if (stg.recorded_dois.length > Number(stg.history_length)) {
+				return reject("Number of recorded DOIs exceeds history length option");
+			}
+
+			var i;
 			for (i = 0; i < stg.recorded_dois.length; i++) {
-				if (stg.recorded_dois[i].save !== true) {
-					stg.recorded_dois.splice(i, 1);
-					shifted = true;
-					break;
+				if (stg.recorded_dois[i].doi === doiObject.doi) {
+					// DOI already exists in history
+					return resolve();
 				}
 			}
-			if (!shifted) {
-				// All entries are marked for save
-				return;
-			}
-		}
 
-		stg.recorded_dois.push(doiObject);
-		chrome.storage.local.set(stg, null);
+			var shifted = false;
+			if (stg.recorded_dois.length === parseInt(stg.history_length)) {
+				// Do not remove saved entries
+				for (i = 0; i < stg.recorded_dois.length; i++) {
+					if (stg.recorded_dois[i].save !== true) {
+						stg.recorded_dois.splice(i, 1);
+						shifted = true;
+						break;
+					}
+				}
+				if (!shifted) {
+					// All entries are marked for save
+					return reject("Number of recorded DOIs marked 'save' equals history length option");
+				}
+			}
+
+			stg.recorded_dois.push(doiObject);
+			chrome.storage.local.set(stg, null);
+			resolve();
+		});
+
 	});
 }
 
@@ -561,9 +568,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	switch (request.cmd) {
 	case "auto_link":
 		autolinkDois();
-		break;
-	case "record_doi":
-		recordDoi(request.doi);
 		break;
 	case "record_tab_id":
 		tabRecord(request.id, true);

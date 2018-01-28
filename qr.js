@@ -178,13 +178,6 @@ function populateHistory() {
 	});
 }
 
-function recordDoi(doiInput) {
-	chrome.runtime.sendMessage({
-		cmd: "record_doi",
-		doi: doiInput
-	});
-}
-
 function isHexColor(code) {
 	return /^#[0-9A-F]{6}$/i.test(code);
 }
@@ -356,7 +349,12 @@ function formSubmitHandler() {
 		return;
 	}
 
-	recordDoi(doiInput);
+	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
+	recordDoi(doiInput)
+	.catch((errMsg) => {
+		console.log(errMsg);
+	});
+
 	insertQr(doiInput, qrSize, fgcolor, bgcolor);
 }
 

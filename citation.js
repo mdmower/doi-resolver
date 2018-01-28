@@ -235,11 +235,8 @@ function filterByText(select, text) {
 	}
 }
 
-function trim(stringToTrim) {
-	return stringToTrim.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/ig, "");
-}
-
 function formSubmitHandler() {
+	var trim = chrome.extension.getBackgroundPage().trim;
 	var doi = encodeURI(trim(document.getElementById("doiInput").value));
 
 	if (!document.getElementById("styleList").value) {

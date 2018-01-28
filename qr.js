@@ -271,10 +271,6 @@ function toggleTitleFetch() {
 	}
 }
 
-function trim(stringToTrim) {
-	return stringToTrim.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/ig, "");
-}
-
 function resetSpace() {
 	var notifyDiv = document.getElementById("notifyDiv");
 	var qrDiv = document.getElementById("qrDiv");
@@ -327,6 +323,7 @@ function setDoiMetaPermissions() {
 }
 
 function formSubmitHandler() {
+	var trim = chrome.extension.getBackgroundPage().trim;
 	var doiInput = encodeURI(trim(document.getElementById("doiInput").value));
 	var qrSize = Number(document.getElementById("qrSizeInput").value);
 	var fgcolor = document.getElementById("qrFgColorInput").value;

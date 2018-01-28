@@ -100,11 +100,6 @@ function restoreOptions() {
 	});
 }
 
-// Remove spaces and punctuation from beginning and end of input
-function trim(stringToTrim) {
-	return stringToTrim.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/ig, "");
-}
-
 // Clear message space
 function resetMessageSpace() {
 	var messageDiv = document.getElementById("messageDiv");
@@ -122,6 +117,7 @@ function bubbleMessage(message) {
 
 // Process the form
 function formSubmitHandler() {
+	var trim = chrome.extension.getBackgroundPage().trim;
 	var actionType = document.getElementById("hiddenButtonInput").value;
 	var doiInput = encodeURI(trim(document.getElementById("textInput").value));
 	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;

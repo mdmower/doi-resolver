@@ -1,0 +1,14 @@
+{
+    "browser": true,
+    "devel": true,
+    "esversion": 6,
+    "undef": true,
+    "unused": true,
+    "globals": {
+        "chrome": false,
+        "$": false,
+        "_": false,
+        "Headers": false,
+        "Request": false
+    }
+}

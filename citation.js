@@ -240,7 +240,14 @@ function trim(stringToTrim) {
 
 function formSubmitHandler() {
 	var doi = encodeURI(trim(document.getElementById("doiInput").value));
-	if (!checkValidDoi(doi) || !document.getElementById("styleList").value) {
+
+	if (!document.getElementById("styleList").value) {
+		return;
+	}
+
+	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
+	if (!checkValidDoi(doi)) {
+		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
 		return;
 	}
 
@@ -256,15 +263,6 @@ function saveSelections() {
 	};
 
 	chrome.storage.local.set(options, null);
-}
-
-function checkValidDoi(doiInput) {
-	if (/^10[\.\/]/.test(doiInput)) {
-		return true;
-	} else {
-		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
-		return false;
-	}
 }
 
 function resetSpace() {

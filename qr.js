@@ -281,15 +281,6 @@ function trim(stringToTrim) {
 	return stringToTrim.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/ig, "");
 }
 
-function checkValidDoi(doiInput) {
-	if (/^10[\.\/]/.test(doiInput)) {
-		return true;
-	} else {
-		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
-		return false;
-	}
-}
-
 function resetSpace() {
 	var notifyDiv = document.getElementById("notifyDiv");
 	var qrDiv = document.getElementById("qrDiv");
@@ -359,7 +350,9 @@ function formSubmitHandler() {
 		qrSize = 80;
 	}
 
+	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
 	if (!checkValidDoi(doiInput)) {
+		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
 		return;
 	}
 

@@ -105,16 +105,6 @@ function trim(stringToTrim) {
 	return stringToTrim.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/ig, "");
 }
 
-// Check that DOI is valid and warn user if not (in bubble)
-function checkValidDoi(doiInput) {
-	if (/^10[\.\/]/.test(doiInput)) {
-		return true;
-	} else {
-		bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
-		return false;
-	}
-}
-
 // Clear message space
 function resetMessageSpace() {
 	var messageDiv = document.getElementById("messageDiv");
@@ -134,22 +124,26 @@ function bubbleMessage(message) {
 function formSubmitHandler() {
 	var actionType = document.getElementById("hiddenButtonInput").value;
 	var doiInput = encodeURI(trim(document.getElementById("textInput").value));
+	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
 
 	switch (actionType) {
 	case "qr":
 		if (checkValidDoi(doiInput)) {
 			recordDoi(doiInput);
 		}
+		// Allow tab to open with invalid DOI
 		qrGen(doiInput);
 		break;
 	case "cite":
 		if (checkValidDoi(doiInput)) {
 			recordDoi(doiInput);
 		}
+		// Allow tab to open with invalid DOI
 		citeDOI(doiInput);
 		break;
 	case "doi":
 		if (!checkValidDoi(doiInput)) {
+			bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
 			return;
 		}
 		recordDoi(doiInput);

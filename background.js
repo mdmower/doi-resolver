@@ -396,14 +396,9 @@ function trim(stringToTrim) {
 	return stringToTrim.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/ig, "");
 }
 
-// Check that DOI is valid and warn user if not (alert)
+// Check that DOI is valid
 function checkValidDoi(doiInput) {
-	if (/^10[\.\/]/.test(doiInput)) {
-		return true;
-	} else {
-		alert(chrome.i18n.getMessage("invalidDoiAlert"));
-		return false;
-	}
+	return /^10[\.\/]/.test(doiInput);
 }
 
 function navigate(url) {
@@ -541,6 +536,7 @@ function contextMenuResolve(info) {
 	doiInput = doiInput.replace(doiPrefixRegEx, '');
 
 	if (!checkValidDoi(doiInput)) {
+		alert(chrome.i18n.getMessage("invalidDoiAlert"));
 		return;
 	}
 
@@ -783,6 +779,7 @@ function omniListener(text, disposition) {
 		doiInput = doiInput.replace(doiPrefixRegEx, '');
 
 		if (!checkValidDoi(doiInput)) {
+			alert(chrome.i18n.getMessage("invalidDoiAlert"));
 			return;
 		}
 

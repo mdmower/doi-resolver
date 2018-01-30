@@ -9,6 +9,8 @@
         "$": false,
         "_": false,
         "Headers": false,
-        "Request": false
+        "Request": false,
+        "qrcodegen": false,
+        "canvg": false
     }
 }

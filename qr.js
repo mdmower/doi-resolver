@@ -57,10 +57,11 @@ function continueOnLoad() {
 
 function startListeners() {
 	/*
-	 * qrSizeInput can fire onChange events frequently. debounce it to only run
-	 * once per 750ms so Chrome Sync doesn't get too many sync requests.
+	 * qrSizeInput and qrBorderInput can fire onChange events frequently.
+	 * debounce them to only run once per 750ms so Chrome Sync doesn't
+	 * get too many sync requests.
 	 */
-	var dbQrSizeSave = _.debounce(qrSizeSave, 750);
+	var dbQrDimensionsSave = _.debounce(qrDimensionsSave, 750);
 
 	document.getElementById("doiForm").addEventListener("submit", function (event) {
 		formSubmitHandler();
@@ -70,8 +71,12 @@ function startListeners() {
 		toggleBgColor();
 		saveOptions();
 	});
+	Array.from(document.querySelectorAll('input[name="qrImageType"]')).forEach(function(elm) {
+		elm.addEventListener("click", saveOptions);
+	});
 	document.getElementById("qrFetchTitle").addEventListener("change", setDoiMetaPermissions);
-	document.getElementById("qrSizeInput").addEventListener("input", dbQrSizeSave);
+	document.getElementById("qrSizeInput").addEventListener("input", dbQrDimensionsSave);
+	document.getElementById("qrBorderInput").addEventListener("input", dbQrDimensionsSave);
 	document.getElementById("qrManualTitle").addEventListener("change", toggleTitleFetch);
 
 	chrome.tabs.getCurrent(function(tab) {
@@ -85,18 +90,29 @@ function toggleBgColor() {
 	document.getElementById("bgColorDiv").style.display = qrBgTrans ? "none" : "block";
 }
 
-function qrSizeSave() {
-	var qrSize = Number(document.getElementById("qrSizeInput").value);
+function qrDimensionsSave() {
+	var qrSizeElm = document.getElementById("qrSizeInput");
+	var qrSize = Number(qrSizeElm.value);
 	if (isNaN(qrSize)) {
-		document.getElementById("qrSizeInput").value = 300;
+		qrSizeElm.value = 300;
 		qrSize = 300;
 	} else if (qrSize < 80) {
-		document.getElementById("qrSizeInput").value = 80;
+		qrSizeElm.value = 80;
 		qrSize = 80;
 	}
 
-	storage.area.get(["qr_size"], function(stg) {
-		if (parseInt(stg.qr_size) !== qrSize) {
+	var qrBorderElm = document.getElementById("qrBorderInput");
+	var qrBorder = Number(qrBorderElm.value);
+	if (isNaN(qrBorder)) {
+		qrBorderElm.value = 0;
+		qrBorder = 0;
+	} else if (qrSize < 0) {
+		qrBorderElm.value = 0;
+		qrBorder = 0;
+	}
+
+	storage.area.get(["qr_size", "qr_border"], function(stg) {
+		if (Number(stg.qr_size) !== qrSize || Number(stg.qr_border) !== qrBorder) {
 			saveOptions();
 		}
 	});
@@ -124,12 +140,14 @@ function initializeDoiInput() {
 function restoreOptions() {
 	var stgFetch = [
 		"qr_size",
+		"qr_border",
+		"qr_imgtype",
 		"qr_bgtrans"
 	];
 
 	chrome.storage.local.get(["qr_title"], function(stgLocal) {
 	storage.area.get(stgFetch, function(stg) {
-		var qrSize = parseInt(stg.qr_size);
+		var qrSize = Number(stg.qr_size);
 		if (isNaN(qrSize)) {
 			document.getElementById("qrSizeInput").value = 300;
 		} else if (qrSize < 80) {
@@ -138,6 +156,18 @@ function restoreOptions() {
 			document.getElementById("qrSizeInput").value = qrSize;
 		}
 
+		var qrBorder = Number(stg.qr_border);
+		if (isNaN(qrBorder) || qrBorder < 0) {
+			document.getElementById("qrBorderInput").value = 0;
+		} else {
+			document.getElementById("qrBorderInput").value = qrBorder;
+		}
+
+		if (stg.qr_imgtype === "png") {
+			document.getElementById("qrImageTypePng").checked = true;
+		} else {
+			document.getElementById("qrImageTypeSvg").checked = true;
+		}
 		document.getElementById("qrFetchTitle").checked = Boolean(stgLocal.qr_title);
 		document.getElementById("qrBgTrans").checked = Boolean(stg.qr_bgtrans);
 		document.getElementById("bgColorDiv").style.display = stg.qr_bgtrans ? "none" : "block";
@@ -250,8 +280,10 @@ function saveOptions() {
 	var options = {
 		qr_bgtrans: document.getElementById("qrBgTrans").checked,
 		qr_size: Number(document.getElementById("qrSizeInput").value),
+		qr_border: Number(document.getElementById("qrBorderInput").value),
 		qr_fgcolor: document.getElementById("qrFgColorInput").value,
 		qr_bgcolor: document.getElementById("qrBgColorInput").value,
+		qr_imgtype: document.querySelector('input[name="qrImageType"]:checked').value,
 		qr_title: document.getElementById("qrFetchTitle").checked
 	};
 
@@ -328,8 +360,10 @@ function formSubmitHandler() {
 	var trim = chrome.extension.getBackgroundPage().trim;
 	var doiInput = encodeURI(trim(document.getElementById("doiInput").value));
 	var qrSize = Number(document.getElementById("qrSizeInput").value);
+	var qrBorder = Number(document.getElementById("qrBorderInput").value);
 	var fgcolor = document.getElementById("qrFgColorInput").value;
 	var bgcolor = document.getElementById("qrBgColorInput").value;
+	var imgType = document.querySelector('input[name="qrImageType"]:checked').value;
 
 	if (document.getElementById("qrBgTrans").checked) {
 		bgcolor = null;
@@ -341,6 +375,11 @@ function formSubmitHandler() {
 	} else if (qrSize < 80) {
 		document.getElementById("qrSizeInput").value = 80;
 		qrSize = 80;
+	}
+
+	if (isNaN(qrBorder) || qrBorder < 0) {
+		document.getElementById("qrBorderInput").value = 0;
+		qrBorder = 0;
 	}
 
 	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
@@ -355,10 +394,18 @@ function formSubmitHandler() {
 		console.log(errMsg);
 	});
 
-	insertQr(doiInput, qrSize, fgcolor, bgcolor);
+	var qrParms = {
+		size: qrSize,
+		border: qrBorder,
+		fgcolor: fgcolor,
+		bgcolor: bgcolor,
+		imgType: imgType
+	};
+
+	insertQr(doiInput, qrParms);
 }
 
-function insertQr(doiInput, size, fgcolor, bgcolor) {
+function insertQr(doiInput, qrParms) {
 	resetSpace();
 
 	var stringToEncode = "";
@@ -404,19 +451,23 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 						doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/, "$1");
 						stringToEncode = doiTitle + "\n" + stringToEncode;
 						updateMessage(stringToEncode, "found");
-						createQrImage(stringToEncode, size, fgcolor, bgcolor);
+						qrParms.text = stringToEncode;
+						createQrImage(qrParms);
 					} catch(ex) {
 						updateMessage(stringToEncode, "missing");
-						createQrImage(stringToEncode, size, fgcolor, bgcolor);
+						qrParms.text = stringToEncode;
+						createQrImage(qrParms);
 					}
 				})
 				.catch(function(error) {
 					updateMessage(stringToEncode, "missing");
-					createQrImage(stringToEncode, size, fgcolor, bgcolor);
+					qrParms.text = stringToEncode;
+					createQrImage(qrParms);
 				});
 			} else {
 				updateMessage(stringToEncode, "disabled");
-				createQrImage(stringToEncode, size, fgcolor, bgcolor);
+				qrParms.text = stringToEncode;
+				createQrImage(qrParms);
 			}
 		});
 	} else {
@@ -427,19 +478,46 @@ function insertQr(doiInput, size, fgcolor, bgcolor) {
 			}
 		}
 		updateMessage(stringToEncode, "disabled");
-		createQrImage(stringToEncode, size, fgcolor, bgcolor);
+		qrParms.text = stringToEncode;
+		createQrImage(qrParms);
 	}
 }
 
-function createQrImage(text, size, fgcolor, bgcolor) {
-	$("#qrDiv").qrcode({
-		text: text,
-		size: size,
-		fill: fgcolor,
-		background: bgcolor,
-		render: 'image'
-	});
-	linkifyQrImage();
+function createQrImage(qrParms) {
+	var segs = qrcodegen.QrSegment.makeSegments(qrParms.text);
+	var ecl = qrcodegen.QrCode.Ecc.MEDIUM;
+	var minVer = 1;
+	var maxVer = 40;
+	var mask = -1;
+	var boostEcc = true;
+	var qr = qrcodegen.QrCode.encodeSegments(segs, ecl, minVer, maxVer, mask, boostEcc);
+	var code = qr.toSvgString(qrParms.border);
+
+	var domParser = new DOMParser();
+	var svgDoc = domParser.parseFromString(code, "text/xml");
+	var svg = svgDoc.getElementsByTagName("svg")[0];
+
+	if (qrParms.bgcolor === null) {
+		svg.getElementsByTagName("rect")[0].setAttribute("fill-opacity", "0.0");
+		svg.getElementsByTagName("rect")[0].setAttribute("fill", "#ffffff");
+	} else {
+		svg.getElementsByTagName("rect")[0].setAttribute("fill", qrParms.bgcolor);
+	}
+	svg.getElementsByTagName("path")[0].setAttribute("fill", qrParms.fgcolor);
+	svg.setAttribute("width", qrParms.size);
+	svg.setAttribute("height", qrParms.size);
+
+	var dataUrl = "";
+	if (qrParms.imgType === "png") {
+		var canvas = document.createElement("canvas");
+		canvg(canvas, svg.outerHTML, {log: true});
+		document.getElementById("qrDiv").appendChild(canvas);
+		dataUrl = canvas.toDataURL("image/png");
+	} else {
+		document.getElementById("qrDiv").appendChild(svg);
+		dataUrl = "data:image/svg+xml;utf8," + encodeURIComponent(svg.outerHTML);
+	}
+	linkifyQrImage(qrParms.imgType, dataUrl);
 }
 
 function updateMessage(stringToEncode, titleRetrieval) {
@@ -483,19 +561,28 @@ function updateMessage(stringToEncode, titleRetrieval) {
 	advancedNotification(statusMessage);
 }
 
-function linkifyQrImage() {
-	var qrImg = document.querySelector("#qrDiv img");
+function linkifyQrImage(imgType, dataUrl) {
+	var qrDiv = document.getElementById("qrDiv");
+	if (qrDiv === null) {
+		return;
+	}
+	var qrImg = qrDiv.firstChild;
 	if (qrImg === null) {
 		return;
 	}
 
 	var saveLink = document.createElement("a");
 	saveLink.setAttribute("id", "qrImageSaveLink");
-	saveLink.setAttribute("href", qrImg.src);
-	saveLink.setAttribute("download", "qrImage.png");
+	saveLink.setAttribute("href", dataUrl);
+	if (imgType === 'png') {
+		saveLink.setAttribute("download", "qrImage.png");
+	} else {
+		saveLink.setAttribute("download", "qrImage.svg");
+	}
 
-	var insertedLink = qrImg.parentNode.insertBefore(saveLink, qrImg);
-	insertedLink.appendChild(qrImg);
+	saveLink.appendChild(qrImg);
+	qrDiv.appendChild(saveLink);
+
 	document.getElementById("qrDiv").style.display = "block";
 }
 
@@ -513,6 +600,8 @@ function getLocalMessages() {
 		"qrManualTitleLabel",
 		"qrManualTitleTextLabel",
 		"qrSizeInputLabel",
+		"qrBorderInputLabel",
+		"qrImageTypeLabel",
 		"qrSubHeading",
 		"submitButton"
 	];

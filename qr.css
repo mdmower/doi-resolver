@@ -59,7 +59,7 @@ body {
 }
 
 #sizeParam {
-	margin-top: 4px;
+	margin-top: 10px;
 	clear: both;
 	display: flex;
 	flex: 1;
@@ -72,16 +72,34 @@ body {
 #qrSizeInput {
 	order: 2;
 	margin-left: 4px;
-	width: 4em;
+	width: calc(4em + 4px);
+	padding: 0 2px;
 }
 
-#pxLabel {
+#pxSizeLabel {
 	order: 3;
 	margin-left: 4px;
 }
 
+#qrBorderInputLabel {
+	margin-left: 2em;
+	order: 4;
+}
+
+#qrBorderInput {
+	order: 5;
+	margin-left: 4px;
+	width: calc(2em + 4px);
+	padding: 0 2px;
+}
+
+#pxBorderLabel {
+	order: 6;
+	margin-left: 4px;
+}
+
 #colorParams {
-	margin-top: 4px;
+	margin-top: 10px;
 	clear: both;
 	line-height: 32px;
 	display: flex;
@@ -126,8 +144,17 @@ body {
 	box-shadow: 2px 2px 1px #888888;
 }
 
+#imageTypeParam {
+	margin-top: 10px;
+	clear: both;
+}
+
+#qrImageTypeSvg {
+	margin-left: 1em;
+}
+
 #bgTransDiv {
-	margin-top: 4px;
+	margin-top: 10px;
 	clear: both;
 }
 

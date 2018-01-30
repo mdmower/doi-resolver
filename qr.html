@@ -24,7 +24,10 @@
 <script type="text/javascript" src="jquery/jquery-min.js"></script>
 <script type="text/javascript" src="underscore/underscore-min.js"></script>
 <script type="text/javascript" src="spectrum/spectrum.js"></script>
-<script type="text/javascript" src="jq-qrcode/jquery.qrcode-min.js"></script>
+<script type="text/javascript" src="canvg/rgbcolor.js"></script> 
+<script type="text/javascript" src="canvg/StackBlur.js"></script>
+<script type="text/javascript" src="canvg/canvg.min.js"></script> 
+<script type="text/javascript" src="qrcodegen/qrcodegen.js"></script>
 <script type="text/javascript" src="qr.js"></script>
 </head>
 
@@ -42,7 +45,10 @@
 		<div id="sizeParam">
 			<label for="qrSizeInput" id="qrSizeInputLabel"></label>
 			<input type="number" id="qrSizeInput" min="80" />
-			<div id="pxLabel">px</div>
+			<div id="pxSizeLabel">px</div>
+			<label for="qrBorderInput" id="qrBorderInputLabel"></label>
+			<input type="number" id="qrBorderInput" min="0" />
+			<div id="pxBorderLabel">module(s)</div>
 		</div>
 		<div id="colorParams">
 			<div id="fgColorDiv">
@@ -53,6 +59,13 @@
 				<label for="qrBgColorInput" id="qrBgColorInputLabel"></label>
 				<input type="text" id="qrBgColorInput" />
 			</div>
+		</div>
+		<div id="imageTypeParam">
+			<span id="qrImageTypeLabel"></span>
+			<input type="radio" id="qrImageTypePng" name="qrImageType" value="png" />
+			<label for="qrImageTypePng" id="qrImageTypePngLabel">PNG</label>
+			<input type="radio" id="qrImageTypeSvg" name="qrImageType" value="svg" />
+			<label for="qrImageTypeSvg" id="qrImageTypeSvgLabel">SVG</label>
 		</div>
 		<div id="bgTransDiv">
 			<input type="checkbox" id="qrBgTrans" />

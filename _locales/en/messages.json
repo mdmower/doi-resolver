@@ -303,6 +303,14 @@
 		"description": "A label for the size text box on the QR page",
 		"message": "Size"
 	},
+	"qrBorderInputLabel": {
+		"description": "A label for the border text box on the QR page",
+		"message": "Border"
+	},
+	"qrImageTypeLabel": {
+		"description": "A label for the radio selection of image save format",
+		"message": "Image type"
+	},
 	"qrSubmit": {
 		"description": "Text for the button to open QR page",
 		"message": "QR Code"

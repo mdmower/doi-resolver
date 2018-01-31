@@ -221,7 +221,7 @@
 	},
 	"optionHistoryShowSave": {
 		"description": "Label for history option to only show saved items in text box drop-downs",
-		"message": "Only include saved entries in text box drop-down"
+		"message": "Only show saved entries in text input box drop-downs"
 	},
 	"optionMetaButtons": {
 		"description": "A setting to enable additional buttons in the popup",

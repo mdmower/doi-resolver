@@ -27,6 +27,10 @@ ul {
 	margin: 0;
 }
 
+a {
+    text-decoration: none;
+}
+
 #openSourceDisclaimer {
 	margin-bottom: 0;
 }

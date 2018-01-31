@@ -152,6 +152,9 @@ function getSaveMap() {
 	 * These can fire onChange events frequently. debounce them to only
 	 * run once per 750ms so Chrome Sync doesn't get too many sync requests.
 	 */
+	var dbSaveOptions = debounce(saveOptions, 750);
+	var dbHistoryLengthUpdate = debounce(historyLengthUpdate, 750);
+
 	return [
 		{ selector: "#history", func: saveOptions },
 		{ selector: "#historyShowSave", func: saveOptions },
@@ -223,7 +226,26 @@ function toggleSync() {
 	}
 }
 
-var dbSaveOptions = _.debounce(saveOptions, 750);
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this;
+		var args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) {
+				func.apply(context, args);
+			}
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait || 200);
+		if (callNow) {
+			func.apply(context, args);
+		}
+	};
+}
+
 function saveOptions() {
 	minimalOptionsRefresh();
 
@@ -689,7 +711,6 @@ function deleteHistoryEntry() {
 	});
 }
 
-var dbHistoryLengthUpdate = _.debounce(historyLengthUpdate, 750);
 function historyLengthUpdate() {
 	var historyLength = Number(document.getElementById("historyLength").value);
 	if (isNaN(historyLength) || historyLength < 1) {

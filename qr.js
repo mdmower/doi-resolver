@@ -55,13 +55,33 @@ function continueOnLoad() {
 	startListeners();
 }
 
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this;
+		var args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) {
+				func.apply(context, args);
+			}
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait || 200);
+		if (callNow) {
+			func.apply(context, args);
+		}
+	};
+}
+
 function startListeners() {
 	/*
 	 * qrSizeInput and qrBorderInput can fire onChange events frequently.
 	 * debounce them to only run once per 750ms so Chrome Sync doesn't
 	 * get too many sync requests.
 	 */
-	var dbQrDimensionsSave = _.debounce(qrDimensionsSave, 750);
+	var dbQrDimensionsSave = debounce(qrDimensionsSave, 750);
 
 	document.getElementById("doiForm").addEventListener("submit", function (event) {
 		formSubmitHandler();

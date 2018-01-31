@@ -22,32 +22,32 @@ Portions of this software depend on
   MIT license
   https://jquery.org/license
 
-  jQuery.qrcode:
-  https://larsjung.de/jquery-qrcode/
+  QR Code generator library:
+  https://www.nayuki.io/page/qr-code-generator-library
   MIT license
-  https://github.com/lrsjng/jquery-qrcode/
+  https://github.com/nayuki/QR-Code-generator#license
+
+  canvg:
+  https://github.com/canvg/canvg
+  MIT License
+  https://github.com/canvg/canvg/blob/master/MIT-LICENSE.txt
 
   Spectrum jQuery Colorpicker:
-  http://bgrins.github.io/spectrum/
-  Copyright-only License
+  https://bgrins.github.io/spectrum/
+  MIT License
   https://github.com/bgrins/spectrum/blob/master/LICENSE
 
   underscore.js:
   http://underscorejs.org/
-  Copyright-only License
+  MIT License
   https://github.com/jashkenas/underscore/blob/master/LICENSE
 
   citeproc-js:
   https://citeproc-js.readthedocs.io/
   Common Public Attribution License Version 1.0
-  https://github.com/Juris-M/citeproc-js/raw/master/LICENSE
+  https://github.com/Juris-M/citeproc-js/blob/master/LICENSE
 
   Citation Style Language (CSL) citation styles:
   http://citationstyles.org/
   Creative Commons Attribution-ShareAlike 3.0 Unported
   http://creativecommons.org/licenses/by-sa/3.0/
-
-  Tooltipster
-  http://iamceege.github.io/tooltipster/
-  MIT license
-  https://raw.githubusercontent.com/iamceege/tooltipster/master/LICENSE

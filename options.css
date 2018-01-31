@@ -301,6 +301,15 @@ ul {
 	margin: 0 0 4px 0;
 }
 
+#headingAutolink,
+#headingSync {
+	display: inline-block;
+}
+
+#autolinkTestExclusion {
+	width: 400px;
+}
+
 #historyList {
 	border: 0;
 	border-collapse: collapse;
@@ -363,24 +372,44 @@ ul {
 	border-radius: 6px;
 	cursor: default;
 	font-weight: normal;
+	position: relative;
 }
 
-#headingAutolink,
-#headingSync {
-	display: inline-block;
+/* Tooltip bubble */
+.tooltip .tooltiptext {
+	width: 500px;
+	font-size: 1.1em;
+	background-color: #EEEDDD;
+	border: 1px solid gray;
+	color: black;
+	padding: 5px;
+	border-radius: 6px;
+	position: absolute;
+	z-index: 1;
+	left: 10px;
+	top: -1em;
+	margin-left: 10px;
+	visibility: hidden;
+	opacity: 0;
+	transition: visibility 0s linear 0.3s, opacity 0.3s linear;
+
 }
 
-.tooltip_templates {
-	display: none;
+/* Tooltip arrow */
+.tooltip .tooltiptext::after {
+	content: "";
+	position: absolute;
+	top: 1em;
+	left: 0;
+	margin-left: -10px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: transparent #555 transparent transparent;
 }
 
-#autolinkTestExclusion {
-	width: 400px;
-}
-
-#historySaveInfoText,
-#optionAutolinkInfo,
-#autolinkExclusionsInfoText,
-#syncDataInfo {
-	font-size: 0.9em;
+/* Show the tooltip on hover */
+.tooltip:hover .tooltiptext {
+	visibility: visible;
+	opacity: 1;
+	transition-delay: 0s;
 }

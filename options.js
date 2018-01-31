@@ -139,13 +139,6 @@ function startClickListeners() {
 
 	document.getElementById("historyClear").addEventListener("click", deleteHistory);
 
-	$('.tooltip').tooltipster({
-		theme: 'tooltipster-light',
-		maxWidth: 600,
-		interactive: true,
-		side: ['right', 'top', 'bottom', 'left']
-	});
-
 	document.getElementById("syncDataWipeButton").addEventListener("click", function() {
 		document.getElementById("syncData").checked = false;
 		/* background listens for sync_reset == true */

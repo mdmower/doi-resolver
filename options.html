@@ -19,12 +19,8 @@
 <head>
 <title>DOI Resolver Options</title>
 <meta charset="utf-8"/>
-<link rel="stylesheet" type="text/css" href="tooltipster/tooltipster.bundle.min.css" />
-<link rel="stylesheet" type="text/css" href="tooltipster/tooltipster-sideTip-light.min.css" />
 <link rel="stylesheet" type="text/css" href="options.css">
-<script type="text/javascript" src="jquery/jquery-min.js"></script>
 <script type="text/javascript" src="underscore/underscore-min.js"></script>
-<script type="text/javascript" src="tooltipster/tooltipster.bundle.min.js"></script>
 <script type="text/javascript" src="options.js"></script>
 </head>
 
@@ -129,7 +125,7 @@
 		</div>
 
 		<div class="option_container">
-			<h3 class="option_title" id="headingAutolink"></h3> <sup id="autolinkInfoMark" class="tooltip" data-tooltip-content="#optionAutolinkInfo">?</sup><br>
+			<h3 class="option_title" id="headingAutolink"></h3> <sup id="autolinkInfoMark" class="tooltip">?<span id="optionAutolinkInfo" class="tooltiptext"></span></sup><br>
 			<input type="checkbox" id="autolink" /><label id="optionAutolink" for="autolink"></label>
 			<div id="alProtocol">
 				<label id="optionAutolinkApplyTo" for="autolinkApplyTo"></label>
@@ -143,7 +139,7 @@
 				<input type="checkbox" id="autolinkRewrite" /><label id="optionAutolinkRewrite" for="autolinkRewrite"></label>
 			</div>
 			<div id="alExclusions">
-				<label id="optionAutolinkExclusions" for="autolinkExclusions"></label> <sup id="autolinkExclusionsInfoMark" class="tooltip" data-tooltip-content="#autolinkExclusionsInfoText">?</sup>
+				<label id="optionAutolinkExclusions" for="autolinkExclusions"></label> <sup id="autolinkExclusionsInfoMark" class="tooltip">?<span id="autolinkExclusionsInfoText" class="tooltiptext"></span></sup>
 				<textarea id="autolinkExclusions" rows="4"></textarea>
 				<div id="autolinkTestExclusionContainer">
 					<label id="optionAutolinkTestExclusion" for="autolinkTestExclusion"></label> <input type="text" id="autolinkTestExclusion" /> <span id="autolinkTestExclusionResult"></span>
@@ -152,7 +148,7 @@
 		</div>
 
 		<div class="option_container" id="last_option_container">
-			<h3 class="option_title" id="headingSync"></h3> <sup id="syncInfoMark" class="tooltip" data-tooltip-content="#syncDataInfo">?</sup><br>
+			<h3 class="option_title" id="headingSync"></h3> <sup id="syncInfoMark" class="tooltip">?<span id="syncDataInfo" class="tooltiptext"></span></sup><br>
 			<input type="checkbox" id="syncData" /><label id="optionSyncData" for="syncData"></label>
 			<div id="syncDataWipe">
 				<span id="syncDataWipeDescription"></span> <button id="syncDataWipeButton"></button>
@@ -163,7 +159,7 @@
 	<div class="content" id="content_history">
 		<table id="historyList">
 			<tr id="historyHeading">
-				<th class="history_entry_save"><span id="tableHeadingSave"></span> <sup id="historySaveInfoMark" class="tooltip" data-tooltip-content="#historySaveInfoText">?</sup></th>
+				<th class="history_entry_save"><span id="tableHeadingSave"></span> <sup id="historySaveInfoMark" class="tooltip">?<span id="historySaveInfoText" class="tooltiptext"></span></sup></th>
 				<th class="history_entry_delete"><span id="tableHeadingDelete"></span></th>
 				<th class="history_entry_doi"><span id="tableHeadingDoi"></span></th>
 				<th><button id="historyClear"></button></th>
@@ -195,14 +191,7 @@
 			<li><a href="http://underscorejs.org/">underscore.js</a> - <a href="https://github.com/jashkenas/underscore/blob/master/LICENSE">Copyright-only License</a></li>
 			<li><a href="https://citeproc-js.readthedocs.io/">citeproc-js</a> - <a href="https://github.com/Juris-M/citeproc-js/raw/master/LICENSE">Common Public Attribution License Version 1.0</a></li>
 			<li><a href="http://citationstyles.org/">Citation Style Language (CSL) citation styles</a> - <a href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported</a></li>
-			<li><a href="http://iamceege.github.io/tooltipster/">Tooltipster</a> - <a href="https://raw.githubusercontent.com/iamceege/tooltipster/master/LICENSE">MIT license</a></li>
 		</ul>
-	</div>
-	<div class="tooltip_templates">
-		<span id="historySaveInfoText"></span>
-		<span id="optionAutolinkInfo"></span>
-		<span id="autolinkExclusionsInfoText"></span>
-		<span id="syncDataInfo"></span>
 	</div>
 </body>
 </html>

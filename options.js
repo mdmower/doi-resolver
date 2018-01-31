@@ -156,31 +156,33 @@ function getSaveMap() {
 	var dbHistoryLengthUpdate = debounce(historyLengthUpdate, 750);
 
 	return [
-		{ selector: "#history", func: saveOptions },
-		{ selector: "#historyShowSave", func: saveOptions },
-		{ selector: "#historyLength", func: dbHistoryLengthUpdate },
-		{ selector: "#context", func: saveOptions },
-		{ selector: "#meta", func: saveOptions },
-		{ selector: "#autolink", func: saveOptions },
-		{ selector: "#autolinkRewrite", func: saveOptions },
-		{ selector: "#customResolver", func: saveOptions },
-		{ selector: ".crSelections", func: saveOptions },
-		{ selector: "#doiResolverInput", func: dbSaveOptions },
-		{ selector: "#doiResolverInput", func: setCrPreviews },
-		{ selector: "#shortDoiResolverInput", func: dbSaveOptions },
-		{ selector: "#shortDoiResolverInput", func: setCrPreviews },
-		{ selector: "#omniboxOpento", func: saveOptions },
-		{ selector: "#autolinkApplyTo", func: saveOptions },
-		{ selector: "#autolinkExclusions", func: dbSaveOptions },
-		{ selector: "#autolinkTestExclusion", func: autolinkTestExclusion },
-		{ selector: "#syncData", func: toggleSync }
+		{ selector: "#history", func: saveOptions, events: ['change'] },
+		{ selector: "#historyShowSave", func: saveOptions, events: ['change'] },
+		{ selector: "#historyLength", func: dbHistoryLengthUpdate, events: ['change'] },
+		{ selector: "#context", func: saveOptions, events: ['change'] },
+		{ selector: "#meta", func: saveOptions, events: ['change'] },
+		{ selector: "#autolink", func: saveOptions, events: ['change'] },
+		{ selector: "#autolinkRewrite", func: saveOptions, events: ['change'] },
+		{ selector: "#customResolver", func: saveOptions, events: ['change'] },
+		{ selector: ".crSelections", func: saveOptions, events: ['change'] },
+		{ selector: "#doiResolverInput", func: dbSaveOptions, events: ['input', 'change'] },
+		{ selector: "#doiResolverInput", func: setCrPreviews, events: ['input', 'change'] },
+		{ selector: "#shortDoiResolverInput", func: dbSaveOptions, events: ['input', 'change'] },
+		{ selector: "#shortDoiResolverInput", func: setCrPreviews, events: ['input', 'change'] },
+		{ selector: "#omniboxOpento", func: saveOptions, events: ['change'] },
+		{ selector: "#autolinkApplyTo", func: saveOptions, events: ['change'] },
+		{ selector: "#autolinkExclusions", func: dbSaveOptions, events: ['input', 'change'] },
+		{ selector: "#autolinkTestExclusion", func: autolinkTestExclusion, events: ['input', 'change'] },
+		{ selector: "#syncData", func: toggleSync, events: ['change'] }
 	];
 }
 
 function startChangeListeners() {
 	getSaveMap().forEach(function(map) {
 		Array.from(document.querySelectorAll(map.selector)).forEach(function(elm) {
-			elm.addEventListener("change", map.func);
+			map.events.forEach(function(event) {
+				elm.addEventListener(event, map.func);
+			});
 		});
 	});
 }
@@ -188,7 +190,9 @@ function startChangeListeners() {
 function haltChangeListeners() {
 	getSaveMap().forEach(function(map) {
 		Array.from(document.querySelectorAll(map.selector)).forEach(function(elm) {
-			elm.removeEventListener("change", map.func);
+			map.events.forEach(function(event) {
+				elm.removeEventListener(event, map.func);
+			});
 		});
 	});
 }

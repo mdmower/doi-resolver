@@ -748,6 +748,30 @@ function removeAllHistoryEntries() {
 	}
 }
 
+function historyRecordsMatch(record1, record2) {
+	var keys1 = Object.keys(record1);
+	var keys2 = Object.keys(record2);
+
+	// https://stackoverflow.com/questions/1187518/how-to-get-the-difference-between-two-arrays-in-javascript#answer-33034768
+	var keydiff = keys1.filter(function(x) {
+		return !keys2.includes(x);
+	}).concat(keys2.filter(function(x) {
+		return !keys1.includes(x);
+	}));
+
+	if (keydiff.length > 0) {
+		return false;
+	}
+
+	for (var i = 0; i < keys1.length; i++) {
+		if (record1[keys1[i]] !== record2[keys1[i]]) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 function updateHistory(changes, callback) {
 	var oldRecords = changes.oldValue;
 	var oldLength = changes.oldValue.length;
@@ -776,7 +800,7 @@ function updateHistory(changes, callback) {
 		}
 	} else {
 		for (i = 0; i < oldLength; i++) {
-			if (i < newLength && !_.isEqual(oldRecords[i], newRecords[i])) {
+			if (i < newLength && !historyRecordsMatch(oldRecords[i], newRecords[i])) {
 				newHistoryEntry = generateHistoryEntry(newRecords[i], i);
 				oldHistoryEntry = document.getElementById("history_entry_" + i);
 				oldHistoryEntry.parentNode.insertBefore(newHistoryEntry, oldHistoryEntry);

@@ -17,10 +17,10 @@ Matthew D. Mower (https://github.com/mdmower).
 
 Portions of this software depend on
 
-  jQuery:
-  https://jquery.org/
+  iro.js:
+  https://rakujira.jp/projects/iro/
   MIT license
-  https://jquery.org/license
+  https://github.com/jaames/iro.js/blob/master/LICENSE.txt
 
   QR Code generator library:
   https://www.nayuki.io/page/qr-code-generator-library
@@ -31,11 +31,6 @@ Portions of this software depend on
   https://github.com/canvg/canvg
   MIT License
   https://github.com/canvg/canvg/blob/master/MIT-LICENSE.txt
-
-  Spectrum jQuery Colorpicker:
-  https://bgrins.github.io/spectrum/
-  MIT License
-  https://github.com/bgrins/spectrum/blob/master/LICENSE
 
   citeproc-js:
   https://citeproc-js.readthedocs.io/

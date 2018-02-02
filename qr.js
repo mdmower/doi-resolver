@@ -75,6 +75,14 @@ function debounce(func, wait, immediate) {
 	};
 }
 
+function growFormColumns() {
+	var left = document.getElementById("leftForm");
+	var right = document.getElementById("colorParams");
+	if (left.offsetHeight < right.offsetHeight) {
+		left.style.height = right.offsetHeight + "px";
+	}
+}
+
 function startListeners() {
 	/*
 	 * qrSizeInput and qrBorderInput can fire onChange events frequently.
@@ -99,15 +107,40 @@ function startListeners() {
 	document.getElementById("qrBorderInput").addEventListener("input", dbQrDimensionsSave);
 	document.getElementById("qrManualTitle").addEventListener("change", toggleTitleFetch);
 
+	var dbSaveOptions = debounce(saveOptions, 500);
+	var dbColorSave = function () {
+		if (isHexColor(this.value)) {
+			this.classList.remove("badColor");
+			if (this.id === "qrFgColorInput" && colorPickerStorage.fgColorPicker) {
+				colorPickerStorage.fgColorPicker.off("color:change", colorPickerStorage.debounceFgColorChanged);
+				colorPickerStorage.fgColorPicker.color.hexString = this.value;
+				this.style.background = "linear-gradient(90deg, #FFF 50%, " + this.value + " 50%)";
+				colorPickerStorage.fgColorPicker.on("color:change", colorPickerStorage.debounceFgColorChanged);
+			} else if (this.id === "qrBgColorInput" && colorPickerStorage.bgColorPicker) {
+				colorPickerStorage.bgColorPicker.off("color:change", colorPickerStorage.debounceBgColorChanged);
+				colorPickerStorage.bgColorPicker.color.hexString = this.value;
+				this.style.background = "linear-gradient(90deg, #FFF 50%, " + this.value + " 50%)";
+				colorPickerStorage.bgColorPicker.on("color:change", colorPickerStorage.debounceBgColorChanged);
+			}
+			dbSaveOptions();
+		} else {
+			this.classList.add("badColor");
+		}
+	};
+	document.getElementById("qrFgColorInput").addEventListener("input", dbColorSave);
+	document.getElementById("qrBgColorInput").addEventListener("input", dbColorSave);
+
 	chrome.tabs.getCurrent(function(tab) {
 		var tabRecord = chrome.extension.getBackgroundPage().tabRecord;
 		tabRecord(tab.id, true);
 	});
 }
 
-function toggleBgColor() {
-	var qrBgTrans = document.getElementById("qrBgTrans").checked;
-	document.getElementById("bgColorDiv").style.display = qrBgTrans ? "none" : "block";
+function toggleBgColor(transparency) {
+	if (transparency === undefined)
+		transparency = document.getElementById("qrBgTrans").checked;
+	document.getElementById("qrBgColorInput").disabled = transparency;
+	document.getElementById("qrBgColorPicker").style["pointer-events"] = transparency ? "none" : "auto";
 }
 
 function qrDimensionsSave() {
@@ -190,7 +223,7 @@ function restoreOptions() {
 		}
 		document.getElementById("qrFetchTitle").checked = Boolean(stgLocal.qr_title);
 		document.getElementById("qrBgTrans").checked = Boolean(stg.qr_bgtrans);
-		document.getElementById("bgColorDiv").style.display = stg.qr_bgtrans ? "none" : "block";
+		toggleBgColor(Boolean(stg.qr_bgtrans));
 	});
 	});
 }
@@ -232,8 +265,21 @@ function populateHistory() {
 }
 
 function isHexColor(code) {
-	return /^#[0-9A-F]{6}$/i.test(code);
+	return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(code);
 }
+
+function colorChanged(color, changes) {
+	this.value = color.hexString;
+	this.style.background = "linear-gradient(90deg, #FFF 50%, " + color.hexString + " 50%)";
+	saveOptions();
+}
+
+var colorPickerStorage = {
+	fgColorPicker: undefined,
+	bgColorPicker: undefined,
+	debounceFgColorChanged: undefined,
+	debounceBgColorChanged: undefined
+};
 
 function prepareColorPickers() {
 	var stgFetch = [
@@ -254,7 +300,9 @@ function prepareColorPickers() {
 				}
 			});
 		}
-		document.getElementById("qrFgColorInput").value = qrFgColor;
+		var qrFgColorInput = document.getElementById("qrFgColorInput");
+		qrFgColorInput.value = qrFgColor;
+		qrFgColorInput.style.background = "linear-gradient(90deg, #FFF 50%, " + qrFgColor + " 50%)";
 
 		var qrBgColor = "#ffffff";
 		var storedQrBgColor = stg.qr_bgcolor;
@@ -267,32 +315,29 @@ function prepareColorPickers() {
 				}
 			});
 		}
-		document.getElementById("qrBgColorInput").value = qrBgColor;
+		var qrBgColorInput = document.getElementById("qrBgColorInput");
+		qrBgColorInput.value = qrBgColor;
+		qrBgColorInput.style.background = "linear-gradient(90deg, #FFF 50%, " + qrBgColor + " 50%)";
 
-		$("#qrFgColorInput").spectrum({
-			color: qrFgColor,
-			preferredFormat: "hex",
-			showInput: true,
-			clickoutFiresChange: true,
-			replacerClassName: "qrColorReplacerClass",
-			containerClassName: "qrColorContainerClass",
-			change: function(color) {
-				saveOptions();
-			}
-		});
+		var colorPickerOptions = {
+			padding: 4,
+			markerRadius: 6,
+			sliderMargin: 12,
+			width: 160,
+			height: 160
+		};
 
-		$("#qrBgColorInput").spectrum({
-			color: qrBgColor,
-			preferredFormat: "hex",
-			showInput: true,
-			clickoutFiresChange: true,
-			replacerClassName: "qrColorReplacerClass",
-			containerClassName: "qrColorContainerClass",
-			change: function(color) {
-				saveOptions();
-			}
-		});
+		colorPickerOptions.color = qrFgColor;
+		colorPickerStorage.fgColorPicker = new iro.ColorPicker("#qrFgColorPicker", colorPickerOptions);
+		colorPickerStorage.debounceFgColorChanged = debounce(colorChanged.bind(qrFgColorInput), 500);
+		colorPickerStorage.fgColorPicker.on("color:change", colorPickerStorage.debounceFgColorChanged);
 
+		colorPickerOptions.color = qrBgColor;
+		colorPickerStorage.bgColorPicker = new iro.ColorPicker("#qrBgColorPicker", colorPickerOptions);
+		colorPickerStorage.debounceBgColorChanged = debounce(colorChanged.bind(qrBgColorInput), 500);
+		colorPickerStorage.bgColorPicker.on("color:change", colorPickerStorage.debounceBgColorChanged);
+
+		growFormColumns();
 	});
 }
 

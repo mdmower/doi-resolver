@@ -34,13 +34,32 @@ body {
 	color: grey;
 }
 
-#mainForm {
-	float: left;
+#doiForm {
+	overflow: hidden;
+	margin: 0;
 	border: 1px solid grey;
 	border-radius: 4px;
-	width: 390px;
-	margin: 0 5px;
-	padding: 4px;
+	padding: 5px;
+	width: 720px;
+}
+
+#leftForm {
+	width: 360px;
+	float: left;
+	display: flex;
+	flex-direction: column;
+}
+
+#mainForm {
+	width: 100%;
+	order: 1;
+	flex: 1;
+}
+
+#colorParams {
+	float: left;
+	width: 340px;
+	margin-left: 20px;
 }
 
 #inputContainer {
@@ -98,50 +117,38 @@ body {
 	margin-left: 4px;
 }
 
-#colorParams {
-	margin-top: 10px;
-	clear: both;
-	line-height: 32px;
-	display: flex;
-	flex: 1;
-}
-
+#bgColorDiv,
 #fgColorDiv {
-	order: 1;
+	float: left;
+	width: 160px;
+	padding: 0 5px;
 }
 
-#bgColorDiv {
-	order: 2;
-	margin-left: 10px;
+#qrFgColorPicker,
+#qrBgColorPicker {
+	margin-top: 10px;
+	width: 160px;
 }
 
-#qrFgColorInputLabel,
-#qrBgColorInputLabel {
-	margin-right: 4px;
+#qrFgColorInput,
+#qrBgColorInput {
+	margin-top: 2px;
+	width: 146px;
+	background: linear-gradient(90deg, #FFF 50%, #FFF 50%);
+	border: 1px solid gray;
+	padding: 2px 6px;
+	line-height: 1.5em;
+	font-family: monospace;
 }
 
-.qrColorReplacerClass {
-	background-color: #fafafa;
-	border: 1px solid grey;
+#qrFgColorInput.badColor,
+#qrBgColorInput.badColor {
+	border: 1px solid orange;
 }
 
-.qrColorReplacerClass:hover {
-	border: 1px solid grey;
-}
-
-
-#fgColorDiv .sp-active,
-#bgColorDiv .sp-active {
-	border-top: 1px solid grey;
-	border-right: 1px solid grey;
-	border-left: 1px solid grey;
-	border-bottom: 0;
-}
-
-.qrColorContainerClass {
-	background-color: #fafafa;
-	border: 1px solid grey;
-	box-shadow: 2px 2px 1px #888888;
+#qrFgColorInput.badColor:focus,
+#qrBgColorInput.badColor:focus {
+	outline-color: orange;
 }
 
 #imageTypeParam {
@@ -186,12 +193,9 @@ body {
 	clear: both;
 }
 
-#qrFetchTitleDiv {
-	float: left;
-}
-
 #submitButton {
-	float: right;
+	width: 100%;
+	order: 2;
 }
 
 #qrDiv {

@@ -75,14 +75,6 @@ function debounce(func, wait, immediate) {
 	};
 }
 
-function growFormColumns() {
-	var left = document.getElementById("leftForm");
-	var right = document.getElementById("colorParams");
-	if (left.offsetHeight < right.offsetHeight) {
-		left.style.height = right.offsetHeight + "px";
-	}
-}
-
 function startListeners() {
 	/*
 	 * qrSizeInput and qrBorderInput can fire onChange events frequently.
@@ -336,8 +328,6 @@ function prepareColorPickers() {
 		colorPickerStorage.bgColorPicker = new iro.ColorPicker("#qrBgColorPicker", colorPickerOptions);
 		colorPickerStorage.debounceBgColorChanged = debounce(colorChanged.bind(qrBgColorInput), 500);
 		colorPickerStorage.bgColorPicker.on("color:change", colorPickerStorage.debounceBgColorChanged);
-
-		growFormColumns();
 	});
 }
 

@@ -41,11 +41,13 @@ body {
 	border-radius: 4px;
 	padding: 5px;
 	width: 720px;
+	display: flex;
 }
 
 #leftForm {
 	width: 360px;
-	float: left;
+	flex: 1;
+	order: 1;
 	display: flex;
 	flex-direction: column;
 }
@@ -57,7 +59,7 @@ body {
 }
 
 #colorParams {
-	float: left;
+	order: 2;
 	width: 340px;
 	margin-left: 20px;
 }

@@ -27,9 +27,7 @@ else
     git pull origin master
 fi
 if [ -f "README.md" ]; then
-    # Retain only the license header and one blank line (16 lines)
-    head -16 ../cite_styles.js > ../tmp.js
-    printf 'var allStyleTitles = [' >> ../tmp.js
+    printf '{"cite_styles":[' > ../tmp.json
 
     declare -a cslfiles
     cslfiles=(*.csl)
@@ -45,42 +43,23 @@ if [ -f "README.md" ]; then
             fi
         done < $FILE
 
-        if [ ! -z "$TITLE" ]; then
+        CODE="${FILE%.*}"
+
+        if [ ! -z "$TITLE" ] && [ ! -z "$CODE" ]; then
             # Replace double quotes in title with escaped double quotes
             if [[ $TITLE == *\"* ]]; then
               TITLE=$(echo $TITLE | sed 's/\"/\\"/g')
             fi
 
             if [[ $FILE == $lastcsl ]]; then
-                printf '"%s"];\n' "$TITLE" >> ../tmp.js
+                printf '{"code":"%s","title":"%s"}]}' "$CODE" "$TITLE" >> ../tmp.json
             else
-                printf '"%s",' "$TITLE" >> ../tmp.js
+                printf '{"code":"%s","title":"%s"},' "$CODE" "$TITLE" >> ../tmp.json
             fi
         fi
     done
 
-    printf 'var allStyleCodes = [' >> ../tmp.js
-    for FILE in "${cslfiles[@]}"; do
-        TITLE=""
-        while read_dom; do
-            if [[ $ENTITY = "title" ]]; then
-                TITLE=$CONTENT
-                break
-            fi
-        done < $FILE
-
-        if [ ! -z "$TITLE" ]; then
-            # filename.csl --> filename
-            STYLE="${FILE%.*}"
-
-            if [[ $FILE == $lastcsl ]]; then
-                printf '"%s"];\n' "$STYLE" >> ../tmp.js
-            else
-                printf '"%s",' "$STYLE" >> ../tmp.js
-            fi
-        fi
-    done
-    mv ../tmp.js ../cite_styles.js
+    mv ../tmp.json ../cite_styles.json
 else
     echo "Styles repository unavailable"
 fi

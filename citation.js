@@ -49,7 +49,7 @@ function storage(firstRun) {
 function continueOnLoad() {
 	initializeDoiInput();
 	getLocalMessages();
-	initLocales(true, buildSelections);
+	initSelections();
 	populateHistory();
 	startListeners();
 }
@@ -85,44 +85,41 @@ function initializeDoiInput() {
 	document.getElementById("doiInput").value = queryStringToJSON(location.search).doi || '';
 }
 
-function initLocales(needsMap, callback) {
-	if (typeof callback !== "function") {
-		return;
-	}
-
-	var args = [].slice.call(arguments, 2);
-
-	fetch("csl_locales/locales.json")
+function getLocales() {
+	return fetch("csl_locales/locales.json")
 	.then(function(response) {
 		return response.json();
 	})
-	.then(function(json) {
-		var langList = [];
-		for (var key in json["primary-dialects"]) {
-			if (json["primary-dialects"].hasOwnProperty(key)) {
-				langList.push(json["primary-dialects"][key]);
-			}
-		}
-
-		args.push(langList);
-		if (needsMap) {
-			args.push(json["language-names"]);
-		}
-
-		callback.apply(null, args);
-	})
 	.catch(function(error) {
 		console.error("Unable to read locales", error);
-		args.push(["en-US"]);
-		if (needsMap) {
-			args.push({"en-US": ["English (US)", "English (US)"]});
-		}
-
-		callback.apply(null, args);
+		return {"primary-dialects": {"en": "en-US"}, "language-names": {"en-US": ["English (US)", "English (US)"]}};
 	});
 }
 
-function buildSelections(allLocales, localesMap) {
+function getStyles() {
+	return fetch("/cite_styles.json")
+	.then(function(response) {
+		return response.json();
+	})
+	.catch(function(error) {
+		console.error("Unable to read styles", error);
+		return {"cite_styles":[{"file": "bibtex", "title": "BibTeX generic citation style"}]};
+	});
+}
+
+function initSelections() {
+	var localesPromise = getLocales();
+	var stylesPromise = getStyles();
+
+	Promise.all([localesPromise, stylesPromise])
+	.then(function(response) {
+		var locales = response[0];
+		var styles = response[1];
+		buildSelections(locales, styles);
+	});
+}
+
+function buildSelections(cslLocales, cslStyles) {
 	var stgFetch = [
 		"cite_locale",
 		"cite_style"
@@ -131,6 +128,8 @@ function buildSelections(allLocales, localesMap) {
 	storage.area.get(stgFetch, function(stg) {
 		var storedLocale = stg.cite_locale;
 		var storedStyle = stg.cite_style;
+		var allLocales = Object.values(cslLocales["primary-dialects"]);
+		var allStyles = cslStyles.cite_styles;
 
 		if (allLocales.indexOf(storedLocale) < 0) {
 			storedLocale = "auto";
@@ -139,6 +138,7 @@ function buildSelections(allLocales, localesMap) {
 
 		/* TODO: Offer option to display locales in their native language;
 		   Retrieved with localesMap[allLocales[i]][0]] */
+		var localesMap = cslLocales["language-names"];
 		var readableLocales = [];
 		for (var i = 0; i < allLocales.length; i++) {
 			readableLocales[i] = [allLocales[i], localesMap[allLocales[i]][1]];
@@ -171,6 +171,13 @@ function buildSelections(allLocales, localesMap) {
 									readableLocale[1],
 									readableLocale[0] === storedLocale);
 			citeLocaleInput.appendChild(localeOption);
+		});
+
+		var allStyleCodes = [];
+		var allStyleTitles = [];
+		allStyles.forEach(function(style) {
+			allStyleCodes.push(style.code);
+			allStyleTitles.push(style.title);
 		});
 
 		// Style not found or "other" (migration)
@@ -321,17 +328,27 @@ function getCitation(doi) {
 
 			var fetchRequest = new Request("https://dx.doi.org/" + doi, fetchInit);
 
-			fetch(fetchRequest)
+			var jsonPromise = fetch(fetchRequest)
 			.then(function(response) {
 				return response.json();
-			})
-			.then(function(json) {
-				initLocales(false, renderBib, json, style, locale);
 			})
 			.catch(function(error) {
 				console.log("Unable to find citation JSON.", error);
 				simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 			});
+
+			var localesPromise = getLocales()
+			.then(function(cslLocales) {
+				return Object.values(cslLocales["primary-dialects"]);
+			});
+
+			Promise.all([jsonPromise, localesPromise])
+			.then(function(response) {
+				var json = response[0];
+				var allLocales = response[1];
+				renderBib(json, style, locale, allLocales);
+			});
+
 		} else {
 			simpleNotification(chrome.i18n.getMessage("needCitationPerm"));
 		}

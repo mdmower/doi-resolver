@@ -320,8 +320,7 @@ function getCitation(doi) {
 
 			var fetchInit = {
 				method: 'GET',
-				headers: fetchHeaders,
-				cache: false
+				headers: fetchHeaders
 			};
 
 			var fetchRequest = new Request("https://dx.doi.org/" + doi, fetchInit);

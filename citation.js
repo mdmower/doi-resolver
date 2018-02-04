@@ -103,7 +103,7 @@ function getStyles() {
 	})
 	.catch(function(error) {
 		console.error("Unable to read styles", error);
-		return {"cite_styles":[{"file": "bibtex", "title": "BibTeX generic citation style"}]};
+		return {"cite_styles": [{"code": "bibtex", "title": "BibTeX generic citation style", "default_locale": "en-US"}]};
 	});
 }
 
@@ -151,12 +151,15 @@ function buildSelections(cslLocales, cslStyles) {
 			return a[1] < b[1] ? -1 : 1;
 		});
 
-		function generateOption(value, html, selected) {
+		function generateOption(value, html, selected, defaultLocale) {
 			var option = document.createElement("option");
 			option.setAttribute("value", value);
 			option.innerHTML = html;
 			if (selected) {
 				option.setAttribute("selected", "");
+			}
+			if (defaultLocale) {
+				option.setAttribute("data-locale", defaultLocale);
 			}
 			return option;
 		}
@@ -166,30 +169,23 @@ function buildSelections(cslLocales, cslStyles) {
 		citeLocaleInput.appendChild(localeOption);
 
 		readableLocales.forEach(function(readableLocale) {
-			localeOption = generateOption(
-									readableLocale[0],
-									readableLocale[1],
-									readableLocale[0] === storedLocale);
+			localeOption = generateOption(readableLocale[0], readableLocale[1], readableLocale[0] === storedLocale);
 			citeLocaleInput.appendChild(localeOption);
 		});
 
-		var allStyleCodes = [];
-		var allStyleTitles = [];
-		allStyles.forEach(function(style) {
-			allStyleCodes.push(style.code);
-			allStyleTitles.push(style.title);
+		var allStyleCodes = Array.from(allStyles, function(item) {
+			return item.code;
 		});
 
 		// Style not found or "other" (migration)
 		if (allStyleCodes.indexOf(storedStyle) < 0) {
-			storedStyle = "bibtex";
-			chrome.storage.local.set({cite_style: "bibtex"}, null);
+			storedStyle = chrome.extension.getBackgroundPage().getDefaultOption("cite_style");
+			chrome.storage.local.set({cite_style: storedStyle}, null);
 		}
 
 		var styleList = document.getElementById("styleList");
-		allStyleCodes.forEach(function(styleCode, i) {
-			var styleTitle = allStyleTitles[i];
-			var styleOption = generateOption(styleCode, styleTitle, styleCode === storedStyle);
+		allStyles.forEach(function(style) {
+			var styleOption = generateOption(style.code, style.title, style.code === storedStyle, style.default_locale);
 			styleList.appendChild(styleOption);
 		});
 
@@ -299,8 +295,10 @@ function outputCitation(message) {
 }
 
 function getCitation(doi) {
-	var style = document.getElementById("styleList").value;
+	var styleList = document.getElementById("styleList");
+	var style = styleList.value;
 	var locale = document.getElementById("citeLocaleInput").value;
+	var defaultLocale = styleList.selectedOptions[0].getAttribute('data-locale');
 
 	if (!style || !locale) {
 		return;
@@ -328,25 +326,16 @@ function getCitation(doi) {
 
 			var fetchRequest = new Request("https://dx.doi.org/" + doi, fetchInit);
 
-			var jsonPromise = fetch(fetchRequest)
+			fetch(fetchRequest)
 			.then(function(response) {
 				return response.json();
+			})
+			.then(function(json) {
+				renderBib(json, style, locale, defaultLocale);
 			})
 			.catch(function(error) {
 				console.log("Unable to find citation JSON.", error);
 				simpleNotification(chrome.i18n.getMessage("noCitationFound"));
-			});
-
-			var localesPromise = getLocales()
-			.then(function(cslLocales) {
-				return Object.values(cslLocales["primary-dialects"]);
-			});
-
-			Promise.all([jsonPromise, localesPromise])
-			.then(function(response) {
-				var json = response[0];
-				var allLocales = response[1];
-				renderBib(json, style, locale, allLocales);
 			});
 
 		} else {
@@ -355,90 +344,97 @@ function getCitation(doi) {
 	});
 }
 
-function renderBib(citation, style, locale, allLocales) {
-	var lang = locale;
+function getStyleCsl(filename) {
+	console.time("Style CSL download");
+	return fetch("https://raw.githubusercontent.com/citation-style-language/styles/master/" + filename + ".csl")
+	.then(function(response) {
+		console.timeEnd("Style CSL download");
+		return response.text();
+	});
+}
 
-	citation.id = "Item-1";
-	var citations = { "Item-1": citation };
+function getLocaleXml(locale) {
+	console.time("Locale XML download");
+	return fetch("https://raw.githubusercontent.com/citation-style-language/locales/master/locales-" + locale + ".xml")
+	.then(function(response) {
+		console.timeEnd("Locale XML download");
+		return response.text();
+	});
+}
 
+function renderBib(citation, style, locale, defaultLocale) {
 	// origin: raw.githubusercontent.com permission already handled at button press
 
-	fetch("https://raw.githubusercontent.com/citation-style-language/styles/master/" + style + ".csl")
+	var forceLang = true;
+
+	if (locale === "auto") {
+		// Default to en-US in case a defaultLocale is not defined
+		locale = defaultLocale || "en-US";
+		forceLang = false;
+	}
+
+	var styleCslPromise = getStyleCsl(style)
+	.catch(function(error) {
+		console.error("Unable to find style CSL", error);
+		simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+	});
+
+	var localeXmlPromise = getLocaleXml(locale)
+	.catch(function(error) {
+		console.error("Unable to find locale XML", error);
+		simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
+	});
+
+	Promise.all([styleCslPromise, localeXmlPromise])
 	.then(function(response) {
-		return response.text();
-	})
-	.then(function(cslResponse) {
+		var cslResponse = response[0];
+		var locResponse = response[1];
+
 		if (!cslResponse) {
 			console.error("Invalid style XML");
 			simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
 			return;
 		}
 
-		if (locale === "auto") {
-			// Default to en-US in case a default style is not found
-			lang = "en-US";
-
-			var parser = new DOMParser();
-			var xmlDoc = parser.parseFromString(cslResponse, "text/xml");
-			var styleTag = xmlDoc.getElementsByTagName("style");
-			if (styleTag.length > 0) {
-				var defaultLocale = styleTag[0].getAttribute("default-locale");
-				if (allLocales.indexOf(defaultLocale) >= 0) {
-					lang = defaultLocale;
-				}
-			}
+		if (!locResponse) {
+			console.error("Invalid locale XML");
+			simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
+			return;
 		}
 
-		fetch("https://raw.githubusercontent.com/citation-style-language/locales/master/locales-" + lang + ".xml")
-		.then(function(response) {
-			return response.text();
-		})
-		.then(function(locResponse) {
-			if (!locResponse) {
-				console.error("Invalid locale XML");
-				simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + lang + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
-				return;
-			}
+		citation.id = "Item-1";
+		var citations = { "Item-1": citation };
 
-			var citeprocSys = {
-				retrieveLocale: function(lang) {
-					return locResponse;
-				},
-				retrieveItem: function(id) {
-					return citations[id];
-				}
-			};
-
-			var citeproc;
-			if (locale === "auto") {
-				citeproc = new CSL.Engine(citeprocSys, cslResponse);
-			} else {
-				citeproc = new CSL.Engine(citeprocSys, cslResponse, lang, 1);
+		var citeprocSys = {
+			retrieveLocale: function(locale) {
+				return locResponse;
+			},
+			retrieveItem: function(id) {
+				return citations[id];
 			}
+		};
 
-			var itemIDs = [];
-			for (var key in citations) {
-				if (citations.hasOwnProperty(key)) {
-					itemIDs.push(key);
-				}
-			}
-			citeproc.updateItems(itemIDs);
+		var citeproc;
+		if (forceLang) {
+			citeproc = new CSL.Engine(citeprocSys, cslResponse, locale, forceLang);
+		} else {
+			citeproc = new CSL.Engine(citeprocSys, cslResponse);
+		}
 
-			var bibResult = citeproc.makeBibliography();
-			if (bibResult) {
-				outputCitation(bibResult[1].join('\n'));
-			} else {
-				simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));
+		var itemIDs = [];
+		for (var key in citations) {
+			if (citations.hasOwnProperty(key)) {
+				itemIDs.push(key);
 			}
-		})
-		.catch(function(error) {
-			console.error("Unable to find locale XML.", error);
-			simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + lang + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
-		});
-	})
-	.catch(function(error) {
-		console.error("Unable to find style XML.", error);
-		simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+		}
+		citeproc.updateItems(itemIDs);
+
+		var bibResult = citeproc.makeBibliography();
+		if (bibResult) {
+			outputCitation(bibResult[1].join('\n'));
+		} else {
+			simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));
+		}
 	});
 }
 

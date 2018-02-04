@@ -17,6 +17,10 @@
 read_dom () {
     local IFS=\>
     read -d \< ENTITY CONTENT
+    local RET=$?
+    TAGNAME=${ENTITY%% *}
+    ATTRIBUTES=${ENTITY#* }
+    return $RET
 }
 
 if [ ! -d "styles" ]; then
@@ -36,8 +40,13 @@ if [ -f "README.md" ]; then
 
     for FILE in "${cslfiles[@]}"; do
         TITLE=""
+        locale_regex=".*default-locale=\"([^\"]+)\".*"
         while read_dom; do
-            if [[ $ENTITY = "title" ]]; then
+            if [[ $TAGNAME = "style" ]]; then
+                if [[ "$ATTRIBUTES" =~ $locale_regex ]]; then
+                    DEFAULT_LOCALE="${BASH_REMATCH[1]}"
+                fi
+            elif [[ $TAGNAME = "title" ]]; then
                 TITLE=$CONTENT
                 break
             fi
@@ -52,9 +61,9 @@ if [ -f "README.md" ]; then
             fi
 
             if [[ $FILE == $lastcsl ]]; then
-                printf '{"code":"%s","title":"%s"}]}' "$CODE" "$TITLE" >> ../tmp.json
+                printf '{"code":"%s","title":"%s","default_locale":"%s"}]}' "$CODE" "$TITLE" "$DEFAULT_LOCALE" >> ../tmp.json
             else
-                printf '{"code":"%s","title":"%s"},' "$CODE" "$TITLE" >> ../tmp.json
+                printf '{"code":"%s","title":"%s","default_locale":"%s"},' "$CODE" "$TITLE" "$DEFAULT_LOCALE" >> ../tmp.json
             fi
         fi
     done

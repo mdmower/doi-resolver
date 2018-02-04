@@ -6,11 +6,10 @@
     "unused": true,
     "globals": {
         "chrome": false,
-        "$": false,
-        "_": false,
         "Headers": false,
         "Request": false,
         "qrcodegen": false,
-        "canvg": false
+        "canvg": false,
+        "CSL": false
     }
 }

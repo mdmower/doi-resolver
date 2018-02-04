@@ -450,9 +450,8 @@ function populateHistory() {
 		}
 
 		// Skip holes in the array (should not occur)
-		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
-			// Use !=, not !==, so that null is caught as well
-			return elm != undefined;
+		stg.recorded_dois = stg.recorded_dois.filter(function(recorded_doi) {
+			return Boolean(recorded_doi);
 		});
 
 		var optionHtml = "";

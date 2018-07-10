@@ -142,16 +142,6 @@ var qrcodegen = new function() {
 			return 0 <= x && x < size && 0 <= y && y < size && modules[y][x];
 		};
 		
-		// (Package-private) Tests whether the module at the given coordinates is a function module (true) or not (false).
-		// The top left corner has the coordinates (x=0, y=0). If the given coordinates are out of bounds, then false is returned.
-		// The JavaScript version of this library has this method because it is impossible to access private variables of another object.
-		this.isFunctionModule = function(x, y) {
-			if (0 <= x && x < size && 0 <= y && y < size)
-				return isFunction[y][x];
-			else
-				return false;  // Infinite border
-		};
-		
 		
 		/*---- Public instance methods ----*/
 		
@@ -179,27 +169,20 @@ var qrcodegen = new function() {
 		this.toSvgString = function(border) {
 			if (border < 0)
 				throw "Border must be non-negative";
-			var result = '<?xml version="1.0" encoding="UTF-8"?>\n';
-			result += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n';
-			result += '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 ' +
-				(size + border * 2) + ' ' + (size + border * 2) + '" stroke="none">\n';
-			result += '\t<rect width="100%" height="100%" fill="#FFFFFF"/>\n';
-			result += '\t<path d="';
-			var head = true;
+			var parts = [];
 			for (var y = -border; y < size + border; y++) {
 				for (var x = -border; x < size + border; x++) {
-					if (this.getModule(x, y)) {
-						if (head)
-							head = false;
-						else
-							result += " ";
-						result += "M" + (x + border) + "," + (y + border) + "h1v1h-1z";
-					}
+					if (this.getModule(x, y))
+						parts.push("M" + (x + border) + "," + (y + border) + "h1v1h-1z");
 				}
 			}
-			result += '" fill="#000000"/>\n';
-			result += '</svg>\n';
-			return result;
+			return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+				'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">\n' +
+				'<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 ' +
+					(size + border * 2) + ' ' + (size + border * 2) + '" stroke="none">\n' +
+				'\t<rect width="100%" height="100%" fill="#FFFFFF"/>\n' +
+				'\t<path d="' + parts.join(" ") + '" fill="#000000"/>\n' +
+				'</svg>\n';
 		};
 		
 		
@@ -250,18 +233,18 @@ var qrcodegen = new function() {
 			
 			// Draw first copy
 			for (var i = 0; i <= 5; i++)
-				setFunctionModule(8, i, ((data >>> i) & 1) != 0);
-			setFunctionModule(8, 7, ((data >>> 6) & 1) != 0);
-			setFunctionModule(8, 8, ((data >>> 7) & 1) != 0);
-			setFunctionModule(7, 8, ((data >>> 8) & 1) != 0);
+				setFunctionModule(8, i, getBit(data, i));
+			setFunctionModule(8, 7, getBit(data, 6));
+			setFunctionModule(8, 8, getBit(data, 7));
+			setFunctionModule(7, 8, getBit(data, 8));
 			for (var i = 9; i < 15; i++)
-				setFunctionModule(14 - i, 8, ((data >>> i) & 1) != 0);
+				setFunctionModule(14 - i, 8, getBit(data, i));
 			
 			// Draw second copy
 			for (var i = 0; i <= 7; i++)
-				setFunctionModule(size - 1 - i, 8, ((data >>> i) & 1) != 0);
+				setFunctionModule(size - 1 - i, 8, getBit(data, i));
 			for (var i = 8; i < 15; i++)
-				setFunctionModule(8, size - 15 + i, ((data >>> i) & 1) != 0);
+				setFunctionModule(8, size - 15 + i, getBit(data, i));
 			setFunctionModule(8, size - 8, true);
 		}
 		
@@ -282,7 +265,7 @@ var qrcodegen = new function() {
 			
 			// Draw two copies
 			for (var i = 0; i < 18; i++) {
-				var bit = ((data >>> i) & 1) != 0;
+				var bit = getBit(data, i);
 				var a = size - 11 + i % 3, b = Math.floor(i / 3);
 				setFunctionModule(a, b, bit);
 				setFunctionModule(b, a, bit);
@@ -381,7 +364,7 @@ var qrcodegen = new function() {
 						var upward = ((right + 1) & 2) == 0;
 						var y = upward ? size - 1 - vert : vert;  // Actual y coordinate
 						if (!isFunction[y][x] && i < data.length * 8) {
-							modules[y][x] = ((data[i >>> 3] >>> (7 - (i & 7))) & 1) != 0;
+							modules[y][x] = getBit(data[i >>> 3], 7 - (i & 7));
 							i++;
 						}
 						// If there are any remainder bits (0 to 7), they are already
@@ -499,6 +482,12 @@ var qrcodegen = new function() {
 				result += QrCode.PENALTY_N4;
 			return result;
 		}
+		
+		
+		// Returns true iff the i'th bit of x is set to 1.
+		function getBit(x, i) {
+			return ((x >>> i) & 1) != 0;
+		}
 	};
 	
 	
@@ -595,7 +584,7 @@ var qrcodegen = new function() {
 	Object.defineProperty(this.QrCode, "MAX_VERSION", {value:MAX_VERSION});
 	
 	
-	/*---- Private static helper functions QrCode ----*/
+	/*---- Private static helper functions for QrCode ----*/
 	
 	var QrCode = {};  // Private object to assign properties to. Not the same object as 'this.QrCode'.
 	

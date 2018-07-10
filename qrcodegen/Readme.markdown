@@ -15,10 +15,10 @@ Features
 
 Core features:
 
-* Available in 6 programming languages, all with nearly equal functionality: Java, JavaScript, Python, C++, C, Rust
+* Available in 7 programming languages, all with nearly equal functionality: Java, JavaScript, TypeScript, Python, C++, C, Rust
 * Significantly shorter code but more documentation comments compared to competing libraries
 * Supports encoding all 40 versions (sizes) and all 4 error correction levels, as per the QR Code Model 2 standard
-* Output formats: Raw modules/pixels of the QR symbol (all languages), SVG XML string (all languages except C), `BufferedImage` raster bitmap (Java only), HTML5 canvas (JavaScript only)
+* Output formats: Raw modules/pixels of the QR symbol (all languages), SVG XML string (all languages except C), `BufferedImage` raster bitmap (Java only), HTML5 canvas (JavaScript and TypeScript only)
 * Encodes numeric and special-alphanumeric text in less space than general text
 * Open source code under the permissive MIT License
 
@@ -34,6 +34,8 @@ Optional advanced features (Java only):
 * Encodes Japanese Unicode text in kanji mode to save a lot of space compared to UTF-8 bytes
 * Computes optimal segment mode switching for text with mixed numeric/alphanumeric/general parts
 
+More information about QR Code technology and this library's design can be found on the project home page.
+
 
 Examples
 --------
@@ -42,6 +44,7 @@ Java language:
 
     import java.awt.image.BufferedImage;
     import java.io.File;
+    import java.util.List;
     import javax.imageio.ImageIO;
     import io.nayuki.qrcodegen.*;
     
@@ -73,6 +76,24 @@ JavaScript language:
     var qr1 = QRC.encodeSegments(segs, QRC.Ecc.HIGH, 5, 5, 2, false);
     for (var y = 0; y < qr1.size; y++) {
         for (var x = 0; x < qr1.size; x++) {
+            (... paint qr1.getModule(x, y) ...)
+        }
+    }
+
+TypeScript language:
+
+    // Simple operation
+    let qr0: qrcodegen.QrCode = qrcodegen.QrCode.encodeText(
+        "Hello, world!", qrcodegen.QrCode_Ecc.MEDIUM);
+    let svg: string = qr0.toSvgString(4);
+    
+    // Manual operation
+    let segs: Array<qrcodegen.QrSegment> =
+        qrcodegen.QrSegment.makeSegments("3141592653589793238462643383");
+    let qr1: qrcodegen.QrCode = qrcodegen.QrCode.encodeSegments(
+        segs, qrcodegen.QrCode_Ecc.HIGH, 5, 5, 2, false);
+    for (let y = 0; y < qr1.size; y++) {
+        for (let x = 0; x < qr1.size; x++) {
             (... paint qr1.getModule(x, y) ...)
         }
     }
@@ -167,13 +188,11 @@ Rust language:
         }
     }
 
-More information about QR Code technology and this library's design can be found on the project home page.
-
 
 License
 -------
 
-Copyright © 2017 Project Nayuki. (MIT License)  
+Copyright © 2018 Project Nayuki. (MIT License)  
 [https://www.nayuki.io/page/qr-code-generator-library](https://www.nayuki.io/page/qr-code-generator-library)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of

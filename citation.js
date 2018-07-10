@@ -299,6 +299,7 @@ function getCitation(doi) {
 	var style = styleList.value;
 	var locale = document.getElementById("citeLocaleInput").value;
 	var defaultLocale = styleList.selectedOptions[0].getAttribute('data-locale');
+	var forceLocale = true;
 
 	if (!style || !locale) {
 		return;
@@ -315,31 +316,78 @@ function getCitation(doi) {
 		]
 	}, function(granted) {
 		if (granted) {
-			var fetchHeaders = new Headers();
-			fetchHeaders.append("Accept", "application/citeproc+json");
+			if (locale === "auto") {
+				// Default to en-US in case a defaultLocale is not defined
+				locale = defaultLocale || "en-US";
+				forceLocale = false;
+			}
 
-			var fetchInit = {
-				method: 'GET',
-				headers: fetchHeaders
-			};
-
-			var fetchRequest = new Request("https://dx.doi.org/" + doi, fetchInit);
-
-			fetch(fetchRequest)
-			.then(function(response) {
-				return response.json();
-			})
-			.then(function(json) {
-				renderBib(json, style, locale, defaultLocale);
-			})
+			var citeprocJsonPromise = getCiteProcJson(doi)
 			.catch(function(error) {
 				console.log("Unable to find citation JSON.", error);
 				simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 			});
 
+			var styleCslPromise = getStyleCsl(style)
+			.catch(function(error) {
+				console.error("Unable to find style CSL", error);
+				simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+			});
+
+			var localeXmlPromise = getLocaleXml(locale)
+			.catch(function(error) {
+				console.error("Unable to find locale XML", error);
+				simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
+			});
+
+			Promise.all([citeprocJsonPromise, styleCslPromise, localeXmlPromise])
+			.then(function(response) {
+				var cjsResponse = response[0];
+				var cslResponse = response[1];
+				var locResponse = response[2];
+
+				if (!cjsResponse) {
+					console.error("Invalid Citeproc JSON");
+					simpleNotification(chrome.i18n.getMessage("noCitationFound"));
+					return;
+				}
+
+				if (!cslResponse) {
+					console.error("Invalid style XML");
+					simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+					return;
+				}
+
+				if (!locResponse) {
+					console.error("Invalid locale XML");
+					simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
+					return;
+				}
+
+				renderBib(cjsResponse, cslResponse, locResponse, locale, forceLocale);
+			});
 		} else {
 			simpleNotification(chrome.i18n.getMessage("needCitationPerm"));
 		}
+	});
+}
+
+function getCiteProcJson(doi) {
+	var headers = new Headers();
+	headers.append("Accept", "application/citeproc+json");
+
+	var init = {
+		method: 'GET',
+		headers: headers
+	};
+
+	var request = new Request("https://dx.doi.org/" + doi, init);
+
+	console.time("Citeproc JSON download");
+	return fetch(request)
+	.then(function(response) {
+		console.timeEnd("Citeproc JSON download");
+		return response.json();
 	});
 }
 
@@ -361,80 +409,40 @@ function getLocaleXml(locale) {
 	});
 }
 
-function renderBib(citation, style, locale, defaultLocale) {
-	// origin: raw.githubusercontent.com permission already handled at button press
+function renderBib(cjsResponse, cslResponse, locResponse, locale, forceLocale) {
+	cjsResponse.id = "Item-1";
+	var citations = { "Item-1": cjsResponse };
 
-	var forceLang = true;
+	var citeprocSys = {
+		retrieveLocale: function(locale) {
+			return locResponse;
+		},
+		retrieveItem: function(id) {
+			return citations[id];
+		}
+	};
 
-	if (locale === "auto") {
-		// Default to en-US in case a defaultLocale is not defined
-		locale = defaultLocale || "en-US";
-		forceLang = false;
+	var citeproc;
+	if (forceLocale) {
+		citeproc = new CSL.Engine(citeprocSys, cslResponse, locale, forceLocale);
+	} else {
+		citeproc = new CSL.Engine(citeprocSys, cslResponse);
 	}
 
-	var styleCslPromise = getStyleCsl(style)
-	.catch(function(error) {
-		console.error("Unable to find style CSL", error);
-		simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
-	});
-
-	var localeXmlPromise = getLocaleXml(locale)
-	.catch(function(error) {
-		console.error("Unable to find locale XML", error);
-		simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
-	});
-
-	Promise.all([styleCslPromise, localeXmlPromise])
-	.then(function(response) {
-		var cslResponse = response[0];
-		var locResponse = response[1];
-
-		if (!cslResponse) {
-			console.error("Invalid style XML");
-			simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
-			return;
+	var itemIDs = [];
+	for (var key in citations) {
+		if (citations.hasOwnProperty(key)) {
+			itemIDs.push(key);
 		}
+	}
+	citeproc.updateItems(itemIDs);
 
-		if (!locResponse) {
-			console.error("Invalid locale XML");
-			simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
-			return;
-		}
-
-		citation.id = "Item-1";
-		var citations = { "Item-1": citation };
-
-		var citeprocSys = {
-			retrieveLocale: function(locale) {
-				return locResponse;
-			},
-			retrieveItem: function(id) {
-				return citations[id];
-			}
-		};
-
-		var citeproc;
-		if (forceLang) {
-			citeproc = new CSL.Engine(citeprocSys, cslResponse, locale, forceLang);
-		} else {
-			citeproc = new CSL.Engine(citeprocSys, cslResponse);
-		}
-
-		var itemIDs = [];
-		for (var key in citations) {
-			if (citations.hasOwnProperty(key)) {
-				itemIDs.push(key);
-			}
-		}
-		citeproc.updateItems(itemIDs);
-
-		var bibResult = citeproc.makeBibliography();
-		if (bibResult) {
-			outputCitation(bibResult[1].join('\n'));
-		} else {
-			simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));
-		}
-	});
+	var bibResult = citeproc.makeBibliography();
+	if (bibResult) {
+		outputCitation(bibResult[1].join('\n'));
+	} else {
+		simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));
+	}
 }
 
 function populateHistory() {

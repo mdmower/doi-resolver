@@ -957,10 +957,15 @@ function getLocalMessages() {
 		"textShortDoiResolverInput"
 	];
 
-	var i;
+	var i, elm;
 	for (i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
-		document.getElementById(messageIds[i]).innerHTML = message;
+		elm = document.getElementById(messageIds[i]);
+        if (elm.classList.contains('tooltip')) {
+            elm.innerHTML = message + elm.innerHTML;
+        } else {
+            elm.innerHTML = message;
+        }
 	}
 
 	messageIds = [

@@ -370,27 +370,28 @@ a {
 }
 
 .tooltip {
-	border: 1px solid black;
+	/* border-bottom: 1px dashed darkslateblue; */
 	display: inline-block;
-	padding: 1px 3px;
-	border-radius: 6px;
+	line-height: 1em;
 	cursor: default;
-	font-weight: normal;
 	position: relative;
+	color: darkslateblue;
 }
 
 /* Tooltip bubble */
 .tooltip .tooltiptext {
 	width: 500px;
-	font-size: 1.1em;
-	background-color: #EEEDDD;
+	font-size: 16px;
+	font-weight: normal;
+	line-height: 1.2;
+	background-color: #E9F2F3;
 	border: 1px solid gray;
 	color: black;
 	padding: 5px;
 	border-radius: 6px;
 	position: absolute;
 	z-index: 1;
-	left: 10px;
+	left: 100%;
 	top: -1em;
 	margin-left: 10px;
 	visibility: hidden;
@@ -403,7 +404,7 @@ a {
 .tooltip .tooltiptext::after {
 	content: "";
 	position: absolute;
-	top: 1em;
+	top: calc(1em + 2.5px);
 	left: 0;
 	margin-left: -10px;
 	border-width: 5px;

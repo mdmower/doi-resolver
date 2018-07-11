@@ -124,7 +124,7 @@
 		</div>
 
 		<div class="option_container">
-			<h3 class="option_title" id="headingAutolink"></h3> <sup id="autolinkInfoMark" class="tooltip">?<span id="optionAutolinkInfo" class="tooltiptext"></span></sup><br>
+			<h3 class="option_title tooltip" id="headingAutolink"><span id="optionAutolinkInfo" class="tooltiptext"></span></h3><br>
 			<input type="checkbox" id="autolink" /><label id="optionAutolink" for="autolink"></label>
 			<div id="alProtocol">
 				<label id="optionAutolinkApplyTo" for="autolinkApplyTo"></label>
@@ -138,7 +138,7 @@
 				<input type="checkbox" id="autolinkRewrite" /><label id="optionAutolinkRewrite" for="autolinkRewrite"></label>
 			</div>
 			<div id="alExclusions">
-				<label id="optionAutolinkExclusions" for="autolinkExclusions"></label> <sup id="autolinkExclusionsInfoMark" class="tooltip">?<span id="autolinkExclusionsInfoText" class="tooltiptext"></span></sup>
+				<label id="optionAutolinkExclusions" class="tooltip" for="autolinkExclusions"><span id="autolinkExclusionsInfoText" class="tooltiptext"></label>
 				<textarea id="autolinkExclusions" rows="4"></textarea>
 				<div id="autolinkTestExclusionContainer">
 					<label id="optionAutolinkTestExclusion" for="autolinkTestExclusion"></label> <input type="text" id="autolinkTestExclusion" /> <span id="autolinkTestExclusionResult"></span>
@@ -147,7 +147,7 @@
 		</div>
 
 		<div class="option_container" id="last_option_container">
-			<h3 class="option_title" id="headingSync"></h3> <sup id="syncInfoMark" class="tooltip">?<span id="syncDataInfo" class="tooltiptext"></span></sup><br>
+			<h3 class="option_title tooltip" id="headingSync"><span id="syncDataInfo" class="tooltiptext"></span></h3><br>
 			<input type="checkbox" id="syncData" /><label id="optionSyncData" for="syncData"></label>
 			<div id="syncDataWipe">
 				<span id="syncDataWipeDescription"></span> <button id="syncDataWipeButton"></button>
@@ -158,7 +158,7 @@
 	<div class="content" id="content_history">
 		<table id="historyList">
 			<tr id="historyHeading">
-				<th class="history_entry_save"><span id="tableHeadingSave"></span> <sup id="historySaveInfoMark" class="tooltip">?<span id="historySaveInfoText" class="tooltiptext"></span></sup></th>
+				<th class="history_entry_save"><span id="tableHeadingSave" class="tooltip"><span id="historySaveInfoText" class="tooltiptext"></span></span></th>
 				<th class="history_entry_delete"><span id="tableHeadingDelete"></span></th>
 				<th class="history_entry_doi"><span id="tableHeadingDoi"></span></th>
 				<th><button id="historyClear"></button></th>

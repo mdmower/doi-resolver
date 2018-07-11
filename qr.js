@@ -489,7 +489,7 @@ function insertQr(doiInput, qrParms) {
 				var fetchInit = {
 					method: 'GET',
 					headers: fetchHeaders,
-					cache: false
+					cache: 'no-cache'
 				};
 
 				var fetchRequest = new Request(jsonUrl, fetchInit);

@@ -649,41 +649,17 @@ function populateHistory() {
 }
 
 function generateHistoryEntry(doiObject, doiId) {
-	var tr = document.createElement("tr");
-	tr.setAttribute("class", "history_entry");
-	tr.setAttribute("id", "history_entry_" + doiId);
+	var template = document.getElementById("history_entry_template");
 
-	var save = document.createElement("td");
-	save.setAttribute("class", "history_entry_save");
-	var saveCheckbox = document.createElement("input");
-	saveCheckbox.setAttribute("class", "history_input_save");
-	saveCheckbox.setAttribute("type", "checkbox");
-	saveCheckbox.setAttribute("id", "save_entry_" + doiId);
-	saveCheckbox.checked = doiObject.save;
-	save.appendChild(saveCheckbox);
+	var clone = document.importNode(template.content, true);
+	clone.querySelector('.history_entry').id = "history_entry_" + doiId;
+	clone.querySelector('.history_input_save').id = "save_entry_" + doiId;
+	clone.querySelector('.history_entry_delete').id = "delete_entry_" + doiId;
+	clone.querySelector('.history_entry_link').href = getHistoryUrl(doiObject.doi);
+	clone.querySelector('.history_entry_link').innerHTML = doiObject.doi;
+	// clone.querySelector('.history_entry_title').innerHTML = getHistoryTitle(doiObject.doi);
 
-	var trash = document.createElement("td");
-	trash.setAttribute("class", "history_entry_delete");
-	var trashButton = document.createElement("button");
-	trashButton.setAttribute("class", "history_input_delete");
-	trashButton.setAttribute("id", "delete_entry_" + doiId);
-	trashButton.innerHTML = "&#10006;";
-	trash.appendChild(trashButton);
-
-	var anchor = document.createElement("td");
-	anchor.setAttribute("class", "history_entry_doi");
-	anchor.setAttribute("colspan", "2");
-	var anchorLink = document.createElement("a");
-	anchorLink.setAttribute("href", getHistoryUrl(doiObject.doi));
-	anchorLink.setAttribute("target", "_blank");
-	anchorLink.innerHTML = doiObject.doi;
-	anchor.appendChild(anchorLink);
-
-	tr.appendChild(save);
-	tr.appendChild(trash);
-	tr.appendChild(anchor);
-
-	return tr;
+	return clone;
 }
 
 function saveHistoryEntry() {

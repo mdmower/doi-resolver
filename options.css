@@ -28,7 +28,7 @@ ul {
 }
 
 a {
-    text-decoration: none;
+	text-decoration: none;
 }
 
 #openSourceDisclaimer {
@@ -358,6 +358,27 @@ a {
 
 .history_entry_delete {
 	width: 60px;
+}
+
+.history_input_delete {
+	background: none;
+	border-color: transparent;
+	cursor: pointer;
+}
+
+.history_entry_title,
+.history_entry_link {
+	text-overflow: ellipsis;
+	overflow: hidden;
+	max-width: 100%;
+}
+
+.history_entry_link {
+	width: auto;
+}
+
+.history_entry_title {
+	width: 100%;
 }
 
 [id^="history_entry_"] {

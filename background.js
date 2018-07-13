@@ -113,6 +113,7 @@ function allOptions() {
 		"custom_resolver",
 		"doi_resolver",
 		"history",
+		"history_fetch_title",
 		"history_length",
 		"history_showsave",
 		"meta_buttons",
@@ -164,6 +165,7 @@ function getDefaultOption(opt) {
 		custom_resolver: false,
 		doi_resolver: "https://dx.doi.org/",
 		history: false,
+		history_fetch_title: false,
 		history_length: 15,
 		history_showsave: false,
 		meta_buttons: true,
@@ -448,12 +450,111 @@ function resolveDOI(doi, useCustomResolver, tab) {
 	});
 }
 
-function recordDoi(doiInput) {
+function fetchDoiTitle(doi) {
+	return new Promise(function(resolve) {
+
+		chrome.permissions.contains({
+			origins: [
+				'https://*.doi.org/',
+				'https://*.crossref.org/',
+				'https://*.datacite.org/'
+			]
+		}, function(granted) {
+			if (!granted) {
+				return resolve("");
+			}
+
+			var fetchHeaders = new Headers();
+			fetchHeaders.append("Accept", "application/json");
+
+			var fetchInit = {
+				method: 'GET',
+				headers: fetchHeaders,
+				cache: 'no-cache'
+			};
+
+			var jsonUrl = "https://dx.doi.org/" + doi;
+			var fetchRequest = new Request(jsonUrl, fetchInit);
+
+			fetch(fetchRequest)
+			.then(function(response) {
+				return response.json();
+			})
+			.then(function(json) {
+				var title = json.title;
+				title = title.replace(/<subtitle>(.*)<\/subtitle>/, " - $1");
+				title = title.replace(/<alt-title>(.*)<\/alt-title>/, "");
+				title = title.replace(/<[^>]*>([^<]*)<\/[^>]*>/, "$1");
+				resolve(title ? title : "");
+			})
+			.catch(function(error) {
+				console.log("fetchDoiTitle failed", error);
+				resolve("");
+			});
+		});
+
+	});
+}
+
+function getSavedDoiTitle(doi) {
+	return new Promise(function(resolve) {
+
+		var stgFetch = [
+			"history",
+			"recorded_dois"
+		];
+
+		storage.area.get(stgFetch, function(stg) {
+			if (stg.history !== true || !Array.isArray(stg.recorded_dois)) {
+				return resolve("");
+			}
+
+			var index = stg.recorded_dois.findIndex(function(item) {
+				return item.doi === doi;
+			});
+			if (index >= 0) {
+				var title = stg.recorded_dois[index].title;
+				resolve(title ? title : "");
+			}
+
+			resolve("");
+		});
+
+	});
+}
+
+function recordDoiAction(doi) {
+	storage.area.get(["history_fetch_title"], function(stg) {
+		if (stg.history_fetch_title === true) {
+			chrome.permissions.request({
+				origins: [
+					'https://*.doi.org/',
+					'https://*.crossref.org/',
+					'https://*.datacite.org/'
+				]
+			}, function(granted) {
+				// Checking success is not important here
+				recordDoi(doi)
+				.catch((errMsg) => {
+					console.log(errMsg);
+				});
+			});
+		} else {
+			recordDoi(doi)
+			.catch((errMsg) => {
+				console.log(errMsg);
+			});
+		}
+	});
+}
+
+function recordDoi(doi, title) {
 	return new Promise((resolve, reject) => {
 
 		var stgFetch = [
 			"history",
 			"history_length",
+			"history_fetch_title",
 			"recorded_dois"
 		];
 
@@ -468,12 +569,6 @@ function recordDoi(doiInput) {
 			if (typeof stg.history_length === "undefined") {
 				stg.history_length = getDefaultOption("history_length");
 			}
-
-			var doiObject = {
-				doi: doiInput,
-				save: false,
-				title: ""
-			};
 
 			// Remove holes from the array (should not occur)
 			stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
@@ -490,18 +585,34 @@ function recordDoi(doiInput) {
 				return reject("Number of recorded DOIs exceeds history length option");
 			}
 
-			var i;
-			for (i = 0; i < stg.recorded_dois.length; i++) {
-				if (stg.recorded_dois[i].doi === doiObject.doi) {
-					// DOI already exists in history
-					return resolve();
+			var index = stg.recorded_dois.findIndex(function(item) {
+				return item.doi === doi;
+			});
+			if (index >= 0) {
+				// DOI already exists in history, get/overwrite title if needed
+				if (title) {
+					stg.recorded_dois[index].title = title;
+					chrome.storage.local.set(stg, resolve);
+				} else if (!stg.history_fetch_title || stg.recorded_dois[index].title) {
+					resolve();
+				} else {
+					fetchDoiTitle(doi)
+					.then(function(title) {
+						if (title) {
+							stg.recorded_dois[index].title = title;
+							chrome.storage.local.set(stg, resolve);
+						} else {
+							resolve();
+						}
+					});
 				}
+				return;
 			}
 
 			var shifted = false;
 			if (stg.recorded_dois.length === parseInt(stg.history_length)) {
 				// Do not remove saved entries
-				for (i = 0; i < stg.recorded_dois.length; i++) {
+				for (var i = 0; i < stg.recorded_dois.length; i++) {
 					if (stg.recorded_dois[i].save !== true) {
 						stg.recorded_dois.splice(i, 1);
 						shifted = true;
@@ -514,9 +625,25 @@ function recordDoi(doiInput) {
 				}
 			}
 
-			stg.recorded_dois.push(doiObject);
-			chrome.storage.local.set(stg, null);
-			resolve();
+			var doiObject = {
+				doi: doi,
+				title: title !== undefined ? title : "",
+				save: false
+			};
+
+			if (title || !stg.history_fetch_title) {
+				stg.recorded_dois.push(doiObject);
+				chrome.storage.local.set(stg, resolve);
+			} else {
+				fetchDoiTitle(doi)
+				.then(function(title) {
+					if (title) {
+						doiObject.title = title;
+					}
+					stg.recorded_dois.push(doiObject);
+					chrome.storage.local.set(stg, resolve);
+				});
+			}
 		});
 
 	});

@@ -137,6 +137,7 @@ function startClickListeners() {
 		}
 	});
 
+	document.getElementById("historyTitleRefresh").addEventListener("click", populateMissingTitles);
 	document.getElementById("historyClear").addEventListener("click", deleteHistory);
 
 	document.getElementById("syncDataWipeButton").addEventListener("click", function() {
@@ -159,6 +160,7 @@ function getSaveMap() {
 		{ selector: "#history", func: saveOptions, events: ['change'] },
 		{ selector: "#historyShowSave", func: saveOptions, events: ['change'] },
 		{ selector: "#historyLength", func: dbHistoryLengthUpdate, events: ['change'] },
+		{ selector: "#historyFetchTitle", func: setHistoryTitlePermissions, events: ['change'] },
 		{ selector: "#context", func: saveOptions, events: ['change'] },
 		{ selector: "#meta", func: saveOptions, events: ['change'] },
 		{ selector: "#autolink", func: saveOptions, events: ['change'] },
@@ -259,6 +261,7 @@ function saveOptions() {
 		history: document.getElementById("history").checked,
 		history_showsave: document.getElementById("historyShowSave").checked,
 		history_length: Number(document.getElementById("historyLength").value),
+		history_fetch_title: document.getElementById("historyFetchTitle").checked,
 		context_menu: document.getElementById("context").checked,
 		meta_buttons: document.getElementById("meta").checked,
 		custom_resolver: document.getElementById("customResolver").checked,
@@ -321,6 +324,7 @@ function restoreOptions(callback) {
 		"autolink_exclusions",
 		"history",
 		"history_length",
+		"history_fetch_title",
 		"history_showsave",
 		"context_menu",
 		"meta_buttons",
@@ -343,6 +347,7 @@ function restoreOptions(callback) {
 		document.getElementById("history_tab").style.display = stg.history ? "inline-block" : "none";
 		document.getElementById("historyShowSave").checked = stg.history_showsave;
 		document.getElementById("historyLength").value = stg.history_length;
+		document.getElementById("historyFetchTitle").checked = stg.history_fetch_title;
 		document.getElementById("context").checked = stg.context_menu;
 		document.getElementById("meta").checked = stg.meta_buttons;
 		document.getElementById("customResolver").checked = stg.custom_resolver;
@@ -616,6 +621,8 @@ function populateHistory() {
 		return;
 	}
 
+	haltHistoryChangeListeners();
+
 	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
@@ -648,35 +655,245 @@ function populateHistory() {
 	});
 }
 
+function escapeHtml(unsafe) {
+	return unsafe
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
+}
+
 function generateHistoryEntry(doiObject, doiId) {
 	var template = document.getElementById("history_entry_template");
 
 	var clone = document.importNode(template.content, true);
-	clone.querySelector('.history_entry').id = "history_entry_" + doiId;
-	clone.querySelector('.history_input_save').id = "save_entry_" + doiId;
-	clone.querySelector('.history_entry_delete').id = "delete_entry_" + doiId;
-	clone.querySelector('.history_entry_link').href = getHistoryUrl(doiObject.doi);
-	clone.querySelector('.history_entry_link').innerHTML = doiObject.doi;
-	// clone.querySelector('.history_entry_title').innerHTML = getHistoryTitle(doiObject.doi);
+	clone.querySelector(".history_entry").id = "history_entry_" + doiId;
+	clone.querySelector(".history_input_save").id = "save_entry_" + doiId;
+	clone.querySelector(".history_input_save").checked = doiObject.save;
+	clone.querySelector(".history_entry_delete").id = "delete_entry_" + doiId;
+	clone.querySelector(".history_entry_link").href = getHistoryUrl(doiObject.doi);
+	clone.querySelector(".history_entry_link").innerHTML = doiObject.doi;
+	clone.querySelector(".history_entry_title").innerHTML += escapeHtml(doiObject.title);
+	clone.querySelector(".history_entry_title").title = escapeHtml(doiObject.title);
+
+	clone.querySelector(".history_entry_title_copy").addEventListener("click", function() {
+		var fallbackCopy = function() {
+			var textarea = document.createElement("textarea");
+			textarea.id = "tempcopy";
+			textarea.style.opacity = "0";
+			document.body.appendChild(textarea);
+			textarea.value = doiObject.title;
+			textarea.select();
+			document.execCommand("copy");
+			document.body.removeChild(textarea);
+		};
+
+		if (navigator.clipboard && navigator.clipboard.writeText) {
+			navigator.clipboard.writeText(doiObject.title)
+			.then(function() {
+				console.log("Title copied to clipboard");
+			})
+			.catch(function() {
+				console.error("Unable to write to clipboard, trying fallback method");
+				try {
+					fallbackCopy();
+				} catch (ex) {
+					console.error("Fallback copy to clipboard method failed, giving up", ex);
+				}
+			});
+		} else {
+			try {
+				fallbackCopy();
+			} catch (ex) {
+				console.error("Fallback copy to clipboard method failed, giving up", ex);
+			}
+		}
+	});
 
 	return clone;
 }
 
-function saveHistoryEntry() {
-	var id = Number(this.id.substr("save_entry_".length));
+function toggleHistorySpinner(enable) {
+	var spinnerElm = document.querySelector("span.history_spinner");
+	if (enable) {
+		spinnerElm.classList.add("show_spinner");
+	} else {
+		spinnerElm.classList.remove("show_spinner");
+	}
+}
+
+function populateMissingTitles() {
+	storage.area.get(["recorded_dois"], function(stg) {
+		if (!Array.isArray(stg.recorded_dois)) {
+			return;
+		}
+
+		var incompleteRecords = stg.recorded_dois.filter(function(record) {
+			return !record.title;
+		});
+		var dois = incompleteRecords.map(function(record) {
+			return record.doi;
+		});
+
+		if (dois.length === 0) {
+			console.log("No DOIs are missing titles");
+			return;
+		}
+
+		console.log("DOIs queued for title fetch", dois);
+
+		toggleHistorySpinner(true);
+
+		gatherNewDoiTitles(dois)
+		.then(saveHistoryTitles)
+		.then(function() {
+			toggleHistorySpinner(false);
+			populateHistory();
+		})
+		.catch(function(error) {
+			toggleHistorySpinner(false);
+			console.log("populateMissingTitles failed", error);
+		});
+	});
+}
+
+function gatherNewDoiTitles(dois) {
+	return new Promise(function(resolve, reject) {
+
+		if (!Array.isArray(dois) || dois.length === 0) {
+			return reject("No DOIs requested for title fetch");
+		}
+
+		chrome.permissions.request({
+			origins: [
+				"https://*.doi.org/",
+				"https://*.crossref.org/",
+				"https://*.datacite.org/"
+			]
+		}, function(granted) {
+			if (!granted) {
+				return reject("Origin permissions not granted");
+			}
+
+			var gatherFetchResults = function(promises) {
+				Promise.all(promises)
+				.then(function(results) {
+					var doiTitleReference = {};
+					dois.forEach(function(doi) {
+						doiTitleReference[doi] = results.pop();
+					});
+					console.log("Received titles for DOIs", doiTitleReference);
+					resolve(doiTitleReference);
+				});
+			};
+
+			// Two .pop() cycles are performed, so there is no need to reverse
+			var doisClone = dois.slice();
+			var fetchPromises = [];
+			var interval = setInterval(function() {
+				if (doisClone.length === 0) {
+					clearInterval(interval);
+					gatherFetchResults(fetchPromises);
+				} else {
+					var doi = doisClone.pop();
+					console.log("Requesting title for DOI: " + doi);
+					var promise = chrome.extension.getBackgroundPage().fetchDoiTitle(doi);
+					fetchPromises.push(promise);
+				}
+			}, 200); // Space out fetch requests by 200ms each
+
+		});
+
+	});
+}
+
+function setHistoryTitlePermissions() {
+	var historyFetchTitle = document.getElementById("historyFetchTitle");
+	if (historyFetchTitle.checked) {
+		chrome.permissions.request({
+			origins: [
+				"https://*.doi.org/",
+				"https://*.crossref.org/",
+				"https://*.datacite.org/"
+			]
+		}, function(granted) {
+			historyFetchTitle.checked = granted;
+			saveOptions();
+
+			// Begin populating titles since option was just enabled
+			// This should be safe to run async with saveOptions since
+			// recorded_dois are not affected by saveOptions
+		});
+	} else {
+		chrome.permissions.remove({
+			origins: [
+				"https://*.doi.org/",
+				"https://*.crossref.org/",
+				"https://*.datacite.org/"
+			]
+		}, function(removed) {
+			historyFetchTitle.checked = !removed;
+			saveOptions();
+		});
+	}
+}
+
+function saveHistoryTitles(doiTitleReference) {
+	return new Promise(function(resolve) {
+
+		if (!doiTitleReference || Object.keys(doiTitleReference).length === 0) {
+			return;
+		}
+
+		storage.area.get(["recorded_dois"], function(stg) {
+			if (!Array.isArray(stg.recorded_dois)) {
+				return;
+			}
+
+			var stgUpdated = false;
+
+			for (var doi in doiTitleReference) {
+				if (doiTitleReference.hasOwnProperty(doi)) {
+					var title = doiTitleReference[doi];
+
+					var index = stg.recorded_dois.findIndex(function(item) {
+						return item.doi === doi;
+					});
+					if (index >= 0) {
+						stg.recorded_dois[index].title = title;
+						stgUpdated = true;
+					}
+				}
+			}
+
+			if (stgUpdated) {
+				chrome.storage.local.set(stg, resolve);
+			} else {
+				resolve();
+			}
+		});
+
+	});
+}
+
+function saveHistoryEntry(event) {
+	var entryElm = event.target;
+	var id = Number(entryElm.id.substr("save_entry_".length));
 
 	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 
-		stg.recorded_dois[id].save = document.getElementById("save_entry_" + id).checked;
+		stg.recorded_dois[id].save = entryElm.checked;
 		chrome.storage.local.set(stg, null);
 	});
 }
 
-function deleteHistoryEntry() {
-	var id = Number(this.id.substr("delete_entry_".length));
+function deleteHistoryEntry(event) {
+	var entryElm = event.target.parentNode;
+	var id = Number(entryElm.id.substr("delete_entry_".length));
 
 	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
@@ -816,7 +1033,9 @@ function verifyAutolinkPermission(callback) {
 	}, function(result) {
 		if (result) {
 			autolinkDisplayUpdate(true, "httphttps");
-			callback();
+			if (typeof callback === 'function') {
+				callback();
+			}
 		} else {
 			chrome.permissions.contains({
 				permissions: [ "tabs" ],
@@ -824,7 +1043,9 @@ function verifyAutolinkPermission(callback) {
 			}, function(result) {
 				if (result) {
 					autolinkDisplayUpdate(true, "http");
-					callback();
+					if (typeof callback === 'function') {
+						callback();
+					}
 				} else {
 					chrome.permissions.contains({
 						permissions: [ "tabs" ],
@@ -832,9 +1053,10 @@ function verifyAutolinkPermission(callback) {
 					}, function(result) {
 						if (result) {
 							autolinkDisplayUpdate(true, "https");
-							callback();
 						} else {
 							autolinkDisplayUpdate(false, null);
+						}
+						if (typeof callback === 'function') {
 							callback();
 						}
 					});
@@ -899,7 +1121,9 @@ function getLocalMessages() {
 		"headingOmnibox",
 		"headingSync",
 		"historyClear",
+		"historyFetchTitleLabel",
 		"historySaveInfoText",
+		"historyTitleRefresh",
 		"optionAutolink",
 		"optionAutolinkApplyTo",
 		"optionAutolinkExclusions",
@@ -937,11 +1161,11 @@ function getLocalMessages() {
 	for (i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
 		elm = document.getElementById(messageIds[i]);
-        if (elm.classList.contains('tooltip')) {
-            elm.innerHTML = message + elm.innerHTML;
-        } else {
-            elm.innerHTML = message;
-        }
+		if (elm.classList.contains('tooltip')) {
+			elm.innerHTML = message + elm.innerHTML;
+		} else {
+			elm.innerHTML = message;
+		}
 	}
 
 	messageIds = [

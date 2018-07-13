@@ -103,6 +103,14 @@
 		"description": "Heading on options page for Sync",
 		"message": "Sync"
 	},
+	"historyFetchTitleLabel": {
+		"description": "Text for checkbox that enables title fetch when DOI is recorded",
+		"message": "Automatically fetch title when a new DOI is recorded"
+	},
+	"historyTitleRefresh": {
+		"description": "Text for button that fetches missing history entry titles",
+		"message": "Fetch Missing Titles"
+	},
 	"historyClear": {
 		"description": "Text for a button that clears all DOI history",
 		"message": "Clear History"

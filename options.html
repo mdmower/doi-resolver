@@ -45,10 +45,13 @@
 
 		<div class="option_container">
 			<h3 class="option_title" id="headingHistory"></h3>
-			<input type="checkbox" id="history" /><label id="optionHistory" for="history"></label>
+			<input type="checkbox" id="history" />
+			<label id="optionHistory" for="history"></label>
 			<div id="historySubOptions">
 				<input type="checkbox" id="historyShowSave" />
 				<label id="optionHistoryShowSave" for="historyShowSave"></label><br>
+				<input type="checkbox" id="historyFetchTitle">
+				<label id="historyFetchTitleLabel" for="historyFetchTitle"></label><br>
 				<input type="number" id="historyLength" max="500" min="1" />
 				<label id="optionHistoryLength" for="historyLength"></label>
 			</div>
@@ -56,7 +59,8 @@
 
 		<div class="option_container">
 			<h3 class="option_title" id="headingContextMenu"></h3>
-			<input type="checkbox" id="context" /><label id="optionContextMenu" for="context"></label>
+			<input type="checkbox" id="context" />
+			<label id="optionContextMenu" for="context"></label>
 			<div id="img_context">
 				<div id="img_context_off"></div>
 				<div id="img_context_on"></div>
@@ -65,7 +69,8 @@
 
 		<div class="option_container">
 			<h3 class="option_title" id="headingMeta"></h3>
-			<input type="checkbox" id="meta" /><label id="optionMetaButtons" for="meta"></label>
+			<input type="checkbox" id="meta" />
+			<label id="optionMetaButtons" for="meta"></label>
 			<div id="img_bubblemeta">
 				<div id="img_bubblemeta_off"></div>
 				<div id="img_bubblemeta_on"></div>
@@ -74,7 +79,8 @@
 
 		<div class="option_container">
 			<h3 class="option_title" id="headingCustomResolver"></h3>
-			<input type="checkbox" id="customResolver" /><label id="optionCustomResolver" for="customResolver"></label><br>
+			<input type="checkbox" id="customResolver" />
+			<label id="optionCustomResolver" for="customResolver"></label><br>
 			<div class="row">
 				<div id="customResolverLeft">
 					<div id="customResolverFields">
@@ -125,7 +131,8 @@
 
 		<div class="option_container">
 			<h3 class="option_title tooltip" id="headingAutolink"><span id="optionAutolinkInfo" class="tooltiptext"></span></h3><br>
-			<input type="checkbox" id="autolink" /><label id="optionAutolink" for="autolink"></label>
+			<input type="checkbox" id="autolink" />
+			<label id="optionAutolink" for="autolink"></label>
 			<div id="alProtocol">
 				<label id="optionAutolinkApplyTo" for="autolinkApplyTo"></label>
 				<select type="selection" id="autolinkApplyTo">
@@ -135,7 +142,8 @@
 				</select>
 			</div>
 			<div id="alRewriteLinks">
-				<input type="checkbox" id="autolinkRewrite" /><label id="optionAutolinkRewrite" for="autolinkRewrite"></label>
+				<input type="checkbox" id="autolinkRewrite" />
+				<label id="optionAutolinkRewrite" for="autolinkRewrite"></label>
 			</div>
 			<div id="alExclusions">
 				<label id="optionAutolinkExclusions" class="tooltip" for="autolinkExclusions"><span id="autolinkExclusionsInfoText" class="tooltiptext"></label>
@@ -148,7 +156,8 @@
 
 		<div class="option_container" id="last_option_container">
 			<h3 class="option_title tooltip" id="headingSync"><span id="syncDataInfo" class="tooltiptext"></span></h3><br>
-			<input type="checkbox" id="syncData" /><label id="optionSyncData" for="syncData"></label>
+			<input type="checkbox" id="syncData" />
+			<label id="optionSyncData" for="syncData"></label>
 			<div id="syncDataWipe">
 				<span id="syncDataWipeDescription"></span> <button id="syncDataWipeButton"></button>
 			</div>
@@ -158,13 +167,31 @@
 	<div class="content" id="content_history">
 		<table id="historyList">
 			<tr id="historyHeading">
-				<th class="history_entry_save"><span id="tableHeadingSave" class="tooltip"><span id="historySaveInfoText" class="tooltiptext"></span></span></th>
-				<th class="history_entry_delete"><span id="tableHeadingDelete"></span></th>
-				<th class="history_entry_doi"><span id="tableHeadingDoi"></span></th>
-				<th><button id="historyClear"></button></th>
+				<th class="history_entry_save">
+					<span id="tableHeadingSave" class="tooltip"><span id="historySaveInfoText" class="tooltiptext"></span></span>
+				</th>
+				<th class="history_entry_delete">
+					<span id="tableHeadingDelete"></span>
+				</th>
+				<th class="history_entry_doi">
+					<span id="tableHeadingDoi"></span>
+				</th>
+				<th>
+					<button id="historyClear"></button>
+					<button id="historyTitleRefresh"></button>
+					<span class="history_spinner"></span>
+				</th>
 			</tr>
 			<tr id="historySeparator"></tr>
 		</table>
+		<svg class="hidden" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+			<defs>
+				<symbol id="icon-copy" viewBox="0 0 32 32">
+					<title>copy</title>
+					<path d="M20 8v-8h-14l-6 6v18h12v8h20v-24h-12zM6 2.828v3.172h-3.172l3.172-3.172zM2 22v-14h6v-6h10v6l-6 6v8h-10zM18 10.828v3.172h-3.172l3.172-3.172zM30 30h-16v-14h6v-6h10v20z"></path>
+				</symbol>
+			</defs>
+		</svg>
 		<template id="history_entry_template">
 			<tr class="history_entry">
 				<td class="history_entry_save">
@@ -175,7 +202,7 @@
 				</td>
 				<td class="history_entry_doi" colspan="2">
 					<a class="history_entry_link" target="_blank"></a>
-					<div class="history_entry_title"></div>
+					<div class="history_entry_title"><button class="history_entry_title_copy"><svg class="icon icon-copy"><use xlink:href="#icon-copy"></use></svg></button></div>
 				</td>
 			</tr>
 		</template>

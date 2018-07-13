@@ -443,12 +443,6 @@ function formSubmitHandler() {
 		return;
 	}
 
-	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
-	recordDoi(doiInput)
-	.catch((errMsg) => {
-		console.log(errMsg);
-	});
-
 	var qrParms = {
 		size: qrSize,
 		border: qrBorder,
@@ -464,7 +458,9 @@ function insertQr(doiInput, qrParms) {
 	resetSpace();
 
 	var stringToEncode = "";
-	var jsonUrl = "https://dx.doi.org/" + doiInput;
+	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
+	var getSavedDoiTitle = chrome.extension.getBackgroundPage().getSavedDoiTitle;
+	var fetchDoiTitle = chrome.extension.getBackgroundPage().fetchDoiTitle;
 
 	if (/^10\./.test(doiInput)) {
 		stringToEncode = "https://dx.doi.org/" + doiInput;
@@ -475,55 +471,65 @@ function insertQr(doiInput, qrParms) {
 	simpleNotification("Loading...");
 
 	if (document.getElementById("qrFetchTitle").checked) {
-		chrome.permissions.request({
-			origins: [
-				'https://*.doi.org/',
-				'https://*.crossref.org/',
-				'https://*.datacite.org/'
-			]
-		}, function(granted) {
-			if (granted) {
-				var fetchHeaders = new Headers();
-				fetchHeaders.append("Accept", "application/citeproc+json");
+		getSavedDoiTitle(doiInput)
+		.then(function(title) {
+			if (title) {
+				console.log("Found title in history");
+				stringToEncode = title + "\n" + stringToEncode;
+				updateMessage(stringToEncode, "found");
+				qrParms.text = stringToEncode;
+				createQrImage(qrParms);
+				return;
+			}
 
-				var fetchInit = {
-					method: 'GET',
-					headers: fetchHeaders,
-					cache: 'no-cache'
-				};
-
-				var fetchRequest = new Request(jsonUrl, fetchInit);
-
-				fetch(fetchRequest)
-				.then(function(response) {
-					return response.json();
-				})
-				.then(function(json) {
-					try {
-						var doiTitle = json.title;
-						doiTitle = doiTitle.replace(/<subtitle>(.*)<\/subtitle>/, " - $1");
-						doiTitle = doiTitle.replace(/<alt-title>(.*)<\/alt-title>/, "");
-						doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/, "$1");
-						stringToEncode = doiTitle + "\n" + stringToEncode;
-						updateMessage(stringToEncode, "found");
+			chrome.permissions.request({
+				origins: [
+					'https://*.doi.org/',
+					'https://*.crossref.org/',
+					'https://*.datacite.org/'
+				]
+			}, function(granted) {
+				if (granted) {
+					console.log("Fetching title from network");
+					fetchDoiTitle(doiInput)
+					.then(function(title) {
+						if (title) {
+							stringToEncode = title + "\n" + stringToEncode;
+							updateMessage(stringToEncode, "found");
+						} else {
+							updateMessage(stringToEncode, "missing");
+						}
 						qrParms.text = stringToEncode;
 						createQrImage(qrParms);
-					} catch(ex) {
+
+						recordDoi(doiInput, title)
+						.catch((errMsg) => {
+							console.log(errMsg);
+						});
+					})
+					.catch(function(error) {
+						console.error("Error while fetching title", error);
 						updateMessage(stringToEncode, "missing");
 						qrParms.text = stringToEncode;
 						createQrImage(qrParms);
-					}
-				})
-				.catch(function(error) {
-					updateMessage(stringToEncode, "missing");
+
+						recordDoi(doiInput)
+						.catch((errMsg) => {
+							console.log(errMsg);
+						});
+					});
+				} else {
+					console.log("Permissions not granted for title fetch");
+					updateMessage(stringToEncode, "disabled");
 					qrParms.text = stringToEncode;
 					createQrImage(qrParms);
-				});
-			} else {
-				updateMessage(stringToEncode, "disabled");
-				qrParms.text = stringToEncode;
-				createQrImage(qrParms);
-			}
+
+					recordDoi(doiInput)
+					.catch((errMsg) => {
+						console.log(errMsg);
+					});
+				}
+			});
 		});
 	} else {
 		if (document.getElementById("qrManualTitle").checked) {
@@ -535,6 +541,11 @@ function insertQr(doiInput, qrParms) {
 		updateMessage(stringToEncode, "disabled");
 		qrParms.text = stringToEncode;
 		createQrImage(qrParms);
+
+		recordDoi(doiInput)
+		.catch((errMsg) => {
+			console.log(errMsg);
+		});
 	}
 }
 

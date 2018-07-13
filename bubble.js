@@ -121,25 +121,21 @@ function formSubmitHandler() {
 	var actionType = document.getElementById("hiddenButtonInput").value;
 	var doiInput = encodeURI(trim(document.getElementById("textInput").value));
 	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
-	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
+	var recordDoiAction = chrome.extension.getBackgroundPage().recordDoiAction;
 
 	switch (actionType) {
 	case "qr":
 		if (checkValidDoi(doiInput)) {
-			recordDoi(doiInput)
-			.catch((errMsg) => {
-				console.log(errMsg);
-			});
+			// Allow DOI recording to happen asynchronously
+			recordDoiAction(doiInput);
 		}
 		// Allow tab to open with invalid DOI
 		qrGen(doiInput);
 		break;
 	case "cite":
 		if (checkValidDoi(doiInput)) {
-			recordDoi(doiInput)
-			.catch((errMsg) => {
-				console.log(errMsg);
-			});
+			// Allow DOI recording to happen asynchronously
+			recordDoiAction(doiInput);
 		}
 		// Allow tab to open with invalid DOI
 		citeDOI(doiInput);
@@ -149,10 +145,8 @@ function formSubmitHandler() {
 			bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
 			return;
 		}
-		recordDoi(doiInput)
-		.catch((errMsg) => {
-			console.log(errMsg);
-		});
+		// Allow DOI recording to happen asynchronously
+		recordDoiAction(doiInput);
 		resolveURL(doiInput);
 		break;
 	case "options":

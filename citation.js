@@ -252,11 +252,8 @@ function formSubmitHandler() {
 		return;
 	}
 
-	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
-	recordDoi(doi)
-	.catch((errMsg) => {
-		console.log(errMsg);
-	});
+	// Allow DOI recording to happen asynchronously
+	chrome.extension.getBackgroundPage().recordDoiAction(doi);
 
 	saveSelections();
 	getCitation(doi);

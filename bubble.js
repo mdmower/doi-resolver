@@ -251,14 +251,20 @@ function showHideOptionalElms() {
 
 function populateHistory() {
 	var stgFetch = [
+		"history",
 		"recorded_dois",
 		"history_showsave"
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		if (!Array.isArray(stg.recorded_dois)) {
+		if (!stg.history) {
 			return;
 		}
+		if (!Array.isArray(stg.recorded_dois) || stg.recorded_dois.length < 1) {
+			return;
+		}
+
+		document.getElementById('historyDiv').style.display = 'block';
 
 		// Skip holes in the array (should not occur)
 		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
@@ -268,21 +274,74 @@ function populateHistory() {
 
 		var optionHtml = "";
 		var message = chrome.i18n.getMessage("historySavedEntryLabel");
-		var i;
-		for (i = 0; i < stg.recorded_dois.length; i++) {
-			if (stg.recorded_dois[i].save) {
-				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" label="' + message + '" />';
-			}
-		}
-		if (stg.history_showsave !== true) {
-			for (i = 0; i < stg.recorded_dois.length; i++) {
-				if (!stg.recorded_dois[i].save) {
-					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
-				}
-			}
-		}
-		document.getElementById("doiHistory").innerHTML = optionHtml;
+
+		stg.recorded_dois.filter(item => item.save).forEach((item) => {
+			optionHtml += '<option value="' + item.doi + '">' + item.doi + ' (' + message + ')</option>';
+		});
+		stg.recorded_dois.filter(item => !item.save).forEach((item) => {
+			optionHtml += '<option value="' + item.doi + '">' + item.doi + '</option>';
+		});
+
+		var selectBox = document.getElementById("doiHistory");
+		var selectBoxSize = stg.recorded_dois.length > 6 ? 6 : stg.recorded_dois.length;
+		selectBoxSize = selectBoxSize < 2 ? 2 : selectBoxSize;
+		selectBox.setAttribute('size', selectBoxSize);
+		selectBox.selectedIndex = -1;
+		selectBox.innerHTML = optionHtml;
+
+		var filterInput = function() {
+			filterByText(selectBox, this.value);
+			resetMessageSpace();
+		};
+
+		var filter = document.getElementById("textInput");
+		filter.addEventListener('input', filterInput);
+
+		selectBox.addEventListener('change', function() {
+			filter.removeEventListener('input', filterInput);
+			filter.value = this.value;
+			filter.addEventListener('input', filterInput);
+			this.selectedIndex = -1;
+			resetMessageSpace();
+		});
 	});
+}
+
+function filterByText(select, text) {
+	var options = Array.from(select.options);
+	var showAll = !text;
+
+	if (showAll) {
+		options.forEach(function(option) {
+			option.style.display = '';
+		});
+		if (select.selectedOptions.length > 0) {
+			select.selectedOptions[0].scrollIntoView();
+		}
+	} else {
+		// Escape special chars
+		var search = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+		// Ignore extra whitespace characters
+		search = search.replace(/\s* /g, '\\s*');
+		var regex = new RegExp(search, 'i');
+
+		var visibleOptions = [];
+		options.forEach(function(option) {
+			if (regex.test(option.value)) {
+				option.style.display = '';
+				visibleOptions.push(option);
+			} else {
+				option.selected = false;
+				option.style.display = 'none';
+			}
+		});
+
+		if (visibleOptions.length > 0) {
+			if (select.selectedOptions.length > 0) {
+				select.selectedOptions[0].scrollIntoView();
+			}
+		}
+	}
 }
 
 function getLocalMessages() {

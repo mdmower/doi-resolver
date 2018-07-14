@@ -82,3 +82,14 @@ body {
 	height: 3em;
 	line-height: 3em;
 }
+
+#historyDiv {
+    display: none;
+    clear: both;
+    margin-top: 4px;
+    max-width: 300px;
+}
+
+#doiHistory {
+    width: 100%;
+}

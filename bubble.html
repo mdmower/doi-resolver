@@ -28,8 +28,7 @@
 	<form name="doiForm" id="doiForm">
 		<div id="mainForm">
 			<input type="hidden" id="hiddenButtonInput" />
-			<input type="text" id="textInput" autofocus placeholder="DOI" list="doiHistory" />
-			<datalist id="doiHistory"></datalist>
+			<input type="text" id="textInput" autofocus placeholder="DOI" />
 			<button id="resolveSubmit"></button>
 		</div>
 		<div id="crRadios">
@@ -46,6 +45,9 @@
 			<span id="metaButtonsFlexSpacer"></span>
 			<button id="citeSubmit"></button>
 			<button id="qrSubmit"></button>
+		</div>
+		<div id="historyDiv">
+			<select id="doiHistory"></select>
 		</div>
 		<div id="messageDiv"></div>
 		<div style="clear: both;"></div>

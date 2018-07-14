@@ -526,19 +526,27 @@ function getSavedDoiTitle(doi) {
 function recordDoiAction(doi) {
 	storage.area.get(["history_fetch_title"], function(stg) {
 		if (stg.history_fetch_title === true) {
-			chrome.permissions.request({
-				origins: [
-					'https://*.doi.org/',
-					'https://*.crossref.org/',
-					'https://*.datacite.org/'
-				]
-			}, function(granted) {
-				// Checking success is not important here
+			try {
+				chrome.permissions.request({
+					origins: [
+						'https://*.doi.org/',
+						'https://*.crossref.org/',
+						'https://*.datacite.org/'
+					]
+				}, function(granted) {
+					// Checking success is not important here
+					recordDoi(doi)
+					.catch((errMsg) => {
+						console.log(errMsg);
+					});
+				});
+			} catch (ex) {
+				console.error('recordDoiAction: Permission request not allowed', ex);
 				recordDoi(doi)
 				.catch((errMsg) => {
 					console.log(errMsg);
 				});
-			});
+			}
 		} else {
 			recordDoi(doi)
 			.catch((errMsg) => {

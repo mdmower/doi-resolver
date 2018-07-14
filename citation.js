@@ -459,20 +459,17 @@ function populateHistory() {
 		});
 
 		var optionHtml = "";
-		var message = chrome.i18n.getMessage("historySavedEntryLabel");
-		var i;
-		for (i = 0; i < stg.recorded_dois.length; i++) {
-			if (stg.recorded_dois[i].save) {
-				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" label="' + message + '" />';
-			}
-		}
+
+		stg.recorded_dois.filter(item => item.save).forEach((item) => {
+			optionHtml += '<option value="' + item.doi + '" label="&#x2714;">';
+		});
+
 		if (stg.history_showsave !== true) {
-			for (i = 0; i < stg.recorded_dois.length; i++) {
-				if (!stg.recorded_dois[i].save) {
-					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
-				}
-			}
+			stg.recorded_dois.filter(item => !item.save).forEach((item) => {
+				optionHtml += '<option value="' + item.doi + '">';
+			});
 		}
+
 		document.getElementById("doiHistory").innerHTML = optionHtml;
 	});
 }

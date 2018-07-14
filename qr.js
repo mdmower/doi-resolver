@@ -257,7 +257,7 @@ function populateHistory() {
 		}
 
 		var selectBox = document.getElementById("doiHistory");
-		selectBox.setAttribute('size', '10');
+		selectBox.setAttribute('size', '12');
 		selectBox.selectedIndex = -1;
 		selectBox.innerHTML = optionHtml;
 
@@ -299,8 +299,21 @@ function populateHistory() {
 	});
 }
 
+function historyBoxSize() {
+	var inputContainer = document.getElementById('inputContainer');
+	var boxTop = inputContainer.offsetTop + inputContainer.offsetHeight + 2;
+	var submitButton = document.getElementById('submitButton');
+	var boxBottom = submitButton.offsetTop - 2;
+
+	return boxBottom - boxTop;
+}
+
 function toggleHistoryBox(enable) {
 	var selectBox = document.getElementById("doiHistory");
+	if (toggleHistoryBox.boxSize === undefined) {
+		toggleHistoryBox.boxSize = historyBoxSize() + 'px';
+		selectBox.style.height = toggleHistoryBox.boxSize;
+	}
 	var openHistory = document.getElementById("openHistory");
 	var closeHistory = document.getElementById("closeHistory");
 	selectBox.style.display = enable ? "block" : "";

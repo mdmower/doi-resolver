@@ -738,7 +738,7 @@ function filterSelectByText(select, text, trySelect) {
 
 		var visibleOptions = [];
 		options.forEach(function(option) {
-			if (regex.test(option.innerHTML)) {
+			if (regex.test(option.textContent)) {
 				option.style.display = '';
 				visibleOptions.push(option);
 			} else {

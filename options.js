@@ -159,6 +159,7 @@ function getSaveMap() {
 	return [
 		{ selector: "#history", func: saveOptions, events: ['change'] },
 		{ selector: "#historyShowSave", func: saveOptions, events: ['change'] },
+		{ selector: "#historySortBy", func: saveOptions, events: ['change'] },
 		{ selector: "#historyLength", func: dbHistoryLengthUpdate, events: ['change'] },
 		{ selector: "#historyFetchTitle", func: setHistoryTitlePermissions, events: ['change'] },
 		{ selector: "#context", func: saveOptions, events: ['change'] },
@@ -260,6 +261,7 @@ function saveOptions() {
 		autolink_exclusions: document.getElementById("autolinkExclusions").value.split("\n").filter(Boolean),
 		history: document.getElementById("history").checked,
 		history_showsave: document.getElementById("historyShowSave").checked,
+		history_sortby: document.getElementById("historySortBy").value,
 		history_length: Number(document.getElementById("historyLength").value),
 		history_fetch_title: document.getElementById("historyFetchTitle").checked,
 		context_menu: document.getElementById("context").checked,
@@ -326,6 +328,7 @@ function restoreOptions(callback) {
 		"history_length",
 		"history_fetch_title",
 		"history_showsave",
+		"history_sortby",
 		"context_menu",
 		"meta_buttons",
 		"custom_resolver",
@@ -346,6 +349,7 @@ function restoreOptions(callback) {
 		document.getElementById("history").checked = stg.history;
 		document.getElementById("history_tab").style.display = stg.history ? "inline-block" : "none";
 		document.getElementById("historyShowSave").checked = stg.history_showsave;
+		document.getElementById("historySortBy").value = stg.history_sortby;
 		document.getElementById("historyLength").value = stg.history_length;
 		document.getElementById("historyFetchTitle").checked = stg.history_fetch_title;
 		document.getElementById("context").checked = stg.context_menu;
@@ -414,18 +418,9 @@ function storageChangeHandler(changes, namespace) {
 		 * namespace needs to be monitored since: 1) local changes are
 		 * written to chrome.storage.local; and 2) changes brought in by
 		 * sync will be copied to chrome.storage.local in the background
-		 *
-		 * Checking history_length and/or history_showsave would be redundant
-		 * since recorded_dois will incorporate these changes
 		 */
-		var changeHistory = (typeof changes.recorded_dois !== "undefined");
-		var changeHistoryLinks = historyLinksNeedUpdate(changes);
-		if (changeHistory && changeHistoryLinks) {
-			updateHistory(changes.recorded_dois, regenerateHistoryLinks);
-		} else if (changeHistory) {
-			updateHistory(changes.recorded_dois, null);
-		} else if (changeHistoryLinks) {
-			regenerateHistoryLinks();
+		if (changes.recorded_dois !== undefined || changes.history_sortby !== undefined) {
+			populateHistory();
 		}
 
 		if (typeof changes.autolink_exclusions !== "undefined" && Array.isArray(changes.autolink_exclusions.newValue)) {
@@ -452,6 +447,7 @@ function storageChangeHandler(changes, namespace) {
 			"history",
 			"history_length",
 			"history_showsave",
+			"history_sortby",
 			"meta_buttons",
 			"omnibox_tab",
 			"shortdoi_resolver"
@@ -579,19 +575,6 @@ function autolinkShufflePerms() {
 	}
 }
 
-/* ToDo: This is overzealous. Could be updated to return true only if an
- * update really is required. Would require evaluating quite a lot of
- * change combinations, though.
- */
-function historyLinksNeedUpdate(changes) {
-	var changeCrHistory = (typeof changes.cr_history !== "undefined");
-	var changeUrlPrefix = (typeof changes.doi_resolver !== "undefined" ||
-						   typeof changes.shortdoi_resolver !== "undefined");
-	var changeCrEnable = (typeof changes.custom_resolver !== "undefined");
-
-	return (changeCrHistory || changeUrlPrefix || changeCrEnable);
-}
-
 function getHistoryUrl(doi) {
 	var cr = document.getElementById("customResolver").checked;
 	var crh = document.getElementById("crHistory").value;
@@ -623,7 +606,7 @@ function populateHistory() {
 
 	haltHistoryChangeListeners();
 
-	storage.area.get(["recorded_dois"], function(stg) {
+	storage.area.get(["recorded_dois", "history_sortby"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
@@ -636,23 +619,65 @@ function populateHistory() {
 			return elm != undefined;
 		});
 
+		sortHistoryEntries(stg.recorded_dois, stg.history_sortby);
+
 		var historySeparator = document.getElementById("historySeparator");
-		var i, historyEntry;
-		for (i = 0; i < stg.recorded_dois.length; i++) {
-			if (!stg.recorded_dois[i].save) {
-				historyEntry = generateHistoryEntry(stg.recorded_dois[i], i);
-				historySeparator.parentNode.insertBefore(historyEntry, historySeparator.nextSibling);
-			}
-		}
-		for (i = 0; i < stg.recorded_dois.length; i++) {
-			if (stg.recorded_dois[i].save) {
-				historyEntry = generateHistoryEntry(stg.recorded_dois[i], i);
-				historySeparator.parentNode.insertBefore(historyEntry, historySeparator.nextSibling);
-			}
+		var historyEntry;
+		for (var i = 0; i < stg.recorded_dois.length; i++) {
+			historyEntry = generateHistoryEntry(stg.recorded_dois[i]);
+			historySeparator.parentNode.appendChild(historyEntry);
 		}
 
 		startHistoryChangeListeners();
 	});
+}
+
+function sortHistoryEntries(entries, method) {
+	function doiCompare(a, b) {
+		if (a.doi.toLowerCase() < b.doi.toLowerCase())
+			return -1;
+		if (a.doi.toLowerCase() > b.doi.toLowerCase())
+			return 1;
+		return 0;
+	}
+	function titleCompare(a, b) {
+		// Sort blank titles at end of list
+		if (!a.title && b.title)
+			return 1;
+		if (a.title && !b.title)
+			return -1;
+
+		if (a.title.toLowerCase() < b.title.toLowerCase())
+			return -1;
+		if (a.title.toLowerCase() > b.title.toLowerCase())
+			return 1;
+		return 0;
+	}
+	function saveCompare(a, b) {
+		if (a.save && !b.save)
+			return -1;
+		if (!a.save && b.save)
+			return 1;
+		return 0;
+	}
+
+	switch(method) {
+		case "doi":
+			entries.sort(doiCompare);
+			break;
+		case "title":
+			entries.sort(titleCompare);
+			break;
+		case "save":
+			entries.reverse();
+			entries.sort(saveCompare);
+			break;
+		case "date":
+			entries.reverse();
+			break;
+		default:
+			break;
+	}
 }
 
 function escapeHtml(unsafe) {
@@ -664,14 +689,12 @@ function escapeHtml(unsafe) {
 		.replace(/'/g, "&#039;");
 }
 
-function generateHistoryEntry(doiObject, doiId) {
+function generateHistoryEntry(doiObject) {
 	var template = document.getElementById("history_entry_template");
 
 	var clone = document.importNode(template.content, true);
-	clone.querySelector(".history_entry").id = "history_entry_" + doiId;
-	clone.querySelector(".history_input_save").id = "save_entry_" + doiId;
+	clone.querySelector(".history_entry").setAttribute('data-doi', doiObject.doi);
 	clone.querySelector(".history_input_save").checked = doiObject.save;
-	clone.querySelector(".history_entry_delete").id = "delete_entry_" + doiId;
 	clone.querySelector(".history_entry_link").href = getHistoryUrl(doiObject.doi);
 	clone.querySelector(".history_entry_link").innerHTML = doiObject.doi;
 	clone.querySelector(".history_entry_title").innerHTML += escapeHtml(doiObject.title);
@@ -879,29 +902,53 @@ function saveHistoryTitles(doiTitleReference) {
 
 function saveHistoryEntry(event) {
 	var entryElm = event.target;
-	var id = Number(entryElm.id.substr("save_entry_".length));
+	var doi = entryElm.getAttribute('data-doi');
+	while (entryElm && !doi) {
+		entryElm = entryElm.parentNode;
+		doi = entryElm.getAttribute('data-doi');
+	}
+
+	if (!doi) {
+		return;
+	}
 
 	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 
-		stg.recorded_dois[id].save = entryElm.checked;
+		var index = stg.recorded_dois.findIndex(function(item) {
+			return item.doi === doi;
+		});
+
+		stg.recorded_dois[index].save = entryElm.checked;
 		chrome.storage.local.set(stg, null);
 	});
 }
 
 function deleteHistoryEntry(event) {
-	var entryElm = event.target.parentNode;
-	var id = Number(entryElm.id.substr("delete_entry_".length));
+	var entryElm = event.target;
+	var doi = entryElm.getAttribute('data-doi');
+	while (entryElm && !doi) {
+		entryElm = entryElm.parentNode;
+		doi = entryElm.getAttribute('data-doi');
+	}
+
+	if (!doi) {
+		return;
+	}
 
 	storage.area.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
 
-		stg.recorded_dois.splice(id, 1);
-		document.getElementById("history_entry_" + id).classList.add("fadeOut");
+		var index = stg.recorded_dois.findIndex(function(item) {
+			return item.doi === doi;
+		});
+
+		stg.recorded_dois.splice(index, 1);
+		entryElm.classList.add("fadeOut");
 		setTimeout(function() {
 			chrome.storage.local.set(stg, null);
 		}, 300); // 300ms matches opacity transition in css
@@ -941,89 +988,8 @@ function removeAllHistoryEntries() {
 	}
 }
 
-function historyRecordsMatch(record1, record2) {
-	var keys1 = Object.keys(record1);
-	var keys2 = Object.keys(record2);
-
-	// https://stackoverflow.com/questions/1187518/how-to-get-the-difference-between-two-arrays-in-javascript#answer-33034768
-	var keydiff = keys1.filter(function(x) {
-		return !keys2.includes(x);
-	}).concat(keys2.filter(function(x) {
-		return !keys1.includes(x);
-	}));
-
-	if (keydiff.length > 0) {
-		return false;
-	}
-
-	for (var i = 0; i < keys1.length; i++) {
-		if (record1[keys1[i]] !== record2[keys1[i]]) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-function updateHistory(changes, callback) {
-	var oldRecords = changes.oldValue;
-	var oldLength = changes.oldValue.length;
-	var newRecords = changes.newValue;
-	var newLength = changes.newValue.length;
-	var i, newHistoryEntry, oldHistoryEntry;
-
-	var historySeparator = document.getElementById("historySeparator");
-	haltHistoryChangeListeners();
-
-	if (!Array.isArray(newRecords)) {
-		// Should not get here
-		removeAllHistoryEntries();
-		chrome.storage.local.set({recorded_dois: []}, null);
-		return;
-	} else if (newLength === 0) {
-		removeAllHistoryEntries();
-	} else if (!Array.isArray(oldRecords)) {
-		removeAllHistoryEntries();
-		for (i = 0; i < newLength; i++) {
-			newHistoryEntry = generateHistoryEntry(newRecords[i], i);
-			historySeparator.parentNode.insertBefore(newHistoryEntry, historySeparator.nextSibling);
-		}
-		if (typeof callback === "function") {
-			callback();
-		}
-	} else {
-		for (i = 0; i < oldLength; i++) {
-			if (i < newLength && !historyRecordsMatch(oldRecords[i], newRecords[i])) {
-				newHistoryEntry = generateHistoryEntry(newRecords[i], i);
-				oldHistoryEntry = document.getElementById("history_entry_" + i);
-				oldHistoryEntry.parentNode.insertBefore(newHistoryEntry, oldHistoryEntry);
-				oldHistoryEntry.parentNode.removeChild(oldHistoryEntry);
-			} else if (i >= newLength) {
-				oldHistoryEntry = document.getElementById("history_entry_" + i);
-				oldHistoryEntry.parentNode.removeChild(oldHistoryEntry);
-			}
-		}
-		for (; i < newLength; i++) {
-			newHistoryEntry = generateHistoryEntry(newRecords[i], i);
-			historySeparator.parentNode.insertBefore(newHistoryEntry, historySeparator.nextSibling);
-		}
-
-		if (typeof callback === "function") {
-			callback();
-		}
-	}
-
-	startHistoryChangeListeners();
-}
-
 function deleteHistory() {
 	chrome.storage.local.set({recorded_dois: []}, null);
-}
-
-function regenerateHistoryLinks() {
-	Array.from(document.querySelectorAll(".history_entry .history_entry_doi a")).forEach(function(elm) {
-		elm.setAttribute("href", getHistoryUrl(elm.innerHTML));
-	});
 }
 
 function verifyAutolinkPermission(callback) {
@@ -1123,6 +1089,11 @@ function getLocalMessages() {
 		"historyClear",
 		"historyFetchTitleLabel",
 		"historySaveInfoText",
+		"historySortByDate",
+		"historySortByDoi",
+		"historySortByLabel",
+		"historySortBySave",
+		"historySortByTitle",
 		"historyTitleRefresh",
 		"optionAutolink",
 		"optionAutolinkApplyTo",

@@ -353,6 +353,10 @@ a {
 	margin-left: 10px;
 }
 
+#historySortBy {
+	height: 21px;
+}
+
 #historySeparator {
 	height: 6px;
 }
@@ -369,6 +373,15 @@ a {
 #historyList td button,
 #historyList td a {
 	vertical-align: middle;
+}
+
+.history_entry {
+	transition: opacity 300ms linear;
+	opacity: 1;
+}
+
+.history_entry.fadeOut {
+	opacity: 0;
 }
 
 .history_entry_save {
@@ -420,15 +433,6 @@ a {
 
 .history_entry_title:hover .history_entry_title_copy {
 	display: block;
-}
-
-[id^="history_entry_"] {
-	transition: opacity 300ms linear;
-	opacity: 1;
-}
-
-[id^="history_entry_"].fadeOut {
-	opacity: 0;
 }
 
 @keyframes history_spinner {

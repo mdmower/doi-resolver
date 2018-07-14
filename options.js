@@ -159,6 +159,7 @@ function getSaveMap() {
 	return [
 		{ selector: "#history", func: saveOptions, events: ['change'] },
 		{ selector: "#historyShowSave", func: saveOptions, events: ['change'] },
+		{ selector: "#historyShowTitles", func: saveOptions, events: ['change'] },
 		{ selector: "#historySortBy", func: saveOptions, events: ['change'] },
 		{ selector: "#historyLength", func: dbHistoryLengthUpdate, events: ['change'] },
 		{ selector: "#historyFetchTitle", func: setHistoryTitlePermissions, events: ['change'] },
@@ -261,6 +262,7 @@ function saveOptions() {
 		autolink_exclusions: document.getElementById("autolinkExclusions").value.split("\n").filter(Boolean),
 		history: document.getElementById("history").checked,
 		history_showsave: document.getElementById("historyShowSave").checked,
+		history_showtitles: document.getElementById("historyShowTitles").checked,
 		history_sortby: document.getElementById("historySortBy").value,
 		history_length: Number(document.getElementById("historyLength").value),
 		history_fetch_title: document.getElementById("historyFetchTitle").checked,
@@ -328,6 +330,7 @@ function restoreOptions(callback) {
 		"history_length",
 		"history_fetch_title",
 		"history_showsave",
+		"history_showtitles",
 		"history_sortby",
 		"context_menu",
 		"meta_buttons",
@@ -349,6 +352,7 @@ function restoreOptions(callback) {
 		document.getElementById("history").checked = stg.history;
 		document.getElementById("history_tab").style.display = stg.history ? "inline-block" : "none";
 		document.getElementById("historyShowSave").checked = stg.history_showsave;
+		document.getElementById("historyShowTitles").checked = stg.history_showtitles;
 		document.getElementById("historySortBy").value = stg.history_sortby;
 		document.getElementById("historyLength").value = stg.history_length;
 		document.getElementById("historyFetchTitle").checked = stg.history_fetch_title;
@@ -447,6 +451,7 @@ function storageChangeHandler(changes, namespace) {
 			"history",
 			"history_length",
 			"history_showsave",
+			"history_showtitles",
 			"history_sortby",
 			"meta_buttons",
 			"omnibox_tab",
@@ -619,6 +624,7 @@ function populateHistory() {
 			return elm != undefined;
 		});
 
+		var sortHistoryEntries = chrome.extension.getBackgroundPage().sortHistoryEntries;
 		sortHistoryEntries(stg.recorded_dois, stg.history_sortby);
 
 		var historySeparator = document.getElementById("historySeparator");
@@ -632,64 +638,8 @@ function populateHistory() {
 	});
 }
 
-function sortHistoryEntries(entries, method) {
-	function doiCompare(a, b) {
-		if (a.doi.toLowerCase() < b.doi.toLowerCase())
-			return -1;
-		if (a.doi.toLowerCase() > b.doi.toLowerCase())
-			return 1;
-		return 0;
-	}
-	function titleCompare(a, b) {
-		// Sort blank titles at end of list
-		if (!a.title && b.title)
-			return 1;
-		if (a.title && !b.title)
-			return -1;
-
-		if (a.title.toLowerCase() < b.title.toLowerCase())
-			return -1;
-		if (a.title.toLowerCase() > b.title.toLowerCase())
-			return 1;
-		return 0;
-	}
-	function saveCompare(a, b) {
-		if (a.save && !b.save)
-			return -1;
-		if (!a.save && b.save)
-			return 1;
-		return 0;
-	}
-
-	switch(method) {
-		case "doi":
-			entries.sort(doiCompare);
-			break;
-		case "title":
-			entries.sort(titleCompare);
-			break;
-		case "save":
-			entries.reverse();
-			entries.sort(saveCompare);
-			break;
-		case "date":
-			entries.reverse();
-			break;
-		default:
-			break;
-	}
-}
-
-function escapeHtml(unsafe) {
-	return unsafe
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#039;");
-}
-
 function generateHistoryEntry(doiObject) {
+	var escapeHtml = chrome.extension.getBackgroundPage().escapeHtml;
 	var template = document.getElementById("history_entry_template");
 
 	var clone = document.importNode(template.content, true);
@@ -1112,6 +1062,7 @@ function getLocalMessages() {
 		"optionHistory",
 		"optionHistoryLength",
 		"optionHistoryShowSave",
+		"optionHistoryShowTitles",
 		"optionMetaButtons",
 		"optionOmniboxOpento",
 		"optionOmniboxOpentoCurtab",

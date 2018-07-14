@@ -223,7 +223,8 @@ function restoreOptions() {
 function populateHistory() {
 	var stgFetch = [
 		"recorded_dois",
-		"history_showsave"
+		"history_showsave",
+		"history_showtitles"
 	];
 
 	storage.area.get(stgFetch, function(stg) {
@@ -237,20 +238,74 @@ function populateHistory() {
 			return elm != undefined;
 		});
 
+		var sortHistoryEntries = chrome.extension.getBackgroundPage().sortHistoryEntries;
+		sortHistoryEntries(stg.recorded_dois, stg.history_sortby);
+
+		var escapeHtml = chrome.extension.getBackgroundPage().escapeHtml;
 		var optionHtml = "";
 
 		stg.recorded_dois.filter(item => item.save).forEach((item) => {
-			optionHtml += '<option value="' + item.doi + '" label="&#x2714;">';
+			var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+			optionHtml += '<option class="save" value="' + item.doi + '">' + label + '</option>';
 		});
 
 		if (stg.history_showsave !== true) {
 			stg.recorded_dois.filter(item => !item.save).forEach((item) => {
-				optionHtml += '<option value="' + item.doi + '">';
+				var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+				optionHtml += '<option value="' + item.doi + '">' + label + '</option>';
 			});
 		}
 
+		var selectBox = document.getElementById("doiHistory");
+		selectBox.setAttribute('size', '10');
+		selectBox.selectedIndex = -1;
+		selectBox.innerHTML = optionHtml;
+
+		var filterSelectByText = chrome.extension.getBackgroundPage().filterSelectByText;
+		var filterInput = function() {
+			filterSelectByText(selectBox, this.value, false);
+		};
+
+		var filter = document.getElementById("doiInput");
+		filter.addEventListener('input', filterInput);
+
+		selectBox.addEventListener('change', function() {
+			filter.removeEventListener('input', filterInput);
+			filter.value = this.value;
+			filter.addEventListener('input', filterInput);
+			this.selectedIndex = -1;
+			filterSelectByText(selectBox, "", false);
+			toggleHistoryBox(false);
+		});
+
+		var openHistory = document.getElementById("openHistory");
+		openHistory.addEventListener('click', function() {
+			toggleHistoryBox(true);
+		});
+
+		var closeHistory = document.getElementById("closeHistory");
+		closeHistory.addEventListener('click', function() {
+			toggleHistoryBox(false);
+		});
+
+		var mainForm = document.getElementById("mainForm");
+		document.addEventListener('click', function(event) {
+			if (!mainForm.contains(event.target)) {
+				toggleHistoryBox(false);
+			}
+		});
+
 		document.getElementById("doiHistory").innerHTML = optionHtml;
 	});
+}
+
+function toggleHistoryBox(enable) {
+	var selectBox = document.getElementById("doiHistory");
+	var openHistory = document.getElementById("openHistory");
+	var closeHistory = document.getElementById("closeHistory");
+	selectBox.style.display = enable ? "block" : "";
+	openHistory.style.display = enable ? "none" : "";
+	closeHistory.style.display = enable ? "block" : "";
 }
 
 function isHexColor(code) {

@@ -116,6 +116,7 @@ function allOptions() {
 		"history_fetch_title",
 		"history_length",
 		"history_showsave",
+		"history_showtitles",
 		"history_sortby",
 		"meta_buttons",
 		"omnibox_tab",
@@ -169,6 +170,7 @@ function getDefaultOption(opt) {
 		history_fetch_title: false,
 		history_length: 15,
 		history_showsave: false,
+		history_showtitles: false,
 		history_sortby: "date",
 		meta_buttons: true,
 		omnibox_tab: "newfgtab",
@@ -657,6 +659,103 @@ function recordDoi(doi, title) {
 		});
 
 	});
+}
+
+function sortHistoryEntries(entries, method) {
+	function doiCompare(a, b) {
+		if (a.doi.toLowerCase() < b.doi.toLowerCase())
+			return -1;
+		if (a.doi.toLowerCase() > b.doi.toLowerCase())
+			return 1;
+		return 0;
+	}
+	function titleCompare(a, b) {
+		// Sort blank titles at end of list
+		if (!a.title && b.title)
+			return 1;
+		if (a.title && !b.title)
+			return -1;
+
+		if (a.title.toLowerCase() < b.title.toLowerCase())
+			return -1;
+		if (a.title.toLowerCase() > b.title.toLowerCase())
+			return 1;
+		return 0;
+	}
+	function saveCompare(a, b) {
+		if (a.save && !b.save)
+			return -1;
+		if (!a.save && b.save)
+			return 1;
+		return 0;
+	}
+
+	switch(method) {
+		case "doi":
+			entries.sort(doiCompare);
+			break;
+		case "title":
+			entries.sort(titleCompare);
+			break;
+		case "save":
+			entries.reverse();
+			entries.sort(saveCompare);
+			break;
+		case "date":
+			entries.reverse();
+			break;
+		default:
+			break;
+	}
+}
+
+function escapeHtml(unsafe) {
+	return unsafe
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
+}
+
+function filterSelectByText(select, text, trySelect) {
+	var options = Array.from(select.options);
+	var showAll = !text;
+
+	if (showAll) {
+		options.forEach(function(option) {
+			option.style.display = '';
+		});
+		if (select.selectedOptions.length > 0) {
+			select.selectedOptions[0].scrollIntoView();
+		}
+	} else {
+		// Escape special chars
+		var search = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+		// Ignore extra whitespace characters
+		search = search.replace(/\s* /g, '\\s*');
+		var regex = new RegExp(search, 'i');
+
+		var visibleOptions = [];
+		options.forEach(function(option) {
+			if (regex.test(option.innerHTML)) {
+				option.style.display = '';
+				visibleOptions.push(option);
+			} else {
+				option.selected = false;
+				option.style.display = 'none';
+			}
+		});
+
+		if (visibleOptions.length > 0) {
+			if (trySelect && select.selectedOptions.length === 0) {
+				visibleOptions[0].selected = true;
+			}
+			if (select.selectedOptions.length > 0) {
+				select.selectedOptions[0].scrollIntoView();
+			}
+		}
+	}
 }
 
 // Context menu

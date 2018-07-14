@@ -194,48 +194,11 @@ function buildSelections(cslLocales, cslStyles) {
 		}
 
 		var filter = document.getElementById("citeStyleFilter");
+		var filterSelectByText = chrome.extension.getBackgroundPage().filterSelectByText;
 		filter.addEventListener('input', function() {
-			filterByText(styleList, this.value);
+			filterSelectByText(styleList, this.value, true);
 		});
 	});
-}
-
-function filterByText(select, text) {
-	var options = Array.from(select.options);
-	var showAll = !text;
-
-	if (showAll) {
-		options.forEach(function(option) {
-			option.style.display = 'block';
-		});
-		if (select.selectedOptions.length > 0) {
-			select.selectedOptions[0].scrollIntoView();
-		}
-	} else {
-		// Escape special chars
-		var search = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-		// Ignore extra whitespace characters
-		search = search.replace(/\s* /g, '\\s*');
-		var regex = new RegExp(search, 'i');
-
-		var visibleOptions = [];
-		options.forEach(function(option) {
-			if (regex.test(option.innerHTML)) {
-				option.style.display = 'block';
-				visibleOptions.push(option);
-			} else {
-				option.selected = false;
-				option.style.display = 'none';
-			}
-		});
-
-		if (visibleOptions.length > 0) {
-			if (select.selectedOptions.length === 0) {
-				visibleOptions[0].selected = true;
-			}
-			select.selectedOptions[0].scrollIntoView();
-		}
-	}
 }
 
 function formSubmitHandler() {
@@ -445,7 +408,8 @@ function renderBib(cjsResponse, cslResponse, locResponse, locale, forceLocale) {
 function populateHistory() {
 	var stgFetch = [
 		"recorded_dois",
-		"history_showsave"
+		"history_showsave",
+		"history_showtitles"
 	];
 
 	storage.area.get(stgFetch, function(stg) {
@@ -458,20 +422,74 @@ function populateHistory() {
 			return Boolean(recorded_doi);
 		});
 
+		var sortHistoryEntries = chrome.extension.getBackgroundPage().sortHistoryEntries;
+		sortHistoryEntries(stg.recorded_dois, stg.history_sortby);
+
+		var escapeHtml = chrome.extension.getBackgroundPage().escapeHtml;
 		var optionHtml = "";
 
 		stg.recorded_dois.filter(item => item.save).forEach((item) => {
-			optionHtml += '<option value="' + item.doi + '" label="&#x2714;">';
+			var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+			optionHtml += '<option class="save" value="' + item.doi + '">' + label + '</option>';
 		});
 
 		if (stg.history_showsave !== true) {
 			stg.recorded_dois.filter(item => !item.save).forEach((item) => {
-				optionHtml += '<option value="' + item.doi + '">';
+				var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+				optionHtml += '<option value="' + item.doi + '">' + label + '</option>';
 			});
 		}
 
+		var selectBox = document.getElementById("doiHistory");
+		selectBox.setAttribute('size', '15');
+		selectBox.selectedIndex = -1;
+		selectBox.innerHTML = optionHtml;
+
+		var filterSelectByText = chrome.extension.getBackgroundPage().filterSelectByText;
+		var filterInput = function() {
+			filterSelectByText(selectBox, this.value, false);
+		};
+
+		var filter = document.getElementById("doiInput");
+		filter.addEventListener('input', filterInput);
+
+		selectBox.addEventListener('change', function() {
+			filter.removeEventListener('input', filterInput);
+			filter.value = this.value;
+			filter.addEventListener('input', filterInput);
+			this.selectedIndex = -1;
+			filterSelectByText(selectBox, "", false);
+			toggleHistoryBox(false);
+		});
+
+		var openHistory = document.getElementById("openHistory");
+		openHistory.addEventListener('click', function() {
+			toggleHistoryBox(true);
+		});
+
+		var closeHistory = document.getElementById("closeHistory");
+		closeHistory.addEventListener('click', function() {
+			toggleHistoryBox(false);
+		});
+
+		var mainForm = document.getElementById("mainForm");
+		document.addEventListener('click', function(event) {
+			if (!mainForm.contains(event.target)) {
+				toggleHistoryBox(false);
+			}
+		});
+
 		document.getElementById("doiHistory").innerHTML = optionHtml;
 	});
+}
+
+function toggleHistoryBox(enable) {
+	var selectBox = document.getElementById("doiHistory");
+	var openHistory = document.getElementById("openHistory");
+	var closeHistory = document.getElementById("closeHistory");
+	selectBox.style.display = enable ? "block" : "";
+	openHistory.style.display = enable ? "none" : "";
+	closeHistory.style.display = enable ? "block" : "";
 }
 
 function getLocalMessages() {

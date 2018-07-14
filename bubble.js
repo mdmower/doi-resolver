@@ -253,7 +253,8 @@ function populateHistory() {
 	var stgFetch = [
 		"history",
 		"recorded_dois",
-		"history_showsave"
+		"history_showsave",
+		"history_showtitles"
 	];
 
 	storage.area.get(stgFetch, function(stg) {
@@ -272,15 +273,21 @@ function populateHistory() {
 			return elm != undefined;
 		});
 
+		var sortHistoryEntries = chrome.extension.getBackgroundPage().sortHistoryEntries;
+		sortHistoryEntries(stg.recorded_dois, stg.history_sortby);
+
+		var escapeHtml = chrome.extension.getBackgroundPage().escapeHtml;
 		var optionHtml = "";
 
 		stg.recorded_dois.filter(item => item.save).forEach((item) => {
-			optionHtml += '<option value="' + item.doi + '">' + item.doi + ' &#x2714;</option>';
+			var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+			optionHtml += '<option class="save" value="' + item.doi + '">' + label + '</option>';
 		});
 
 		if (stg.history_showsave !== true) {
 			stg.recorded_dois.filter(item => !item.save).forEach((item) => {
-				optionHtml += '<option value="' + item.doi + '">' + item.doi + '</option>';
+				var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+				optionHtml += '<option value="' + item.doi + '">' + label + '</option>';
 			});
 		}
 
@@ -291,9 +298,9 @@ function populateHistory() {
 		selectBox.selectedIndex = -1;
 		selectBox.innerHTML = optionHtml;
 
+		var filterSelectByText = chrome.extension.getBackgroundPage().filterSelectByText;
 		var filterInput = function() {
-			filterByText(selectBox, this.value);
-			resetMessageSpace();
+			filterSelectByText(selectBox, this.value, false);
 		};
 
 		var filter = document.getElementById("textInput");

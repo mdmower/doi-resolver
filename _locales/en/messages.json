@@ -251,6 +251,10 @@
 		"description": "Label for history option to only show saved items in text box drop-downs",
 		"message": "Only show saved entries in text input box drop-downs"
 	},
+	"optionHistoryShowTitles": {
+		"description": "Label for history option to show titles instead of DOIs in text box drop-downs",
+		"message": "Show titles instead of DOIs in text input box drop-downs"
+	},
 	"optionMetaButtons": {
 		"description": "A setting to enable additional buttons in the popup",
 		"message": "Enable additional features in popup"

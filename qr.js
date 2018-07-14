@@ -371,16 +371,15 @@ function resetSpace() {
 
 function simpleNotification(message) {
 	resetSpace();
-	document.getElementById("notifyDiv").innerHTML = message;
-	document.getElementById("notifyDiv").style.display = "block";
+	var notifyDiv = document.getElementById("notifyDiv");
+	notifyDiv.innerHTML = message;
+	notifyDiv.style.display = "block";
 }
 
-function advancedNotification(elms) {
+function advancedNotification(docFrag) {
 	resetSpace();
 	var notifyDiv = document.getElementById("notifyDiv");
-	for (var i = 0; i < elms.length; i++) {
-		notifyDiv.appendChild(elms[i]);
-	}
+	notifyDiv.appendChild(docFrag);
 	notifyDiv.style.display = "block";
 }
 
@@ -601,27 +600,18 @@ function updateMessage(stringToEncode, titleRetrieval) {
 		break;
 	}
 
-	var statusMessage = [];
-	var tmp = document.createElement("span");
-	tmp.setAttribute("class", "notifyHeading");
-	tmp.innerHTML = chrome.i18n.getMessage("qrTitleStatus");
-	statusMessage.push(tmp);
-	tmp = document.createElement("span");
-	tmp.setAttribute("class", "notifyContent");
-	tmp.innerHTML = titleNotice;
-	statusMessage.push(tmp);
-	tmp = document.createElement("br");
-	statusMessage.push(tmp);
-	tmp = document.createElement("span");
-	tmp.setAttribute("class", "notifyHeading");
-	tmp.innerHTML = chrome.i18n.getMessage("qrMessageEncoded");
-	statusMessage.push(tmp);
-	tmp = document.createElement("span");
-	tmp.setAttribute("class", "notifyContent");
-	tmp.innerHTML = stringToEncode;
-	statusMessage.push(tmp);
+	var template = document.getElementById("notify_template");
 
-	advancedNotification(statusMessage);
+	var clone = document.importNode(template.content, true);
+	var headings = clone.querySelectorAll('.notifyHeading');
+	var contents = clone.querySelectorAll('.notifyContent');
+
+	headings[0].innerHTML = chrome.i18n.getMessage("qrTitleStatus");
+	contents[0].innerHTML = titleNotice;
+	headings[1].innerHTML = chrome.i18n.getMessage("qrMessageEncoded");
+	contents[1].innerHTML = stringToEncode;
+
+	advancedNotification(clone);
 }
 
 function linkifyQrImage(imgType, dataUrl) {

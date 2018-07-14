@@ -273,14 +273,16 @@ function populateHistory() {
 		});
 
 		var optionHtml = "";
-		var message = chrome.i18n.getMessage("historySavedEntryLabel");
 
 		stg.recorded_dois.filter(item => item.save).forEach((item) => {
-			optionHtml += '<option value="' + item.doi + '">' + item.doi + ' (' + message + ')</option>';
+			optionHtml += '<option value="' + item.doi + '">' + item.doi + ' &#x2714;</option>';
 		});
-		stg.recorded_dois.filter(item => !item.save).forEach((item) => {
-			optionHtml += '<option value="' + item.doi + '">' + item.doi + '</option>';
-		});
+
+		if (stg.history_showsave !== true) {
+			stg.recorded_dois.filter(item => !item.save).forEach((item) => {
+				optionHtml += '<option value="' + item.doi + '">' + item.doi + '</option>';
+			});
+		}
 
 		var selectBox = document.getElementById("doiHistory");
 		var selectBoxSize = stg.recorded_dois.length > 6 ? 6 : stg.recorded_dois.length;

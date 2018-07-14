@@ -542,10 +542,7 @@ function insertQr(doiInput, qrParms) {
 		qrParms.text = stringToEncode;
 		createQrImage(qrParms);
 
-		recordDoi(doiInput)
-		.catch((errMsg) => {
-			console.log(errMsg);
-		});
+		chrome.extension.getBackgroundPage().recordDoiAction(doiInput);
 	}
 }
 

@@ -216,7 +216,7 @@ function filterByText(select, text) {
 		var search = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
 		// Ignore extra whitespace characters
 		search = search.replace(/\s* /g, '\\s*');
-		var regex = new RegExp(search, 'gi');
+		var regex = new RegExp(search, 'i');
 
 		var visibleOptions = [];
 		options.forEach(function(option) {

@@ -130,13 +130,12 @@ body {
 #doiHistory option.save::after {
 	content: '✔';
 	position: absolute;
+	display: block;
 	right: 0;
-	top: 0;
+	top: 50%;
+	transform: translateY(-50%);
 	bottom: 0;
 	height: 100%;
-	line-height: 1.3em;
-	vertical-align: middle;
-	display: block;
 	text-align: center;
 	background: rgb(255,255,255,0.8);
 	width: 1.3em;

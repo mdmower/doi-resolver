@@ -483,8 +483,21 @@ function populateHistory() {
 	});
 }
 
+function historyBoxSize() {
+	var inputContainer = document.getElementById('inputContainer');
+	var boxTop = inputContainer.offsetTop + inputContainer.offsetHeight + 2;
+	var submitContainer = document.getElementById('localSubmitContainer');
+	var boxBottom = submitContainer.offsetTop - 2;
+
+	return boxBottom - boxTop;
+}
+
 function toggleHistoryBox(enable) {
 	var selectBox = document.getElementById("doiHistory");
+	if (toggleHistoryBox.boxSize === undefined) {
+		toggleHistoryBox.boxSize = historyBoxSize() + 'px';
+		selectBox.style.height = toggleHistoryBox.boxSize;
+	}
 	var openHistory = document.getElementById("openHistory");
 	var closeHistory = document.getElementById("closeHistory");
 	selectBox.style.display = enable ? "block" : "";

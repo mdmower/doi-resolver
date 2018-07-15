@@ -69,7 +69,7 @@ function restoreHashPage() {
 	];
 
 	for (var i = 0; i < knownHashes.length; i++) {
-		if (location.hash == "#" + knownHashes[i]) {
+		if (location.hash === "#" + knownHashes[i]) {
 			toggleTab(knownHashes[i]);
 			break;
 		}
@@ -77,21 +77,17 @@ function restoreHashPage() {
 }
 
 function toggleTab(tab) {
-	Array.from(document.getElementsByClassName("content")).forEach(function(elm) {
-		elm.style.display = "none";
-	});
-	Array.from(document.getElementsByClassName("tab")).forEach(function(elm) {
-		elm.classList.remove("active");
-	});
-	document.getElementById(tab + "_tab").classList.add("active");
-	document.getElementById("content_" + tab).style.display = "block";
+	document.getElementById(tab + "_tab").checked = true;
 	location.hash = tab;
 }
 
 function startClickListeners() {
-	document.getElementById("tabs").addEventListener("click", function() {
-		if(/_tab$/.test(event.target.id))
-			toggleTab(event.target.id.replace(/_tab$/, ""));
+	Array.from(document.querySelectorAll('input[name="tab-control"]')).forEach(function(elm) {
+		elm.addEventListener("change", function() {
+			if (this.checked) {
+				location.hash = this.id.replace("_tab", "");
+			}
+		});
 	});
 
 	document.getElementById("doiResolverInputReset").addEventListener("click", function() {
@@ -350,7 +346,7 @@ function restoreOptions(callback) {
 		document.getElementById("doiResolverInput").value = stg.doi_resolver;
 		document.getElementById("shortDoiResolverInput").value = stg.shortdoi_resolver;
 		document.getElementById("history").checked = stg.history;
-		document.getElementById("history_tab").style.display = stg.history ? "inline-block" : "none";
+		document.getElementById("historyNotice").style.display = stg.history ? "none" : "";
 		document.getElementById("historyShowSave").checked = stg.history_showsave;
 		document.getElementById("historyShowTitles").checked = stg.history_showtitles;
 		document.getElementById("historySortBy").value = stg.history_sortby;
@@ -390,15 +386,14 @@ function restoreOptions(callback) {
 
 // Only refresh fields that need updating after save
 function minimalOptionsRefresh() {
-	var history = document.getElementById("history").checked;
 	var customResolver = document.getElementById("customResolver").checked;
 	var crAutolink = document.getElementById("crAutolink").value;
-
-	document.getElementById("history_tab").style.display = history ? "inline-block" : "none";
-
 	if (customResolver) {
 		setCrPreviews();
 	}
+
+	var history = document.getElementById("history").checked;
+	document.getElementById("historyNotice").style.display = history ? "none" : "";
 
 	/* There's no problem with this running async to the rest of
 	 * saveOptions since a change to the autolink setting will
@@ -1038,6 +1033,7 @@ function getLocalMessages() {
 		"headingSync",
 		"historyClear",
 		"historyFetchTitleLabel",
+		"historyNoticeText",
 		"historySaveInfoText",
 		"historySortByDate",
 		"historySortByDoi",

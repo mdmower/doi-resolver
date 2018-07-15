@@ -103,6 +103,10 @@
 		"description": "Heading on options page for Sync",
 		"message": "Sync"
 	},
+	"historyNoticeText": {
+		"description": "Text on history page to notify user that history is not enabled",
+		"message": "History is not enabled"
+	},
 	"historyFetchTitleLabel": {
 		"description": "Text for checkbox that enables title fetch when DOI is recorded",
 		"message": "Automatically fetch title when a new DOI is recorded"

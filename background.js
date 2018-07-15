@@ -168,7 +168,7 @@ function getDefaultOption(opt) {
 		doi_resolver: "https://dx.doi.org/",
 		history: false,
 		history_fetch_title: false,
-		history_length: 15,
+		history_length: 50,
 		history_showsave: false,
 		history_showtitles: false,
 		history_sortby: "date",

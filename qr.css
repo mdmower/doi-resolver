@@ -14,11 +14,31 @@
     limitations under the License.
 */
 
+html {
+	width: 100%;
+	height: 100%;
+}
+
 body {
 	font-size: 100%;
-	padding:4px;
-	background-color: #fafafa;
-	color: #303942;
+	background: #efefef;
+	overflow: auto;
+}
+
+body>h1 {
+	text-align: center;
+	color: #428BFF;
+	font-weight: 300;
+	padding: 0;
+	margin: 20px 0 0 0;
+}
+
+body>h2 {
+	text-align: center;
+	color: #333;
+	font-weight: 300;
+	padding: 0;
+	margin: 0 0 20px 0;
 }
 
 .hidden {
@@ -34,26 +54,23 @@ body {
 	fill: currentColor;
 }
 
-#qrHeading {
-	width: 390px;
-	font-size: 1.2em;
-	margin: 0 5px;
-}
-
-#qrSubHeading {
-	width: 390px;
-	font-size: 0.9em;
-	margin: 2px 5px;
-	color: grey;
+#container {
+	position: relative;
+	background: white;
+	padding: 50px;
+	margin: 0 auto 80px;
+	width: 850px;
+	box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+	border-radius: 5px;
+	min-height: 600px;
+	overflow-y: auto;
 }
 
 #doiForm {
 	overflow: hidden;
-	margin: 0;
-	border: 1px solid grey;
-	border-radius: 4px;
+	margin: 0 auto;
 	padding: 5px;
-	width: 720px;
+	width: 800px;
 	display: flex;
 }
 
@@ -73,8 +90,8 @@ body {
 
 #colorParams {
 	order: 2;
-	width: 340px;
-	margin-left: 20px;
+	width: 380px;
+	margin-left: 40px;
 }
 
 #inputContainer {
@@ -142,7 +159,7 @@ body {
 }
 
 #sizeParam {
-	margin-top: 10px;
+	margin-top: 20px;
 	clear: both;
 	display: flex;
 	flex: 1;
@@ -184,25 +201,29 @@ body {
 #bgColorDiv,
 #fgColorDiv {
 	float: left;
-	width: 160px;
+	width: 50%;
+	max-width: 50%;
 	padding: 0 5px;
+	box-sizing: border-box;
 }
 
 #qrFgColorPicker,
 #qrBgColorPicker {
 	margin-top: 10px;
-	width: 160px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 #qrFgColorInput,
 #qrBgColorInput {
 	margin-top: 2px;
-	width: 146px;
+	width: 100%;
 	background: linear-gradient(90deg, #FFF 50%, #FFF 50%);
 	border: 1px solid gray;
 	padding: 2px 6px;
 	line-height: 1.5em;
 	font-family: monospace;
+	box-sizing: border-box;
 }
 
 #qrFgColorInput.badColor,
@@ -216,7 +237,7 @@ body {
 }
 
 #imageTypeParam {
-	margin-top: 10px;
+	margin-top: 20px;
 	clear: both;
 }
 
@@ -225,7 +246,7 @@ body {
 }
 
 #bgTransDiv {
-	margin-top: 10px;
+	margin-top: 20px;
 	clear: both;
 }
 
@@ -264,20 +285,32 @@ body {
 
 #qrDiv {
 	clear:both;
-	margin: 8px 5px;
+	margin: 20px 0;
+	text-align: center;
 	display: none;
+	width: 100%;
+	max-height: 850px;
+	overflow: auto;
+}
+
+#qrImageSaveLink {
+	display: block;
 }
 
 #notifyDiv {
 	clear: both;
-	min-width: 390px;
-	max-width: 790px;
-	float:left;
-	margin: 8px 5px;
-	padding: 4px;
+	margin: 20px auto 0;
+	padding: 10px;
+	width: 80%;
 	display: none;
-	border: 1px solid grey;
+	border: 1px solid #ccc;
 	border-radius: 4px;
+	box-sizing: border-box;
+	text-align: center;
+}
+
+#notifyDiv.advanced {
+	text-align: left;
 }
 
 #notifyDiv .notifyContent {

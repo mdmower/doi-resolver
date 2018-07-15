@@ -383,8 +383,8 @@ function prepareColorPickers() {
 			padding: 4,
 			markerRadius: 6,
 			sliderMargin: 12,
-			width: 160,
-			height: 160
+			width: 180,
+			height: 180
 		};
 
 		colorPickerOptions.color = qrFgColor;
@@ -431,6 +431,7 @@ function toggleTitleFetch() {
 function resetSpace() {
 	var notifyDiv = document.getElementById("notifyDiv");
 	var qrDiv = document.getElementById("qrDiv");
+	notifyDiv.removeAttribute("class");
 	notifyDiv.innerHTML = "";
 	notifyDiv.style.display = "none";
 	qrDiv.innerHTML = "";
@@ -447,6 +448,7 @@ function simpleNotification(message) {
 function advancedNotification(docFrag) {
 	resetSpace();
 	var notifyDiv = document.getElementById("notifyDiv");
+	notifyDiv.classList.add("advanced");
 	notifyDiv.appendChild(docFrag);
 	notifyDiv.style.display = "block";
 }

@@ -528,7 +528,15 @@ function getSavedDoiTitle(doi) {
 }
 
 function recordDoiAction(doi) {
-	storage.area.get(["history_fetch_title"], function(stg) {
+	var stgFetch = [
+		"history",
+		"history_fetch_title"
+	];
+
+	storage.area.get(stgFetch, function(stg) {
+		if (stg.history !== true) {
+			return;
+		}
 		if (stg.history_fetch_title === true) {
 			try {
 				chrome.permissions.request({
@@ -571,8 +579,7 @@ function recordDoi(doi, title) {
 		];
 
 		storage.area.get(stgFetch, function(stg) {
-			// Exit quietly if history not enabled
-			if (typeof stg.history === "undefined" || stg.history !== true) {
+			if (stg.history !== true) {
 				return resolve();
 			}
 			if (!Array.isArray(stg.recorded_dois)) {

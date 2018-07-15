@@ -278,6 +278,8 @@ function saveOptions() {
 	/* If history is disabled, remove all history entries */
 	if (!options.history) {
 		options.recorded_dois = [];
+		haltHistoryChangeListeners();
+		removeAllHistoryEntries();
 	}
 
 	/*

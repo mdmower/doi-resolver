@@ -231,26 +231,20 @@ function showHideOptionalElms() {
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		var meta = stg.meta_buttons;
-		var crOp = stg.custom_resolver;
-		var crbOp = stg.cr_bubble;
+		document.getElementById("metaButtons").style.display = stg.meta_buttons ? "flex" : "";
+		document.getElementById("historyDiv").style.display = stg.meta_buttons ? "block" : "";
 
-		if (meta === true) {
-			document.getElementById("metaButtons").style.display = "flex";
-		} else {
-			document.getElementById("metaButtons").style.display = "none";
-		}
-
-		if (crOp === true && crbOp === "selectable") {
+		if (stg.custom_resolver && stg.cr_bubble === "selectable") {
 			document.getElementById("crRadios").style.display = "block";
 		} else {
-			document.getElementById("crRadios").style.display = "none";
+			document.getElementById("crRadios").style.display = "";
 		}
 	});
 }
 
 function populateHistory() {
 	var stgFetch = [
+		"meta_buttons",
 		"history",
 		"recorded_dois",
 		"history_showsave",
@@ -258,7 +252,7 @@ function populateHistory() {
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		if (!stg.history) {
+		if (!stg.meta_buttons || !stg.history) {
 			return;
 		}
 		if (!Array.isArray(stg.recorded_dois) || stg.recorded_dois.length < 1) {

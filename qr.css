@@ -311,7 +311,6 @@ body>h2 {
 	padding: 10px;
 	width: 80%;
 	display: none;
-	border: 1px solid #ccc;
 	border-radius: 4px;
 	box-sizing: border-box;
 	text-align: center;
@@ -319,6 +318,7 @@ body>h2 {
 
 #notifyDiv.advanced {
 	text-align: left;
+	border: 1px solid #ccc;
 }
 
 #notifyDiv .notifyContent {

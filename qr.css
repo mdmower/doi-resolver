@@ -302,7 +302,7 @@ body>h2 {
 }
 
 #qrImageSaveLink {
-	display: block;
+	display: inline-block;
 }
 
 #notifyDiv {

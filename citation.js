@@ -407,6 +407,7 @@ function renderBib(cjsResponse, cslResponse, locResponse, locale, forceLocale) {
 
 function populateHistory() {
 	var stgFetch = [
+		"history",
 		"recorded_dois",
 		"history_showsave",
 		"history_showtitles",
@@ -414,7 +415,8 @@ function populateHistory() {
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-		if (!Array.isArray(stg.recorded_dois)) {
+		if (!stg.history || !Array.isArray(stg.recorded_dois)) {
+			document.getElementById("openHistory").style.display = "none";
 			return;
 		}
 

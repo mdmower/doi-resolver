@@ -147,6 +147,10 @@
 		"description": "Option to sort history by save status",
 		"message": "Save Status"
 	},
+	"historyCopyTitle": {
+		"description": "Hover text for button to copy a history entry title",
+		"message": "Copy"
+	},
 	"iconHover": {
 		"description": "The tooltip message displayed to a user when the mouse hovers on the extension's icon",
 		"message": "Resolve DOI code"
@@ -378,6 +382,22 @@
 	"submitButton": {
 		"description": "The text that appears on the button to submit a form",
 		"message": "Submit"
+	},
+	"svgIconCopy": {
+		"description": "Default title for SVG icon-copy",
+		"message": "Copy"
+	},
+	"svgIconHistory": {
+		"description": "Default title for SVG icon-history",
+		"message": "History"
+	},
+	"svgIconCog": {
+		"description": "Default title for SVG icon-cog",
+		"message": "Options"
+	},
+	"svgIconInfo": {
+		"description": "Default title for SVG icon-info",
+		"message": "About"
 	},
 	"syncDataInfo": {
 		"description": "Additional information about sync feature",

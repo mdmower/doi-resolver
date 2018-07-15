@@ -646,6 +646,7 @@ function generateHistoryEntry(doiObject) {
 	clone.querySelector(".history_entry_link").innerHTML = doiObject.doi;
 	clone.querySelector(".history_entry_title").innerHTML += escapeHtml(doiObject.title);
 	clone.querySelector(".history_entry_title").title = escapeHtml(doiObject.title);
+	clone.querySelector(".history_entry_title_copy").title = chrome.i18n.getMessage("historyCopyTitle");
 
 	clone.querySelector(".history_entry_title_copy").addEventListener("click", function() {
 		var fallbackCopy = function() {
@@ -1110,6 +1111,15 @@ function getLocalMessages() {
 	document.getElementById("shortDoiOutputUrlExample").innerHTML = message;
 	message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
 	document.getElementById("autolinkTestExclusionResult").innerHTML = message;
+
+	message = chrome.i18n.getMessage("svgIconCopy");
+	document.querySelector("#icon-copy title").innerHTML = message;
+	message = chrome.i18n.getMessage("svgIconHistory");
+	document.querySelector("#icon-history title").innerHTML = message;
+	message = chrome.i18n.getMessage("svgIconCog");
+	document.querySelector("#icon-cog title").innerHTML = message;
+	message = chrome.i18n.getMessage("svgIconInfo");
+	document.querySelector("#icon-info title").innerHTML = message;
 
 	document.getElementById("extensionVersion").innerHTML = chrome.app.getDetails().version;
 }

@@ -86,6 +86,7 @@ body>h2 {
 	width: 100%;
 	order: 1;
 	flex: 1;
+	margin-bottom: 20px;
 }
 
 #colorParams {
@@ -250,12 +251,12 @@ body>h2 {
 	clear: both;
 }
 
-#qrManualTitleDiv {
+#qrManualMessageDiv {
 	margin-top: 4px;
 	clear: both;
 }
 
-#qrManualTitleTextDiv {
+#qrManualMessageTextDiv {
 	margin-top: 4px;
 	margin-left: 25px;
 	clear: both;
@@ -263,11 +264,11 @@ body>h2 {
 	flex: 1;
 }
 
-#qrManualTitleTextLabel {
+#qrManualMessageTextLabel {
 	order 1;
 }
 
-#qrManualTitleText {
+#qrManualMessageText {
 	order: 2;
 	flex: 1;
 	margin-left: 4px;

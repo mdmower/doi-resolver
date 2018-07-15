@@ -94,10 +94,10 @@ function startListeners() {
 	Array.from(document.querySelectorAll('input[name="qrImageType"]')).forEach(function(elm) {
 		elm.addEventListener("click", saveOptions);
 	});
-	document.getElementById("qrFetchTitle").addEventListener("change", setDoiMetaPermissions);
+
 	document.getElementById("qrSizeInput").addEventListener("input", dbQrDimensionsSave);
 	document.getElementById("qrBorderInput").addEventListener("input", dbQrDimensionsSave);
-	document.getElementById("qrManualTitle").addEventListener("change", toggleTitleFetch);
+	toggleTitleMessageListeners(true);
 
 	var dbSaveOptions = debounce(saveOptions, 500);
 	var dbColorSave = function () {
@@ -187,7 +187,8 @@ function restoreOptions() {
 		"qr_size",
 		"qr_border",
 		"qr_imgtype",
-		"qr_bgtrans"
+		"qr_bgtrans",
+		"qr_message"
 	];
 
 	chrome.storage.local.get(["qr_title"], function(stgLocal) {
@@ -213,7 +214,18 @@ function restoreOptions() {
 		} else {
 			document.getElementById("qrImageTypeSvg").checked = true;
 		}
-		document.getElementById("qrFetchTitle").checked = Boolean(stgLocal.qr_title);
+
+		// If both qr_title and qr_message are true (should not occur),
+		// give qr_title precedence
+		if (stgLocal.qr_title) {
+			document.getElementById("qrFetchTitle").checked = true;
+			document.getElementById("qrManualMessage").disabled = true;
+		} else if (stg.qr_message) {
+			document.getElementById("qrManualMessage").checked = true;
+			document.getElementById("qrManualMessageTextDiv").style.display = "flex";
+			document.getElementById("qrFetchTitle").disabled = true;
+		}
+
 		document.getElementById("qrBgTrans").checked = Boolean(stg.qr_bgtrans);
 		toggleBgColor(Boolean(stg.qr_bgtrans));
 	});
@@ -407,24 +419,63 @@ function saveOptions() {
 		qr_fgcolor: document.getElementById("qrFgColorInput").value,
 		qr_bgcolor: document.getElementById("qrBgColorInput").value,
 		qr_imgtype: document.querySelector('input[name="qrImageType"]:checked').value,
+		qr_message: document.getElementById("qrManualMessage").checked,
 		qr_title: document.getElementById("qrFetchTitle").checked
 	};
 
 	chrome.storage.local.set(options, null);
 }
 
-function toggleTitleFetch() {
+function toggleTitleMessageListeners(enable) {
 	var qrFetchTitle = document.getElementById("qrFetchTitle");
-	var qrManualTitleTextDiv = document.getElementById("qrManualTitleTextDiv");
-
-	if (document.getElementById("qrManualTitle").checked) {
-		qrFetchTitle.checked = false;
-		qrFetchTitle.disabled = true;
-		qrManualTitleTextDiv.style.display = "flex";
-		saveOptions();
+	var qrManualMessage = document.getElementById("qrManualMessage");
+	if (enable) {
+		qrFetchTitle.addEventListener("change", toggleTitleMessageOptions);
+		qrManualMessage.addEventListener("change", toggleTitleMessageOptions);
 	} else {
-		qrFetchTitle.disabled = false;
-		qrManualTitleTextDiv.style.display = "none";
+		qrFetchTitle.removeEventListener("change", toggleTitleMessageOptions);
+		qrManualMessage.removeEventListener("change", toggleTitleMessageOptions);
+	}
+}
+
+function toggleTitleMessageOptions(event) {
+	toggleTitleMessageListeners(false);
+
+	var qrFetchTitle = document.getElementById("qrFetchTitle");
+	var qrManualMessage = document.getElementById("qrManualMessage");
+	var qrManualMessageTextDiv = document.getElementById("qrManualMessageTextDiv");
+
+	if (event.target.id === "qrManualMessage") {
+		if (qrManualMessage.checked) {
+			qrFetchTitle.checked = false;
+			qrFetchTitle.disabled = true;
+			qrManualMessageTextDiv.style.display = "flex";
+		} else {
+			qrFetchTitle.disabled = false;
+			qrManualMessageTextDiv.style.display = "";
+		}
+		saveOptions();
+		toggleTitleMessageListeners(true);
+	} else {
+		setDoiMetaPermissions(qrFetchTitle.checked)
+		.then((success) => {
+			if (qrFetchTitle.checked) {
+				if (success) { // Permission successfully added
+					qrManualMessage.checked = false;
+					qrManualMessage.disabled = true;
+					qrManualMessageTextDiv.style.display = "";
+					saveOptions();
+				} else {
+					qrFetchTitle.checked = false;
+				}
+			} else {
+				// Even if permission is not successfully removed,
+				// handle option toggling as if it were
+				qrManualMessage.disabled = false;
+				saveOptions();
+			}
+			toggleTitleMessageListeners(true);
+		});
 	}
 }
 
@@ -453,31 +504,28 @@ function advancedNotification(docFrag) {
 	notifyDiv.style.display = "block";
 }
 
-function setDoiMetaPermissions() {
-	var qrFetchTitle = document.getElementById("qrFetchTitle");
-	if (qrFetchTitle.checked) {
-		chrome.permissions.request({
-			origins: [
-				'https://*.doi.org/',
-				'https://*.crossref.org/',
-				'https://*.datacite.org/'
-			]
-		}, function(granted) {
-			qrFetchTitle.checked = granted;
-			saveOptions();
-		});
-	} else {
-		chrome.permissions.remove({
-			origins: [
-				'https://*.doi.org/',
-				'https://*.crossref.org/',
-				'https://*.datacite.org/'
-			]
-		}, function(removed) {
-			qrFetchTitle.checked = !removed;
-			saveOptions();
-		});
-	}
+function setDoiMetaPermissions(enable) {
+	return new Promise((resolve) => {
+
+		if (enable) {
+			chrome.permissions.request({
+				origins: [
+					'https://*.doi.org/',
+					'https://*.crossref.org/',
+					'https://*.datacite.org/'
+				]
+			}, resolve);
+		} else {
+			chrome.permissions.remove({
+				origins: [
+					'https://*.doi.org/',
+					'https://*.crossref.org/',
+					'https://*.datacite.org/'
+				]
+			}, resolve);
+		}
+
+	});
 }
 
 function formSubmitHandler() {
@@ -601,8 +649,8 @@ function insertQr(doiInput, qrParms) {
 			});
 		});
 	} else {
-		if (document.getElementById("qrManualTitle").checked) {
-			var titleString = document.getElementById("qrManualTitleText").value;
+		if (document.getElementById("qrManualMessage").checked) {
+			var titleString = document.getElementById("qrManualMessageText").value;
 			if (titleString !== "") {
 				stringToEncode = titleString + "\n" + stringToEncode;
 			}
@@ -720,8 +768,8 @@ function getLocalMessages() {
 		"qrFetchTitleLabel",
 		"qrFgColorInputLabel",
 		"qrHeading",
-		"qrManualTitleLabel",
-		"qrManualTitleTextLabel",
+		"qrManualMessageLabel",
+		"qrManualMessageTextLabel",
 		"qrSizeInputLabel",
 		"qrBorderInputLabel",
 		"qrImageTypeLabel",

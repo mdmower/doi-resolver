@@ -308,8 +308,8 @@
 		"message": "Disabled"
 	},
 	"qrFetchTitleLabel": {
-		"description": "A setting to fetch the title of the reference in a generated QR code.",
-		"message": "Fetch title of reference for QR code"
+		"description": "A setting to fetch the title of the reference and include it in the generated QR code.",
+		"message": "Include title of reference in QR code"
 	},
 	"qrFgColorInputLabel": {
 		"description": "The label for the foreground color text box on the QR page",
@@ -319,13 +319,13 @@
 		"description": "Title for QR generator page",
 		"message": "QR Code Generator"
 	},
-	"qrManualTitleLabel": {
-		"description": "The label for the manual title check box on the QR page",
-		"message": "Manually include title of reference"
+	"qrManualMessageLabel": {
+		"description": "The label for the manual message check box on the QR page",
+		"message": "Include message in QR code"
 	},
-	"qrManualTitleTextLabel": {
-		"description": "The label for the manual title text box on the QR page",
-		"message": "Title"
+	"qrManualMessageTextLabel": {
+		"description": "The label for the manual message text box on the QR page",
+		"message": "Message"
 	},
 	"qrMessageEncoded": {
 		"description": "Label for message encoded in QR code",

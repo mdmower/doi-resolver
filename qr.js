@@ -129,10 +129,27 @@ function startListeners() {
 }
 
 function toggleBgColor(transparency) {
-	if (transparency === undefined)
+	if (transparency === undefined) {
 		transparency = document.getElementById("qrBgTrans").checked;
-	document.getElementById("qrBgColorInput").disabled = transparency;
-	document.getElementById("qrBgColorPicker").style["pointer-events"] = transparency ? "none" : "auto";
+	}
+
+	var qrBgColorInput = document.getElementById("qrBgColorInput");
+	qrBgColorInput.disabled = transparency;
+	document.getElementById("qrBgColorPicker").style.pointerEvents = transparency ? "none" : "auto";
+
+	if (transparency) {
+		toggleBgColor.savedStyle = qrBgColorInput.getAttribute("style");
+		qrBgColorInput.removeAttribute("style");
+		qrBgColorInput.style.color = "transparent";
+		qrBgColorInput.style.backgroundImage = "linear-gradient(45deg, #aaa 25%, transparent 25%), linear-gradient(-45deg, #aaa 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #aaa 75%), linear-gradient(-45deg, transparent 75%, #aaa 75%)";
+		qrBgColorInput.style.backgroundSize = "20px 20px";
+		qrBgColorInput.style.backgroundPosition = "0 0, 0 10px, 10px -10px, -10px 0px";
+	} else {
+		qrBgColorInput.removeAttribute("style");
+		if (toggleBgColor.savedStyle) {
+			qrBgColorInput.setAttribute("style", toggleBgColor.savedStyle);
+		}
+	}
 }
 
 function qrDimensionsSave() {
@@ -227,7 +244,6 @@ function restoreOptions() {
 		}
 
 		document.getElementById("qrBgTrans").checked = Boolean(stg.qr_bgtrans);
-		toggleBgColor(Boolean(stg.qr_bgtrans));
 	});
 	});
 }
@@ -357,11 +373,11 @@ var colorPickerStorage = {
 function prepareColorPickers() {
 	var stgFetch = [
 		"qr_fgcolor",
-		"qr_bgcolor"
+		"qr_bgcolor",
+		"qr_bgtrans"
 	];
 
 	storage.area.get(stgFetch, function(stg) {
-
 		var qrFgColor = "#000000";
 		var storedQrFgColor = stg.qr_fgcolor;
 		if (isHexColor(storedQrFgColor)) {
@@ -391,6 +407,10 @@ function prepareColorPickers() {
 		var qrBgColorInput = document.getElementById("qrBgColorInput");
 		qrBgColorInput.value = qrBgColor;
 		qrBgColorInput.style.background = "linear-gradient(90deg, #FFF 50%, " + qrBgColor + " 50%)";
+
+		if (stg.qr_bgtrans) {
+			toggleBgColor(true);
+		}
 
 		var colorPickerOptions = {
 			padding: 4,

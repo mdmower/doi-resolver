@@ -1,17 +1,17 @@
 /*!
-    Copyright (C) 2016 Matthew D. Mower
+	Copyright (C) 2016 Matthew D. Mower
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-         http://www.apache.org/licenses/LICENSE-2.0
+		 http://www.apache.org/licenses/LICENSE-2.0
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 */
 
 body {
@@ -84,18 +84,18 @@ body {
 }
 
 #historyDiv {
-    display: none;
-    clear: both;
-    margin-top: 4px;
-    max-width: 300px;
+	display: none;
+	clear: both;
+	margin-top: 4px;
+	max-width: 300px;
 }
 
 #doiHistory {
-    width: 100%;
+	width: 100%;
 }
 
 #doiHistory option {
-    position: relative;
+	position: relative;
 }
 
 #doiHistory option[disabled] {
@@ -106,16 +106,16 @@ body {
 }
 
 #doiHistory option.save::after {
-    content: '✔';
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    height: 100%;
-    line-height: 1.3em;
-    vertical-align: middle;
-    display: block;
-    text-align: center;
-    background: rgb(255,255,255,0.8);
-    width: 1.3em;
+	content: '✔';
+	position: absolute;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	height: 100%;
+	line-height: 1.3em;
+	vertical-align: middle;
+	display: block;
+	text-align: center;
+	background: rgb(255, 255, 255, 0.8);
+	width: 1.3em;
 }

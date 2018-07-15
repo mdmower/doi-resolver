@@ -601,15 +601,12 @@ body>h1 {
 }
 
 .tooltip {
-	/* border-bottom: 1px dashed darkslateblue; */
 	display: inline-block;
 	line-height: 1em;
 	cursor: default;
 	position: relative;
 	color: darkslateblue;
 }
-
-
 
 /* Tooltip bubble */
 
@@ -633,8 +630,6 @@ body>h1 {
 	transition: visibility 0s linear 0.3s, opacity 0.3s linear;
 }
 
-
-
 /* Tooltip arrow */
 
 .tooltip .tooltiptext::after {
@@ -647,8 +642,6 @@ body>h1 {
 	border-style: solid;
 	border-color: transparent #555 transparent transparent;
 }
-
-
 
 /* Show the tooltip on hover */
 

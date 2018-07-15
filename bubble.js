@@ -247,7 +247,8 @@ function populateHistory() {
 		"history",
 		"recorded_dois",
 		"history_showsave",
-		"history_showtitles"
+		"history_showtitles",
+		"history_sortby"
 	];
 
 	storage.area.get(stgFetch, function(stg) {

@@ -435,6 +435,7 @@ function populateHistory() {
 			var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
 			optionHtml += '<option class="save" value="' + item.doi + '">' + label + '</option>';
 		});
+		optionHtml += optionHtml ? "<option disabled></option>" : "";
 
 		if (stg.history_showsave !== true) {
 			stg.recorded_dois.filter(item => !item.save).forEach((item) => {

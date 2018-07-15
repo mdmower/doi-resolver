@@ -848,6 +848,7 @@ function saveHistoryTitles(doiTitleReference) {
 }
 
 function saveHistoryEntry(event) {
+	var save = event.target.checked;
 	var entryElm = event.target;
 	var doi = entryElm.getAttribute('data-doi');
 	while (entryElm && !doi) {
@@ -868,7 +869,7 @@ function saveHistoryEntry(event) {
 			return item.doi === doi;
 		});
 
-		stg.recorded_dois[index].save = entryElm.checked;
+		stg.recorded_dois[index].save = save;
 		chrome.storage.local.set(stg, null);
 	});
 }

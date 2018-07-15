@@ -232,7 +232,6 @@ function showHideOptionalElms() {
 
 	storage.area.get(stgFetch, function(stg) {
 		document.getElementById("metaButtons").style.display = stg.meta_buttons ? "flex" : "";
-		document.getElementById("historyDiv").style.display = stg.meta_buttons ? "block" : "";
 
 		if (stg.custom_resolver && stg.cr_bubble === "selectable") {
 			document.getElementById("crRadios").style.display = "block";
@@ -253,9 +252,11 @@ function populateHistory() {
 
 	storage.area.get(stgFetch, function(stg) {
 		if (!stg.meta_buttons || !stg.history) {
+			document.getElementById('historyDiv').style.display = '';
 			return;
 		}
 		if (!Array.isArray(stg.recorded_dois) || stg.recorded_dois.length < 1) {
+			document.getElementById('historyDiv').style.display = '';
 			return;
 		}
 

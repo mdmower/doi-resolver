@@ -540,27 +540,22 @@ function recordDoiAction(doi) {
 			return;
 		}
 		if (stg.history_fetch_title === true) {
-			try {
-				chrome.permissions.request({
-					origins: [
-						'https://*.doi.org/',
-						'https://*.crossref.org/',
-						'https://*.datacite.org/'
-					]
-				}, function(granted) {
-					// Checking success is not important here
-					recordDoi(doi)
-					.catch((errMsg) => {
-						console.log(errMsg);
-					});
-				});
-			} catch (ex) {
-				console.error('recordDoiAction: Permission request not allowed', ex);
+			chrome.permissions.request({
+				origins: [
+					'https://*.doi.org/',
+					'https://*.crossref.org/',
+					'https://*.datacite.org/'
+				]
+			}, function(granted) {
+				// Checking success is not important here
+				if (chrome.runtime.lastError) {
+					console.error('recordDoiAction: Permission request not allowed');
+				}
 				recordDoi(doi)
 				.catch((errMsg) => {
 					console.log(errMsg);
 				});
-			}
+			});
 		} else {
 			recordDoi(doi)
 			.catch((errMsg) => {

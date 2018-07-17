@@ -36,7 +36,7 @@ function startListeners() {
 
 		if (tabRecord.openTabs.indexOf(tabId) >= 0) {
 			if (tabRecord.openTabs.length === 1) {
-				removeQrCitePermissions();
+				cleanupPermissions(); // Async OK
 				tabRecord.openTabs = [];
 			} else {
 				tabRecord(tabId, false);
@@ -788,23 +788,6 @@ function tabRecord(id, add) {
 		var index = tabRecord.openTabs.indexOf(id);
 		tabRecord.openTabs.splice(index, 1);
 	}
-}
-
-function removeQrCitePermissions() {
-	chrome.permissions.remove({
-		origins: [
-			"https://*.doi.org/",
-			"https://*.crossref.org/",
-			"https://*.datacite.org/",
-			"https://raw.githubusercontent.com/"
-		]
-	}, function(removed) {
-		if (removed) {
-			console.log("Removed qr/citation-related permissions");
-		} else {
-			console.log("Unable to remove qr/citation-related permissions");
-		}
-	});
 }
 
 // Auto-link

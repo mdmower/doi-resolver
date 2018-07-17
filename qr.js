@@ -15,38 +15,10 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	storage(true);
+	beginInit();
 }, false);
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch (request.cmd) {
-	case "sync_toggle_complete":
-		storage(false);
-		break;
-	default:
-		break;
-	}
-});
-
-function storage(firstRun) {
-	if (typeof storage.area === 'undefined') {
-		storage.area = chrome.storage.local;
-	}
-
-	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg.sync_data === true) {
-			storage.area = chrome.storage.sync;
-		} else {
-			storage.area = chrome.storage.local;
-		}
-
-		if (firstRun === true) {
-			continueOnLoad();
-		}
-	});
-}
-
-function continueOnLoad() {
+function beginInit() {
 	getLocalMessages();
 	initializeDoiInput();
 	restoreOptions();
@@ -173,7 +145,7 @@ function qrDimensionsSave() {
 		qrBorder = 0;
 	}
 
-	storage.area.get(["qr_size", "qr_border"], function(stg) {
+	chrome.storage.local.get(["qr_size", "qr_border"], function(stg) {
 		if (Number(stg.qr_size) !== qrSize || Number(stg.qr_border) !== qrBorder) {
 			saveOptions();
 		}
@@ -205,11 +177,11 @@ function restoreOptions() {
 		"qr_border",
 		"qr_imgtype",
 		"qr_bgtrans",
-		"qr_message"
+		"qr_message",
+		"qr_title"
 	];
 
-	chrome.storage.local.get(["qr_title"], function(stgLocal) {
-	storage.area.get(stgFetch, function(stg) {
+	chrome.storage.local.get(stgFetch, function(stg) {
 		var qrSize = Number(stg.qr_size);
 		if (isNaN(qrSize)) {
 			document.getElementById("qrSizeInput").value = 300;
@@ -234,7 +206,7 @@ function restoreOptions() {
 
 		// If both qr_title and qr_message are true (should not occur),
 		// give qr_title precedence
-		if (stgLocal.qr_title) {
+		if (stg.qr_title) {
 			document.getElementById("qrFetchTitle").checked = true;
 			document.getElementById("qrManualMessage").disabled = true;
 		} else if (stg.qr_message) {
@@ -244,7 +216,6 @@ function restoreOptions() {
 		}
 
 		document.getElementById("qrBgTrans").checked = Boolean(stg.qr_bgtrans);
-	});
 	});
 }
 
@@ -257,7 +228,7 @@ function populateHistory() {
 		"history_sortby"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
+	chrome.storage.local.get(stgFetch, function(stg) {
 		if (!stg.history || !Array.isArray(stg.recorded_dois)) {
 			document.getElementById("openHistory").style.display = "none";
 			return;
@@ -377,7 +348,7 @@ function prepareColorPickers() {
 		"qr_bgtrans"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
+	chrome.storage.local.get(stgFetch, function(stg) {
 		var qrFgColor = "#000000";
 		var storedQrFgColor = stg.qr_fgcolor;
 		if (isHexColor(storedQrFgColor)) {

@@ -15,38 +15,10 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	storage(true);
+	beginInit();
 }, false);
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch (request.cmd) {
-	case "sync_toggle_complete":
-		storage(false);
-		break;
-	default:
-		break;
-	}
-});
-
-function storage(firstRun) {
-	if (typeof storage.area === 'undefined') {
-		storage.area = chrome.storage.local;
-	}
-
-	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg.sync_data === true) {
-			storage.area = chrome.storage.sync;
-		} else {
-			storage.area = chrome.storage.local;
-		}
-
-		if (firstRun === true) {
-			continueOnLoad();
-		}
-	});
-}
-
-function continueOnLoad() {
+function beginInit() {
 	initializeDoiInput();
 	getLocalMessages();
 	initSelections();
@@ -125,7 +97,7 @@ function buildSelections(cslLocales, cslStyles) {
 		"cite_style"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
+	chrome.storage.local.get(stgFetch, function(stg) {
 		var storedLocale = stg.cite_locale;
 		var storedStyle = stg.cite_style;
 		var allLocales = Object.values(cslLocales["primary-dialects"]);
@@ -414,7 +386,7 @@ function populateHistory() {
 		"history_sortby"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
+	chrome.storage.local.get(stgFetch, function(stg) {
 		if (!stg.history || !Array.isArray(stg.recorded_dois)) {
 			document.getElementById("openHistory").style.display = "none";
 			return;

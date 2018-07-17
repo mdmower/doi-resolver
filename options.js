@@ -15,50 +15,24 @@
 */
 
 document.addEventListener("DOMContentLoaded", function () {
-	storage(true, true);
+	beginInit();
 }, false);
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function(request) {
 	switch (request.cmd) {
-	case "sync_toggle_complete":
-		storage(false, true);
-		break;
-	case "settings_dup_complete":
-		storage(false, false);
+	case "settings_updated":
+		settingsUpdatedHandler(request.data, request.force_update);
 		break;
 	default:
 		break;
 	}
 });
 
-function storage(firstRun, restore) {
-	if (typeof storage.area === "undefined") {
-		storage.area = chrome.storage.local;
-	}
-
-	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg.sync_data === true) {
-			storage.area = chrome.storage.sync;
-			storageListener(true);
-		} else {
-			storage.area = chrome.storage.local;
-			storageListener(false);
-		}
-
-		if (firstRun === true) {
-			continueOnLoad();
-		}
-		if (restore === true) {
-			restoreOptions(populateHistory);
-		}
-	});
-}
-
-function continueOnLoad() {
+function beginInit() {
 	getLocalMessages();
-	startClickListeners();
 	restoreHashPage();
-	chrome.storage.onChanged.addListener(storageChangeHandler);
+	startClickListeners();
+	restoreOptions(populateHistory);
 }
 
 function restoreHashPage() {
@@ -70,15 +44,13 @@ function restoreHashPage() {
 
 	for (var i = 0; i < knownHashes.length; i++) {
 		if (location.hash === "#" + knownHashes[i]) {
-			toggleTab(knownHashes[i]);
-			break;
+			document.getElementById(knownHashes[i] + "_tab").checked = true;
+			return;
 		}
 	}
-}
 
-function toggleTab(tab) {
-	document.getElementById(tab + "_tab").checked = true;
-	location.hash = tab;
+	// Invalid hash
+	location.hash = '';
 }
 
 function startClickListeners() {
@@ -138,7 +110,6 @@ function startClickListeners() {
 
 	document.getElementById("syncDataWipeButton").addEventListener("click", function() {
 		document.getElementById("syncData").checked = false;
-		/* background listens for sync_reset == true */
 		chrome.storage.sync.set({sync_reset: true}, null);
 	});
 }
@@ -173,7 +144,7 @@ function getSaveMap() {
 		{ selector: "#autolinkApplyTo", func: saveOptions, events: ['change'] },
 		{ selector: "#autolinkExclusions", func: dbSaveOptions, events: ['input', 'change'] },
 		{ selector: "#autolinkTestExclusion", func: autolinkTestExclusion, events: ['input', 'change'] },
-		{ selector: "#syncData", func: toggleSync, events: ['change'] }
+		{ selector: "#syncData", func: saveOptions, events: ['change'] }
 	];
 }
 
@@ -215,21 +186,6 @@ function haltHistoryChangeListeners() {
 	});
 }
 
-function toggleSync() {
-	if (document.getElementById("syncData").checked) {
-		chrome.storage.sync.set({sync_reset: false}, function() {
-			chrome.storage.local.set({sync_data: true}, function() {
-				chrome.extension.getBackgroundPage().toggleSync();
-			});
-		});
-	} else {
-		storageListener(false);
-		chrome.storage.local.set({sync_data: false}, function() {
-			chrome.extension.getBackgroundPage().toggleSync();
-		});
-	}
-}
-
 function debounce(func, wait, immediate) {
 	var timeout;
 	return function() {
@@ -248,6 +204,15 @@ function debounce(func, wait, immediate) {
 			func.apply(context, args);
 		}
 	};
+}
+
+function saveIndividualOptions(options, callback) {
+	storageListener(false);
+	chrome.storage.local.set(options, function() {
+		if (typeof callback === 'function') {
+			callback();
+		}
+	});
 }
 
 function saveOptions() {
@@ -272,7 +237,8 @@ function saveOptions() {
 		cr_omnibox: document.getElementById("crOmnibox").value,
 		doi_resolver: document.getElementById("doiResolverInput").value,
 		shortdoi_resolver: document.getElementById("shortDoiResolverInput").value,
-		omnibox_tab: document.getElementById("omniboxOpento").value
+		omnibox_tab: document.getElementById("omniboxOpento").value,
+		sync_data: document.getElementById("syncData").checked
 	};
 
 	/* If history is disabled, remove all history entries */
@@ -298,17 +264,12 @@ function saveOptions() {
 		var autolinkStorage = stgLocal.auto_link;
 		var autolinkProtocolStorage = stgLocal.al_protocol;
 
-		storageListener(false);
 		if (autolinkCurrent != autolinkStorage || autolinkProtocolCurrent != autolinkProtocolStorage) {
-			chrome.storage.local.set(options, function() {
+			saveIndividualOptions(options, function() {
 				setAutolinkPermission(autolinkCurrent);
 			});
 		} else {
-			/* Wait for message confirming .local to .sync duplication
-			 * is complete in background before re-enabling storage
-			 * listener here
-			 */
-			chrome.storage.local.set(options, null);
+			saveIndividualOptions(options, null);
 		}
 	});
 }
@@ -316,35 +277,31 @@ function saveOptions() {
 function restoreOptions(callback) {
 	haltChangeListeners();
 
-	var stgLclFetch = [
-		"al_protocol",
-		"sync_data"
-	];
-
 	var stgFetch = [
+		"al_protocol",
 		"auto_link_rewrite",
 		"autolink_exclusions",
-		"history",
-		"history_length",
-		"history_fetch_title",
-		"history_showsave",
-		"history_showtitles",
-		"history_sortby",
 		"context_menu",
-		"meta_buttons",
-		"custom_resolver",
 		"cr_autolink",
 		"cr_bubble",
 		"cr_context",
 		"cr_history",
 		"cr_omnibox",
+		"custom_resolver",
 		"doi_resolver",
+		"history",
+		"history_fetch_title",
+		"history_length",
+		"history_showsave",
+		"history_showtitles",
+		"history_sortby",
+		"meta_buttons",
+		"omnibox_tab",
 		"shortdoi_resolver",
-		"omnibox_tab"
+		"sync_data"
 	];
 
-	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
-	storage.area.get(stgFetch, function(stg) {
+	chrome.storage.local.get(stgFetch, function(stg) {
 		document.getElementById("doiResolverInput").value = stg.doi_resolver;
 		document.getElementById("shortDoiResolverInput").value = stg.shortdoi_resolver;
 		document.getElementById("history").checked = stg.history;
@@ -357,14 +314,14 @@ function restoreOptions(callback) {
 		document.getElementById("context").checked = stg.context_menu;
 		document.getElementById("meta").checked = stg.meta_buttons;
 		document.getElementById("customResolver").checked = stg.custom_resolver;
-		document.getElementById("syncData").checked = stgLocal.sync_data;
+		document.getElementById("syncData").checked = stg.sync_data;
 		document.getElementById("crAutolink").value = stg.cr_autolink;
 		document.getElementById("crBubble").value = stg.cr_bubble;
 		document.getElementById("crContext").value = stg.cr_context;
 		document.getElementById("crHistory").value = stg.cr_history;
 		document.getElementById("crOmnibox").value = stg.cr_omnibox;
 		document.getElementById("omniboxOpento").value = stg.omnibox_tab;
-		document.getElementById("autolinkApplyTo").value = stgLocal.al_protocol;
+		document.getElementById("autolinkApplyTo").value = stg.al_protocol;
 		document.getElementById("autolinkRewrite").checked = stg.auto_link_rewrite;
 
 		var autolinkExclusions = Array.isArray(stg.autolink_exclusions) ? stg.autolink_exclusions : [];
@@ -381,8 +338,8 @@ function restoreOptions(callback) {
 			if (typeof callback === "function") {
 				callback();
 			}
+			storageListener(true);
 		});
-	});
 	});
 }
 
@@ -413,57 +370,84 @@ function storageListener(enable) {
 	storageListener.status = Boolean(enable);
 }
 
-function storageChangeHandler(changes, namespace) {
-	if (namespace === "local") {
-		/* For the purpose of updating the history page, only the local
-		 * namespace needs to be monitored since: 1) local changes are
-		 * written to chrome.storage.local; and 2) changes brought in by
-		 * sync will be copied to chrome.storage.local in the background
-		 */
-		if (changes.recorded_dois !== undefined || changes.history_sortby !== undefined) {
-			populateHistory();
-		}
+function settingsUpdatedHandler(updatedOptions, forceUpdate) {
+	if (!storageListener.status && !forceUpdate) {
+		storageListener(true);
+		return;
+	}
 
-		if (typeof changes.autolink_exclusions !== "undefined" && Array.isArray(changes.autolink_exclusions.newValue)) {
-			autolinkTestExclusion();
+	console.log("Storage changed, checking for updates");
+
+	if (Object.keys(updatedOptions).length === 0) {
+		console.log("Nothing to update");
+		return;
+	}
+
+	if (updatedOptions.autolink_exclusions !== undefined) {
+		autolinkTestExclusion();
+	}
+
+	var i;
+
+	var allOptionsInPage = [
+		"al_protocol",
+		"auto_link_rewrite",
+		"autolink_exclusions",
+		"context_menu",
+		"cr_autolink",
+		"cr_bubble",
+		"cr_context",
+		"cr_history",
+		"cr_omnibox",
+		"custom_resolver",
+		"doi_resolver",
+		"history",
+		"history_fetch_title",
+		"history_length",
+		"history_showsave",
+		"history_showtitles",
+		"history_sortby",
+		"meta_buttons",
+		"omnibox_tab",
+		"shortdoi_resolver",
+		"sync_data"
+	];
+
+	var optionsUpdated = false;
+	for (i = 0; i < allOptionsInPage.length; i++) {
+		if (updatedOptions[allOptionsInPage[i]] !== undefined) {
+			optionsUpdated = true;
+			break;
 		}
 	}
 
-	/* sync_reset is handled in the background page */
-	if (namespace === "sync" && typeof changes.sync_reset === "undefined") {
-		if (storageListener.status !== true) {
-			return;
-		}
+	var historyRefreshOptions = [
+		"history_sortby",
+		"recorded_dois"
+	];
 
-		var options = [
-			"auto_link_rewrite",
-			"context_menu",
-			"cr_autolink",
-			"cr_bubble",
-			"cr_context",
-			"cr_history",
-			"cr_omnibox",
-			"custom_resolver",
-			"doi_resolver",
-			"history",
-			"history_length",
-			"history_showsave",
-			"history_showtitles",
-			"history_sortby",
-			"meta_buttons",
-			"omnibox_tab",
-			"shortdoi_resolver"
-		];
-
-		for (var key in changes) {
-			if (changes.hasOwnProperty(key)) {
-				if (options.indexOf(key) >= 0) {
-					restoreOptions(null);
-					return;
-				}
-			}
+	var historyUpdated = false;
+	for (i = 0; i < historyRefreshOptions.length; i++) {
+		if (updatedOptions[historyRefreshOptions[i]] !== undefined) {
+			historyUpdated = true;
+			break;
 		}
 	}
+
+	if (optionsUpdated && historyUpdated) {
+		console.log("Options and history updated");
+		restoreOptions(populateHistory);
+	} else if (optionsUpdated) {
+		console.log("Options updated");
+		restoreOptions(null);
+	} else if (historyUpdated) {
+		console.log("History updated");
+		populateHistory();
+	} else {
+		console.log("No relevant updates found");
+	}
+
+	storageListener(true);
 }
 
 function setCrPreviews() {
@@ -608,7 +592,7 @@ function populateHistory() {
 
 	haltHistoryChangeListeners();
 
-	storage.area.get(["recorded_dois", "history_sortby"], function(stg) {
+	chrome.storage.local.get(["recorded_dois", "history_sortby"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
@@ -695,7 +679,7 @@ function toggleHistorySpinner(enable) {
 }
 
 function populateMissingTitles() {
-	storage.area.get(["recorded_dois"], function(stg) {
+	chrome.storage.local.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
@@ -720,7 +704,6 @@ function populateMissingTitles() {
 		.then(saveHistoryTitles)
 		.then(function() {
 			toggleHistorySpinner(false);
-			populateHistory();
 		})
 		.catch(function(error) {
 			toggleHistorySpinner(false);
@@ -791,10 +774,6 @@ function setHistoryTitlePermissions() {
 		}, function(granted) {
 			historyFetchTitle.checked = granted;
 			saveOptions();
-
-			// Begin populating titles since option was just enabled
-			// This should be safe to run async with saveOptions since
-			// recorded_dois are not affected by saveOptions
 		});
 	} else {
 		chrome.permissions.remove({
@@ -817,7 +796,7 @@ function saveHistoryTitles(doiTitleReference) {
 			return;
 		}
 
-		storage.area.get(["recorded_dois"], function(stg) {
+		chrome.storage.local.get(["recorded_dois"], function(stg) {
 			if (!Array.isArray(stg.recorded_dois)) {
 				return;
 			}
@@ -839,7 +818,7 @@ function saveHistoryTitles(doiTitleReference) {
 			}
 
 			if (stgUpdated) {
-				chrome.storage.local.set(stg, resolve);
+				saveIndividualOptions(stg, resolve);
 			} else {
 				resolve();
 			}
@@ -861,7 +840,7 @@ function saveHistoryEntry(event) {
 		return;
 	}
 
-	storage.area.get(["recorded_dois"], function(stg) {
+	chrome.storage.local.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
@@ -871,7 +850,7 @@ function saveHistoryEntry(event) {
 		});
 
 		stg.recorded_dois[index].save = save;
-		chrome.storage.local.set(stg, null);
+		saveIndividualOptions(stg, null);
 	});
 }
 
@@ -887,7 +866,7 @@ function deleteHistoryEntry(event) {
 		return;
 	}
 
-	storage.area.get(["recorded_dois"], function(stg) {
+	chrome.storage.local.get(["recorded_dois"], function(stg) {
 		if (!Array.isArray(stg.recorded_dois)) {
 			return;
 		}
@@ -899,7 +878,7 @@ function deleteHistoryEntry(event) {
 		stg.recorded_dois.splice(index, 1);
 		entryElm.classList.add("fadeOut");
 		setTimeout(function() {
-			chrome.storage.local.set(stg, null);
+			saveIndividualOptions(stg, null);
 		}, 300); // 300ms matches opacity transition in css
 	});
 }
@@ -912,7 +891,7 @@ function historyLengthUpdate() {
 		document.getElementById("historyLength").value = 500;
 	}
 
-	storage.area.get(["recorded_dois"], function(stg) {
+	chrome.storage.local.get(["recorded_dois"], function(stg) {
 		if (historyLength >= stg.recorded_dois.length) {
 			saveOptions();
 		} else {
@@ -925,7 +904,7 @@ function historyLengthUpdate() {
 					break;
 				}
 			}
-			chrome.storage.local.set({recorded_dois: stg.recorded_dois}, saveOptions);
+			saveIndividualOptions({recorded_dois: stg.recorded_dois}, saveOptions);
 		}
 	});
 }
@@ -938,7 +917,7 @@ function removeAllHistoryEntries() {
 }
 
 function deleteHistory() {
-	chrome.storage.local.set({recorded_dois: []}, null);
+	saveIndividualOptions({recorded_dois: []}, null);
 }
 
 function verifyAutolinkPermission(callback) {
@@ -982,7 +961,7 @@ function verifyAutolinkPermission(callback) {
 }
 
 function autolinkTestExclusion() {
-	storage.area.get(["autolink_exclusions"], function(stg) {
+	chrome.storage.local.get(["autolink_exclusions"], function(stg) {
 		if (!Array.isArray(stg.autolink_exclusions)) {
 			return;
 		}

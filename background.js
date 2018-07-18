@@ -296,9 +296,21 @@ function storageChangeHandler(changes, namespace) {
 			}
 		}
 
-		var historyUpdate =
-				updatedOptions.recorded_dois !== undefined ||
-				updatedOptions.history_sortby !== undefined;
+		var historyRefreshOptions = [
+			"cr_history",
+			"custom_resolver",
+			"doi_resolver",
+			"history_sortby",
+			"recorded_dois",
+			"shortdoi_resolver"
+		];
+		var historyUpdate = false;
+		for (var i = 0; i < historyRefreshOptions.length; i++) {
+			if (updatedOptions[historyRefreshOptions[i]] !== undefined) {
+				historyUpdate = true;
+				break;
+			}
+		}
 
 		if (stg.sync_data) {
 			var newNamespace = namespace === "local" ? "sync" : "local";

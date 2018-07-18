@@ -386,8 +386,12 @@ function settingsUpdatedHandler(updatedOptions, forceUpdate) {
 	}
 
 	var historyRefreshOptions = [
+		"cr_history",
+		"custom_resolver",
+		"doi_resolver",
 		"history_sortby",
-		"recorded_dois"
+		"recorded_dois",
+		"shortdoi_resolver"
 	];
 
 	var historyUpdated = false;

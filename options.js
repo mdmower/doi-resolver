@@ -672,13 +672,10 @@ function gatherNewDoiTitles(dois) {
 			return reject("No DOIs requested for title fetch");
 		}
 
-		chrome.permissions.request({
-			origins: [
-				"https://*.doi.org/",
-				"https://*.crossref.org/",
-				"https://*.datacite.org/"
-			]
-		}, function(granted) {
+		var setDoiMetaPermissions = chrome.extension.getBackgroundPage().setDoiMetaPermissions;
+
+		setDoiMetaPermissions(true)
+		.then(function(granted) {
 			if (!granted) {
 				return reject("Origin permissions not granted");
 			}
@@ -686,6 +683,7 @@ function gatherNewDoiTitles(dois) {
 			var gatherFetchResults = function(promises) {
 				Promise.all(promises)
 				.then(function(results) {
+					setDoiMetaPermissions(false);
 					var doiTitleReference = {};
 					dois.forEach(function(doi) {
 						doiTitleReference[doi] = results.pop();
@@ -709,7 +707,6 @@ function gatherNewDoiTitles(dois) {
 					fetchPromises.push(promise);
 				}
 			}, 200); // Space out fetch requests by 200ms each
-
 		});
 
 	});
@@ -717,29 +714,20 @@ function gatherNewDoiTitles(dois) {
 
 function setHistoryTitlePermissions() {
 	var historyFetchTitle = document.getElementById("historyFetchTitle");
-	if (historyFetchTitle.checked) {
-		chrome.permissions.request({
-			origins: [
-				"https://*.doi.org/",
-				"https://*.crossref.org/",
-				"https://*.datacite.org/"
-			]
-		}, function(granted) {
-			historyFetchTitle.checked = granted;
+	var checked = historyFetchTitle.checked;
+	var setDoiMetaPermissions = chrome.extension.getBackgroundPage().setDoiMetaPermissions;
+
+	setDoiMetaPermissions(checked)
+	.then(function(success) {
+		if (checked && success) {
 			saveOptions();
-		});
-	} else {
-		chrome.permissions.remove({
-			origins: [
-				"https://*.doi.org/",
-				"https://*.crossref.org/",
-				"https://*.datacite.org/"
-			]
-		}, function(removed) {
-			historyFetchTitle.checked = !removed;
+		} else if (checked && !success) {
+			historyFetchTitle.checked = false;
+		} else if (!checked) {
+			// Do not forcibly re-check box if permissions are not successfully removed
 			saveOptions();
-		});
-	}
+		}
+	});
 }
 
 function saveHistoryTitles(doiTitleReference) {

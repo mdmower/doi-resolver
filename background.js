@@ -476,6 +476,30 @@ function getSavedDoiTitle(doi) {
 	});
 }
 
+function setDoiMetaPermissions(enable) {
+	return new Promise((resolve) => {
+
+		if (enable) {
+			chrome.permissions.request({
+				origins: [
+					'https://*.doi.org/',
+					'https://*.crossref.org/',
+					'https://*.datacite.org/'
+				]
+			}, resolve);
+		} else {
+			chrome.permissions.remove({
+				origins: [
+					'https://*.doi.org/',
+					'https://*.crossref.org/',
+					'https://*.datacite.org/'
+				]
+			}, resolve);
+		}
+
+	});
+}
+
 function recordDoiAction(doi) {
 	var stgFetch = [
 		"history",
@@ -487,18 +511,16 @@ function recordDoiAction(doi) {
 			return;
 		}
 		if (stg.history_fetch_title === true) {
-			chrome.permissions.request({
-				origins: [
-					'https://*.doi.org/',
-					'https://*.crossref.org/',
-					'https://*.datacite.org/'
-				]
-			}, function(granted) {
+			setDoiMetaPermissions(true)
+			.then(function(granted) {
 				// Checking success is not important here
 				if (chrome.runtime.lastError) {
 					console.error('recordDoiAction: Permission request not allowed');
 				}
 				recordDoi(doi)
+				.then(() => {
+					setDoiMetaPermissions(false);
+				})
 				.catch((errMsg) => {
 					console.log(errMsg);
 				});

@@ -239,6 +239,7 @@ function getCitation(doi) {
 
 	simpleNotification(chrome.i18n.getMessage("loading"));
 
+	// Permissions will be cleaned when last QR/Citation tab is closed
 	chrome.permissions.request({
 		origins: [
 			'https://*.doi.org/',

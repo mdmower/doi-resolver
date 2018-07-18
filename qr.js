@@ -449,6 +449,8 @@ function toggleTitleMessageOptions(event) {
 		saveOptions();
 		toggleTitleMessageListeners(true);
 	} else {
+		// Permissions will be cleaned when last QR/Citation tab is closed
+		var setDoiMetaPermissions = chrome.extension.getBackgroundPage().setDoiMetaPermissions;
 		setDoiMetaPermissions(qrFetchTitle.checked)
 		.then((success) => {
 			if (qrFetchTitle.checked) {
@@ -494,30 +496,6 @@ function advancedNotification(docFrag) {
 	notifyDiv.classList.add("advanced");
 	notifyDiv.appendChild(docFrag);
 	notifyDiv.style.display = "block";
-}
-
-function setDoiMetaPermissions(enable) {
-	return new Promise((resolve) => {
-
-		if (enable) {
-			chrome.permissions.request({
-				origins: [
-					'https://*.doi.org/',
-					'https://*.crossref.org/',
-					'https://*.datacite.org/'
-				]
-			}, resolve);
-		} else {
-			chrome.permissions.remove({
-				origins: [
-					'https://*.doi.org/',
-					'https://*.crossref.org/',
-					'https://*.datacite.org/'
-				]
-			}, resolve);
-		}
-
-	});
 }
 
 function formSubmitHandler() {
@@ -591,13 +569,9 @@ function insertQr(doiInput, qrParms) {
 				return;
 			}
 
-			chrome.permissions.request({
-				origins: [
-					'https://*.doi.org/',
-					'https://*.crossref.org/',
-					'https://*.datacite.org/'
-				]
-			}, function(granted) {
+			// Permissions will be cleaned when last QR/Citation tab is closed
+			chrome.extension.getBackgroundPage().setDoiMetaPermissions(true)
+			.then(function(granted) {
 				if (granted) {
 					console.log("Fetching title from network");
 					fetchDoiTitle(doiInput)

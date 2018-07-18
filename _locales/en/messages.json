@@ -257,7 +257,7 @@
 	},
 	"optionHistoryLength": {
 		"description": "Label for history option to retain up to N history entries",
-		"message": "Number of history entries to retain (1 &le; N &le; 500)"
+		"message": "Number of history entries to retain (1 &le; N &le; 1000)"
 	},
 	"optionHistoryShowSave": {
 		"description": "Label for history option to only show saved items in text box drop-downs",

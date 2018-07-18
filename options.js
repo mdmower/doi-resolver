@@ -806,8 +806,8 @@ function historyLengthUpdate() {
 	var historyLength = Number(document.getElementById("historyLength").value);
 	if (isNaN(historyLength) || historyLength < 1) {
 		document.getElementById("historyLength").value = 1;
-	} else if (historyLength > 500) {
-		document.getElementById("historyLength").value = 500;
+	} else if (historyLength > 1000) {
+		document.getElementById("historyLength").value = 1000;
 	}
 
 	chrome.storage.local.get(["recorded_dois"], function(stg) {

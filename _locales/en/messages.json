@@ -11,6 +11,10 @@
 		"description": "Guidelines for entries in the autolink exclusions text(area) box",
 		"message": "List websites &ndash; one per line &ndash; that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.<br><br><span style=\"text-decoration: underline;\">Normal matching</span>: Websites will be matched based on whether the string matches the <em>beginning</em> of the URL.<br>Example: <strong>example.com/abc</strong> will match http://example.com/abc/def but will not match http://www.example.com/abc/def.<br><br><span style=\"text-decoration: underline;\">Regex matching</span>: Surround an entry by forward slashes (/) to perform a regex match on an entire URL, omitting the protocol.<br>Example: <strong>/(?:www\\.)?example\\.com\\/abc(?:.+)?/</strong> will match both http://example.com/abc/def and http://www.example.com/abc/def."
 	},
+	"autolinkExclusionsInvalidUrl": {
+		"description": "Report that test URL is invalid due to missing http/https protocol",
+		"message": "Invalid URL (missing protocol)"
+	},
 	"autolinkExclusionsMatch": {
 		"description": "Confirm that a URL is matched by one of the autolink exclusions",
 		"message": "Exclusion matched"
@@ -18,10 +22,6 @@
 	"autolinkExclusionsNoMatch": {
 		"description": "Report that no match was found for the URL against the autolink exclusions",
 		"message": "No exclusion matched"
-	},
-	"autolinkExclusionsInvalidUrl": {
-		"description": "Report that test URL is invalid due to missing http/https protocol",
-		"message": "Invalid URL (missing protocol)"
 	},
 	"citeHeading": {
 		"description": "The title on the citation generator page",
@@ -107,53 +107,53 @@
 		"description": "Heading on options page for Sync",
 		"message": "Sync"
 	},
-	"historyNoticeText": {
-		"description": "Text on history page to notify user that history is not enabled",
-		"message": "History is not enabled"
+	"historyClear": {
+		"description": "Text for a button that clears all DOI history",
+		"message": "Clear History"
+	},
+	"historyCopyTitle": {
+		"description": "Hover text for button to copy a history entry title",
+		"message": "Copy"
 	},
 	"historyFetchTitleLabel": {
 		"description": "Text for checkbox that enables title fetch when DOI is recorded",
 		"message": "Automatically fetch title when a new DOI is recorded"
 	},
-	"historyTitleRefresh": {
-		"description": "Text for button that fetches missing history entry titles",
-		"message": "Fetch Missing Titles"
-	},
-	"historyClear": {
-		"description": "Text for a button that clears all DOI history",
-		"message": "Clear History"
-	},
-	"historySavedEntryLabel": {
-		"description": "A word to indicate an entry has been marked for save; label displayed in the datalist drop-down",
-		"message": "Saved"
+	"historyNoticeText": {
+		"description": "Text on history page to notify user that history is not enabled",
+		"message": "History is not enabled"
 	},
 	"historySaveInfoText": {
 		"description": "A description of how the save feature works on the history page",
 		"message": "DOIs marked 'Save' will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."
 	},
-	"historySortByLabel": {
-		"description": "A label for the history sort-by selector",
-		"message": "Sort by"
+	"historySavedEntryLabel": {
+		"description": "A word to indicate an entry has been marked for save; label displayed in the datalist drop-down",
+		"message": "Saved"
 	},
 	"historySortByDate": {
 		"description": "Option to sort history by date added",
 		"message": "Date Added"
 	},
-	"historySortByTitle": {
-		"description": "Option to sort history by title",
-		"message": "Title"
-	},
 	"historySortByDoi": {
 		"description": "Option to sort history by DOI",
 		"message": "DOI"
+	},
+	"historySortByLabel": {
+		"description": "A label for the history sort-by selector",
+		"message": "Sort by"
 	},
 	"historySortBySave": {
 		"description": "Option to sort history by save status",
 		"message": "Save Status"
 	},
-	"historyCopyTitle": {
-		"description": "Hover text for button to copy a history entry title",
-		"message": "Copy"
+	"historySortByTitle": {
+		"description": "Option to sort history by title",
+		"message": "Title"
+	},
+	"historyTitleRefresh": {
+		"description": "Text for button that fetches missing history entry titles",
+		"message": "Fetch Missing Titles"
 	},
 	"iconHover": {
 		"description": "The tooltip message displayed to a user when the mouse hovers on the extension's icon",
@@ -307,6 +307,10 @@
 		"description": "The label for the transparent background check box on the QR page",
 		"message": "Transparent background"
 	},
+	"qrBorderInputLabel": {
+		"description": "A label for the border text box on the QR page",
+		"message": "Border"
+	},
 	"qrDisabled": {
 		"description": "A notice that QR title retrieval is not enabled",
 		"message": "Disabled"
@@ -322,6 +326,10 @@
 	"qrHeading": {
 		"description": "Title for QR generator page",
 		"message": "QR Code Generator"
+	},
+	"qrImageTypeLabel": {
+		"description": "A label for the radio selection of image save format",
+		"message": "Image type"
 	},
 	"qrManualMessageLabel": {
 		"description": "The label for the manual message check box on the QR page",
@@ -343,21 +351,13 @@
 		"description": "A label for the size text box on the QR page",
 		"message": "Size"
 	},
-	"qrBorderInputLabel": {
-		"description": "A label for the border text box on the QR page",
-		"message": "Border"
-	},
-	"qrImageTypeLabel": {
-		"description": "A label for the radio selection of image save format",
-		"message": "Image type"
+	"qrSubHeading": {
+		"description": "Subheading message on the QR generator page",
+		"message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
 	},
 	"qrSubmit": {
 		"description": "Text for the button to open QR page",
 		"message": "QR Code"
-	},
-	"qrSubHeading": {
-		"description": "Subheading message on the QR generator page",
-		"message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
 	},
 	"qrTitleFailure": {
 		"description": "Failing status of title retrieval for QR encoding",
@@ -383,6 +383,10 @@
 		"description": "The text that appears on the button to submit a form",
 		"message": "Submit"
 	},
+	"svgIconCog": {
+		"description": "Default title for SVG icon-cog",
+		"message": "Options"
+	},
 	"svgIconCopy": {
 		"description": "Default title for SVG icon-copy",
 		"message": "Copy"
@@ -390,10 +394,6 @@
 	"svgIconHistory": {
 		"description": "Default title for SVG icon-history",
 		"message": "History"
-	},
-	"svgIconCog": {
-		"description": "Default title for SVG icon-cog",
-		"message": "Options"
 	},
 	"svgIconInfo": {
 		"description": "Default title for SVG icon-info",

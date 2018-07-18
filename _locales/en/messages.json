@@ -159,6 +159,10 @@
 		"description": "The tooltip message displayed to a user when the mouse hovers on the extension's icon",
 		"message": "Resolve DOI code"
 	},
+	"imgPreview": {
+		"description": "Text to indicate a sample output image",
+		"message": "Sample output"
+	},
 	"invalidDoiAlert": {
 		"description": "A warning presented to user if the DOI code is not valid",
 		"message": "Not a valid DOI"

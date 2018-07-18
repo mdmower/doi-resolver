@@ -79,32 +79,6 @@ function startClickListeners() {
 		}
 	});
 
-	document.getElementById("img_context_off").addEventListener("click", function() {
-		var input = document.getElementById("context");
-		if (input.checked) {
-			input.click();
-		}
-	});
-	document.getElementById("img_context_on").addEventListener("click", function() {
-		var input = document.getElementById("context");
-		if (!input.checked) {
-			input.click();
-		}
-	});
-
-	document.getElementById("img_bubblemeta_off").addEventListener("click", function() {
-		var input = document.getElementById("meta");
-		if (input.checked) {
-			input.click();
-		}
-	});
-	document.getElementById("img_bubblemeta_on").addEventListener("click", function() {
-		var input = document.getElementById("meta");
-		if (!input.checked) {
-			input.click();
-		}
-	});
-
 	document.getElementById("historyTitleRefresh").addEventListener("click", populateMissingTitles);
 	document.getElementById("historyClear").addEventListener("click", deleteHistory);
 
@@ -933,6 +907,7 @@ function getLocalMessages() {
 	}
 
 	messageIds = [
+		"imgPreview",
 		"optionCrCustom",
 		"optionCrDefault",
 		"optionCrSelectable"

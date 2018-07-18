@@ -132,7 +132,7 @@ function getSaveMap() {
 		{ selector: "#historyFetchTitle", func: setHistoryTitlePermissions, events: ['change'] },
 		{ selector: "#context", func: saveOptions, events: ['change'] },
 		{ selector: "#meta", func: saveOptions, events: ['change'] },
-		{ selector: "#autolink", func: saveOptions, events: ['change'] },
+		{ selector: "#autolink", func: setAutolink, events: ['change'] },
 		{ selector: "#autolinkRewrite", func: saveOptions, events: ['change'] },
 		{ selector: "#customResolver", func: saveOptions, events: ['change'] },
 		{ selector: ".crSelections", func: saveOptions, events: ['change'] },
@@ -141,9 +141,9 @@ function getSaveMap() {
 		{ selector: "#shortDoiResolverInput", func: dbSaveOptions, events: ['input', 'change'] },
 		{ selector: "#shortDoiResolverInput", func: setCrPreviews, events: ['input', 'change'] },
 		{ selector: "#omniboxOpento", func: saveOptions, events: ['change'] },
-		{ selector: "#autolinkApplyTo", func: saveOptions, events: ['change'] },
 		{ selector: "#autolinkExclusions", func: dbSaveOptions, events: ['input', 'change'] },
-		{ selector: "#autolinkTestExclusion", func: autolinkTestExclusion, events: ['input', 'change'] },
+		{ selector: "#autolinkExclusions", func: autolinkOutputTestResults, events: ['input', 'change'] },
+		{ selector: "#autolinkTestExclusion", func: autolinkOutputTestResults, events: ['input', 'change'] },
 		{ selector: "#syncData", func: saveOptions, events: ['change'] }
 	];
 }
@@ -216,7 +216,7 @@ function saveIndividualOptions(options, callback) {
 }
 
 function saveOptions() {
-	minimalOptionsRefresh();
+	optionsDisplayUpdates();
 
 	var options = {
 		auto_link_rewrite: document.getElementById("autolinkRewrite").checked,
@@ -248,37 +248,14 @@ function saveOptions() {
 		removeAllHistoryEntries();
 	}
 
-	/*
-	 * These options require permissions setting/checking. Only call them
-	 * if the current setting differs from stored setting
-	 */
-	var autolinkCurrent = document.getElementById("autolink").checked;
-	var autolinkProtocolCurrent = document.getElementById("autolinkApplyTo").value;
-
-	var stgLclFetch = [
-		"auto_link",
-		"al_protocol"
-	];
-
-	chrome.storage.local.get(stgLclFetch, function(stgLocal) {
-		var autolinkStorage = stgLocal.auto_link;
-		var autolinkProtocolStorage = stgLocal.al_protocol;
-
-		if (autolinkCurrent != autolinkStorage || autolinkProtocolCurrent != autolinkProtocolStorage) {
-			saveIndividualOptions(options, function() {
-				setAutolinkPermission(autolinkCurrent);
-			});
-		} else {
-			saveIndividualOptions(options, null);
-		}
-	});
+	saveIndividualOptions(options, null);
 }
 
 function restoreOptions(callback) {
 	haltChangeListeners();
 
 	var stgFetch = [
-		"al_protocol",
+		"auto_link",
 		"auto_link_rewrite",
 		"autolink_exclusions",
 		"context_menu",
@@ -321,32 +298,24 @@ function restoreOptions(callback) {
 		document.getElementById("crHistory").value = stg.cr_history;
 		document.getElementById("crOmnibox").value = stg.cr_omnibox;
 		document.getElementById("omniboxOpento").value = stg.omnibox_tab;
-		document.getElementById("autolinkApplyTo").value = stg.al_protocol;
+		document.getElementById("autolink").checked = stg.auto_link;
 		document.getElementById("autolinkRewrite").checked = stg.auto_link_rewrite;
 
 		var autolinkExclusions = Array.isArray(stg.autolink_exclusions) ? stg.autolink_exclusions : [];
 		document.getElementById("autolinkExclusions").value = autolinkExclusions.join("\n");
 
-		// Depends on text fields being filled already, so call after #doiResolverInput
-		// and #shortDoiResolverInput have been set.
-		if (stg.custom_resolver) {
-			setCrPreviews();
-		}
+		optionsDisplayUpdates();
+		startChangeListeners();
+		storageListener(true);
 
-		verifyAutolinkPermission(function() {
-			startChangeListeners();
-			if (typeof callback === "function") {
-				callback();
-			}
-			storageListener(true);
-		});
+		if (typeof callback === "function") {
+			callback();
+		}
 	});
 }
 
-// Only refresh fields that need updating after save
-function minimalOptionsRefresh() {
+function optionsDisplayUpdates() {
 	var customResolver = document.getElementById("customResolver").checked;
-	var crAutolink = document.getElementById("crAutolink").value;
 	if (customResolver) {
 		setCrPreviews();
 	}
@@ -354,16 +323,12 @@ function minimalOptionsRefresh() {
 	var history = document.getElementById("history").checked;
 	document.getElementById("historyNotice").style.display = history ? "none" : "";
 
-	/* There's no problem with this running async to the rest of
-	 * saveOptions since a change to the autolink setting will
-	 * call autolinkDisplayUpdate(). This minimal refresh is for
-	 * the case of enabling custom resolver when autolink is
-	 * already enabled.
-	 */
-	chrome.storage.local.get(["auto_link"], function(stg) {
-		var showAlRewriteLinks = stg.auto_link && customResolver && crAutolink === "custom";
-		document.getElementById("alRewriteLinks").style.display = showAlRewriteLinks ? "block" : "none";
-	});
+	var autolink = document.getElementById("autolink").checked;
+	document.getElementById("alExclusions").style.display = autolink ? "" : "none";
+
+	var crAutolink = document.getElementById("crAutolink").value;
+	var showAlRewriteLinks = autolink && customResolver && crAutolink === "custom";
+	document.getElementById("alRewriteLinks").style.display = showAlRewriteLinks ? "" : "none";
 }
 
 function storageListener(enable) {
@@ -384,13 +349,12 @@ function settingsUpdatedHandler(updatedOptions, forceUpdate) {
 	}
 
 	if (updatedOptions.autolink_exclusions !== undefined) {
-		autolinkTestExclusion();
+		autolinkOutputTestResults();
 	}
 
 	var i;
 
 	var allOptionsInPage = [
-		"al_protocol",
 		"auto_link_rewrite",
 		"autolink_exclusions",
 		"context_menu",
@@ -471,48 +435,57 @@ function setCrPreviews() {
 	document.getElementById("shortDoiResolverOutput").innerHTML = srPreview;
 }
 
-function autolinkDisplayUpdate(enabled, protocol) {
-	var customResolver = document.getElementById("customResolver").checked;
-	var crAutolink = document.getElementById("crAutolink").value;
-
-	document.getElementById("autolink").checked = enabled;
-	document.getElementById("alProtocol").style.display = enabled ? "block" : "none";
-	document.getElementById("alExclusions").style.display = enabled ? "block" : "none";
-
-	var showAlRewriteLinks = enabled && customResolver && crAutolink === "custom";
-	document.getElementById("alRewriteLinks").style.display = showAlRewriteLinks ? "block" : "none";
-
-	if (protocol !== null) {
-		document.getElementById("autolinkApplyTo").value = protocol;
+function autolinkOutputTestResults() {
+	var message;
+	var autolinkTestExclusion = document.getElementById('autolinkTestExclusion');
+	var autolinkTestExclusionResult = document.getElementById("autolinkTestExclusionResult");
+	if (!/https?:\/\//i.test(autolinkTestExclusion.value)) {
+		message = chrome.i18n.getMessage("autolinkExclusionsInvalidUrl");
+		autolinkTestExclusionResult.innerHTML = message;
+		return;
 	}
+
+	chrome.extension.getBackgroundPage().autolinkTestExclusions(autolinkTestExclusion.value)
+	.then((matched) => {
+		if (matched) {
+			message = chrome.i18n.getMessage("autolinkExclusionsMatch");
+			autolinkTestExclusionResult.innerHTML = message;
+			autolinkTestExclusionResult.style.color = "darkgreen";
+		} else {
+			message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
+			autolinkTestExclusionResult.innerHTML = message;
+			autolinkTestExclusionResult.style.color = "black";
+		}
+	});
 }
 
-function setAutolinkPermission(enabled) {
-	/*
-	 * We only want autolinking for user-enabled protocols, but we also don't
-	 * want to burden the user with many alerts requesting permissions. Go
-	 * ahead and request http+https permission, then remove unselected
-	 * protocols.
-	 *
-	 * Migration note: This function only gets called if one of the autolink
-	 * options changes. Users that enabled autolink previous to https being an
-	 * option will be mostly unaffected. If they opt to include https pages,
-	 * then they will get a new permissions prompt (good). If they disable and
-	 * re-enable autolinking, they will also get a prompt (not ideal, but code
-	 * complexity increases significantly for such a small issue).
-	 */
-
+/*
+ * settingsUpdatedHandler ignores the auto_link setting in storage, so it's
+ * safe to update it in the background (via autolinkDois) without worry of
+ * triggering the change handler. The checkbox change handler does need to
+ * be disabled, though, as we may end up programmatically setting the check
+ * state if permissions are not accepted.
+ */
+function setAutolink() {
+	var autolinkElm = document.getElementById("autolink");
 	haltChangeListeners();
 
-	if (enabled) {
+	if (autolinkElm.checked) {
 		chrome.permissions.request({
 			permissions: [ "tabs" ],
 			origins: [ "http://*/*", "https://*/*" ]
 		}, function(granted) {
 			if (granted) {
-				autolinkShufflePerms();
+				console.log("Autolink permissions added");
+				chrome.extension.getBackgroundPage().autolinkDois()
+				.then((result) => {
+					// Result is pretty much guaranteed, no need to verify
+					optionsDisplayUpdates();
+					startChangeListeners();
+				});
 			} else {
-				autolinkDisplayUpdate(false, null);
+				console.log("Autolink permissions not granted");
+				autolinkElm.checked = false;
 				startChangeListeners();
 			}
 		});
@@ -522,42 +495,22 @@ function setAutolinkPermission(enabled) {
 			origins: [ "http://*/*", "https://*/*" ]
 		}, function(removed) {
 			if (removed) {
-				autolinkDisplayUpdate(false, null);
-				chrome.extension.getBackgroundPage().autolinkDois();
-				startChangeListeners();
 				console.log("Autolink permissions removed");
+				chrome.extension.getBackgroundPage().autolinkDois()
+				.then((result) => {
+					// Result is pretty much guaranteed, no need to verify
+					optionsDisplayUpdates();
+					startChangeListeners();
+				});
 			} else {
-				var protocol = document.getElementById("autolinkApplyTo").value;
-				autolinkDisplayUpdate(true, protocol);
-				chrome.extension.getBackgroundPage().autolinkDois();
-				startChangeListeners();
-				console.log("Could not remove autolink permissions");
+				console.log("Autolink permissions could not be removed");
+				chrome.extension.getBackgroundPage().autolinkToggleListener(false);
+				console.log("Autolink listeners manually disabled");
+				chrome.storage.local.set({ auto_link: false }, function() {
+					startChangeListeners();
+				});
 			}
 		});
-	}
-}
-
-function autolinkShufflePerms() {
-	// Only called if permissions have been granted by user
-	var protocol = document.getElementById("autolinkApplyTo").value;
-
-	if (protocol === "http") {
-		chrome.permissions.remove({
-			origins: [ "https://*/*" ]
-		}, function(removed) {
-			chrome.extension.getBackgroundPage().autolinkDois();
-			verifyAutolinkPermission(startChangeListeners);
-		});
-	} else if (protocol === "https") {
-		chrome.permissions.remove({
-			origins: [ "http://*/*" ]
-		}, function(removed) {
-			chrome.extension.getBackgroundPage().autolinkDois();
-			verifyAutolinkPermission(startChangeListeners);
-		});
-	} else {
-		chrome.extension.getBackgroundPage().autolinkDois();
-		verifyAutolinkPermission(startChangeListeners);
 	}
 }
 
@@ -920,87 +873,6 @@ function deleteHistory() {
 	saveIndividualOptions({recorded_dois: []}, null);
 }
 
-function verifyAutolinkPermission(callback) {
-	chrome.permissions.contains({
-		permissions: [ "tabs" ],
-		origins: [ "http://*/*", "https://*/*" ]
-	}, function(result) {
-		if (result) {
-			autolinkDisplayUpdate(true, "httphttps");
-			if (typeof callback === 'function') {
-				callback();
-			}
-		} else {
-			chrome.permissions.contains({
-				permissions: [ "tabs" ],
-				origins: [ "http://*/*" ]
-			}, function(result) {
-				if (result) {
-					autolinkDisplayUpdate(true, "http");
-					if (typeof callback === 'function') {
-						callback();
-					}
-				} else {
-					chrome.permissions.contains({
-						permissions: [ "tabs" ],
-						origins: [ "https://*/*" ]
-					}, function(result) {
-						if (result) {
-							autolinkDisplayUpdate(true, "https");
-						} else {
-							autolinkDisplayUpdate(false, null);
-						}
-						if (typeof callback === 'function') {
-							callback();
-						}
-					});
-				}
-			});
-		}
-	});
-}
-
-function autolinkTestExclusion() {
-	chrome.storage.local.get(["autolink_exclusions"], function(stg) {
-		if (!Array.isArray(stg.autolink_exclusions)) {
-			return;
-		}
-
-		var url = encodeURI(document.getElementById("autolinkTestExclusion").value).replace(/^https?\:\/\//i, "").toLowerCase();
-		var exclusion = "";
-		var re;
-		var matched = false;
-		for (var i = 0; i < stg.autolink_exclusions.length; i++) {
-			exclusion = stg.autolink_exclusions[i];
-			if (exclusion.slice(-1) === "/" && exclusion.charAt(0) === "/") {
-				try {
-					re = new RegExp(exclusion.slice(1, -1), "i");
-				} catch(e) {
-					continue;
-				}
-				if (url.match(re)) {
-					matched = true;
-					break;
-				}
-			} else if (url.indexOf(exclusion.toLowerCase()) === 0) {
-				matched = true;
-				break;
-			}
-		}
-
-		var message = "";
-		if (matched) {
-			message = chrome.i18n.getMessage("autolinkExclusionsMatch");
-			document.getElementById("autolinkTestExclusionResult").innerHTML = message;
-			document.getElementById("autolinkTestExclusionResult").style.color = "darkgreen";
-		} else {
-			message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
-			document.getElementById("autolinkTestExclusionResult").innerHTML = message;
-			document.getElementById("autolinkTestExclusionResult").style.color = "black";
-		}
-	});
-}
-
 function getLocalMessages() {
 	var message = chrome.i18n.getMessage("optionsTitle");
 	document.title = message;
@@ -1025,7 +897,6 @@ function getLocalMessages() {
 		"historySortByTitle",
 		"historyTitleRefresh",
 		"optionAutolink",
-		"optionAutolinkApplyTo",
 		"optionAutolinkExclusions",
 		"optionAutolinkInfo",
 		"optionAutolinkRewrite",
@@ -1088,8 +959,6 @@ function getLocalMessages() {
 	message = chrome.i18n.getMessage("doiOutputUrlExample");
 	document.getElementById("doiOutputUrlExample").innerHTML = message;
 	document.getElementById("shortDoiOutputUrlExample").innerHTML = message;
-	message = chrome.i18n.getMessage("autolinkExclusionsNoMatch");
-	document.getElementById("autolinkTestExclusionResult").innerHTML = message;
 
 	message = chrome.i18n.getMessage("svgIconCopy");
 	document.querySelector("#icon-copy title").innerHTML = message;

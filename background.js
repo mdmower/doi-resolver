@@ -47,7 +47,6 @@ function startListeners() {
 
 function allOptions() {
 	return [
-		"al_protocol",
 		"auto_link",
 		"auto_link_rewrite",
 		"autolink_exclusions",
@@ -87,7 +86,6 @@ function allOptions() {
 
 function excludeFromSync() {
 	return [
-		"al_protocol", // Requires user interaction to trigger permissions requests
 		"auto_link", // Requires permissions to enable
 		"history_fetch_title", // Requires permissions to enable
 		"qr_title", // Requires permissions to enable
@@ -104,7 +102,6 @@ Array.prototype.diff = function(a) {
 
 function getDefaultOption(opt) {
 	var defaultOptions = {
-		al_protocol: "http",
 		auto_link: false,
 		auto_link_rewrite: false,
 		autolink_exclusions: [],
@@ -260,11 +257,11 @@ function storageChangeHandler(changes, namespace) {
 		var syncOptions = allOptions().diff(excludeFromSync());
 
 		/* Debugging */
-		for (change in changes) {
-			if (changes.hasOwnProperty(change)) {
-				console.log("Change in " + namespace + " storage, " + change + ": ", changes[change]);
-			}
-		}
+		// for (change in changes) {
+		// 	if (changes.hasOwnProperty(change)) {
+		// 		console.log("Change in " + namespace + " storage, " + change + ": ", changes[change]);
+		// 	}
+		// }
 
 		if (namespace === "sync") {
 			if (changes.sync_reset !== undefined && changes.sync_reset.newValue) {
@@ -332,7 +329,11 @@ function startBackgroundFeatures() {
 
 	chrome.storage.local.get(stgFetch, function(stg) {
 		if (stg.auto_link) {
-			autolinkDois(function() {
+			autolinkDois()
+			.then((enabled) => {
+				if (!enabled) {
+					console.log("Autolink was enabled in settings, but had to be disabled since necessary permissions are not available");
+				}
 				storageListener(true);
 			});
 		} else {
@@ -790,139 +791,103 @@ function tabRecord(id, add) {
 	}
 }
 
-// Auto-link
-function alListener(tabId, changeInfo, tab) {
-	if (typeof tab.url !== 'string' || tab.url.indexOf("https://chrome.google.com/webstore") === 0) {
-		return;
-	}
+// Autolink
 
-	chrome.storage.local.get(["autolink_exclusions"], function(stg) {
-		if (!Array.isArray(stg.autolink_exclusions)) {
+function autolinkTestExclusions(url) {
+	return new Promise((resolve) => {
+
+		chrome.storage.local.get(["autolink_exclusions"], function(stg) {
+			if (!Array.isArray(stg.autolink_exclusions)) {
+				return resolve(true);
+			}
+
+			if (typeof url !== 'string' ||
+					!/^https?:\/\//i.test(url) ||
+					url.indexOf("https://chrome.google.com/webstore") === 0) {
+				return resolve(true);
+			}
+
+			var urlNoProtocol = url.replace(/^https?\:\/\//i, "").toLowerCase();
+			var exclusion = "";
+			var re;
+			for (var i = 0; i < stg.autolink_exclusions.length; i++) {
+				exclusion = stg.autolink_exclusions[i];
+				if (exclusion.charAt(0) === "/" && exclusion.slice(-1) === "/") {
+					try {
+						re = new RegExp(exclusion.slice(1, -1), "i");
+					} catch(ex) {
+						console.log("Invalid regular expression", exclusion, ex);
+						continue;
+					}
+					if (re.test(urlNoProtocol)) {
+						return resolve(true);
+					}
+				} else if (urlNoProtocol.indexOf(exclusion.toLowerCase()) === 0) {
+					return resolve(true);
+				}
+			}
+
+			return resolve(false);
+		});
+
+	});
+}
+
+function autolinkListener(tabId, changeInfo, tab) {
+	autolinkTestExclusions(tab.url)
+	.then((exclude) => {
+		if (exclude) {
 			return;
 		}
-
-		var url = encodeURI(tab.url).replace(/^https?\:\/\//i, "").toLowerCase();
-		var exclusion = "";
-		var re;
-		for (var i = 0; i < stg.autolink_exclusions.length; i++) {
-			exclusion = stg.autolink_exclusions[i];
-			if (exclusion.slice(-1) === '/' && exclusion.charAt(0) === '/') {
-				try {
-					re = new RegExp(exclusion.slice(1, -1), 'i');
-				} catch(e) {
-					continue;
-				}
-				if (url.match(re)) {
-					return;
-				}
-			} else if (url.indexOf(exclusion.toLowerCase()) === 0) {
-				return;
+		chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
+			if (chrome.runtime.lastError || results === undefined) {
+				console.log("Autolink failed to run on " + tab.url);
 			}
-		}
-		applyAutolinkToPage(tab.url, tabId);
+		});
 	});
 }
 
-function applyAutolinkToPage(url, tabId) {
-	chrome.permissions.contains({
-		origins: [ 'http://*/*', 'https://*/*' ]
-	}, function(result) {
-		if (result && url.search(/https?\:\/\//) === 0) {
-			chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
-				if (chrome.runtime.lastError || results === undefined) {
-					console.log("Autolink failed to run on " + url);
-				}
-			});
-		} else {
-			chrome.permissions.contains({
-				origins: [ 'http://*/*' ]
-			}, function(result) {
-				if (result && url.search(/http\:\/\//) === 0) {
-					chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
-						if (chrome.runtime.lastError || results === undefined) {
-							console.log("Autolink failed to run on " + url);
-						}
-					});
-				} else {
-					chrome.permissions.contains({
-						origins: [ 'https://*/*' ]
-					}, function(result) {
-						if (result && url.search(/https\:\/\//) === 0) {
-							chrome.tabs.executeScript(tabId, {file: "autolink.js"}, function(results) {
-								if (chrome.runtime.lastError || results === undefined) {
-									console.log("Autolink failed to run on " + url);
-								}
-							});
-						}
-					});
-				}
-			});
-		}
+function autolinkToggleListener(enable) {
+	if (enable) {
+		chrome.tabs.onUpdated.addListener(autolinkListener);
+	} else {
+		chrome.tabs.onUpdated.removeListener(autolinkListener);
+	}
+}
+
+function autolinkDois() {
+	return new Promise((resolve) => {
+
+		autolinkToggleListener(false);
+		autolinkVerifyPermissions()
+		.then((result) => {
+			if (result) {
+				chrome.storage.local.set({ auto_link: true }, function() {
+					autolinkToggleListener(true);
+					console.log('Autolink listeners enabled for http and https');
+					resolve(true);
+				});
+			} else {
+				chrome.storage.local.set({ auto_link: false }, function() {
+					console.log('Autolink listeners disabled');
+					resolve(false);
+				});
+			}
+		});
+
 	});
 }
 
-function autolinkDois(callback) {
-	chrome.tabs.onUpdated.removeListener(alListener);
+function autolinkVerifyPermissions() {
+	return new Promise((resolve) => {
 
-	chrome.permissions.contains({
-		permissions: [ 'tabs' ],
-		origins: [ 'http://*/*', 'https://*/*' ]
-	}, function(result) {
-		if (result) {
-			chrome.storage.local.set({
-				auto_link: true,
-				al_protocol: "httphttps"
-			}, function() {
-				chrome.tabs.onUpdated.addListener(alListener);
-				console.log('Autolink listeners enabled for http and https');
-				if (typeof callback === "function") {
-					callback();
-				}
-			});
-		} else {
-			chrome.permissions.contains({
-				permissions: [ 'tabs' ],
-				origins: [ 'http://*/*' ]
-			}, function(result) {
-				if (result) {
-					chrome.storage.local.set({
-						auto_link: true,
-						al_protocol: "http"
-					}, function() {
-						chrome.tabs.onUpdated.addListener(alListener);
-						console.log('Autolink listeners enabled for http');
-						if (typeof callback === "function") {
-							callback();
-						}
-					});
-				} else {
-					chrome.permissions.contains({
-						permissions: [ 'tabs' ],
-						origins: [ 'https://*/*' ]
-					}, function(result) {
-						if (result) {
-							chrome.storage.local.set({
-								auto_link: true,
-								al_protocol: "https"
-							}, function() {
-								chrome.tabs.onUpdated.addListener(alListener);
-								console.log('Autolink listeners enabled for https');
-								if (typeof callback === "function") {
-									callback();
-								}
-							});
-						} else {
-							chrome.storage.local.set({ auto_link: false }, function() {
-								console.log('Autolink listeners disabled');
-								if (typeof callback === "function") {
-									callback();
-								}
-							});
-						}
-					});
-				}
-			});
-		}
+		chrome.permissions.contains({
+			permissions: [ 'tabs' ],
+			origins: [ 'http://*/*', 'https://*/*' ]
+		}, function(result) {
+			resolve(result);
+		});
+
 	});
 }
 

@@ -19,6 +19,10 @@
 		"description": "Report that no match was found for the URL against the autolink exclusions",
 		"message": "No exclusion matched"
 	},
+	"autolinkExclusionsInvalidUrl": {
+		"description": "Report that test URL is invalid due to missing http/https protocol",
+		"message": "Invalid URL (missing protocol)"
+	},
 	"citeHeading": {
 		"description": "The title on the citation generator page",
 		"message": "Citation Generator"
@@ -178,10 +182,6 @@
 	"optionAutolink": {
 		"description": "A setting to enable the extension to scan every page visited by the user and convert DOI codes into clickable links.",
 		"message": "Automatically turn DOI codes on web pages into links"
-	},
-	"optionAutolinkApplyTo": {
-		"description": "Label for selection of protocols where autolink should be applied",
-		"message": "Apply autolink feature to pages with protocol(s): "
 	},
 	"optionAutolinkExclusions": {
 		"description": "Label for textbox area to enter exclusions for the autolink feature",

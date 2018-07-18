@@ -206,13 +206,11 @@ body>h1 {
 }
 
 #historySubOptions,
-#optionAutolinkApplyTo,
 #alRewriteLinks,
 #alExclusions {
 	margin-left: 26px;
 }
 
-#alProtocol,
 #alRewriteLinks,
 #syncDataWipe {
 	margin-top: 4px;

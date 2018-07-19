@@ -868,6 +868,10 @@ function autolinkTestExclusions(url) {
 }
 
 function autolinkListener(tabId, changeInfo, tab) {
+	if (changeInfo.status !== "complete") {
+		return;
+	}
+
 	autolinkTestExclusions(tab.url)
 	.then((exclude) => {
 		if (exclude) {

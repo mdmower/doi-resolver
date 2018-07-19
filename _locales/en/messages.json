@@ -128,7 +128,7 @@
 		"message": "DOIs marked 'Save' will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."
 	},
 	"historySavedEntryLabel": {
-		"description": "A word to indicate an entry has been marked for save; label displayed in the datalist drop-down",
+		"description": "A word to indicate an entry has been marked for save; label displayed in the history drop-down",
 		"message": "Saved"
 	},
 	"historySortByDate": {
@@ -196,7 +196,7 @@
 		"message": "The autolink feature requires permission to access and modify pages you are viewing. You will need to refresh open tabs for this option to take effect."
 	},
 	"optionAutolinkRewrite": {
-		"description": "A setting to enable the extension to scan every page visited by the user and rewite doi.org and dx.doi.org liks to be handled by the custom DOI resolver instead.",
+		"description": "A setting to enable the extension to scan every page visited by the user and rewite doi.org and dx.doi.org links to be handled by the custom DOI resolver instead.",
 		"message": "Rewrite existing doi.org and dx.doi.org links to use the Custom DOI Resolver"
 	},
 	"optionAutolinkTestExclusion": {
@@ -290,10 +290,6 @@
 	"optionSyncData": {
 		"description": "Label for data sync feature",
 		"message": "Synchronize this extension's settings across Chrome installations"
-	},
-	"optionsDescription": {
-		"description": "Notice about external services used by the extension and where to submit bug reports",
-		"message": "This extension uses <a href=\"http://dx.doi.org\">dx.doi.org</a>, <a href=\"http://www.datacite.org\">datacite.org</a>, and <a href=\"http://www.crossref.org\">crossref.org</a> to resolve links and obtain metadata."
 	},
 	"optionsSubmit": {
 		"description": "The text that appears on the button to open the Options page",
@@ -405,7 +401,7 @@
 	},
 	"syncDataInfo": {
 		"description": "Additional information about sync feature",
-		"message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur. The following options are not included in sync because they require permissions to be accepted by the user before enabling: Autolink, QR title fetch."
+		"message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur.<br><br>The following options are not included in sync because they require permissions to be accepted by the user before enabling: <ul><li>Autolink</li><li>QR: Include title of reference in QR code</li><li>History: Automatically fetch title when a new DOI is recorded</li></ul>"
 	},
 	"syncDataWipeButton": {
 		"description": "Text for sync wipe button",

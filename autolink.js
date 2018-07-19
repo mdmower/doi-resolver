@@ -68,7 +68,7 @@ function replaceDOIsWithLinks() {
 // iterate over child nodes in reverse, as replacement may increase length of child node list.
 function replaceInElement(element, find, replace) {
 	// don't touch these elements
-	var forbiddenTags = ["A", "INPUT", "SCRIPT", "STYLE", "TEXTAREA"];
+	var forbiddenTags = ["A", "BUTTON", "INPUT", "SCRIPT", "SELECT", "STYLE", "TEXTAREA"];
 	for (var i = element.childNodes.length - 1; i >= 0; i--) {
 		var child = element.childNodes[i];
 		if (child.nodeType === Node.ELEMENT_NODE) {

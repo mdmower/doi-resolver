@@ -68,13 +68,13 @@ function replaceDOIsWithLinks() {
 // iterate over child nodes in reverse, as replacement may increase length of child node list.
 function replaceInElement(element, find, replace) {
 	// don't touch these elements
-	var forbiddenTags = ["a", "input", "script", "style", "textarea"];
+	var forbiddenTags = ["A", "INPUT", "SCRIPT", "STYLE", "TEXTAREA"];
 	for (var i = element.childNodes.length - 1; i >= 0; i--) {
 		var child = element.childNodes[i];
 		if (child.nodeType === Node.ELEMENT_NODE) {
-			if (forbiddenTags.indexOf(child.nodeName.toLowerCase()) < 0) {
+			if (forbiddenTags.indexOf(child.nodeName) < 0) {
 				replaceInElement(child, find, replace);
-			} else if (definitions.autolinkRewrite && child.nodeName.toLowerCase() == "a") {
+			} else if (definitions.autolinkRewrite && child.nodeName === "A") {
 				if (definitions.findUrl.test(child.href)) {
 					child.href = child.href.replace(definitions.findUrl, definitions.doiResolver + "$1");
 				}

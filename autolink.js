@@ -14,6 +14,7 @@
 	limitations under the License.
 */
 
+// https://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
 var definitions = {
     findDoi: /\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig,
     findUrl: /^(?:https?\:\/\/)(?:dx\.)?doi\.org\/(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)$/ig

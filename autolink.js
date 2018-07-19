@@ -53,12 +53,16 @@ function setDefinitions() {
 
 // https://stackoverflow.com/questions/1444409/in-javascript-how-can-i-replace-text-in-an-html-page-without-affecting-the-tags
 function replaceDOIsWithLinks() {
-	replaceInElement(document.body, definitions.findDoi, function(match) {
-		var link = document.createElement('a');
-		link.href = definitions.doiResolver + match[0];
-		link.appendChild(document.createTextNode(match[0]));
-		return link;
-	});
+	try {
+		replaceInElement(document.body, definitions.findDoi, function(match) {
+			var link = document.createElement('a');
+			link.href = definitions.doiResolver + match[0];
+			link.appendChild(document.createTextNode(match[0]));
+			return link;
+		});
+	} catch (ex) {
+		console.log("DOI autolink encountered an exception", ex);
+	}
 }
 
 // iterate over child nodes in reverse, as replacement may increase length of child node list.

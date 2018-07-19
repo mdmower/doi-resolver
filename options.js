@@ -63,18 +63,20 @@ function startClickListeners() {
 	});
 
 	document.getElementById("doiResolverInputReset").addEventListener("click", function() {
+		var getDefaultResolver = chrome.extension.getBackgroundPage().getDefaultResolver;
 		var input = document.getElementById("doiResolverInput");
-		if (input.value !== "https://dx.doi.org/") {
+		if (input.value !== getDefaultResolver()) {
 			var change = new Event("change");
-			input.value = "https://dx.doi.org/";
+			input.value = getDefaultResolver();
 			input.dispatchEvent(change);
 		}
 	});
 	document.getElementById("shortDoiResolverInputReset").addEventListener("click", function() {
+		var getDefaultResolver = chrome.extension.getBackgroundPage().getDefaultResolver;
 		var input = document.getElementById("shortDoiResolverInput");
-		if (input.value !== "https://doi.org/") {
+		if (input.value !== getDefaultResolver()) {
 			var change = new Event("change");
-			input.value = "https://doi.org/";
+			input.value = getDefaultResolver();
 			input.dispatchEvent(change);
 		}
 	});
@@ -493,27 +495,29 @@ function setAutolink() {
 }
 
 function getHistoryUrl(doi) {
-	var cr = document.getElementById("customResolver").checked;
-	var crh = document.getElementById("crHistory").value;
-	var dr = document.getElementById("doiResolverInput").value;
-	var sr = document.getElementById("shortDoiResolverInput").value;
-	var url = "";
+	var customResolver = document.getElementById("customResolver").checked;
+	var crHistory = document.getElementById("crHistory").value;
+	var useCustomResolver = customResolver && crHistory === "custom";
 
-	if (cr && crh === "custom") {
-		if (/^10\./.test(doi)) {
-			url = dr + doi;
-		} else if (/^10\//.test(doi)) {
-			url = sr + doi.replace(/^10\//,"");
+	var doiUrl;
+	if (useCustomResolver) {
+		if (/^10\//.test(doi)) {
+			doiUrl = document.getElementById("shortDoiResolverInput").value;
+			doiUrl += doi.replace(/^10\//,"");
+		} else {
+			doiUrl = document.getElementById("doiResolverInput").value;
+			doiUrl += doi;
 		}
 	} else {
-		if (/^10\./.test(doi)) {
-			url = "https://dx.doi.org/" + doi;
-		} else if (/^10\//.test(doi)) {
-			url = "https://doi.org/" + doi.replace(/^10\//,"");
+		var getDefaultResolver = chrome.extension.getBackgroundPage().getDefaultResolver;
+		if (/^10\//.test(doi)) {
+			doiUrl = getDefaultResolver() + doi.replace(/^10\//,"");
+		} else {
+			doiUrl = getDefaultResolver() + doi;
 		}
 	}
 
-	return url;
+	return doiUrl;
 }
 
 function populateHistory() {

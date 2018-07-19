@@ -544,15 +544,16 @@ function formSubmitHandler() {
 function insertQr(doiInput, qrParms) {
 	resetSpace();
 
-	var stringToEncode = "";
 	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
 	var getSavedDoiTitle = chrome.extension.getBackgroundPage().getSavedDoiTitle;
 	var fetchDoiTitle = chrome.extension.getBackgroundPage().fetchDoiTitle;
+	var getDefaultResolver = chrome.extension.getBackgroundPage().getDefaultResolver;
 
-	if (/^10\./.test(doiInput)) {
-		stringToEncode = "https://dx.doi.org/" + doiInput;
-	} else if (/^10\//.test(doiInput)) {
-		stringToEncode = "https://doi.org/" + doiInput.replace(/^10\//,"");
+	var stringToEncode = getDefaultResolver();
+	if (/^10\//.test(doiInput)) {
+		stringToEncode += doiInput.replace(/^10\//,"");
+	} else {
+		stringToEncode += doiInput;
 	}
 
 	simpleNotification("Loading...");

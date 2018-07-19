@@ -147,35 +147,20 @@ function resolveURL(doi) {
 	];
 
 	chrome.storage.local.get(stgFetch, function(stg) {
-		var url = "";
 		var cr = stg.custom_resolver;
 		var crb = stg.cr_bubble;
 		var crbl = stg.cr_bubble_last;
-		var dr = stg.doi_resolver;
-		var sr = stg.shortdoi_resolver;
-		var useDefaultResolver = true;
+		var useCustomResolver = false;
 
-		if (cr === true && crb === "custom") {
-			useDefaultResolver = false;
-		} else if (cr === true && crb === 'selectable' && crbl === 'custom') {
-			useDefaultResolver = false;
-		}
-
-		if (useDefaultResolver) {
-			if (/^10\./.test(doi)) {
-				url = "https://dx.doi.org/" + doi;
-			} else if (/^10\//.test(doi)) {
-				url = "https://doi.org/" + doi.replace(/^10\//,"");
-			}
-		} else {
-			if (/^10\./.test(doi)) {
-				url = dr + doi;
-			} else if (/^10\//.test(doi)) {
-				url = sr + doi.replace(/^10\//,"");
+		if (cr === true) {
+			if (crb === "custom" || (crb === "selectable" && crbl === "custom")) {
+				useCustomResolver = true;
 			}
 		}
 
-		chrome.tabs.create({url: url});
+		var resolveDOI = chrome.extension.getBackgroundPage().resolveDOI;
+		resolveDOI(doi, useCustomResolver, "newForegroundTab");
+
 		window.close();
 	});
 }

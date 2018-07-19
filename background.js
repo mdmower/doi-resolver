@@ -43,6 +43,18 @@ function startListeners() {
 			}
 		}
 	});
+
+	chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+		switch(request.cmd) {
+		case "autolink_vars":
+			sendAutolinkVariables(sendResponse);
+			break;
+		default:
+			break;
+		}
+
+		return true; // Required to allow async sendResponse
+	});
 }
 
 function allOptions() {
@@ -115,7 +127,7 @@ function getDefaultOption(opt) {
 		cr_history: "custom",
 		cr_omnibox: "custom",
 		custom_resolver: false,
-		doi_resolver: "https://dx.doi.org/",
+		doi_resolver: getDefaultResolver(),
 		history: false,
 		history_fetch_title: false,
 		history_length: 50,
@@ -133,7 +145,7 @@ function getDefaultOption(opt) {
 		qr_size: 300,
 		qr_title: false,
 		recorded_dois: [],
-		shortdoi_resolver: "https://doi.org/",
+		shortdoi_resolver: getDefaultResolver(),
 		sync_data: false
 		// sync_reset is not stored locally and does not need a default
 	};
@@ -382,6 +394,10 @@ function navigate(url) {
 	});
 }
 
+function getDefaultResolver() {
+	return "https://doi.org/";
+}
+
 function resolveDOI(doi, useCustomResolver, tab) {
 	var stgFetch = [
 		"doi_resolver",
@@ -389,27 +405,31 @@ function resolveDOI(doi, useCustomResolver, tab) {
 	];
 
 	chrome.storage.local.get(stgFetch, function(stg) {
-		var str = "";
-		var dr = stg.doi_resolver;
-		var sr = stg.shortdoi_resolver;
+		var doiUrl;
 
 		if (useCustomResolver) {
-			if (/^10\./.test(doi)) str = dr + doi;
-			else if (/^10\//.test(doi)) str = sr + doi.replace(/^10\//,"");
+			if (/^10\//.test(doi)) {
+				doiUrl = stg.shortdoi_resolver + doi.replace(/^10\//,"");
+			} else {
+				doiUrl = stg.doi_resolver + doi;
+			}
 		} else {
-			if (/^10\./.test(doi)) str = "https://dx.doi.org/" + doi;
-			else if (/^10\//.test(doi)) str = "https://doi.org/" + doi.replace(/^10\//,"");
+			if (/^10\//.test(doi)) {
+				doiUrl = getDefaultResolver() + doi.replace(/^10\//,"");
+			} else {
+				doiUrl = getDefaultResolver() + doi;
+			}
 		}
 
 		switch (tab) {
 		case "newForegroundTab":
-			chrome.tabs.create({url: str, active: true});
+			chrome.tabs.create({url: doiUrl, active: true});
 			break;
 		case "newBackgroundTab":
-			chrome.tabs.create({url: str, active: false});
+			chrome.tabs.create({url: doiUrl, active: false});
 			break;
 		default: // "currentTab"
-			navigate(str);
+			navigate(doiUrl);
 			break;
 		}
 	});
@@ -438,7 +458,7 @@ function fetchDoiTitle(doi) {
 				cache: 'no-cache'
 			};
 
-			var jsonUrl = "https://dx.doi.org/" + doi;
+			var jsonUrl = getDefaultResolver() + doi;
 			var fetchRequest = new Request(jsonUrl, fetchInit);
 
 			fetch(fetchRequest)
@@ -774,11 +794,7 @@ function contextMenuResolve(info) {
 	chrome.storage.local.get(stgFetch, function(stg) {
 		var cr = stg.custom_resolver;
 		var crc = stg.cr_context;
-		if (cr === true && crc === "custom") {
-			resolveDOI(doiInput, true, "newForegroundTab");
-		} else {
-			resolveDOI(doiInput, false, "newForegroundTab");
-		}
+		resolveDOI(doiInput, cr === true && crc === "custom", "newForegroundTab");
 	});
 }
 
@@ -826,6 +842,27 @@ function tabRecord(id, add) {
 }
 
 // Autolink
+
+function sendAutolinkVariables(sendResponse) {
+	var stgFetch = [
+		"cr_autolink",
+		"auto_link_rewrite",
+		"custom_resolver",
+		"doi_resolver"
+	];
+
+	chrome.storage.local.get(stgFetch, function(stg) {
+		var response = {};
+		if (stg.custom_resolver && stg.cr_autolink == "custom") {
+			response.doiResolver = stg.doi_resolver;
+		} else {
+			response.doiResolver = getDefaultResolver();
+		}
+		response.autolinkRewrite = stg.auto_link_rewrite;
+
+		sendResponse(response);
+	});
+}
 
 function autolinkTestExclusions(url) {
 	return new Promise((resolve) => {
@@ -969,10 +1006,6 @@ function omniListener(text, disposition) {
 			break;
 		}
 
-		if (cr === true && cro === "custom") {
-			resolveDOI(doiInput, true, tab);
-		} else {
-			resolveDOI(doiInput, false, tab);
-		}
+		resolveDOI(doiInput, cr === true && cro === "custom", tab);
 	});
 }

@@ -306,6 +306,8 @@ function getCitation(doi) {
 }
 
 function getCiteProcJson(doi) {
+	var getDefaultResolver = chrome.extension.getBackgroundPage().getDefaultResolver;
+
 	var headers = new Headers();
 	headers.append("Accept", "application/citeproc+json");
 
@@ -314,7 +316,7 @@ function getCiteProcJson(doi) {
 		headers: headers
 	};
 
-	var request = new Request("https://dx.doi.org/" + doi, init);
+	var request = new Request(getDefaultResolver() + doi, init);
 
 	console.time("Citeproc JSON download");
 	return fetch(request)

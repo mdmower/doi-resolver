@@ -45,6 +45,33 @@ body>h1 {
 	margin: 20px 0;
 }
 
+select {
+	background-color: white;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+button {
+	border: 1px solid #aaa;
+	padding: 3px 10px;
+	background-color: #eee;
+	box-sizing: border-box;
+	margin: 0;
+	margin-bottom: 0;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+input[type="text"] {
+	font-size: 14px;
+	height: 23px;
+	box-sizing: border-box;
+	margin: 0;
+	display: inline-block;
+	vertical-align: middle;
+	padding: 0 2px;
+}
+
 .hidden {
 	display: none;
 }
@@ -195,6 +222,7 @@ body>h1 {
 
 .crSelections {
 	width: 100px;
+	margin-top: 3px;
 }
 
 #doiResolverInput,
@@ -497,12 +525,16 @@ body>h1 {
 	font-weight: normal;
 }
 
+#historyHeading th:last-child>* {
+	vertical-align: middle;
+}
+
 #historyHeading th:last-child button {
 	margin-left: 10px;
 }
 
 #historySortBy {
-	height: 21px;
+	height: 23px;
 }
 
 #historySeparator {

@@ -41,6 +41,33 @@ body>h2 {
 	margin: 0 0 20px 0;
 }
 
+button {
+	border: 1px solid #aaa;
+	padding: 3px 10px;
+	background-color: #eee;
+	box-sizing: border-box;
+	margin: 0;
+	margin-bottom: 0;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+input[type="text"],
+input[type="number"] {
+	font-size: 14px;
+	height: 23px;
+	box-sizing: border-box;
+	margin: 0;
+	display: inline-block;
+	vertical-align: middle;
+	padding: 0 2px;
+}
+
+input[type="radio"] {
+	margin: 0;
+	display: inline-block;
+}
+
 .hidden {
 	display: none;
 }
@@ -170,6 +197,9 @@ body>h2 {
 	clear: both;
 	display: flex;
 	flex: 1;
+	height: 23px;
+	line-height: 23px;
+	vertical-align: middle;
 }
 
 #qrSizeInputLabel {
@@ -196,7 +226,7 @@ body>h2 {
 #qrBorderInput {
 	order: 5;
 	margin-left: 4px;
-	width: calc(2em + 4px);
+	width: calc(3em + 4px);
 	padding: 0 2px;
 }
 
@@ -246,6 +276,16 @@ body>h2 {
 #imageTypeParam {
 	margin-top: 20px;
 	clear: both;
+	height: 23px;
+	line-height: 23px;
+}
+
+#imageTypeParam>* {
+	vertical-align: middle;
+}
+
+#qrImageTypeLabel {
+	margin-right: 6px;
 }
 
 #qrImageTypeSvg {

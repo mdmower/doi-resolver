@@ -22,6 +22,21 @@ body {
 	overflow-x: hidden;
 }
 
+button {
+	border: 1px solid #aaa;
+	padding: 3px 10px;
+	background-color: #eee;
+	box-sizing: border-box;
+}
+
+input[type="text"] {
+	font-size: 14px;
+}
+
+input[type="radio"] {
+	margin: 0;
+}
+
 #mainForm {
 	display: flex;
 	flex: 1;
@@ -40,9 +55,19 @@ body {
 #crRadios {
 	display: none;
 	clear: both;
-	min-height: 1.2em;
 	font-size: 0.9em;
 	margin-top: 4px;
+	height: 21px;
+}
+
+#crRadios>div>* {
+	vertical-align: middle;
+	height: 21px;
+	line-height: 21px;
+}
+
+#optionCrCustom {
+	margin-right: 8px;
 }
 
 #metaButtons {

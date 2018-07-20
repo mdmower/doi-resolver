@@ -258,18 +258,21 @@ function getCitation(doi) {
 
 			var citeprocJsonPromise = getCiteProcJson(doi)
 			.catch(function(error) {
+				console.timeEnd("Citeproc JSON download");
 				console.log("Unable to find citation JSON.", error);
 				simpleNotification(chrome.i18n.getMessage("noCitationFound"));
 			});
 
 			var styleCslPromise = getStyleCsl(style)
 			.catch(function(error) {
+				console.timeEnd("Style CSL download");
 				console.error("Unable to find style CSL", error);
 				simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
 			});
 
 			var localeXmlPromise = getLocaleXml(locale)
 			.catch(function(error) {
+				console.timeEnd("Locale XML download");
 				console.error("Unable to find locale XML", error);
 				simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
 			});

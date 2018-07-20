@@ -440,9 +440,10 @@ function fetchDoiTitle(doi) {
 
 		chrome.permissions.contains({
 			origins: [
-				'https://*.doi.org/',
-				'https://*.crossref.org/',
-				'https://*.datacite.org/'
+				"https://*.doi.org/",
+				"https://*.crossref.org/",
+				"https://*.datacite.org/",
+				"https://*.medra.org/"
 			]
 		}, function(granted) {
 			if (!granted) {
@@ -450,12 +451,12 @@ function fetchDoiTitle(doi) {
 			}
 
 			var fetchHeaders = new Headers();
-			fetchHeaders.append("Accept", "application/json");
+			fetchHeaders.append("Accept", "application/vnd.citationstyles.csl+json");
 
 			var fetchInit = {
-				method: 'GET',
+				method: "GET",
 				headers: fetchHeaders,
-				cache: 'no-cache'
+				cache: "no-cache"
 			};
 
 			var jsonUrl = getDefaultResolver() + doi;
@@ -467,10 +468,13 @@ function fetchDoiTitle(doi) {
 			})
 			.then(function(json) {
 				var title = json.title;
+				if (typeof json.title !== "string")
+					return resolve("");
+
 				title = title.replace(/<subtitle>(.*)<\/subtitle>/, " - $1");
 				title = title.replace(/<alt-title>(.*)<\/alt-title>/, "");
 				title = title.replace(/<[^>]*>([^<]*)<\/[^>]*>/, "$1");
-				resolve(title ? title : "");
+				resolve(title.trim());
 			})
 			.catch(function(error) {
 				console.log("fetchDoiTitle failed", error);
@@ -514,17 +518,19 @@ function setDoiMetaPermissions(enable) {
 		if (enable) {
 			chrome.permissions.request({
 				origins: [
-					'https://*.doi.org/',
-					'https://*.crossref.org/',
-					'https://*.datacite.org/'
+					"https://*.doi.org/",
+					"https://*.crossref.org/",
+					"https://*.datacite.org/",
+					"https://*.medra.org/"
 				]
 			}, resolve);
 		} else {
 			chrome.permissions.remove({
 				origins: [
-					'https://*.doi.org/',
-					'https://*.crossref.org/',
-					'https://*.datacite.org/'
+					"https://*.doi.org/",
+					"https://*.crossref.org/",
+					"https://*.datacite.org/",
+					"https://*.medra.org/"
 				]
 			}, resolve);
 		}
@@ -566,6 +572,10 @@ function recordDoiAction(doi) {
 	});
 }
 
+// Recognized states for title parameter:
+// - string: save title provided by parameter
+// - undefined: try to fetch title
+// - false: do not try to fetch title (QR already tried and failed)
 function recordDoi(doi, title) {
 	return new Promise((resolve, reject) => {
 
@@ -612,6 +622,8 @@ function recordDoi(doi, title) {
 					chrome.storage.local.set(stg, resolve);
 				} else if (!stg.history_fetch_title || stg.recorded_dois[index].title) {
 					resolve();
+				} else if (title === false ) {
+					resolve();
 				} else {
 					fetchDoiTitle(doi)
 					.then(function(title) {
@@ -644,11 +656,11 @@ function recordDoi(doi, title) {
 
 			var doiObject = {
 				doi: doi,
-				title: title !== undefined ? title : "",
+				title: title ? title : "",
 				save: false
 			};
 
-			if (title || !stg.history_fetch_title) {
+			if (title || title === false || !stg.history_fetch_title) {
 				stg.recorded_dois.push(doiObject);
 				chrome.storage.local.set(stg, resolve);
 			} else {

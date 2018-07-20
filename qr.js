@@ -597,7 +597,7 @@ function insertQr(doiInput, qrParms) {
 						qrParms.text = stringToEncode;
 						createQrImage(qrParms);
 
-						recordDoi(doiInput)
+						recordDoi(doiInput, false)
 						.catch((errMsg) => {
 							console.log(errMsg);
 						});
@@ -608,7 +608,7 @@ function insertQr(doiInput, qrParms) {
 					qrParms.text = stringToEncode;
 					createQrImage(qrParms);
 
-					recordDoi(doiInput)
+					recordDoi(doiInput, false)
 					.catch((errMsg) => {
 						console.log(errMsg);
 					});

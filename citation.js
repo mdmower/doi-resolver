@@ -245,6 +245,7 @@ function getCitation(doi) {
 			'https://*.doi.org/',
 			'https://*.crossref.org/',
 			'https://*.datacite.org/',
+			"https://*.medra.org/",
 			'https://raw.githubusercontent.com/'
 		]
 	}, function(granted) {
@@ -309,7 +310,7 @@ function getCiteProcJson(doi) {
 	var getDefaultResolver = chrome.extension.getBackgroundPage().getDefaultResolver;
 
 	var headers = new Headers();
-	headers.append("Accept", "application/citeproc+json");
+	headers.append("Accept", "application/vnd.citationstyles.csl+json");
 
 	var init = {
 		method: 'GET',

@@ -22,10 +22,6 @@
 		"keyword": "doi"
 	},
 	"optional_permissions": [
-		"https://*.doi.org/",
-		"https://*.crossref.org/",
-		"https://*.datacite.org/",
-		"https://raw.githubusercontent.com/",
 		"https://*/*",
 		"http://*/*",
 		"tabs"

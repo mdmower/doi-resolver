@@ -876,43 +876,49 @@ function sendAutolinkVariables(sendResponse) {
 	});
 }
 
-function autolinkTestExclusions(url) {
-	return new Promise((resolve) => {
+function autolinkTestExclusions(url, autolinkExclusions) {
+	function exclusionTest(exclusions) {
+		if (!Array.isArray(exclusions)) {
+			return true;
+		}
 
-		chrome.storage.local.get(["autolink_exclusions"], function(stg) {
-			if (!Array.isArray(stg.autolink_exclusions)) {
-				return resolve(true);
-			}
+		if (typeof url !== 'string' ||
+				!/^https?:\/\//i.test(url) ||
+				url.indexOf("https://chrome.google.com/webstore") === 0) {
+			return true;
+		}
 
-			if (typeof url !== 'string' ||
-					!/^https?:\/\//i.test(url) ||
-					url.indexOf("https://chrome.google.com/webstore") === 0) {
-				return resolve(true);
-			}
-
-			var urlNoProtocol = url.replace(/^https?\:\/\//i, "").toLowerCase();
-			var exclusion = "";
-			var re;
-			for (var i = 0; i < stg.autolink_exclusions.length; i++) {
-				exclusion = stg.autolink_exclusions[i];
-				if (exclusion.charAt(0) === "/" && exclusion.slice(-1) === "/") {
-					try {
-						re = new RegExp(exclusion.slice(1, -1), "i");
-					} catch(ex) {
-						console.log("Invalid regular expression", exclusion, ex);
-						continue;
-					}
-					if (re.test(urlNoProtocol)) {
-						return resolve(true);
-					}
-				} else if (urlNoProtocol.indexOf(exclusion.toLowerCase()) === 0) {
-					return resolve(true);
+		var urlNoProtocol = url.replace(/^https?\:\/\//i, "").toLowerCase();
+		var exclusion = "";
+		var re;
+		for (var i = 0; i < exclusions.length; i++) {
+			exclusion = exclusions[i];
+			if (exclusion.charAt(0) === "/" && exclusion.slice(-1) === "/") {
+				try {
+					re = new RegExp(exclusion.slice(1, -1), "i");
+				} catch(ex) {
+					console.log("Invalid regular expression", exclusion, ex);
+					continue;
 				}
+				if (re.test(urlNoProtocol)) {
+					return true;
+				}
+			} else if (urlNoProtocol.indexOf(exclusion.toLowerCase()) === 0) {
+				return true;
 			}
+		}
 
-			return resolve(false);
-		});
+		return false;
+	}
 
+	return new Promise((resolve) => {
+		if (autolinkExclusions !== undefined) {
+			resolve(exclusionTest(autolinkExclusions));
+		} else {
+			chrome.storage.local.get(["autolink_exclusions"], function(stg) {
+				resolve(exclusionTest(stg.autolink_exclusions));
+			});
+		}
 	});
 }
 

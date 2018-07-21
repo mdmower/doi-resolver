@@ -417,15 +417,19 @@ function setCrPreviews() {
 
 function autolinkOutputTestResults() {
 	var message;
-	var autolinkTestExclusion = document.getElementById('autolinkTestExclusion');
 	var autolinkTestExclusionResult = document.getElementById("autolinkTestExclusionResult");
-	if (!/https?:\/\//i.test(autolinkTestExclusion.value)) {
+
+	var testUrl = document.getElementById('autolinkTestExclusion').value;
+	if (!/https?:\/\//i.test(testUrl)) {
 		message = chrome.i18n.getMessage("autolinkExclusionsInvalidUrl");
 		autolinkTestExclusionResult.innerHTML = message;
 		return;
 	}
 
-	chrome.extension.getBackgroundPage().autolinkTestExclusions(autolinkTestExclusion.value)
+	var exclusions = document.getElementById("autolinkExclusions").value.split("\n").filter(Boolean);
+	var autolinkTestExclusions = chrome.extension.getBackgroundPage().autolinkTestExclusions;
+
+	autolinkTestExclusions(testUrl, exclusions)
 	.then((matched) => {
 		if (matched) {
 			message = chrome.i18n.getMessage("autolinkExclusionsMatch");

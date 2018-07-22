@@ -1,7 +1,7 @@
 Quickly resolve DOI (digital object identifier) codes to their web destinations with this extension for Chrome.
 
 Install this extension from the [Chrome Web Store](https://chrome.google.com/webstore/detail/doi-resolver/goanbaknlbojfglcepjnankoobfakbpg).  
-Using a non-Google-branded variant of Chromium? [Download](http://mdmower.cmphys.com/wp-content/uploads/doi-resolver/doi-resolver.crx) the self-updating crx.
+Using a non-Google-branded variant of Chromium? [Download](https://cmphys.com/doi-resolver/doi-resolver.crx) the self-updating crx.
 
 **Core features:** Resolve DOI and ShortDOI codes through:
 

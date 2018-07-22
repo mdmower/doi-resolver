@@ -1,4 +1,4 @@
-Copyright (C) 2015 Matthew D. Mower
+Copyright (C) 2016 Matthew D. Mower
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,37 +17,27 @@ Matthew D. Mower (https://github.com/mdmower).
 
 Portions of this software depend on
 
-  Droid Sans font:
-  https://www.google.com/fonts/specimen/Droid+Sans
-  Apache License, Version 2.0
-  href="http://www.apache.org/licenses/LICENSE-2.0
-
-  jQuery:
-  http://jquery.com
+  iro.js:
+  https://rakujira.jp/projects/iro/
   MIT license
-  https://jquery.org/license
+  https://github.com/jaames/iro.js/blob/master/LICENSE.txt
 
-  jQuery.qrcode:
-  https://github.com/lrsjng/jquery-qrcode
+  QR Code generator library:
+  https://www.nayuki.io/page/qr-code-generator-library
   MIT license
-  https://github.com/lrsjng/jquery-qrcode
+  https://github.com/nayuki/QR-Code-generator#license
 
-  Spectrum jQuery Colorpicker:
-  http://bgrins.github.io/spectrum
-  Copyright-only License
-  https://github.com/bgrins/spectrum/blob/master/LICENSE
-
-  underscore.js:
-  http://underscorejs.org
-  Copyright-only License
-  https://github.com/jashkenas/underscore/blob/master/LICENSE
+  canvg:
+  https://github.com/canvg/canvg
+  MIT License
+  https://github.com/canvg/canvg/blob/master/MIT-LICENSE.txt
 
   citeproc-js:
-  https://bitbucket.org/fbennett/citeproc-js/wiki/Home
+  https://citeproc-js.readthedocs.io/
   Common Public Attribution License Version 1.0
-  https://bitbucket.org/fbennett/citeproc-js/raw/default/LICENSE
+  https://github.com/Juris-M/citeproc-js/blob/master/LICENSE
 
   Citation Style Language (CSL) citation styles:
-  http://citationstyles.org
+  http://citationstyles.org/
   Creative Commons Attribution-ShareAlike 3.0 Unported
   http://creativecommons.org/licenses/by-sa/3.0/

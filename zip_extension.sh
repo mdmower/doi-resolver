@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (C) 2015 Matthew D. Mower
+# Copyright (C) 2016 Matthew D. Mower
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-zip -r doi.zip . -x ".git*" "output_styles.sh" "styles/*" "locales/*" "citeproc-js/*" "Readme.md" "zip_extension.sh" "doi.zip" "LICENSE"
+zip -r doi.zip . -x ".git*" ".jshintrc" "output_styles.sh" "styles/*" "locales/*" "citeproc-js/*" "*README.md" "*Readme.md" "*Readme.markdown" "zip_extension.sh" "doi.zip" "*LICENSE*"

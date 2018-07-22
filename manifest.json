@@ -5,16 +5,27 @@
 		]
 	},
 	"browser_action": {
-		"default_icon": "icons/icon48.png",
+		"default_icon": {
+			"16": "icons/icon16.png",
+			"19": "icons/icon19.png",
+			"24": "icons/icon24.png",
+			"32": "icons/icon32.png",
+			"38": "icons/icon38.png",
+			"48": "icons/icon48.png"
+		},
 		"default_popup": "bubble.html",
 		"default_title": "__MSG_iconHover__"
 	},
 	"default_locale": "en",
 	"description": "__MSG_appDesc__",
 	"icons": {
-		"128": "icons/icon128.png",
+		"16": "icons/icon16.png",
+		"19": "icons/icon19.png",
+		"24": "icons/icon24.png",
+		"32": "icons/icon32.png",
+		"38": "icons/icon38.png",
 		"48": "icons/icon48.png",
-		"16": "icons/icon16.png"
+		"128": "icons/icon128.png"
 	},
 	"manifest_version": 2,
 	"name": "__MSG_appName__",
@@ -22,10 +33,6 @@
 		"keyword": "doi"
 	},
 	"optional_permissions": [
-		"http://*.doi.org/",
-		"http://*.crossref.org/",
-		"http://*.datacite.org/",
-		"https://raw.githubusercontent.com/",
 		"https://*/*",
 		"http://*/*",
 		"tabs"
@@ -37,5 +44,5 @@
 		"storage"
 	],
 	"update_url": "https://cmphys.com/doi-resolver/update.xml",
-	"version": "3.1.0"
+	"version": "4.0.0"
 }

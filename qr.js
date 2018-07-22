@@ -1,5 +1,5 @@
 /*!
-	Copyright (C) 2015 Matthew D. Mower
+	Copyright (C) 2016 Matthew D. Mower
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -15,149 +15,222 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	storage(true);
+	beginInit();
 }, false);
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch (request.cmd) {
-	case "sync_toggle_complete":
-		storage(false);
-		break;
-	default:
-		break;
-	}
-});
-
-function storage(firstRun) {
-	if (typeof storage.area === 'undefined') {
-		storage.area = chrome.storage.local;
-	}
-
-	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg.sync_data === true) {
-			storage.area = chrome.storage.sync;
-		} else {
-			storage.area = chrome.storage.local;
-		}
-
-		if (firstRun === true) {
-			continueOnLoad();
-		}
-	});
-}
-
-function continueOnLoad() {
+function beginInit() {
 	getLocalMessages();
-	getUrlVariables();
+	initializeDoiInput();
 	restoreOptions();
 	prepareColorPickers();
 	populateHistory();
 	startListeners();
 }
 
+function debounce(func, wait, immediate) {
+	var timeout;
+	return function() {
+		var context = this;
+		var args = arguments;
+		var later = function() {
+			timeout = null;
+			if (!immediate) {
+				func.apply(context, args);
+			}
+		};
+		var callNow = immediate && !timeout;
+		clearTimeout(timeout);
+		timeout = setTimeout(later, wait || 200);
+		if (callNow) {
+			func.apply(context, args);
+		}
+	};
+}
+
 function startListeners() {
 	/*
-	 * qrSizeInput can fire onChange events frequently. debounce it to only run
-	 * once per 750ms so Chrome Sync doesn't get too many sync requests.
+	 * qrSizeInput and qrBorderInput can fire onChange events frequently.
+	 * debounce them to only run once per 750ms so Chrome Sync doesn't
+	 * get too many sync requests.
 	 */
-	var dbQrSizeSave = _.debounce(qrSizeSave, 750);
+	var dbQrDimensionsSave = debounce(qrDimensionsSave, 750);
 
-
-	$("#doiForm").submit(function () {
+	document.getElementById("doiForm").addEventListener("submit", function (event) {
 		formSubmitHandler();
-		return false;
+		event.preventDefault();
 	});
-	$("#qrBgTrans").on("change", function() {
+	document.getElementById("qrBgTrans").addEventListener("change", function () {
 		toggleBgColor();
 		saveOptions();
 	});
-	$("#qrFetchTitle").on("change", setDoiMetaPermissions);
-	$("#qrSizeInput").on("change input", dbQrSizeSave);
-	$("#qrManualTitle").on("change", toggleTitleFetch);
+	Array.from(document.querySelectorAll('input[name="qrImageType"]')).forEach(function(elm) {
+		elm.addEventListener("click", saveOptions);
+	});
+
+	document.getElementById("qrSizeInput").addEventListener("input", dbQrDimensionsSave);
+	document.getElementById("qrBorderInput").addEventListener("input", dbQrDimensionsSave);
+	toggleTitleMessageListeners(true);
+
+	var dbSaveOptions = debounce(saveOptions, 500);
+	var dbColorSave = function () {
+		if (isHexColor(this.value)) {
+			this.classList.remove("badColor");
+			if (this.id === "qrFgColorInput" && colorPickerStorage.fgColorPicker) {
+				colorPickerStorage.fgColorPicker.off("color:change", colorPickerStorage.debounceFgColorChanged);
+				colorPickerStorage.fgColorPicker.color.hexString = this.value;
+				this.style.background = "linear-gradient(90deg, #FFF 50%, " + this.value + " 50%)";
+				colorPickerStorage.fgColorPicker.on("color:change", colorPickerStorage.debounceFgColorChanged);
+			} else if (this.id === "qrBgColorInput" && colorPickerStorage.bgColorPicker) {
+				colorPickerStorage.bgColorPicker.off("color:change", colorPickerStorage.debounceBgColorChanged);
+				colorPickerStorage.bgColorPicker.color.hexString = this.value;
+				this.style.background = "linear-gradient(90deg, #FFF 50%, " + this.value + " 50%)";
+				colorPickerStorage.bgColorPicker.on("color:change", colorPickerStorage.debounceBgColorChanged);
+			}
+			dbSaveOptions();
+		} else {
+			this.classList.add("badColor");
+		}
+	};
+	document.getElementById("qrFgColorInput").addEventListener("input", dbColorSave);
+	document.getElementById("qrBgColorInput").addEventListener("input", dbColorSave);
 
 	chrome.tabs.getCurrent(function(tab) {
-		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
+		var tabRecord = chrome.extension.getBackgroundPage().tabRecord;
+		tabRecord(tab.id, true);
 	});
 }
 
-function toggleBgColor() {
-	if ($("#qrBgTrans").prop('checked')) {
-		$("#bgColorDiv").css("display", "none");
+function toggleBgColor(transparency) {
+	if (transparency === undefined) {
+		transparency = document.getElementById("qrBgTrans").checked;
+	}
+
+	var qrBgColorInput = document.getElementById("qrBgColorInput");
+	qrBgColorInput.disabled = transparency;
+	document.getElementById("qrBgColorPicker").style.pointerEvents = transparency ? "none" : "auto";
+
+	if (transparency) {
+		toggleBgColor.savedStyle = qrBgColorInput.getAttribute("style");
+		qrBgColorInput.removeAttribute("style");
+		qrBgColorInput.style.color = "transparent";
+		qrBgColorInput.style.backgroundImage = "linear-gradient(45deg, #aaa 25%, transparent 25%), linear-gradient(-45deg, #aaa 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #aaa 75%), linear-gradient(-45deg, transparent 75%, #aaa 75%)";
+		qrBgColorInput.style.backgroundSize = "20px 20px";
+		qrBgColorInput.style.backgroundPosition = "0 0, 0 10px, 10px -10px, -10px 0px";
 	} else {
-		$("#bgColorDiv").css("display", "block");
+		qrBgColorInput.removeAttribute("style");
+		if (toggleBgColor.savedStyle) {
+			qrBgColorInput.setAttribute("style", toggleBgColor.savedStyle);
+		}
 	}
 }
 
-function qrSizeSave() {
-	var qrSize = parseInt($("#qrSizeInput").val());
+function qrDimensionsSave() {
+	var qrSizeElm = document.getElementById("qrSizeInput");
+	var qrSize = Number(qrSizeElm.value);
 	if (isNaN(qrSize)) {
-		$("#qrSizeInput").val(300);
+		qrSizeElm.value = 300;
 		qrSize = 300;
 	} else if (qrSize < 80) {
-		$("#qrSizeInput").val(80);
+		qrSizeElm.value = 80;
 		qrSize = 80;
 	}
 
-	storage.area.get(["qr_size"], function(stg) {
-		if (parseInt(stg.qr_size) !== qrSize) {
+	var qrBorderElm = document.getElementById("qrBorderInput");
+	var qrBorder = Number(qrBorderElm.value);
+	if (isNaN(qrBorder)) {
+		qrBorderElm.value = 0;
+		qrBorder = 0;
+	} else if (qrSize < 0) {
+		qrBorderElm.value = 0;
+		qrBorder = 0;
+	}
+
+	chrome.storage.local.get(["qr_size", "qr_border"], function(stg) {
+		if (Number(stg.qr_size) !== qrSize || Number(stg.qr_border) !== qrBorder) {
 			saveOptions();
 		}
 	});
 }
 
-// Read a page's GET URL variables and return them as an associative array.
-// http://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
-function getUrlVariables() {
-	var vars = [], hash;
-	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-	for (var i = 0; i < hashes.length; i++) {
-		hash = hashes[i].split('=');
-		vars.push(hash[0]);
-		vars[hash[0]] = hash[1];
+function queryStringToJSON(query) {
+	if (!query) {
+		return {};
 	}
 
-	var initDOI = vars.doi;
-	if (initDOI) {
-		$("#doiInput").val(initDOI);
-	}
+	var result = {};
+	var pairs = query.slice(1).split('&');
+	pairs.forEach(function(pair) {
+		pair = pair.split('=');
+		result[pair[0]] = decodeURIComponent(pair[1] || '');
+	});
+
+	return JSON.parse(JSON.stringify(result));
+}
+
+function initializeDoiInput() {
+	document.getElementById("doiInput").value = queryStringToJSON(location.search).doi || '';
 }
 
 function restoreOptions() {
 	var stgFetch = [
 		"qr_size",
-		"qr_bgtrans"
+		"qr_border",
+		"qr_imgtype",
+		"qr_bgtrans",
+		"qr_message",
+		"qr_title"
 	];
 
-	chrome.storage.local.get(["qr_title"], function(stgLocal) {
-	storage.area.get(stgFetch, function(stg) {
-		var qrSize = parseInt(stg.qr_size);
+	chrome.storage.local.get(stgFetch, function(stg) {
+		var qrSize = Number(stg.qr_size);
 		if (isNaN(qrSize)) {
-			$("#qrSizeInput").val(300);
+			document.getElementById("qrSizeInput").value = 300;
 		} else if (qrSize < 80) {
-			$("#qrSizeInput").val(80);
+			document.getElementById("qrSizeInput").value = 80;
 		} else {
-			$("#qrSizeInput").val(qrSize);
+			document.getElementById("qrSizeInput").value = qrSize;
 		}
 
-		if (stgLocal.qr_title === true) {
-			$("#qrFetchTitle").prop("checked", true);
+		var qrBorder = Number(stg.qr_border);
+		if (isNaN(qrBorder) || qrBorder < 0) {
+			document.getElementById("qrBorderInput").value = 0;
+		} else {
+			document.getElementById("qrBorderInput").value = qrBorder;
 		}
-		if (stg.qr_bgtrans === true) {
-			$("#qrBgTrans").prop("checked", true);
-			$("#bgColorDiv").css("display", "none");
+
+		if (stg.qr_imgtype === "png") {
+			document.getElementById("qrImageTypePng").checked = true;
+		} else {
+			document.getElementById("qrImageTypeSvg").checked = true;
 		}
-	});
+
+		// If both qr_title and qr_message are true (should not occur),
+		// give qr_title precedence
+		if (stg.qr_title) {
+			document.getElementById("qrFetchTitle").checked = true;
+			document.getElementById("qrManualMessage").disabled = true;
+		} else if (stg.qr_message) {
+			document.getElementById("qrManualMessage").checked = true;
+			document.getElementById("qrManualMessageTextDiv").style.display = "flex";
+			document.getElementById("qrFetchTitle").disabled = true;
+		}
+
+		document.getElementById("qrBgTrans").checked = Boolean(stg.qr_bgtrans);
 	});
 }
 
 function populateHistory() {
 	var stgFetch = [
+		"history",
 		"recorded_dois",
-		"history_showsave"
+		"history_showsave",
+		"history_showtitles",
+		"history_sortby"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
-		if (!Array.isArray(stg.recorded_dois)) {
+	chrome.storage.local.get(stgFetch, function(stg) {
+		if (!stg.history || !Array.isArray(stg.recorded_dois)) {
+			document.getElementById("openHistory").style.display = "none";
 			return;
 		}
 
@@ -167,44 +240,115 @@ function populateHistory() {
 			return elm != undefined;
 		});
 
+		var sortHistoryEntries = chrome.extension.getBackgroundPage().sortHistoryEntries;
+		sortHistoryEntries(stg.recorded_dois, stg.history_sortby);
+
+		var escapeHtml = chrome.extension.getBackgroundPage().escapeHtml;
 		var optionHtml = "";
-		var message = chrome.i18n.getMessage("historySavedEntryLabel");
-		var i;
-		for (i = 0; i < stg.recorded_dois.length; i++) {
-			if (stg.recorded_dois[i].save) {
-				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" label="' + message + '" />';
-			}
-		}
+
+		stg.recorded_dois.filter(item => item.save).forEach((item) => {
+			var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+			optionHtml += '<option class="save" value="' + item.doi + '">' + label + '</option>';
+		});
+		optionHtml += optionHtml ? "<option disabled></option>" : "";
+
 		if (stg.history_showsave !== true) {
-			for (i = 0; i < stg.recorded_dois.length; i++) {
-				if (!stg.recorded_dois[i].save) {
-					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
-				}
-			}
+			stg.recorded_dois.filter(item => !item.save).forEach((item) => {
+				var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+				optionHtml += '<option value="' + item.doi + '">' + label + '</option>';
+			});
 		}
-		$("#doiHistory").html(optionHtml);
+
+		var selectBox = document.getElementById("doiHistory");
+		selectBox.setAttribute('size', '12');
+		selectBox.selectedIndex = -1;
+		selectBox.innerHTML = optionHtml;
+
+		var filterSelectByText = chrome.extension.getBackgroundPage().filterSelectByText;
+		var filterInput = function() {
+			filterSelectByText(selectBox, this.value, false);
+		};
+
+		var filter = document.getElementById("doiInput");
+		filter.addEventListener('input', filterInput);
+
+		selectBox.addEventListener('change', function() {
+			filter.removeEventListener('input', filterInput);
+			filter.value = this.value;
+			filter.addEventListener('input', filterInput);
+			this.selectedIndex = -1;
+			filterSelectByText(selectBox, "", false);
+			toggleHistoryBox(false);
+		});
+
+		var openHistory = document.getElementById("openHistory");
+		openHistory.addEventListener('click', function() {
+			toggleHistoryBox(true);
+		});
+
+		var closeHistory = document.getElementById("closeHistory");
+		closeHistory.addEventListener('click', function() {
+			toggleHistoryBox(false);
+		});
+
+		var mainForm = document.getElementById("mainForm");
+		document.addEventListener('click', function(event) {
+			if (!mainForm.contains(event.target)) {
+				toggleHistoryBox(false);
+			}
+		});
+
+		document.getElementById("doiHistory").innerHTML = optionHtml;
 	});
 }
 
-function recordDoi(doiInput) {
-	chrome.runtime.sendMessage({
-		cmd: "record_doi",
-		doi: doiInput
-	});
+function historyBoxSize() {
+	var inputContainer = document.getElementById('inputContainer');
+	var boxTop = inputContainer.offsetTop + inputContainer.offsetHeight + 2;
+	var submitButton = document.getElementById('submitButton');
+	var boxBottom = submitButton.offsetTop - 2;
+
+	return boxBottom - boxTop;
+}
+
+function toggleHistoryBox(enable) {
+	var selectBox = document.getElementById("doiHistory");
+	if (toggleHistoryBox.boxSize === undefined) {
+		toggleHistoryBox.boxSize = historyBoxSize() + 'px';
+		selectBox.style.height = toggleHistoryBox.boxSize;
+	}
+	var openHistory = document.getElementById("openHistory");
+	var closeHistory = document.getElementById("closeHistory");
+	selectBox.style.display = enable ? "block" : "";
+	openHistory.style.display = enable ? "none" : "";
+	closeHistory.style.display = enable ? "block" : "";
 }
 
 function isHexColor(code) {
-	return /^#[0-9A-F]{6}$/i.test(code);
+	return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(code);
 }
+
+function colorChanged(color, changes) {
+	this.value = color.hexString;
+	this.style.background = "linear-gradient(90deg, #FFF 50%, " + color.hexString + " 50%)";
+	saveOptions();
+}
+
+var colorPickerStorage = {
+	fgColorPicker: undefined,
+	bgColorPicker: undefined,
+	debounceFgColorChanged: undefined,
+	debounceBgColorChanged: undefined
+};
 
 function prepareColorPickers() {
 	var stgFetch = [
 		"qr_fgcolor",
-		"qr_bgcolor"
+		"qr_bgcolor",
+		"qr_bgtrans"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
-
+	chrome.storage.local.get(stgFetch, function(stg) {
 		var qrFgColor = "#000000";
 		var storedQrFgColor = stg.qr_fgcolor;
 		if (isHexColor(storedQrFgColor)) {
@@ -216,7 +360,9 @@ function prepareColorPickers() {
 				}
 			});
 		}
-		$("#qrFgColorInput").val(qrFgColor);
+		var qrFgColorInput = document.getElementById("qrFgColorInput");
+		qrFgColorInput.value = qrFgColor;
+		qrFgColorInput.style.background = "linear-gradient(90deg, #FFF 50%, " + qrFgColor + " 50%)";
 
 		var qrBgColor = "#ffffff";
 		var storedQrBgColor = stg.qr_bgcolor;
@@ -229,234 +375,296 @@ function prepareColorPickers() {
 				}
 			});
 		}
-		$("#qrBgColorInput").val(qrBgColor);
+		var qrBgColorInput = document.getElementById("qrBgColorInput");
+		qrBgColorInput.value = qrBgColor;
+		qrBgColorInput.style.background = "linear-gradient(90deg, #FFF 50%, " + qrBgColor + " 50%)";
 
-		$("#qrFgColorInput").spectrum({
-			color: qrFgColor,
-			preferredFormat: "hex",
-			showInput: true,
-			clickoutFiresChange: true,
-			replacerClassName: "qrColorReplacerClass",
-			containerClassName: "qrColorContainerClass",
-			change: function(color) {
-				saveOptions();
-			}
-		});
+		if (stg.qr_bgtrans) {
+			toggleBgColor(true);
+		}
 
-		$("#qrBgColorInput").spectrum({
-			color: qrBgColor,
-			preferredFormat: "hex",
-			showInput: true,
-			clickoutFiresChange: true,
-			replacerClassName: "qrColorReplacerClass",
-			containerClassName: "qrColorContainerClass",
-			change: function(color) {
-				saveOptions();
-			}
-		});
+		var colorPickerOptions = {
+			padding: 4,
+			markerRadius: 6,
+			sliderMargin: 12,
+			width: 180,
+			height: 180
+		};
 
+		colorPickerOptions.color = qrFgColor;
+		colorPickerStorage.fgColorPicker = new iro.ColorPicker("#qrFgColorPicker", colorPickerOptions);
+		colorPickerStorage.debounceFgColorChanged = debounce(colorChanged.bind(qrFgColorInput), 500);
+		colorPickerStorage.fgColorPicker.on("color:change", colorPickerStorage.debounceFgColorChanged);
+
+		colorPickerOptions.color = qrBgColor;
+		colorPickerStorage.bgColorPicker = new iro.ColorPicker("#qrBgColorPicker", colorPickerOptions);
+		colorPickerStorage.debounceBgColorChanged = debounce(colorChanged.bind(qrBgColorInput), 500);
+		colorPickerStorage.bgColorPicker.on("color:change", colorPickerStorage.debounceBgColorChanged);
 	});
 }
 
 function saveOptions() {
 	var options = {
-		qr_bgtrans: $("#qrBgTrans").prop('checked'),
-		qr_size: parseInt($("#qrSizeInput").val()),
-		qr_fgcolor: $("#qrFgColorInput").val(),
-		qr_bgcolor: $("#qrBgColorInput").val(),
-		qr_title: $("#qrFetchTitle").prop('checked')
+		qr_bgtrans: document.getElementById("qrBgTrans").checked,
+		qr_size: Number(document.getElementById("qrSizeInput").value),
+		qr_border: Number(document.getElementById("qrBorderInput").value),
+		qr_fgcolor: document.getElementById("qrFgColorInput").value,
+		qr_bgcolor: document.getElementById("qrBgColorInput").value,
+		qr_imgtype: document.querySelector('input[name="qrImageType"]:checked').value,
+		qr_message: document.getElementById("qrManualMessage").checked,
+		qr_title: document.getElementById("qrFetchTitle").checked
 	};
 
 	chrome.storage.local.set(options, null);
 }
 
-function toggleTitleFetch() {
-	if ($("#qrManualTitle").prop('checked')) {
-		$("#qrFetchTitle").prop("checked", false);
-		$("#qrFetchTitle").prop("disabled", true);
-		$("#qrManualTitleTextDiv").css("display", "flex");
-		saveOptions();
+function toggleTitleMessageListeners(enable) {
+	var qrFetchTitle = document.getElementById("qrFetchTitle");
+	var qrManualMessage = document.getElementById("qrManualMessage");
+	if (enable) {
+		qrFetchTitle.addEventListener("change", toggleTitleMessageOptions);
+		qrManualMessage.addEventListener("change", toggleTitleMessageOptions);
 	} else {
-		$("#qrFetchTitle").prop("disabled", false);
-		$("#qrManualTitleTextDiv").css("display", "none");
+		qrFetchTitle.removeEventListener("change", toggleTitleMessageOptions);
+		qrManualMessage.removeEventListener("change", toggleTitleMessageOptions);
 	}
 }
 
-function trim(stringToTrim) {
-	return stringToTrim.replace(/doi:|\s+|[\.!\?,]$|[\.!\?,]\s+$/g,"");
-}
+function toggleTitleMessageOptions(event) {
+	toggleTitleMessageListeners(false);
 
-function checkValidDoi(doiInput) {
-	if (!doiInput) {
-		return false;
-	} else if (/^10\./.test(doiInput)) {
-		return true;
-	} else if (/^10\//.test(doiInput)) {
-		return true;
+	var qrFetchTitle = document.getElementById("qrFetchTitle");
+	var qrManualMessage = document.getElementById("qrManualMessage");
+	var qrManualMessageTextDiv = document.getElementById("qrManualMessageTextDiv");
+
+	if (event.target.id === "qrManualMessage") {
+		if (qrManualMessage.checked) {
+			qrFetchTitle.checked = false;
+			qrFetchTitle.disabled = true;
+			qrManualMessageTextDiv.style.display = "flex";
+		} else {
+			qrFetchTitle.disabled = false;
+			qrManualMessageTextDiv.style.display = "";
+		}
+		saveOptions();
+		toggleTitleMessageListeners(true);
 	} else {
-		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
-		return false;
+		// Permissions will be cleaned when last QR/Citation tab is closed
+		var setDoiMetaPermissions = chrome.extension.getBackgroundPage().setDoiMetaPermissions;
+		setDoiMetaPermissions(qrFetchTitle.checked)
+		.then((success) => {
+			if (qrFetchTitle.checked) {
+				if (success) { // Permission successfully added
+					qrManualMessage.checked = false;
+					qrManualMessage.disabled = true;
+					qrManualMessageTextDiv.style.display = "";
+					saveOptions();
+				} else {
+					qrFetchTitle.checked = false;
+				}
+			} else {
+				// Even if permission is not successfully removed,
+				// handle option toggling as if it were
+				qrManualMessage.disabled = false;
+				saveOptions();
+			}
+			toggleTitleMessageListeners(true);
+		});
 	}
 }
 
 function resetSpace() {
-	$("#notifyDiv").html("");
-	$("#notifyDiv").css("display", "none");
-	$("#qrDiv").html("");
-	$("#qrDiv").css("display", "none");
+	var notifyDiv = document.getElementById("notifyDiv");
+	var qrDiv = document.getElementById("qrDiv");
+	notifyDiv.removeAttribute("class");
+	notifyDiv.innerHTML = "";
+	notifyDiv.style.display = "none";
+	qrDiv.innerHTML = "";
+	qrDiv.style.display = "none";
 }
 
 function simpleNotification(message) {
 	resetSpace();
-	$("#notifyDiv").html(message);
-	$("#notifyDiv").css("display", "block");
+	var notifyDiv = document.getElementById("notifyDiv");
+	notifyDiv.innerHTML = message;
+	notifyDiv.style.display = "block";
 }
 
-function advancedNotification(elms) {
+function advancedNotification(docFrag) {
 	resetSpace();
-	for (var i = 0; i < elms.length; i++) {
-		elms[i].appendTo($("#notifyDiv"));
-	}
-	$("#notifyDiv").css("display", "block");
-}
-
-function setDoiMetaPermissions() {
-	var perm = $("#qrFetchTitle").prop('checked');
-
-	if (perm) {
-		chrome.permissions.request({
-			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
-		}, function(granted) {
-			if (granted) {
-				$("#qrFetchTitle").prop("checked", true);
-				saveOptions();
-			} else {
-				$("#qrFetchTitle").prop("checked", false);
-				saveOptions();
-			}
-		});
-	} else {
-		chrome.permissions.remove({
-			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
-		}, function(removed) {
-			if (removed) {
-				$("#qrFetchTitle").prop("checked", false);
-				saveOptions();
-			} else {
-				$("#qrFetchTitle").prop("checked", true);
-				saveOptions();
-			}
-		});
-	}
-}
-
-function htmlEscape(str) {
-	return String(str)
-		.replace(/&/g, '&amp;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;');
+	var notifyDiv = document.getElementById("notifyDiv");
+	notifyDiv.classList.add("advanced");
+	notifyDiv.appendChild(docFrag);
+	notifyDiv.style.display = "block";
 }
 
 function formSubmitHandler() {
-	var doiInput = encodeURI(trim($("#doiInput").val()));
-	var qrSize = parseInt($("#qrSizeInput").val());
-	var fgcolor = $("#qrFgColorInput").val();
-	var bgcolor = $("#qrBgColorInput").val();
+	var trim = chrome.extension.getBackgroundPage().trim;
+	var doiInput = encodeURI(trim(document.getElementById("doiInput").value));
+	var qrSize = Number(document.getElementById("qrSizeInput").value);
+	var qrBorder = Number(document.getElementById("qrBorderInput").value);
+	var fgcolor = document.getElementById("qrFgColorInput").value;
+	var bgcolor = document.getElementById("qrBgColorInput").value;
+	var imgType = document.querySelector('input[name="qrImageType"]:checked').value;
 
-	if ($("#qrBgTrans").prop('checked')) {
+	if (document.getElementById("qrBgTrans").checked) {
 		bgcolor = null;
 	}
 
 	if (isNaN(qrSize)) {
-		$("#qrSizeInput").val(300);
+		document.getElementById("qrSizeInput").value = 300;
 		qrSize = 300;
 	} else if (qrSize < 80) {
-		$("#qrSizeInput").val(80);
+		document.getElementById("qrSizeInput").value = 80;
 		qrSize = 80;
 	}
 
+	if (isNaN(qrBorder) || qrBorder < 0) {
+		document.getElementById("qrBorderInput").value = 0;
+		qrBorder = 0;
+	}
+
+	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
 	if (!checkValidDoi(doiInput)) {
+		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
 		return;
 	}
 
-	recordDoi(doiInput);
-	insertQr(doiInput, qrSize, fgcolor, bgcolor);
+	var qrParms = {
+		size: qrSize,
+		border: qrBorder,
+		fgcolor: fgcolor,
+		bgcolor: bgcolor,
+		imgType: imgType
+	};
+
+	insertQr(doiInput, qrParms);
 }
 
-function insertQr(doiInput, size, fgcolor, bgcolor) {
+function insertQr(doiInput, qrParms) {
 	resetSpace();
 
-	var stringToEncode = "";
-	var jsonUrl = "http://dx.doi.org/" + doiInput;
+	var recordDoi = chrome.extension.getBackgroundPage().recordDoi;
+	var getSavedDoiTitle = chrome.extension.getBackgroundPage().getSavedDoiTitle;
+	var fetchDoiTitle = chrome.extension.getBackgroundPage().fetchDoiTitle;
+	var getDefaultResolver = chrome.extension.getBackgroundPage().getDefaultResolver;
 
-	if (/^10\./.test(doiInput)) {
-		stringToEncode = "http://dx.doi.org/" + doiInput;
-	} else if (/^10\//.test(doiInput)) {
-		stringToEncode = "http://doi.org/" + doiInput.replace(/^10\//,"");
+	var stringToEncode = getDefaultResolver();
+	if (/^10\//.test(doiInput)) {
+		stringToEncode += doiInput.replace(/^10\//,"");
+	} else {
+		stringToEncode += doiInput;
 	}
 
 	simpleNotification("Loading...");
 
-	var perm = $("#qrFetchTitle").prop('checked');
-	if (perm) {
-		chrome.permissions.request({
-			origins: [ 'http://*.doi.org/', 'http://*.crossref.org/', 'http://*.datacite.org/' ]
-		}, function(granted) {
-			if (granted) {
-				var jqxhr = $.ajax({
-					url: jsonUrl,
-					headers: { Accept: "application/citeproc+json" },
-					dataType: "text",
-					type: "GET",
-					cache: false
-				});
-				jqxhr.done(function() {
-					try {
-						var doiTitle = JSON.parse(jqxhr.responseText).title;
-						doiTitle = doiTitle.replace(/<subtitle>(.*)<\/subtitle>/," - $1");
-						doiTitle = doiTitle.replace(/<alt-title>(.*)<\/alt-title>/,"");
-						doiTitle = doiTitle.replace(/<.*>(.*)<\/.*>/,"$1");
-						stringToEncode = doiTitle + "\n" + stringToEncode;
-						updateMessage(stringToEncode, "found");
-						createQrImage(stringToEncode, size, fgcolor, bgcolor);
-					} catch(e) {
-						updateMessage(stringToEncode, "missing");
-						createQrImage(stringToEncode, size, fgcolor, bgcolor);
-					}
-				});
-				jqxhr.fail(function() {
-					updateMessage(stringToEncode, "missing");
-					createQrImage(stringToEncode, size, fgcolor, bgcolor);
-				});
-			} else {
-				updateMessage(stringToEncode, "disabled");
-				createQrImage(stringToEncode, size, fgcolor, bgcolor);
+	if (document.getElementById("qrFetchTitle").checked) {
+		getSavedDoiTitle(doiInput)
+		.then(function(title) {
+			if (title) {
+				console.log("Found title in history");
+				stringToEncode = title + "\n" + stringToEncode;
+				updateMessage(stringToEncode, "found");
+				qrParms.text = stringToEncode;
+				createQrImage(qrParms);
+				return;
 			}
+
+			// Permissions will be cleaned when last QR/Citation tab is closed
+			chrome.extension.getBackgroundPage().setDoiMetaPermissions(true)
+			.then(function(granted) {
+				if (granted) {
+					console.log("Fetching title from network");
+					fetchDoiTitle(doiInput)
+					.then(function(title) {
+						if (title) {
+							stringToEncode = title + "\n" + stringToEncode;
+							updateMessage(stringToEncode, "found");
+						} else {
+							updateMessage(stringToEncode, "missing");
+						}
+						qrParms.text = stringToEncode;
+						createQrImage(qrParms);
+
+						recordDoi(doiInput, title)
+						.catch((errMsg) => {
+							console.log(errMsg);
+						});
+					})
+					.catch(function(error) {
+						console.error("Error while fetching title", error);
+						updateMessage(stringToEncode, "missing");
+						qrParms.text = stringToEncode;
+						createQrImage(qrParms);
+
+						recordDoi(doiInput, false)
+						.catch((errMsg) => {
+							console.log(errMsg);
+						});
+					});
+				} else {
+					console.log("Permissions not granted for title fetch");
+					updateMessage(stringToEncode, "disabled");
+					qrParms.text = stringToEncode;
+					createQrImage(qrParms);
+
+					recordDoi(doiInput, false)
+					.catch((errMsg) => {
+						console.log(errMsg);
+					});
+				}
+			});
 		});
 	} else {
-		var manualTitle = $("#qrManualTitle").prop('checked');
-		if (manualTitle) {
-			var titleString = $("#qrManualTitleText").val();
+		if (document.getElementById("qrManualMessage").checked) {
+			var titleString = document.getElementById("qrManualMessageText").value;
 			if (titleString !== "") {
 				stringToEncode = titleString + "\n" + stringToEncode;
 			}
 		}
 		updateMessage(stringToEncode, "disabled");
-		createQrImage(stringToEncode, size, fgcolor, bgcolor);
+		qrParms.text = stringToEncode;
+		createQrImage(qrParms);
+
+		chrome.extension.getBackgroundPage().recordDoiAction(doiInput);
 	}
 }
 
-function createQrImage(text, size, fgcolor, bgcolor) {
-	$("#qrDiv").qrcode({
-		text: text,
-		size: size,
-		fill: fgcolor,
-		background: bgcolor,
-		render: 'image'
-	});
-	linkifyQrImage();
+function createQrImage(qrParms) {
+	var segs = qrcodegen.QrSegment.makeSegments(qrParms.text);
+	var ecl = qrcodegen.QrCode.Ecc.MEDIUM;
+	var minVer = 1;
+	var maxVer = 40;
+	var mask = -1;
+	var boostEcc = true;
+	var qr = qrcodegen.QrCode.encodeSegments(segs, ecl, minVer, maxVer, mask, boostEcc);
+	var code = qr.toSvgString(qrParms.border);
+
+	var domParser = new DOMParser();
+	var svgDoc = domParser.parseFromString(code, "text/xml");
+	var svg = svgDoc.getElementsByTagName("svg")[0];
+
+	if (qrParms.bgcolor === null) {
+		svg.getElementsByTagName("rect")[0].setAttribute("fill-opacity", "0.0");
+		svg.getElementsByTagName("rect")[0].setAttribute("fill", "#ffffff");
+	} else {
+		svg.getElementsByTagName("rect")[0].setAttribute("fill", qrParms.bgcolor);
+	}
+	svg.getElementsByTagName("path")[0].setAttribute("fill", qrParms.fgcolor);
+	svg.setAttribute("width", qrParms.size);
+	svg.setAttribute("height", qrParms.size);
+
+	var dataUrl = "";
+	if (qrParms.imgType === "png") {
+		var canvas = document.createElement("canvas");
+		canvg(canvas, svg.outerHTML, {log: true});
+		document.getElementById("qrDiv").appendChild(canvas);
+		dataUrl = canvas.toDataURL("image/png");
+	} else {
+		document.getElementById("qrDiv").appendChild(svg);
+		dataUrl = "data:image/svg+xml;utf8," + encodeURIComponent(svg.outerHTML);
+	}
+	linkifyQrImage(qrParms.imgType, dataUrl);
 }
 
 function updateMessage(stringToEncode, titleRetrieval) {
@@ -477,34 +685,43 @@ function updateMessage(stringToEncode, titleRetrieval) {
 		break;
 	}
 
-	var statusMessage = [];
-	var tmp = $('<span>').attr("class", "notifyHeading");
-	tmp.html(chrome.i18n.getMessage("qrTitleStatus"));
-	statusMessage.push(tmp);
-	tmp = $('<span>').attr("class", "notifyContent");
-	tmp.html(titleNotice);
-	statusMessage.push(tmp);
-	tmp = $('<br>');
-	statusMessage.push(tmp);
-	tmp = $('<span>').attr("class", "notifyHeading");
-	tmp.html(chrome.i18n.getMessage("qrMessageEncoded"));
-	statusMessage.push(tmp);
-	tmp = $('<span>').attr("class", "notifyContent");
-	tmp.html(htmlEscape(stringToEncode));
-	statusMessage.push(tmp);
+	var template = document.getElementById("notify_template");
 
-	advancedNotification(statusMessage);
+	var clone = document.importNode(template.content, true);
+	var headings = clone.querySelectorAll('.notifyHeading');
+	var contents = clone.querySelectorAll('.notifyContent');
+
+	headings[0].innerHTML = chrome.i18n.getMessage("qrTitleStatus");
+	contents[0].innerHTML = titleNotice;
+	headings[1].innerHTML = chrome.i18n.getMessage("qrMessageEncoded");
+	contents[1].innerHTML = stringToEncode;
+
+	advancedNotification(clone);
 }
 
-function linkifyQrImage() {
-	var qrImg = $("#qrDiv img");
-	if (qrImg.length > 0) {
-		var saveLink = $('<a>').attr("id", "qrImageSaveLink");
-		saveLink.attr("href", qrImg.attr("src"));
-		saveLink.attr("download", "qrImage.png");
-		qrImg.wrap(saveLink);
-		$("#qrDiv").css("display", "block");
+function linkifyQrImage(imgType, dataUrl) {
+	var qrDiv = document.getElementById("qrDiv");
+	if (qrDiv === null) {
+		return;
 	}
+	var qrImg = qrDiv.firstChild;
+	if (qrImg === null) {
+		return;
+	}
+
+	var saveLink = document.createElement("a");
+	saveLink.setAttribute("id", "qrImageSaveLink");
+	saveLink.setAttribute("href", dataUrl);
+	if (imgType === 'png') {
+		saveLink.setAttribute("download", "qrImage.png");
+	} else {
+		saveLink.setAttribute("download", "qrImage.svg");
+	}
+
+	saveLink.appendChild(qrImg);
+	qrDiv.appendChild(saveLink);
+
+	document.getElementById("qrDiv").style.display = "block";
 }
 
 function getLocalMessages() {
@@ -518,15 +735,17 @@ function getLocalMessages() {
 		"qrFetchTitleLabel",
 		"qrFgColorInputLabel",
 		"qrHeading",
-		"qrManualTitleLabel",
-		"qrManualTitleTextLabel",
+		"qrManualMessageLabel",
+		"qrManualMessageTextLabel",
 		"qrSizeInputLabel",
+		"qrBorderInputLabel",
+		"qrImageTypeLabel",
 		"qrSubHeading",
 		"submitButton"
 	];
 
 	for (var i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
-		$('#' + messageIds[i]).html(message);
+		document.getElementById(messageIds[i]).innerHTML = message;
 	}
 }

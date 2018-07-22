@@ -1,5 +1,5 @@
 /*!
-	Copyright (C) 2015 Matthew D. Mower
+	Copyright (C) 2016 Matthew D. Mower
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -15,38 +15,10 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	storage(true);
+	beginInit();
 }, false);
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch (request.cmd) {
-	case "sync_toggle_complete":
-		storage(false);
-		break;
-	default:
-		break;
-	}
-});
-
-function storage(firstRun) {
-	if (typeof storage.area === 'undefined') {
-		storage.area = chrome.storage.local;
-	}
-
-	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg.sync_data === true) {
-			storage.area = chrome.storage.sync;
-		} else {
-			storage.area = chrome.storage.local;
-		}
-
-		if (firstRun === true) {
-			continueOnLoad();
-		}
-	});
-}
-
-function continueOnLoad() {
+function beginInit() {
 	restoreOptions();
 	getLocalMessages();
 	showHideOptionalElms();
@@ -55,98 +27,98 @@ function continueOnLoad() {
 }
 
 function startListeners() {
-	$("#resolveSubmit").click(function() {
-		$("#hiddenButtonInput").val("doi");
+	var resolveSubmit = document.getElementById("resolveSubmit");
+	resolveSubmit.addEventListener("click", function() {
+		document.getElementById("hiddenButtonInput").value = "doi";
 	});
-	$("#citeSubmit").click(function() {
-		$("#hiddenButtonInput").val("cite");
+	var citeSubmit = document.getElementById("citeSubmit");
+	citeSubmit.addEventListener("click", function() {
+		document.getElementById("hiddenButtonInput").value = "cite";
 	});
-	$("#qrSubmit").click(function() {
-		$("#hiddenButtonInput").val("qr");
+	var qrSubmit = document.getElementById("qrSubmit");
+	qrSubmit.addEventListener("click", function() {
+		document.getElementById("hiddenButtonInput").value = "qr";
 	});
-	$("#optionsSubmit").click(function() {
-		$("#hiddenButtonInput").val("options");
+	var optionsSubmit = document.getElementById("optionsSubmit");
+	optionsSubmit.addEventListener("click", function() {
+		document.getElementById("hiddenButtonInput").value = "options";
 	});
-	$('#doiForm').submit(function () {
+	var doiForm = document.getElementById("doiForm");
+	doiForm.addEventListener("submit", function(event) {
+		event.preventDefault();
 		formSubmitHandler();
-		return false;
 	});
-	$("input[name='crRadio']").on("click", saveOptions);
+	var crRadioOptions = Array.from(document.querySelectorAll('input[name="crRadio"]'));
+	crRadioOptions.forEach(function(crRadio) {
+		crRadio.addEventListener("click", saveOptions);
+	});
 }
 
 function saveOptions() {
 	var options = {
-		cr_bubble_last: $('input[name="crRadio"]:checked').val()
+		cr_bubble_last: document.querySelector('input[name="crRadio"]:checked').value
 	};
 
 	chrome.storage.local.set(options, null);
 }
 
 function restoreOptions() {
-	storage.area.get(["cr_bubble_last"], function(stg) {
+	chrome.storage.local.get(["cr_bubble_last"], function(stg) {
 		if (stg.cr_bubble_last === "custom") {
-			$("#crRadioBubbleCustom").prop("checked", true);
+			document.getElementById("crRadioBubbleCustom").checked = true;
 		} else {
-			$("#crRadioBubbleDefault").prop("checked", true);
+			document.getElementById("crRadioBubbleDefault").checked = true;
 		}
 	});
 }
 
-// Remove spaces and punctuation from beginning and end of input
-function trim(stringToTrim) {
-	return stringToTrim.replace(/doi:|\s+|[\.!\?,]$|[\.!\?,]\s+$/g,"");
-}
-
-// Check that DOI is valid and warn user if not (in bubble)
-function checkValidDoi(doiInput) {
-	if (!doiInput) {
-		return false;
-	} else if (/^10\./.test(doiInput)) {
-		return true;
-	} else if (/^10\//.test(doiInput)) {
-		return true;
-	} else {
-		bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
-		return false;
-	}
-}
-
 // Clear message space
 function resetMessageSpace() {
-	$("#messageDiv").empty();
-	$("#messageDiv").css("display", "none");
+	var messageDiv = document.getElementById("messageDiv");
+	messageDiv.innerHTML = "";
+	messageDiv.style.display = "none";
 }
 
 // General messaging area in bubble
 function bubbleMessage(message) {
 	resetMessageSpace();
-	$("#messageDiv").css("display", "block");
-	$("#messageDiv").html(message);
+	var messageDiv = document.getElementById("messageDiv");
+	messageDiv.innerHTML = message;
+	messageDiv.style.display = "block";
 }
 
 // Process the form
 function formSubmitHandler() {
-	var actionType = $("#hiddenButtonInput").val();
-	var doiInput = encodeURI(trim($("#textInput").val()));
+	var trim = chrome.extension.getBackgroundPage().trim;
+	var actionType = document.getElementById("hiddenButtonInput").value;
+	var doiInput = encodeURI(trim(document.getElementById("textInput").value));
+	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
+	var recordDoiAction = chrome.extension.getBackgroundPage().recordDoiAction;
 
 	switch (actionType) {
 	case "qr":
 		if (checkValidDoi(doiInput)) {
-			recordDoi(doiInput);
+			// Allow DOI recording to happen asynchronously
+			recordDoiAction(doiInput);
 		}
+		// Allow tab to open with invalid DOI
 		qrGen(doiInput);
 		break;
 	case "cite":
 		if (checkValidDoi(doiInput)) {
-			recordDoi(doiInput);
+			// Allow DOI recording to happen asynchronously
+			recordDoiAction(doiInput);
 		}
+		// Allow tab to open with invalid DOI
 		citeDOI(doiInput);
 		break;
 	case "doi":
 		if (!checkValidDoi(doiInput)) {
+			bubbleMessage(chrome.i18n.getMessage("invalidDoiAlert"));
 			return;
 		}
-		recordDoi(doiInput);
+		// Allow DOI recording to happen asynchronously
+		recordDoiAction(doiInput);
 		resolveURL(doiInput);
 		break;
 	case "options":
@@ -174,36 +146,21 @@ function resolveURL(doi) {
 		"shortdoi_resolver"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
-		var url = "";
+	chrome.storage.local.get(stgFetch, function(stg) {
 		var cr = stg.custom_resolver;
 		var crb = stg.cr_bubble;
 		var crbl = stg.cr_bubble_last;
-		var dr = stg.doi_resolver;
-		var sr = stg.shortdoi_resolver;
-		var useDefaultResolver = true;
+		var useCustomResolver = false;
 
-		if (cr === true && crb === "custom") {
-			useDefaultResolver = false;
-		} else if (cr === true && crb === 'selectable' && crbl === 'custom') {
-			useDefaultResolver = false;
-		}
-
-		if (useDefaultResolver) {
-			if (/^10\./.test(doi)) {
-				url = "http://dx.doi.org/" + doi;
-			} else if (/^10\//.test(doi)) {
-				url = "http://doi.org/" + doi.replace(/^10\//,"");
-			}
-		} else {
-			if (/^10\./.test(doi)) {
-				url = dr + doi;
-			} else if (/^10\//.test(doi)) {
-				url = sr + doi.replace(/^10\//,"");
+		if (cr === true) {
+			if (crb === "custom" || (crb === "selectable" && crbl === "custom")) {
+				useCustomResolver = true;
 			}
 		}
 
-		chrome.tabs.create({url: url});
+		var resolveDOI = chrome.extension.getBackgroundPage().resolveDOI;
+		resolveDOI(doi, useCustomResolver, "newForegroundTab");
+
 		window.close();
 	});
 }
@@ -230,35 +187,38 @@ function showHideOptionalElms() {
 		"cr_bubble"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
-		var meta = stg.meta_buttons;
-		var crOp = stg.custom_resolver;
-		var crbOp = stg.cr_bubble;
+	chrome.storage.local.get(stgFetch, function(stg) {
+		document.getElementById("metaButtons").style.display = stg.meta_buttons ? "flex" : "";
 
-		if (meta === true) {
-			$("#metaButtons").css("display", "flex");
+		if (stg.custom_resolver && stg.cr_bubble === "selectable") {
+			document.getElementById("crRadios").style.display = "block";
 		} else {
-			$("#metaButtons").css("display", "none");
-		}
-
-		if (crOp === true && crbOp === "selectable") {
-			$("#crRadios").css("display", "block");
-		} else {
-			$("#crRadios").css("display", "none");
+			document.getElementById("crRadios").style.display = "";
 		}
 	});
 }
 
 function populateHistory() {
 	var stgFetch = [
+		"meta_buttons",
+		"history",
 		"recorded_dois",
-		"history_showsave"
+		"history_showsave",
+		"history_showtitles",
+		"history_sortby"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
-		if (!Array.isArray(stg.recorded_dois)) {
+	chrome.storage.local.get(stgFetch, function(stg) {
+		if (!stg.meta_buttons || !stg.history) {
+			document.getElementById('historyDiv').style.display = '';
 			return;
 		}
+		if (!Array.isArray(stg.recorded_dois) || stg.recorded_dois.length < 1) {
+			document.getElementById('historyDiv').style.display = '';
+			return;
+		}
+
+		document.getElementById('historyDiv').style.display = 'block';
 
 		// Skip holes in the array (should not occur)
 		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
@@ -266,30 +226,85 @@ function populateHistory() {
 			return elm != undefined;
 		});
 
+		var sortHistoryEntries = chrome.extension.getBackgroundPage().sortHistoryEntries;
+		sortHistoryEntries(stg.recorded_dois, stg.history_sortby);
+
+		var escapeHtml = chrome.extension.getBackgroundPage().escapeHtml;
 		var optionHtml = "";
-		var message = chrome.i18n.getMessage("historySavedEntryLabel");
-		var i;
-		for (i = 0; i < stg.recorded_dois.length; i++) {
-			if (stg.recorded_dois[i].save) {
-				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" label="' + message + '" />';
-			}
-		}
+
+		stg.recorded_dois.filter(item => item.save).forEach((item) => {
+			var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+			optionHtml += '<option class="save" value="' + item.doi + '">' + label + '</option>';
+		});
+		optionHtml += optionHtml ? "<option disabled></option>" : "";
+
 		if (stg.history_showsave !== true) {
-			for (i = 0; i < stg.recorded_dois.length; i++) {
-				if (!stg.recorded_dois[i].save) {
-					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
-				}
-			}
+			stg.recorded_dois.filter(item => !item.save).forEach((item) => {
+				var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+				optionHtml += '<option value="' + item.doi + '">' + label + '</option>';
+			});
 		}
-		$("#doiHistory").html(optionHtml);
+
+		var selectBox = document.getElementById("doiHistory");
+		var selectBoxSize = stg.recorded_dois.length > 6 ? 6 : stg.recorded_dois.length;
+		selectBoxSize = selectBoxSize < 2 ? 2 : selectBoxSize;
+		selectBox.setAttribute('size', selectBoxSize);
+		selectBox.selectedIndex = -1;
+		selectBox.innerHTML = optionHtml;
+
+		var filterSelectByText = chrome.extension.getBackgroundPage().filterSelectByText;
+		var filterInput = function() {
+			filterSelectByText(selectBox, this.value, false);
+		};
+
+		var filter = document.getElementById("textInput");
+		filter.addEventListener('input', filterInput);
+
+		selectBox.addEventListener('change', function() {
+			filter.removeEventListener('input', filterInput);
+			filter.value = this.value;
+			filter.addEventListener('input', filterInput);
+			this.selectedIndex = -1;
+			resetMessageSpace();
+		});
 	});
 }
 
-function recordDoi(doiInput) {
-	chrome.runtime.sendMessage({
-		cmd: "record_doi",
-		doi: doiInput
-	});
+function filterByText(select, text) {
+	var options = Array.from(select.options);
+	var showAll = !text;
+
+	if (showAll) {
+		options.forEach(function(option) {
+			option.style.display = '';
+		});
+		if (select.selectedOptions.length > 0) {
+			select.selectedOptions[0].scrollIntoView();
+		}
+	} else {
+		// Escape special chars
+		var search = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+		// Ignore extra whitespace characters
+		search = search.replace(/\s* /g, '\\s*');
+		var regex = new RegExp(search, 'i');
+
+		var visibleOptions = [];
+		options.forEach(function(option) {
+			if (regex.test(option.value)) {
+				option.style.display = '';
+				visibleOptions.push(option);
+			} else {
+				option.selected = false;
+				option.style.display = 'none';
+			}
+		});
+
+		if (visibleOptions.length > 0) {
+			if (select.selectedOptions.length > 0) {
+				select.selectedOptions[0].scrollIntoView();
+			}
+		}
+	}
 }
 
 function getLocalMessages() {
@@ -306,6 +321,6 @@ function getLocalMessages() {
 	var message = "";
 	for (var i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
-		$('#' + messageIds[i]).html(message);
+		document.getElementById(messageIds[i]).innerHTML = message;
 	}
 }

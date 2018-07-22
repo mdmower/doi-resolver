@@ -1,5 +1,5 @@
 /*!
-	Copyright (C) 2015 Matthew D. Mower
+	Copyright (C) 2016 Matthew D. Mower
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -15,121 +15,102 @@
 */
 
 document.addEventListener('DOMContentLoaded', function () {
-	storage(true);
+	beginInit();
 }, false);
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-	switch (request.cmd) {
-	case "sync_toggle_complete":
-		storage(false);
-		break;
-	default:
-		break;
-	}
-});
-
-function storage(firstRun) {
-	if (typeof storage.area === 'undefined') {
-		storage.area = chrome.storage.local;
-	}
-
-	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg.sync_data === true) {
-			storage.area = chrome.storage.sync;
-		} else {
-			storage.area = chrome.storage.local;
-		}
-
-		if (firstRun === true) {
-			continueOnLoad();
-		}
-	});
-}
-
-function continueOnLoad() {
-	getUrlVariables();
+function beginInit() {
+	initializeDoiInput();
 	getLocalMessages();
-	initLocales(true, buildSelections);
+	initSelections();
 	populateHistory();
 	startListeners();
 }
 
 function startListeners() {
-	$('#citeForm').submit(function () {
+	document.getElementById("citeForm").addEventListener("submit", function (event) {
 		formSubmitHandler();
-		return false;
+		event.preventDefault();
 	});
-	$('#copyButton').on("click", copyCitation);
 
 	chrome.tabs.getCurrent(function(tab) {
-		chrome.runtime.sendMessage({cmd: "record_tab_id", id: tab.id});
+		var tabRecord = chrome.extension.getBackgroundPage().tabRecord;
+		tabRecord(tab.id, true);
 	});
 }
 
-// Read a page's GET URL variables and return them as an associative array.
-// http://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
-function getUrlVariables() {
-	var vars = [], hash;
-	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-	for (var i = 0; i < hashes.length; i++) {
-		hash = hashes[i].split('=');
-		vars.push(hash[0]);
-		vars[hash[0]] = hash[1];
+function queryStringToJSON(query) {
+	if (!query) {
+		return {};
 	}
 
-	var initDOI = vars.doi;
-	if (initDOI) {
-		$("#doiInput").val(initDOI);
-	}
+	var result = {};
+	var pairs = query.slice(1).split('&');
+	pairs.forEach(function(pair) {
+		pair = pair.split('=');
+		result[pair[0]] = decodeURIComponent(pair[1] || '');
+	});
+
+	return JSON.parse(JSON.stringify(result));
 }
 
-function initLocales(needsMap, callback) {
-	if (!callback || typeof(callback) !== "function") {
-		return;
-	}
+function initializeDoiInput() {
+	document.getElementById("doiInput").value = queryStringToJSON(location.search).doi || '';
+}
 
-	var args = [].slice.call(arguments, 2);
-
-	$.getJSON("csl_locales/locales.json")
-	.done(function(data) {
-		var langList = $.map(data["primary-dialects"], function(el) {
-			return el;
-		});
-
-		args.push(langList);
-		if (needsMap) {
-			args.push(data["language-names"]);
-		}
-
-		callback.apply(null, args);
+function getLocales() {
+	return fetch("csl_locales/locales.json")
+	.then(function(response) {
+		return response.json();
 	})
-	.fail(function() {
-		args.push(["en-US"]);
-		if (needsMap) {
-			args.push({"en-US": ["English (US)", "English (US)"]});
-		}
-
-		callback.apply(null, args);
+	.catch(function(error) {
+		console.error("Unable to read locales", error);
+		return {"primary-dialects": {"en": "en-US"}, "language-names": {"en-US": ["English (US)", "English (US)"]}};
 	});
 }
 
-function buildSelections(allLocales, localesMap) {
+function getStyles() {
+	return fetch("/cite_styles.json")
+	.then(function(response) {
+		return response.json();
+	})
+	.catch(function(error) {
+		console.error("Unable to read styles", error);
+		return {"cite_styles": [{"code": "bibtex", "title": "BibTeX generic citation style", "default_locale": "en-US"}]};
+	});
+}
+
+function initSelections() {
+	var localesPromise = getLocales();
+	var stylesPromise = getStyles();
+
+	Promise.all([localesPromise, stylesPromise])
+	.then(function(response) {
+		var locales = response[0];
+		var styles = response[1];
+		buildSelections(locales, styles);
+	});
+}
+
+function buildSelections(cslLocales, cslStyles) {
 	var stgFetch = [
 		"cite_locale",
 		"cite_style"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
+	chrome.storage.local.get(stgFetch, function(stg) {
 		var storedLocale = stg.cite_locale;
 		var storedStyle = stg.cite_style;
+		var allLocales = Object.values(cslLocales["primary-dialects"]);
+		var allStyles = cslStyles.cite_styles;
 
 		if (allLocales.indexOf(storedLocale) < 0) {
 			storedLocale = "auto";
 			chrome.storage.local.set({cite_locale: "auto"}, null);
 		}
 
-		/* To do: Offer option to display locales in their native language;
+		/* TODO: Offer option to display locales in their native language;
 		   Retrieved with localesMap[allLocales[i]][0]] */
+		var localesMap = cslLocales["language-names"];
 		var readableLocales = [];
 		for (var i = 0; i < allLocales.length; i++) {
 			readableLocales[i] = [allLocales[i], localesMap[allLocales[i]][1]];
@@ -142,190 +123,185 @@ function buildSelections(allLocales, localesMap) {
 			return a[1] < b[1] ? -1 : 1;
 		});
 
-		var localeHtmlOptions = $('<option>').attr("value", "auto").html("Auto");
-		if ("auto" === storedLocale) {
-			localeHtmlOptions.attr("selected", "selected");
-		}
-
-		localeHtmlOptions.appendTo("#citeLocaleInput");
-
-		for (i = 0; i < allLocales.length; i++) {
-			localeHtmlOptions = $('<option>').attr("value", readableLocales[i][0]).html(readableLocales[i][1]);
-			if (readableLocales[i][0] === storedLocale) {
-				localeHtmlOptions.attr("selected", "selected");
+		function generateOption(value, html, selected, defaultLocale) {
+			var option = document.createElement("option");
+			option.setAttribute("value", value);
+			option.innerHTML = html;
+			if (selected) {
+				option.setAttribute("selected", "");
 			}
-			localeHtmlOptions.appendTo("#citeLocaleInput");
+			if (defaultLocale) {
+				option.setAttribute("data-locale", defaultLocale);
+			}
+			return option;
 		}
+
+		var localeOption = generateOption("auto", "Auto", "auto" === storedLocale);
+		var citeLocaleInput = document.getElementById("citeLocaleInput");
+		citeLocaleInput.appendChild(localeOption);
+
+		readableLocales.forEach(function(readableLocale) {
+			localeOption = generateOption(readableLocale[0], readableLocale[1], readableLocale[0] === storedLocale);
+			citeLocaleInput.appendChild(localeOption);
+		});
+
+		var allStyleCodes = Array.from(allStyles, function(item) {
+			return item.code;
+		});
 
 		// Style not found or "other" (migration)
 		if (allStyleCodes.indexOf(storedStyle) < 0) {
-			storedStyle = "bibtex";
-			chrome.storage.local.set({cite_style: "bibtex"}, null);
+			storedStyle = chrome.extension.getBackgroundPage().getDefaultOption("cite_style");
+			chrome.storage.local.set({cite_style: storedStyle}, null);
 		}
 
-		var styleHtmlOptions;
-		for (i = 0; i < allStyleCodes.length; i++) {
-			styleHtmlOptions = $('<option>').attr("value", allStyleCodes[i]);
-			styleHtmlOptions.html(allStyleTitles[i]);
-			if (allStyleCodes[i] === storedStyle) {
-				styleHtmlOptions.attr("selected", "selected");
-			}
-			styleHtmlOptions.appendTo("#styleList");
+		var styleList = document.getElementById("styleList");
+		allStyles.forEach(function(style) {
+			var styleOption = generateOption(style.code, style.title, style.code === storedStyle, style.default_locale);
+			styleList.appendChild(styleOption);
+		});
+
+		if (styleList.selectedOptions.length > 0) {
+			styleList.selectedOptions[0].scrollIntoView();
 		}
-		$("#styleList option:selected")[0].scrollIntoView();
-		$(function() {
-			$('#styleList').filterByText($('#citeStyleFilter'), true);
+
+		var filter = document.getElementById("citeStyleFilter");
+		var filterSelectByText = chrome.extension.getBackgroundPage().filterSelectByText;
+		filter.addEventListener('input', function() {
+			filterSelectByText(styleList, this.value, true);
 		});
 	});
-}
-
-// jQuery select filter: http://www.lessanvaezi.com/filter-select-list-options/
-// scroll-to and ignore-defocus added by me
-$.fn.filterByText = function(textbox, selectSingleMatch) {
-	return this.each(function() {
-	var select = this;
-	var options = [];
-	$(select).find('option').each(function() {
-		options.push({value: $(this).val(), text: $(this).text()});
-	});
-	$(select).data('options', options);
-	$(textbox).on('change keyup', function() {
-		if ($(textbox).data('filtext') == $(textbox).val()) return;
-		$(textbox).data('filtext', $(textbox).val());
-
-		var scrollto = false;
-		var cursel = null;
-		if (select.selectedOptions.length > 0) {
-			cursel = select.selectedOptions[0].value;
-		}
-
-		var options = $(select).empty().scrollTop(0).data('options');
-		var search = $.trim($(this).val());
-		// escape special chars
-		search = search.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'); 
-		// ignore extra spaces and line breaks
-		search = search.replace(/\s* /g, '\\s*');
-		var regex = new RegExp(search,'gi');
-		var option_html = "";
-		$.each(options, function(i) {
-			var option = options[i];
-			if (regex.test(option.text)) {
-				option_html += '<option value="' + option.value + '"';
-				if (cursel !== null && cursel == option.value) {
-					option_html += ' selected="selected"';
-					scrollto = true;
-				}
-				option_html += '>' + option.text + '</option>';
-			}
-		});
-		$(select).html(option_html);
-		if (selectSingleMatch === true && $(select).children().length === 1) {
-			$(select).children().get(0).selected = true;
-		} else if (scrollto === true) {
-			select.selectedOptions[0].scrollIntoView();
-		}
-	});
-	});
-};
-
-function trim(stringToTrim) {
-	return stringToTrim.replace(/doi:|\s+|[\.!\?,]$|[\.!\?,]\s+$/g,"");
 }
 
 function formSubmitHandler() {
+	var trim = chrome.extension.getBackgroundPage().trim;
 	var doi = encodeURI(trim(document.getElementById("doiInput").value));
-	var sel = $("#styleList option:selected").val();
-	if (!checkValidDoi(doi) || typeof sel === 'undefined') {
+
+	if (!document.getElementById("styleList").value) {
 		return;
 	}
 
-	recordDoi(doi);
+	var checkValidDoi = chrome.extension.getBackgroundPage().checkValidDoi;
+	if (!checkValidDoi(doi)) {
+		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
+		return;
+	}
+
+	// Allow DOI recording to happen asynchronously
+	chrome.extension.getBackgroundPage().recordDoiAction(doi);
+
 	saveSelections();
 	getCitation(doi);
 }
 
 function saveSelections() {
 	var options = {
-		cite_style: $("#styleList option:selected").val(),
-		cite_locale: $("#citeLocaleInput option:selected").val()
+		cite_style: document.getElementById("styleList").value,
+		cite_locale: document.getElementById("citeLocaleInput").value
 	};
 
 	chrome.storage.local.set(options, null);
 }
 
-function checkValidDoi(doiInput) {
-	if (!doiInput) {
-		return false;
-	} else if (/^10\./.test(doiInput)) {
-		return true;
-	} else if (/^10\//.test(doiInput)) {
-		return true;
-	} else {
-		simpleNotification(chrome.i18n.getMessage("invalidDoiAlert"));
-		return false;
-	}
-}
-
 function resetSpace() {
-	$("#notifyDiv").html("");
-	$("#notifyDiv").css("display", "none");
-	$("#citeOutput").html("");
-	$("#citeDiv").css("display", "none");
+	var notifyDiv = document.getElementById("notifyDiv");
+	notifyDiv.innerHTML = "";
+	notifyDiv.style.display = "none";
+	var citeDiv = document.getElementById("citeDiv");
+	citeDiv.innerHTML = "";
+	citeDiv.style.display = "none";
 }
 
 function simpleNotification(message) {
 	resetSpace();
-	$("#notifyDiv").html(message);
-	$("#notifyDiv").css("display", "block");
+	var notifyDiv = document.getElementById("notifyDiv");
+	notifyDiv.innerHTML = message;
+	notifyDiv.style.display = "block";
 }
 
 function outputCitation(message) {
 	resetSpace();
-	$("#citeDiv").html(message);
-	$("#citeDiv").css("display", "block");
-}
-
-function copyCitation() {
-	$("#citeOutput").select();
-	document.execCommand('copy');
-	$("#citeOutput").select();
+	var citeDiv = document.getElementById("citeDiv");
+	citeDiv.innerHTML = message;
+	citeDiv.style.display = "block";
 }
 
 function getCitation(doi) {
-	var style = $("#styleList option:selected").val();
-	var locale = $("#citeLocaleInput option:selected").val();
+	var styleList = document.getElementById("styleList");
+	var style = styleList.value;
+	var locale = document.getElementById("citeLocaleInput").value;
+	var defaultLocale = styleList.selectedOptions[0].getAttribute('data-locale');
+	var forceLocale = true;
 
-	var resolveUrl = "http://dx.doi.org/" + doi;
-	var content = "application/citeproc+json";
+	if (!style || !locale) {
+		return;
+	}
 
 	simpleNotification(chrome.i18n.getMessage("loading"));
 
+	// Permissions will be cleaned when last QR/Citation tab is closed
 	chrome.permissions.request({
 		origins: [
-			'http://*.doi.org/',
-			'http://*.crossref.org/',
-			'http://*.datacite.org/',
+			'https://*.doi.org/',
+			'https://*.crossref.org/',
+			'https://*.datacite.org/',
+			"https://*.medra.org/",
 			'https://raw.githubusercontent.com/'
 		]
 	}, function(granted) {
 		if (granted) {
-			var jqxhr = $.ajax({
-				url: resolveUrl,
-				headers: { Accept: content },
-				dataType: "text",
-				type: "GET",
-				cache: false
-			});
-			jqxhr.done(function() {
-				if (jqxhr.responseText !== "" && jqxhr.responseText.charAt(0) != '<') {
-					var citation = JSON.parse(jqxhr.responseText);
-					initLocales(false, renderBib, citation, style, locale);
-				} else {
-					simpleNotification(chrome.i18n.getMessage("noCitationFound"));
-				}
-			});
-			jqxhr.fail(function() {
+			if (locale === "auto") {
+				// Default to en-US in case a defaultLocale is not defined
+				locale = defaultLocale || "en-US";
+				forceLocale = false;
+			}
+
+			var citeprocJsonPromise = getCiteProcJson(doi)
+			.catch(function(error) {
+				console.timeEnd("Citeproc JSON download");
+				console.log("Unable to find citation JSON.", error);
 				simpleNotification(chrome.i18n.getMessage("noCitationFound"));
+			});
+
+			var styleCslPromise = getStyleCsl(style)
+			.catch(function(error) {
+				console.timeEnd("Style CSL download");
+				console.error("Unable to find style CSL", error);
+				simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+			});
+
+			var localeXmlPromise = getLocaleXml(locale)
+			.catch(function(error) {
+				console.timeEnd("Locale XML download");
+				console.error("Unable to find locale XML", error);
+				simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
+			});
+
+			Promise.all([citeprocJsonPromise, styleCslPromise, localeXmlPromise])
+			.then(function(response) {
+				var cjsResponse = response[0];
+				var cslResponse = response[1];
+				var locResponse = response[2];
+
+				if (!cjsResponse) {
+					console.error("Invalid Citeproc JSON");
+					simpleNotification(chrome.i18n.getMessage("noCitationFound"));
+					return;
+				}
+
+				if (!cslResponse) {
+					console.error("Invalid style XML");
+					simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+					return;
+				}
+
+				if (!locResponse) {
+					console.error("Invalid locale XML");
+					simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + locale + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
+					return;
+				}
+
+				renderBib(cjsResponse, cslResponse, locResponse, locale, forceLocale);
 			});
 		} else {
 			simpleNotification(chrome.i18n.getMessage("needCitationPerm"));
@@ -333,135 +309,183 @@ function getCitation(doi) {
 	});
 }
 
-function renderBib(citation, style, locale, allLocales) {
-	var lang = locale;
-	var citations = {
-		"Item-1": $.extend({}, { "id": "Item-1" }, citation)
+function getCiteProcJson(doi) {
+	var getDefaultResolver = chrome.extension.getBackgroundPage().getDefaultResolver;
+
+	var headers = new Headers();
+	headers.append("Accept", "application/vnd.citationstyles.csl+json");
+
+	var init = {
+		method: 'GET',
+		headers: headers
 	};
 
-	// origin: raw.githubusercontent.com permission already handled at button press
-	var cslUrl = 'https://raw.githubusercontent.com/citation-style-language/styles/master/' + style + '.csl';
-	var jqxhrCsl = $.ajax({
-		url: cslUrl,
-		dataType: "text",
-		type: "GET",
-		cache: true
+	var request = new Request(getDefaultResolver() + doi, init);
+
+	console.time("Citeproc JSON download");
+	return fetch(request)
+	.then(function(response) {
+		console.timeEnd("Citeproc JSON download");
+		return response.json();
 	});
+}
 
-	jqxhrCsl.done(function() {
-		if (jqxhrCsl.responseText !== "") {
-			if (locale === "auto") {
-				var xml = jqxhrCsl.responseText,
-				  xmlDoc = $.parseXML(xml),
-				  $xml = $(xmlDoc),
-				  $xmlStyle = $xml.find("style");
+function getStyleCsl(filename) {
+	console.time("Style CSL download");
+	return fetch("https://raw.githubusercontent.com/citation-style-language/styles/master/" + filename + ".csl")
+	.then(function(response) {
+		console.timeEnd("Style CSL download");
+		return response.text();
+	});
+}
 
-				var defaultLocale = $xmlStyle.attr("default-locale");
-				if (allLocales.indexOf(defaultLocale) >= 0) {
-					lang = defaultLocale;
-				} else {
-					lang = "en-US";
-				}
-			}
+function getLocaleXml(locale) {
+	console.time("Locale XML download");
+	return fetch("https://raw.githubusercontent.com/citation-style-language/locales/master/locales-" + locale + ".xml")
+	.then(function(response) {
+		console.timeEnd("Locale XML download");
+		return response.text();
+	});
+}
 
-			var locUrl = 'https://raw.githubusercontent.com/citation-style-language/locales/master/locales-' + lang + '.xml';
-			var jqxhrLoc = $.ajax({
-				url: locUrl,
-				dataType: "text",
-				type: "GET",
-				cache: true
-			});
+function renderBib(cjsResponse, cslResponse, locResponse, locale, forceLocale) {
+	cjsResponse.id = "Item-1";
+	var citations = { "Item-1": cjsResponse };
 
-			jqxhrLoc.done(function() {
-				if (jqxhrLoc.responseText !== "") {
-					citeprocSys = {
-						retrieveLocale: function(lang) {
-							return jqxhrLoc.responseText;
-						},
-						retrieveItem: function(id) {
-							return citations[id];
-						}
-					};
-
-					var styleAsText = jqxhrCsl.responseText;
-					var citeproc;
-					if (locale === "auto") {
-						citeproc = new CSL.Engine(citeprocSys, styleAsText);
-					} else {
-						citeproc = new CSL.Engine(citeprocSys, styleAsText, lang, 1);
-					}
-
-					var itemIDs = [];
-					for (var key in citations) {
-						if (citations.hasOwnProperty(key)) {
-							itemIDs.push(key);
-						}
-					}
-					citeproc.updateItems(itemIDs);
-
-					var bibResult = citeproc.makeBibliography();
-					if (typeof bibResult != 'undefined' && bibResult !== false) {
-						outputCitation(bibResult[1].join('\n'));
-					} else {
-						simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));
-					}
-				} else {
-					simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + lang + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
-				}
-			});
-			jqxhrLoc.fail(function() {
-				simpleNotification(chrome.i18n.getMessage("citeLocaleLoadFailP1") + lang + chrome.i18n.getMessage("citeLocaleLoadFailP2"));
-			});
-		} else {
-			simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
+	var citeprocSys = {
+		retrieveLocale: function(locale) {
+			return locResponse;
+		},
+		retrieveItem: function(id) {
+			return citations[id];
 		}
-	});
-	jqxhrCsl.fail(function() {
-		simpleNotification(chrome.i18n.getMessage("citeStyleLoadFailP1") + style + chrome.i18n.getMessage("citeStyleLoadFailP2"));
-	});
+	};
+
+	var citeproc;
+	if (forceLocale) {
+		citeproc = new CSL.Engine(citeprocSys, cslResponse, locale, forceLocale);
+	} else {
+		citeproc = new CSL.Engine(citeprocSys, cslResponse);
+	}
+
+	var itemIDs = [];
+	for (var key in citations) {
+		if (citations.hasOwnProperty(key)) {
+			itemIDs.push(key);
+		}
+	}
+	citeproc.updateItems(itemIDs);
+
+	var bibResult = citeproc.makeBibliography();
+	if (bibResult) {
+		outputCitation(bibResult[1].join('\n'));
+	} else {
+		simpleNotification(chrome.i18n.getMessage("citeStyleGenFail"));
+	}
 }
 
 function populateHistory() {
 	var stgFetch = [
+		"history",
 		"recorded_dois",
-		"history_showsave"
+		"history_showsave",
+		"history_showtitles",
+		"history_sortby"
 	];
 
-	storage.area.get(stgFetch, function(stg) {
-		if (!Array.isArray(stg.recorded_dois)) {
+	chrome.storage.local.get(stgFetch, function(stg) {
+		if (!stg.history || !Array.isArray(stg.recorded_dois)) {
+			document.getElementById("openHistory").style.display = "none";
 			return;
 		}
 
 		// Skip holes in the array (should not occur)
-		stg.recorded_dois = stg.recorded_dois.filter(function(elm) {
-			// Use !=, not !==, so that null is caught as well
-			return elm != undefined;
+		stg.recorded_dois = stg.recorded_dois.filter(function(recorded_doi) {
+			return Boolean(recorded_doi);
 		});
 
+		var sortHistoryEntries = chrome.extension.getBackgroundPage().sortHistoryEntries;
+		sortHistoryEntries(stg.recorded_dois, stg.history_sortby);
+
+		var escapeHtml = chrome.extension.getBackgroundPage().escapeHtml;
 		var optionHtml = "";
-		var message = chrome.i18n.getMessage("historySavedEntryLabel");
-		var i;
-		for (i = 0; i < stg.recorded_dois.length; i++) {
-			if (stg.recorded_dois[i].save) {
-				optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" label="' + message + '" />';
-			}
-		}
+
+		stg.recorded_dois.filter(item => item.save).forEach((item) => {
+			var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+			optionHtml += '<option class="save" value="' + item.doi + '">' + label + '</option>';
+		});
+		optionHtml += optionHtml ? "<option disabled></option>" : "";
+
 		if (stg.history_showsave !== true) {
-			for (i = 0; i < stg.recorded_dois.length; i++) {
-				if (!stg.recorded_dois[i].save) {
-					optionHtml += '<option value="' + stg.recorded_dois[i].doi + '" />';
-				}
-			}
+			stg.recorded_dois.filter(item => !item.save).forEach((item) => {
+				var label = stg.history_showtitles && item.title ? escapeHtml(item.title) : item.doi;
+				optionHtml += '<option value="' + item.doi + '">' + label + '</option>';
+			});
 		}
-		$("#doiHistory").html(optionHtml);
+
+		var selectBox = document.getElementById("doiHistory");
+		selectBox.setAttribute('size', '15');
+		selectBox.selectedIndex = -1;
+		selectBox.innerHTML = optionHtml;
+
+		var filterSelectByText = chrome.extension.getBackgroundPage().filterSelectByText;
+		var filterInput = function() {
+			filterSelectByText(selectBox, this.value, false);
+		};
+
+		var filter = document.getElementById("doiInput");
+		filter.addEventListener('input', filterInput);
+
+		selectBox.addEventListener('change', function() {
+			filter.removeEventListener('input', filterInput);
+			filter.value = this.value;
+			filter.addEventListener('input', filterInput);
+			this.selectedIndex = -1;
+			filterSelectByText(selectBox, "", false);
+			toggleHistoryBox(false);
+		});
+
+		var openHistory = document.getElementById("openHistory");
+		openHistory.addEventListener('click', function() {
+			toggleHistoryBox(true);
+		});
+
+		var closeHistory = document.getElementById("closeHistory");
+		closeHistory.addEventListener('click', function() {
+			toggleHistoryBox(false);
+		});
+
+		var mainForm = document.getElementById("mainForm");
+		document.addEventListener('click', function(event) {
+			if (!mainForm.contains(event.target)) {
+				toggleHistoryBox(false);
+			}
+		});
+
+		document.getElementById("doiHistory").innerHTML = optionHtml;
 	});
 }
 
-function recordDoi(doiInput) {
-	chrome.runtime.sendMessage({
-		cmd: "record_doi",
-		doi: doiInput
-	});
+function historyBoxSize() {
+	var inputContainer = document.getElementById('inputContainer');
+	var boxTop = inputContainer.offsetTop + inputContainer.offsetHeight + 2;
+	var submitContainer = document.getElementById('localSubmitContainer');
+	var boxBottom = submitContainer.offsetTop - 2;
+
+	return boxBottom - boxTop;
+}
+
+function toggleHistoryBox(enable) {
+	var selectBox = document.getElementById("doiHistory");
+	if (toggleHistoryBox.boxSize === undefined) {
+		toggleHistoryBox.boxSize = historyBoxSize() + 'px';
+		selectBox.style.height = toggleHistoryBox.boxSize;
+	}
+	var openHistory = document.getElementById("openHistory");
+	var closeHistory = document.getElementById("closeHistory");
+	selectBox.style.display = enable ? "block" : "";
+	openHistory.style.display = enable ? "none" : "";
+	closeHistory.style.display = enable ? "block" : "";
 }
 
 function getLocalMessages() {
@@ -479,6 +503,6 @@ function getLocalMessages() {
 
 	for (var i = 0; i < messageIds.length; i++) {
 		message = chrome.i18n.getMessage(messageIds[i]);
-		$('#' + messageIds[i]).html(message);
+		document.getElementById(messageIds[i]).innerHTML = message;
 	}
 }

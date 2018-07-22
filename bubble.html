@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-	Copyright (C) 2015 Matthew D. Mower
+	Copyright (C) 2016 Matthew D. Mower
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 <title>DOI Resolver</title>
 <meta charset="utf-8"/>
 <link rel="stylesheet" type="text/css" href="bubble.css">
-<script type="text/javascript" src="jquery/jquery-min.js"></script>
 <script type="text/javascript" src="bubble.js"></script>
 </head>
 
@@ -29,8 +28,7 @@
 	<form name="doiForm" id="doiForm">
 		<div id="mainForm">
 			<input type="hidden" id="hiddenButtonInput" />
-			<input type="text" id="textInput" autofocus placeholder="DOI" list="doiHistory" />
-			<datalist id="doiHistory"></datalist>
+			<input type="text" id="textInput" autofocus placeholder="DOI" />
 			<button id="resolveSubmit"></button>
 		</div>
 		<div id="crRadios">
@@ -47,6 +45,9 @@
 			<span id="metaButtonsFlexSpacer"></span>
 			<button id="citeSubmit"></button>
 			<button id="qrSubmit"></button>
+		</div>
+		<div id="historyDiv">
+			<select id="doiHistory"></select>
 		</div>
 		<div id="messageDiv"></div>
 		<div style="clear: both;"></div>

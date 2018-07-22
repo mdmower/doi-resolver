@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2015 Matthew D. Mower
+# Copyright (C) 2016 Matthew D. Mower
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,6 +17,10 @@
 read_dom () {
     local IFS=\>
     read -d \< ENTITY CONTENT
+    local RET=$?
+    TAGNAME=${ENTITY%% *}
+    ATTRIBUTES=${ENTITY#* }
+    return $RET
 }
 
 if [ ! -d "styles" ]; then
@@ -27,9 +31,7 @@ else
     git pull origin master
 fi
 if [ -f "README.md" ]; then
-    # Retain only the license header and one blank line (16 lines)
-    head -16 ../cite_styles.js > ../tmp.js
-    printf 'var allStyleTitles = [' >> ../tmp.js
+    printf '{"cite_styles":[' > ../tmp.json
 
     declare -a cslfiles
     cslfiles=(*.csl)
@@ -38,49 +40,35 @@ if [ -f "README.md" ]; then
 
     for FILE in "${cslfiles[@]}"; do
         TITLE=""
+        locale_regex=".*default-locale=\"([^\"]+)\".*"
         while read_dom; do
-            if [[ $ENTITY = "title" ]]; then
+            if [[ $TAGNAME = "style" ]]; then
+                if [[ "$ATTRIBUTES" =~ $locale_regex ]]; then
+                    DEFAULT_LOCALE="${BASH_REMATCH[1]}"
+                fi
+            elif [[ $TAGNAME = "title" ]]; then
                 TITLE=$CONTENT
                 break
             fi
         done < $FILE
 
-        if [ ! -z "$TITLE" ]; then
+        CODE="${FILE%.*}"
+
+        if [ ! -z "$TITLE" ] && [ ! -z "$CODE" ]; then
             # Replace double quotes in title with escaped double quotes
             if [[ $TITLE == *\"* ]]; then
               TITLE=$(echo $TITLE | sed 's/\"/\\"/g')
             fi
 
             if [[ $FILE == $lastcsl ]]; then
-                printf '"%s"];\n' "$TITLE" >> ../tmp.js
+                printf '{"code":"%s","title":"%s","default_locale":"%s"}]}' "$CODE" "$TITLE" "$DEFAULT_LOCALE" >> ../tmp.json
             else
-                printf '"%s",' "$TITLE" >> ../tmp.js
+                printf '{"code":"%s","title":"%s","default_locale":"%s"},' "$CODE" "$TITLE" "$DEFAULT_LOCALE" >> ../tmp.json
             fi
         fi
     done
 
-    printf 'var allStyleCodes = [' >> ../tmp.js
-    for FILE in "${cslfiles[@]}"; do
-        TITLE=""
-        while read_dom; do
-            if [[ $ENTITY = "title" ]]; then
-                TITLE=$CONTENT
-                break
-            fi
-        done < $FILE
-
-        if [ ! -z "$TITLE" ]; then
-            # filename.csl --> filename
-            STYLE="${FILE%.*}"
-
-            if [[ $FILE == $lastcsl ]]; then
-                printf '"%s"];\n' "$STYLE" >> ../tmp.js
-            else
-                printf '"%s",' "$STYLE" >> ../tmp.js
-            fi
-        fi
-    done
-    mv ../tmp.js ../cite_styles.js
+    mv ../tmp.json ../cite_styles.json
 else
     echo "Styles repository unavailable"
 fi

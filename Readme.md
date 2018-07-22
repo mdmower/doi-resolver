@@ -20,4 +20,4 @@ Using a non-Google-branded variant of Chromium? [Download](http://mdmower.cmphys
 Languages supported: English
 
 This is open source software, licensed under the Apache License, Version 2.0.  
-© 2015 Matthew D. Mower
+© 2016 Matthew D. Mower

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-	Copyright (C) 2015 Matthew D. Mower
+	Copyright (C) 2016 Matthew D. Mower
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -19,63 +19,98 @@
 <head>
 <title>QR Code Generator</title>
 <meta charset="utf-8"/>
-<link rel='stylesheet' type="text/css" href='spectrum/spectrum.css' />
 <link rel="stylesheet" type="text/css" href="qr.css" />
-<script type="text/javascript" src="jquery/jquery-min.js"></script>
-<script type="text/javascript" src="underscore/underscore-min.js"></script>
-<script type="text/javascript" src="spectrum/spectrum.js"></script>
-<script type="text/javascript" src="jq-qrcode/jquery.qrcode-min.js"></script>
+<script type="text/javascript" src="iro/iro.min.js"></script>
+<script type="text/javascript" src="canvg/rgbcolor.js"></script>
+<script type="text/javascript" src="canvg/StackBlur.js"></script>
+<script type="text/javascript" src="canvg/canvg.min.js"></script>
+<script type="text/javascript" src="qrcodegen/qrcodegen.js"></script>
 <script type="text/javascript" src="qr.js"></script>
 </head>
 
 <body>
-<div id="containerDiv">
-	<div id="qrHeading"></div>
-	<div id="qrSubHeading"></div>
-	<form name="doiForm" id="doiForm" style="margin:0;">
-	<div id="mainForm">
-		<div id="inputContainer">
-			<label for="doiInput" id="doiInputLabel"></label>
-			<input type="text" id="doiInput" autofocus list="doiHistory" />
-			<datalist id="doiHistory"></datalist>
-		</div>
-		<div id="sizeParam">
-			<label for="qrSizeInput" id="qrSizeInputLabel"></label>
-			<input type="number" id="qrSizeInput" min="80" />
-			<div id="pxLabel">px</div>
-		</div>
-		<div id="colorParams">
-			<div id="fgColorDiv">
-				<label for="qrFgColorInput" id="qrFgColorInputLabel"></label>
-				<input type="text" id="qrFgColorInput" />
-			</div>
-			<div id="bgColorDiv">
-				<label for="qrBgColorInput" id="qrBgColorInputLabel"></label>
-				<input type="text" id="qrBgColorInput" />
-			</div>
-		</div>
-		<div id="bgTransDiv">
-			<input type="checkbox" id="qrBgTrans" />
-			<label id="qrBgTransLabel" for="qrBgTrans"></label>
-		</div>
-		<div id="qrManualTitleDiv">
-			<input type="checkbox" id="qrManualTitle" />
-			<label id="qrManualTitleLabel" for="qrManualTitle"></label>
-			<div id="qrManualTitleTextDiv">
-				<label id="qrManualTitleTextLabel" for="qrManualTitleText"></label>
-				<input type="text" id="qrManualTitleText" />
-			</div>
-		</div>
-		<div id="finalParams">
-			<div id="qrFetchTitleDiv">
-				<input type="checkbox" id="qrFetchTitle" />
-				<label id="qrFetchTitleLabel" for="qrFetchTitle"></label>
+<svg class="hidden" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<defs>
+		<symbol id="icon-arrow-down2" viewBox="0 0 32 32">
+			<title>arrow-down2</title>
+			<path d="M27.414 19.414l-10 10c-0.781 0.781-2.047 0.781-2.828 0l-10-10c-0.781-0.781-0.781-2.047 0-2.828s2.047-0.781 2.828 0l6.586 6.586v-19.172c0-1.105 0.895-2 2-2s2 0.895 2 2v19.172l6.586-6.586c0.39-0.39 0.902-0.586 1.414-0.586s1.024 0.195 1.414 0.586c0.781 0.781 0.781 2.047 0 2.828z"></path>
+		</symbol>
+		<symbol id="icon-cross" viewBox="0 0 32 32">
+			<title>cross</title>
+			<path d="M31.708 25.708c-0-0-0-0-0-0l-9.708-9.708 9.708-9.708c0-0 0-0 0-0 0.105-0.105 0.18-0.227 0.229-0.357 0.133-0.356 0.057-0.771-0.229-1.057l-4.586-4.586c-0.286-0.286-0.702-0.361-1.057-0.229-0.13 0.048-0.252 0.124-0.357 0.228 0 0-0 0-0 0l-9.708 9.708-9.708-9.708c-0-0-0-0-0-0-0.105-0.104-0.227-0.18-0.357-0.228-0.356-0.133-0.771-0.057-1.057 0.229l-4.586 4.586c-0.286 0.286-0.361 0.702-0.229 1.057 0.049 0.13 0.124 0.252 0.229 0.357 0 0 0 0 0 0l9.708 9.708-9.708 9.708c-0 0-0 0-0 0-0.104 0.105-0.18 0.227-0.229 0.357-0.133 0.355-0.057 0.771 0.229 1.057l4.586 4.586c0.286 0.286 0.702 0.361 1.057 0.229 0.13-0.049 0.252-0.124 0.357-0.229 0-0 0-0 0-0l9.708-9.708 9.708 9.708c0 0 0 0 0 0 0.105 0.105 0.227 0.18 0.357 0.229 0.356 0.133 0.771 0.057 1.057-0.229l4.586-4.586c0.286-0.286 0.362-0.702 0.229-1.057-0.049-0.13-0.124-0.252-0.229-0.357z"></path>
+		</symbol>
+	</defs>
+</svg>
+<h1 id="qrHeading"></h1>
+<h2 id="qrSubHeading"></h2>
+<div id="container">
+	<form name="doiForm" id="doiForm">
+		<div id="leftForm">
+			<div id="mainForm">
+				<div id="inputContainer">
+					<label for="doiInput" id="doiInputLabel"></label>
+					<input type="text" id="doiInput" autofocus>
+					<svg id="openHistory" class="icon icon-arrow-down2"><use xlink:href="#icon-arrow-down2"></use></svg>
+					<svg id="closeHistory" class="icon icon-cross"><use xlink:href="#icon-cross"></use></svg>
+					<select id="doiHistory"></select>
+				</div>
+				<div id="sizeParam">
+					<label for="qrSizeInput" id="qrSizeInputLabel"></label>
+					<input type="number" id="qrSizeInput" min="80" />
+					<div id="pxSizeLabel">px</div>
+					<label for="qrBorderInput" id="qrBorderInputLabel"></label>
+					<input type="number" id="qrBorderInput" min="0" />
+					<div id="pxBorderLabel">module(s)</div>
+				</div>
+				<div id="imageTypeParam">
+					<span id="qrImageTypeLabel"></span>
+					<input type="radio" id="qrImageTypePng" name="qrImageType" value="png" />
+					<label for="qrImageTypePng" id="qrImageTypePngLabel">PNG</label>
+					<input type="radio" id="qrImageTypeSvg" name="qrImageType" value="svg" />
+					<label for="qrImageTypeSvg" id="qrImageTypeSvgLabel">SVG</label>
+				</div>
+				<div id="bgTransDiv">
+					<input type="checkbox" id="qrBgTrans" />
+					<label id="qrBgTransLabel" for="qrBgTrans"></label>
+				</div>
+				<div id="qrManualMessageDiv">
+					<input type="checkbox" id="qrManualMessage" />
+					<label id="qrManualMessageLabel" for="qrManualMessage"></label>
+					<div id="qrManualMessageTextDiv">
+						<label id="qrManualMessageTextLabel" for="qrManualMessageText"></label>
+						<input type="text" id="qrManualMessageText" />
+					</div>
+				</div>
+				<div id="finalParams">
+					<div id="qrFetchTitleDiv">
+						<input type="checkbox" id="qrFetchTitle" />
+						<label id="qrFetchTitleLabel" for="qrFetchTitle"></label>
+					</div>
+				</div>
 			</div>
 			<button id="submitButton"></button>
 		</div>
-	</div>
+		<div id="colorParams">
+			<div id="fgColorDiv">
+				<label for="qrFgColorInput" id="qrFgColorInputLabel"></label><br>
+				<input type="text" id="qrFgColorInput" />
+				<div id="qrFgColorPicker"></div>
+			</div>
+			<div id="bgColorDiv">
+				<label for="qrBgColorInput" id="qrBgColorInputLabel"></label><br>
+				<input type="text" id="qrBgColorInput" />
+				<div id="qrBgColorPicker"></div>
+			</div>
+		</div>
 	</form>
 	<div id="notifyDiv"></div>
+	<template id="notify_template">
+		<span class="notifyHeading"></span>
+		<span class="notifyContent"></span>
+		<br>
+		<span class="notifyHeading"></span>
+		<span class="notifyContent"></span>
+	</template>
 	<div id="qrDiv"></div>
 </div>
 </body>

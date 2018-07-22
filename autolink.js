@@ -1,5 +1,5 @@
 /*!
-	Copyright (C) 2015 Matthew D. Mower
+	Copyright (C) 2016 Matthew D. Mower
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -14,88 +14,86 @@
 	limitations under the License.
 */
 
-storage();
+// https://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
+var definitions = {
+	findDoi: /\b(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig,
+	findUrl: /^(?:https?\:\/\/)(?:dx\.)?doi\.org\/(10[.][0-9]{4,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)$/ig
+};
 
-function storage() {
-	if (typeof storage.area === 'undefined') {
-		storage.area = chrome.storage.local;
-	}
-	if (typeof storage.urlPrefix === 'undefined') {
-		storage.urlPrefix = "http://dx.doi.org/";
-	}
-	if (typeof storage.findDoi === 'undefined') {
-		// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
-		storage.findDoi = /\b(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)\b/ig;
-	}
-	if (typeof storage.findUrl === 'undefined') {
-		// http://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
-		storage.findUrl = /^(?:https?\:\/\/)dx\.doi\.org\/(10[.][0-9]{3,}(?:[.][0-9]+)*\/(?:(?!["&\'<>])\S)+)$/ig;
-	}
-	if (typeof storage.autolinkRewrite === 'undefined') {
-		storage.autolinkRewrite = false;
-	}
+setDefinitions()
+.then(replaceDOIsWithLinks)
+.catch((error) => {
+	console.log("DOI autolink could not run; message: " + error);
+});
 
-	chrome.storage.local.get(["sync_data"], function(stg) {
-		if (stg.sync_data === true) {
-			storage.area = chrome.storage.sync;
-		} else {
-			storage.area = chrome.storage.local;
-		}
+function setDefinitions() {
+	return new Promise((resolve, reject) => {
 
-		var stgFetch = [
-			"cr_autolink",
-			"auto_link_rewrite",
-			"custom_resolver",
-			"doi_resolver"
-		];
-
-		storage.area.get(stgFetch, function(stg) {
-			if (stg.custom_resolver === true && stg.cr_autolink == "custom") {
-				storage.urlPrefix = stg.doi_resolver;
-				storage.autolinkRewrite = stg.auto_link_rewrite === true;
+		chrome.runtime.sendMessage({ cmd: "autolink_vars" }, function (response) {
+			if (!response) {
+				return reject("Invalid response when fetching definitions");
 			}
-			replaceDOIsWithLinks();
+
+			var requiredDefinitions = [
+				"autolinkRewrite",
+				"doiResolver"
+			];
+
+			for (var i = 0; i < requiredDefinitions.length; i++) {
+				if (response[requiredDefinitions[i]] === undefined) {
+					return reject("Missing required definition: " + requiredDefinitions[i]);
+				}
+				definitions[requiredDefinitions[i]] = response[requiredDefinitions[i]];
+			}
+
+			resolve();
 		});
+
 	});
 }
 
-// http://stackoverflow.com/questions/1444409/in-javascript-how-can-i-replace-text-in-an-html-page-without-affecting-the-tags
+// https://stackoverflow.com/questions/1444409/in-javascript-how-can-i-replace-text-in-an-html-page-without-affecting-the-tags
 function replaceDOIsWithLinks() {
-	replaceInElement(document.body, storage.findDoi, function(match) {
-		var link = document.createElement('a');
-		link.href = storage.urlPrefix + match[0];
-		link.appendChild(document.createTextNode(match[0]));
-		return link;
-	});
+	try {
+		replaceInElement(document.body, definitions.findDoi, function(match) {
+			var link = document.createElement('a');
+			link.href = definitions.doiResolver + match[0];
+			link.appendChild(document.createTextNode(match[0]));
+			return link;
+		});
+	} catch (ex) {
+		console.log("DOI autolink encountered an exception", ex);
+	}
 }
 
 // iterate over child nodes in reverse, as replacement may increase length of child node list.
 function replaceInElement(element, find, replace) {
 	// don't touch these elements
-	var forbiddenTags = ["a", "input", "script", "style", "textarea"];
-	for (var i = element.childNodes.length; i-- > 0;) {
+	var forbiddenTags = ["A", "BUTTON", "INPUT", "SCRIPT", "SELECT", "STYLE", "TEXTAREA"];
+	for (var i = element.childNodes.length - 1; i >= 0; i--) {
 		var child = element.childNodes[i];
-		if (child.nodeType == 1) { // ELEMENT_NODE
-			if (forbiddenTags.indexOf(child.nodeName.toLowerCase()) < 0) {
+		if (child.nodeType === Node.ELEMENT_NODE) {
+			if (forbiddenTags.indexOf(child.nodeName) < 0) {
 				replaceInElement(child, find, replace);
-			} else if (storage.autolinkRewrite && child.nodeName.toLowerCase() == "a") {
-				if (storage.findUrl.test(child.href)) {
-					child.href = child.href.replace(storage.findUrl, storage.urlPrefix + "$1");
+			} else if (definitions.autolinkRewrite && child.nodeName === "A") {
+				if (definitions.findUrl.test(child.href)) {
+					child.href = child.href.replace(definitions.findUrl, definitions.doiResolver + "$1");
 				}
 			}
-		} else if (child.nodeType == 3) { // TEXT_NODE
+		} else if (child.nodeType === Node.TEXT_NODE) {
 			replaceInText(child, find, replace);
 		}
 	}
 }
 
 function replaceInText(text, find, replace) {
-	var match;
 	var matches = [];
-	while ((match = find.exec(text.data)) !== null) {
+	var match = find.exec(text.data);
+	while (match !== null) {
 		matches.push(match);
+		match = find.exec(text.data);
 	}
-	for (var i = matches.length; i-- > 0;) {
+	for (var i = matches.length - 1; i >= 0; i--) {
 		match = matches[i];
 		text.splitText(match.index);
 		text.nextSibling.splitText(match[0].length);

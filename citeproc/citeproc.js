@@ -24,7 +24,7 @@
  */
 
 var CSL = {
-    PROCESSOR_VERSION: "1.1.208",
+    PROCESSOR_VERSION: "1.1.210",
     CONDITION_LEVEL_TOP: 1,
     CONDITION_LEVEL_BOTTOM: 2,
     PLAIN_HYPHEN_REGEX: /(?:[^\\]-|\u2013)/,
@@ -476,17 +476,18 @@ var CSL = {
     DISPLAY_CLASSES: ["block", "left-margin", "right-inline", "indent"],
     NAME_VARIABLES: [
         "author",
-        "editor",
-        "translator",
-        "contributor",
         "collection-editor",
         "composer",
         "container-author",
         "director",
+        "editor",
         "editorial-director",
+        "illustrator",
         "interviewer",
         "original-author",
-        "recipient"
+        "recipient",
+        "reviewed-author",
+        "translator"
     ],
     NUMERIC_VARIABLES: [
         "call-number",
@@ -703,18 +704,6 @@ var CSL = {
         [ "", "x", "xx", "xxx", "xl", "l", "lx", "lxx", "lxxx", "xc" ],
         [ "", "c", "cc", "ccc", "cd", "d", "dc", "dcc", "dccc", "cm" ],
         [ "", "m", "mm", "mmm", "mmmm", "mmmmm"]
-    ],
-    CREATORS: [
-        "author",
-        "editor",
-        "contributor",
-        "translator",
-        "recipient",
-        "interviewer",
-        "composer",
-        "original-author",
-        "container-author",
-        "collection-editor"
     ],
     LANGS: {
         "af-ZA":"Afrikaans",
@@ -2979,8 +2968,8 @@ CSL.Engine.prototype.retrieveItem = function (id) {
                 }
             }
         }
-        for (var i=0, ilen=CSL.CREATORS.length; i>ilen; i+=1) {
-            var ctype = CSL.CREATORS[i];
+        for (var i=0, ilen=CSL.NAME_VARIABLES.length; i>ilen; i+=1) {
+            var ctype = CSL.NAME_VARIABLES[i];
             if (Item[ctype] && Item[ctype].multi) {
                 for (var j=0, jlen=Item[ctype].length; j<jlen; j+=1) {
                     var creator = Item[ctype][j];
@@ -3384,8 +3373,8 @@ CSL.Engine.prototype.getCitationLabel = function (Item) {
     }
     myname = myname.replace(".", "");
     myname = myname.slice(0, 1).toUpperCase() + myname.slice(1);
-    for (var i = 0, ilen = CSL.CREATORS.length; i < ilen; i += 1) {
-        var n = CSL.CREATORS[i];
+    for (var i = 0, ilen = CSL.NAME_VARIABLES.length; i < ilen; i += 1) {
+        var n = CSL.NAME_VARIABLES[i];
         if (Item[n]) {
             var names = Item[n];
             if (names.length > params.length) {
@@ -6316,6 +6305,9 @@ CSL.Engine.prototype.updateItems = function (idList, nosort, rerun_ambigs, impli
     var oldArea = this.tmp.area;
     var oldRoot = this.tmp.root;
     var oldExtension = this.tmp.extension;
+    if (this.bibliography_sort.tokens.length === 0) {
+        nosort = true;
+    }
     this.tmp.area = "citation";
     this.tmp.root = "citation";
     this.tmp.extension = "";
@@ -6331,12 +6323,10 @@ CSL.Engine.prototype.updateItems = function (idList, nosort, rerun_ambigs, impli
     this.registry.dodeletes(this.registry.myhash);
     this.registry.doinserts(this.registry.mylist);
     this.registry.dorefreshes();
-    this.registry.rebuildlist();
+    this.registry.rebuildlist(nosort);
     this.registry.setsortkeys();
     this.registry.setdisambigs();
-    if (!nosort) {
-        this.registry.sorttokens();
-    }
+    this.registry.sorttokens(nosort);
     this.registry.renumber();
     this.tmp.extension = oldExtension;
     this.tmp.area = oldArea;
@@ -6349,6 +6339,9 @@ CSL.Engine.prototype.updateUncitedItems = function (idList, nosort) {
     var oldArea = this.tmp.area;
     var oldRoot = this.tmp.root;
     var oldExtension = this.tmp.extension;
+    if (this.bibliography_sort.tokens.length === 0) {
+        nosort = true;
+    }
     this.tmp.area = "citation";
     this.tmp.root = "citation"
     this.tmp.extension = ""
@@ -6374,12 +6367,10 @@ CSL.Engine.prototype.updateUncitedItems = function (idList, nosort) {
     this.registry.dopurge(idHash);
     this.registry.doinserts(this.registry.mylist);
     this.registry.dorefreshes();
-    this.registry.rebuildlist();
+    this.registry.rebuildlist(nosort);
     this.registry.setsortkeys();
     this.registry.setdisambigs();
-    if (!nosort) {
-        this.registry.sorttokens();
-    }
+    this.registry.sorttokens(nosort);
     this.registry.renumber();
     this.tmp.extension = oldExtension;
     this.tmp.area = oldArea;
@@ -7623,7 +7614,7 @@ CSL.Node.key = {
                     state.opt.citation_number_sort_used = false;
                 }
             }
-            if (CSL.CREATORS.indexOf(variable) > -1) {
+            if (CSL.NAME_VARIABLES.indexOf(variable) > -1) {
                 var names_start_token = new CSL.Token("names", CSL.START);
                 names_start_token.tokentype = CSL.START;
                 names_start_token.variables = this.variables;
@@ -15778,10 +15769,7 @@ CSL.Registry.prototype.init = function (itemIDs, uncited_flag) {
                 myhash[itemIDs[i]] = true;
             }
         }
-        this.mylist = [];
-        for (var i=0,ilen=itemIDs.length;i<ilen;i+=1) {
-            this.mylist.push("" + itemIDs[i]);
-        }
+        this.mylist = itemIDs;
         this.myhash = myhash;
     }
     this.refreshes = {};
@@ -15803,8 +15791,9 @@ CSL.Registry.prototype.dopurge = function (myhash) {
 CSL.Registry.prototype.dodeletes = function (myhash) {
     var otheritems, key, ambig, pos, len, items, kkey, mypos, id;
     if ("string" === typeof myhash) {
+        var key = myhash;
         myhash = {};
-        myhash[myhash] = true;
+        myhash[key] = true;
     }
     for (var key in this.registry) {
         if (!myhash[key]) {
@@ -15857,6 +15846,11 @@ CSL.Registry.prototype.dodeletes = function (myhash) {
                     }
                 }
             }
+            for (var i=this.reflist.length-1;i>-1;i--) {
+                if (this.reflist[i].id === key) {
+                    this.reflist = this.reflist.slice(0, i).concat(this.reflist.slice(i+1));
+                }
+            }
             delete this.registry[key];
             delete this.refhash[key];
             this.return_data.bibchange = true;
@@ -15885,7 +15879,8 @@ CSL.Registry.prototype.doinserts = function (mylist) {
                 "ambig": false,
                 "rendered": false,
                 "disambig": false,
-                "ref": Item
+                "ref": Item,
+                "newItem": true
             };
             this.registry[item] = newitem;
             if (this.citationreg.citationsByItemId && this.citationreg.citationsByItemId[item]) {
@@ -15898,21 +15893,30 @@ CSL.Registry.prototype.doinserts = function (mylist) {
         }
     }
 };
-CSL.Registry.prototype.rebuildlist = function () {
-    var count, len, pos, item;
-    this.reflist = [];
-    if (this.state.opt.citation_number_sort_direction === CSL.DESCENDING
-       && this.state.opt.citation_number_sort_used) {
-    }
-    len = this.mylist.length;
-    for (pos = 0; pos < len; pos += 1) {
-        item = this.mylist[pos];
-        this.reflist.push(this.registry[item]);
-        this.oldseq[item] = this.registry[item].seq;
-        this.registry[item].seq = (pos + 1);
-    }
-    if (this.state.opt.citation_number_sort_direction === CSL.DESCENDING
-       && this.state.opt.citation_number_sort_used) {
+CSL.Registry.prototype.rebuildlist = function (nosort) {
+    var count, len, pos, item, Item;
+    if (!nosort) {
+        this.reflist_inserts = [];
+        len = this.mylist.length;
+        for (pos = 0; pos < len; pos += 1) {
+            item = this.mylist[pos];
+            Item = this.registry[item];
+            if (Item.newItem) {
+                this.reflist_inserts.push(Item);
+            }
+            this.oldseq[item] = this.registry[item].seq;
+            this.registry[item].seq = (pos + 1);
+        }
+    } else {
+        this.reflist = [];
+        len = this.mylist.length;
+        for (pos = 0; pos < len; pos += 1) {
+            item = this.mylist[pos];
+            Item = this.registry[item];
+            this.reflist.push(Item);
+            this.oldseq[item] = this.registry[item].seq;
+            this.registry[item].seq = (pos + 1);
+        }
     }
 };
 CSL.Registry.prototype.dorefreshes = function () {
@@ -15951,8 +15955,7 @@ CSL.Registry.prototype.dorefreshes = function () {
     }
 };
 CSL.Registry.prototype.setdisambigs = function () {
-    var akey, leftovers, key, pos, len, id;
-    this.leftovers = [];
+    var akey, key, pos, len, id;
     for (akey in this.ambigsTouched) {
         this.state.disambiguate.run(akey);
     }
@@ -15961,9 +15964,6 @@ CSL.Registry.prototype.setdisambigs = function () {
 };
 CSL.Registry.prototype.renumber = function () {
     var len, pos, item;
-    if (this.state.opt.citation_number_sort_direction === CSL.DESCENDING
-       && this.state.opt.citation_number_sort_used) {
-    }
     len = this.reflist.length;
     for (pos = 0; pos < len; pos += 1) {
         item = this.reflist[pos];
@@ -15989,8 +15989,57 @@ CSL.Registry.prototype.setsortkeys = function () {
         }
     }
 };
-CSL.Registry.prototype.sorttokens = function () {
-    this.reflist.sort(this.sorter.compareKeys);
+CSL.Registry.prototype._insertItem = function(element, array) {
+    array.splice(this._locationOf(element, array) + 1, 0, element);
+    return array;
+};
+CSL.Registry.prototype._locationOf = function(element, array, start, end) {
+    if (array.length === 0)
+        return -1;
+    start = start || 0;
+    end = end || array.length;
+    var pivot = (start + end) >> 1;  // should be faster than dividing by 2
+    var c = this.sorter.compareKeys(element, array[pivot]);
+    if (end - start <= 1) return c == -1 ? pivot - 1 : pivot;
+    switch (c) {
+        case -1: return this._locationOf(element, array, start, pivot);
+        case 0: return pivot;
+        case 1: return this._locationOf(element, array, pivot, end);
+    };
+};
+CSL.Registry.prototype.sorttokens = function (nosort) {
+    var len, item, Item, pos;
+    if (!nosort) {
+        this.reflist_inserts = [];
+        len = this.mylist.length;
+        for (pos = 0; pos < len; pos += 1) {
+            item = this.mylist[pos];
+            Item = this.registry[item];
+            if (Item.newItem) {
+                this.reflist_inserts.push(Item);
+            }
+        }
+        for (var key in this.state.tmp.taintedItemIDs) {
+            if (this.registry[key] && !this.registry[key].newItem) {
+                for (var i=this.reflist.length-1;i>-1;i--) {
+                    if (this.reflist[i].id === key) {
+                        this.reflist_inserts.push(this.reflist[i]);
+                        this.reflist = this.reflist.slice(0, i).concat(this.reflist.slice(i+1));
+                    }
+                }
+            }
+        }
+        for (var i=0,ilen=this.reflist_inserts.length;i<ilen;i++) {
+            var Item = this.reflist_inserts[i];
+            delete Item.newItem;
+            this.reflist = this._insertItem(Item, this.reflist);
+        }
+        for (pos = 0; pos < len; pos += 1) {
+            item = this.mylist[pos];
+            Item = this.registry[item];
+            this.registry[item].seq = (pos + 1);
+        }
+    }
 };
 CSL.Registry.Comparifier = function (state, keyset) {
     var sort_directions, len, pos, compareKeys;

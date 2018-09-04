@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/canvg/canvg.svg?branch=master)](https://travis-ci.com/canvg/canvg)
+
 Looking for Contributors
 ============
 In an attempt to keep this repo more active and merge PRs and do releases, if you would like to be a contributor, please start a conversation with me at gabelerner at gmail. The prerequisite is to have a few PRs open to prove out an understanding of the code.  Thanks!
@@ -19,28 +21,29 @@ Potential uses
 
 Example Demonstration
 =====================
-[view here](http://canvg.github.io/canvg/examples/index.htm)
-Tested in Chrome, Firefox, Opera, and IE (through FlashCanvas)
+[jsfiddle playground](http://jsfiddle.net/6r2jug6o/2590/)
 
-[jsfiddle playground](http://jsfiddle.net/6r2jug6o/)
+Locally, you can run `npm start` and view the examples at [http://localhost:3123/examples/index.htm](http://localhost:3123/examples/index.htm)
 
-Locally, can use `local-web-server`
-Install with `yarn global add local-web-server`
-In the root directory, run `ws`
-Navigate to `http://localhost:8000/examples/index.htm`
+Usage on the server
+===================
+`npm install canvg`
 
-Usage
-=====
+Usage on the Browser
+====================
 Include the following files in your page:
 ```html
-<script type="text/javascript" src="http://canvg.github.io/canvg/rgbcolor.js"></script> 
-<script type="text/javascript" src="http://canvg.github.io/canvg/StackBlur.js"></script>
-<script type="text/javascript" src="http://canvg.github.io/canvg/canvg.js"></script> 
+<!-- Required to convert named colors to RGB -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.4/rgbcolor.min.js"></script>
+<!-- Optional if you want blur -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/stackblur-canvas/1.4.1/stackblur.min.js"></script>
+<!-- Main canvg code -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/canvg/dist/browser/canvg.min.js"></script>
 ```
 
 Put a canvas on your page
 ```html
-<canvas id="canvas" width="1000px" height="600px"></canvas> 
+<canvas id="canvas" width="1000px" height="600px"></canvas>
 ```
 
 Example canvg calls:
@@ -54,7 +57,7 @@ window.onload = function() {
   canvg(document.getElementById('drawingArea'), '<svg>...</svg>')
 
   //ignore mouse events and animation
-  canvg('canvas', 'file.svg', { ignoreMouse: true, ignoreAnimation: true }) 
+  canvg('canvas', 'file.svg', { ignoreMouse: true, ignoreAnimation: true })
 }
 </script>
 ```
@@ -73,7 +76,8 @@ The third parameter is options:
 * forceRedraw: function => will call the function on every frame, if it returns true, will redraw
 * useCORS: true => will attempt to use CORS on images to not taint canvas
 
-You can call canvg without parameters to replace all svg images on a page. See the [example](http://canvg.github.io/canvg/examples/convert.htm).
+You can call canvg without parameters to replace all svg images on a page. See the
+example by running `npm start` and going to [http://localhost:3123/examples/convert.htm](http://localhost:3123/examples/convert.htm).
 
 There is also a built in extension method to the canvas context to draw svgs similar to the way [drawImage](http://www.w3.org/TR/2dcontext/#dom-context-2d-drawimage) works:
 ```javascript
@@ -81,9 +85,3 @@ var c = document.getElementById('canvas');
 var ctx = c.getContext('2d');
 ctx.drawSvg(SVG_XML_OR_PATH_TO_SVG, dx, dy, dw, dh);
 ```
-
-Related Repositories
-====================
-* [Output javascript instead of rendering to canvas](http://code.google.com/p/jscapturecanvas/)
-* [A combo of canvg & jscapturecanvas to compile SVG to Canvas (Server side)](https://github.com/nathan-muir/canvgc)
-* [Edit SVG files in your browser](https://code.google.com/p/svg-edit/)

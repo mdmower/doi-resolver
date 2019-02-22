@@ -375,7 +375,7 @@ function startBackgroundFeatures() {
 function updateBackgroundFeatureStates(changes) {
 	console.log('updateBackgroundFeatureStates\n', changes);
 	if (changes.context_menu !== undefined) {
-		toggleContextMenu(changes.context_menu);
+		toggleContextMenu(changes.context_menu.newValue);
 	}
 	if (changes.history_doi_queue !== undefined) {
 		var queue = changes.history_doi_queue.newValue;

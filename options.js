@@ -651,14 +651,52 @@ function populateMissingTitles() {
 	});
 }
 
+function setDoiMetaPermissions(enable) {
+	return new Promise((resolve) => {
+		if (enable === undefined) {
+			var stgFetch = [
+				"history",
+				"history_fetch_title"
+			];
+
+			chrome.storage.local.get(stgFetch, function(stg) {
+				resolve(stg.history === true && stg.history_fetch_title === true);
+			});
+		} else {
+			resolve(enable);
+		}
+	})
+	.then(function(enable) {
+		return new Promise((resolve) => {
+			if (enable) {
+				chrome.permissions.request({
+					origins: [
+						"https://*.doi.org/",
+						"https://*.crossref.org/",
+						"https://*.datacite.org/",
+						"https://*.medra.org/"
+					]
+				}, resolve);
+			} else {
+				chrome.permissions.remove({
+					origins: [
+						"https://*.doi.org/",
+						"https://*.crossref.org/",
+						"https://*.datacite.org/",
+						"https://*.medra.org/"
+					]
+				}, resolve);
+			}
+		});
+	});
+}
+
 function gatherNewDoiTitles(dois) {
 	return new Promise(function(resolve, reject) {
 
 		if (!Array.isArray(dois) || dois.length === 0) {
 			return reject("No DOIs requested for title fetch");
 		}
-
-		var setDoiMetaPermissions = chrome.extension.getBackgroundPage().setDoiMetaPermissions;
 
 		setDoiMetaPermissions(true)
 		.then(function(granted) {
@@ -701,7 +739,6 @@ function gatherNewDoiTitles(dois) {
 function setHistoryTitlePermissions() {
 	var historyFetchTitle = document.getElementById("historyFetchTitle");
 	var checked = historyFetchTitle.checked;
-	var setDoiMetaPermissions = chrome.extension.getBackgroundPage().setDoiMetaPermissions;
 
 	setDoiMetaPermissions(checked)
 	.then(function(success) {

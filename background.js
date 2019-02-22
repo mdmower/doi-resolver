@@ -74,6 +74,7 @@ function allOptions() {
 		"custom_resolver",
 		"doi_resolver",
 		"history",
+		"history_doi_queue",
 		"history_fetch_title",
 		"history_length",
 		"history_showsave",
@@ -99,6 +100,7 @@ function allOptions() {
 function excludeFromSync() {
 	return [
 		"auto_link", // Requires permissions to enable
+		"history_doi_queue", // Queue for recordDoi
 		"history_fetch_title", // Requires permissions to enable
 		"qr_title", // Requires permissions to enable
 		"sync_data", // Controls sync on/off
@@ -129,6 +131,7 @@ function getDefaultOption(opt) {
 		custom_resolver: false,
 		doi_resolver: getDefaultResolver(),
 		history: false,
+		history_doi_queue: [],
 		history_fetch_title: false,
 		history_length: 50,
 		history_showsave: false,
@@ -370,8 +373,22 @@ function startBackgroundFeatures() {
 }
 
 function updateBackgroundFeatureStates(changes) {
+	console.log('updateBackgroundFeatureStates\n', changes);
 	if (changes.context_menu !== undefined) {
-		toggleContextMenu(changes.context_menu);
+		toggleContextMenu(changes.context_menu.newValue);
+	}
+	if (changes.history_doi_queue !== undefined) {
+		var queue = changes.history_doi_queue.newValue;
+		if (Array.isArray(queue) && queue.length > 0) {
+			chrome.storage.local.set({history_doi_queue: []}, function () {
+				console.log('DOI(s) queued for history: ' + queue.join(', '));
+				Promise.all(queue.map(recordDoi))
+				.catch((errMsg) => {
+					console.log(errMsg);
+				})
+				.finally(removeDoiMetaPermissions);
+			});
+		}
 	}
 }
 
@@ -382,7 +399,7 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid
 function checkValidDoi(doiInput) {
-	return /^10[\.\/]/.test(doiInput);
+	return /^10[./]/.test(doiInput);
 }
 
 function navigate(url) {
@@ -512,63 +529,34 @@ function getSavedDoiTitle(doi) {
 	});
 }
 
-function setDoiMetaPermissions(enable) {
-	return new Promise((resolve) => {
-
-		if (enable) {
-			chrome.permissions.request({
-				origins: [
-					"https://*.doi.org/",
-					"https://*.crossref.org/",
-					"https://*.datacite.org/",
-					"https://*.medra.org/"
-				]
-			}, resolve);
-		} else {
-			chrome.permissions.remove({
-				origins: [
-					"https://*.doi.org/",
-					"https://*.crossref.org/",
-					"https://*.datacite.org/",
-					"https://*.medra.org/"
-				]
-			}, resolve);
-		}
-
-	});
+function removeDoiMetaPermissions(callback) {
+	chrome.permissions.remove({
+		origins: [
+			"https://*.doi.org/",
+			"https://*.crossref.org/",
+			"https://*.datacite.org/",
+			"https://*.medra.org/"
+		]
+	}, callback);
 }
 
 function recordDoiAction(doi) {
-	var stgFetch = [
-		"history",
-		"history_fetch_title"
-	];
+	return new Promise((resolve) => {
+		var stgFetch = [
+			"history",
+			"history_doi_queue"
+		];
 
-	chrome.storage.local.get(stgFetch, function(stg) {
-		if (stg.history !== true) {
-			return;
-		}
-		if (stg.history_fetch_title === true) {
-			setDoiMetaPermissions(true)
-			.then(function(granted) {
-				// Checking success is not important here
-				if (chrome.runtime.lastError) {
-					console.error('recordDoiAction: Permission request not allowed');
-				}
-				recordDoi(doi)
-				.then(() => {
-					setDoiMetaPermissions(false);
-				})
-				.catch((errMsg) => {
-					console.log(errMsg);
-				});
-			});
-		} else {
-			recordDoi(doi)
-			.catch((errMsg) => {
-				console.log(errMsg);
-			});
-		}
+		chrome.storage.local.get(stgFetch, function(stg) {
+			if (stg.history === true) {
+				if (!Array.isArray(stg.history_doi_queue))
+					stg.history_doi_queue = [doi];
+				else
+					stg.history_doi_queue.push(doi);
+				delete stg.history;
+				chrome.storage.local.set(stg, resolve);
+			}
+		});
 	});
 }
 
@@ -748,7 +736,7 @@ function filterSelectByText(select, text, trySelect) {
 		}
 	} else {
 		// Escape special chars
-		var search = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+		var search = text.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
 		// Ignore extra whitespace characters
 		search = search.replace(/\s* /g, '\\s*');
 		var regex = new RegExp(search, 'i');
@@ -790,7 +778,7 @@ function toggleContextMenu(enable) {
 
 function contextMenuResolve(info) {
 	var doiInput = encodeURI(trim(info.selectionText));
-	var doiPrefixRegEx = new RegExp("^doi\:?", "ig");
+	var doiPrefixRegEx = new RegExp("^doi:?", "ig");
 	doiInput = doiInput.replace(doiPrefixRegEx, '');
 
 	if (!checkValidDoi(doiInput)) {
@@ -888,7 +876,7 @@ function autolinkTestExclusions(url, autolinkExclusions) {
 			return true;
 		}
 
-		var urlNoProtocol = url.replace(/^https?\:\/\//i, "").toLowerCase();
+		var urlNoProtocol = url.replace(/^https?:\/\//i, "").toLowerCase();
 		var exclusion = "";
 		var re;
 		for (var i = 0; i < exclusions.length; i++) {
@@ -996,7 +984,7 @@ function omniListener(text, disposition) {
 		console.log('omnibox: ' + text);
 
 		var doiInput = encodeURI(trim(text));
-		var doiPrefixRegEx = new RegExp("^doi\:?", "ig");
+		var doiPrefixRegEx = new RegExp("^doi:?", "ig");
 		doiInput = doiInput.replace(doiPrefixRegEx, '');
 
 		if (!checkValidDoi(doiInput)) {

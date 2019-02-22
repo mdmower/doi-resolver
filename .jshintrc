@@ -10,6 +10,7 @@
         "Request": false,
         "qrcodegen": false,
         "canvg": false,
-        "CSL": false
+        "CSL": false,
+        "iro": false
     }
 }

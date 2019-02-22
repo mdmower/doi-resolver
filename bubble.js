@@ -329,43 +329,6 @@ function populateHistory() {
 	});
 }
 
-function filterByText(select, text) {
-	var options = Array.from(select.options);
-	var showAll = !text;
-
-	if (showAll) {
-		options.forEach(function(option) {
-			option.style.display = '';
-		});
-		if (select.selectedOptions.length > 0) {
-			select.selectedOptions[0].scrollIntoView();
-		}
-	} else {
-		// Escape special chars
-		var search = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-		// Ignore extra whitespace characters
-		search = search.replace(/\s* /g, '\\s*');
-		var regex = new RegExp(search, 'i');
-
-		var visibleOptions = [];
-		options.forEach(function(option) {
-			if (regex.test(option.value)) {
-				option.style.display = '';
-				visibleOptions.push(option);
-			} else {
-				option.selected = false;
-				option.style.display = 'none';
-			}
-		});
-
-		if (visibleOptions.length > 0) {
-			if (select.selectedOptions.length > 0) {
-				select.selectedOptions[0].scrollIntoView();
-			}
-		}
-	}
-}
-
 function getLocalMessages() {
 	var messageIds = [
 		"citeSubmit",

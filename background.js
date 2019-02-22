@@ -399,7 +399,7 @@ function trim(stringToTrim) {
 
 // Check that DOI is valid
 function checkValidDoi(doiInput) {
-	return /^10[\.\/]/.test(doiInput);
+	return /^10[./]/.test(doiInput);
 }
 
 function navigate(url) {
@@ -736,7 +736,7 @@ function filterSelectByText(select, text, trySelect) {
 		}
 	} else {
 		// Escape special chars
-		var search = text.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+		var search = text.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&');
 		// Ignore extra whitespace characters
 		search = search.replace(/\s* /g, '\\s*');
 		var regex = new RegExp(search, 'i');
@@ -778,7 +778,7 @@ function toggleContextMenu(enable) {
 
 function contextMenuResolve(info) {
 	var doiInput = encodeURI(trim(info.selectionText));
-	var doiPrefixRegEx = new RegExp("^doi\:?", "ig");
+	var doiPrefixRegEx = new RegExp("^doi:?", "ig");
 	doiInput = doiInput.replace(doiPrefixRegEx, '');
 
 	if (!checkValidDoi(doiInput)) {
@@ -876,7 +876,7 @@ function autolinkTestExclusions(url, autolinkExclusions) {
 			return true;
 		}
 
-		var urlNoProtocol = url.replace(/^https?\:\/\//i, "").toLowerCase();
+		var urlNoProtocol = url.replace(/^https?:\/\//i, "").toLowerCase();
 		var exclusion = "";
 		var re;
 		for (var i = 0; i < exclusions.length; i++) {
@@ -984,7 +984,7 @@ function omniListener(text, disposition) {
 		console.log('omnibox: ' + text);
 
 		var doiInput = encodeURI(trim(text));
-		var doiPrefixRegEx = new RegExp("^doi\:?", "ig");
+		var doiPrefixRegEx = new RegExp("^doi:?", "ig");
 		doiInput = doiInput.replace(doiPrefixRegEx, '');
 
 		if (!checkValidDoi(doiInput)) {

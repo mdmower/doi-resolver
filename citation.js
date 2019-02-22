@@ -173,6 +173,46 @@ function buildSelections(cslLocales, cslStyles) {
 	});
 }
 
+function setDoiMetaPermissions(enable) {
+	return new Promise((resolve) => {
+		if (enable === undefined) {
+			var stgFetch = [
+				"history",
+				"history_fetch_title"
+			];
+
+			chrome.storage.local.get(stgFetch, function(stg) {
+				resolve(stg.history === true && stg.history_fetch_title === true);
+			});
+		} else {
+			resolve(enable);
+		}
+	})
+	.then(function(enable) {
+		return new Promise((resolve) => {
+			if (enable) {
+				chrome.permissions.request({
+					origins: [
+						"https://*.doi.org/",
+						"https://*.crossref.org/",
+						"https://*.datacite.org/",
+						"https://*.medra.org/"
+					]
+				}, resolve);
+			} else {
+				chrome.permissions.remove({
+					origins: [
+						"https://*.doi.org/",
+						"https://*.crossref.org/",
+						"https://*.datacite.org/",
+						"https://*.medra.org/"
+					]
+				}, resolve);
+			}
+		});
+	});
+}
+
 function formSubmitHandler() {
 	var trim = chrome.extension.getBackgroundPage().trim;
 	var doi = encodeURI(trim(document.getElementById("doiInput").value));
@@ -188,7 +228,11 @@ function formSubmitHandler() {
 	}
 
 	// Allow DOI recording to happen asynchronously
-	chrome.extension.getBackgroundPage().recordDoiAction(doi);
+	var recordDoiAction = chrome.extension.getBackgroundPage().recordDoiAction;
+	setDoiMetaPermissions()
+	.then(function () {
+		return recordDoiAction(doi);
+	});
 
 	saveSelections();
 	getCitation(doi);

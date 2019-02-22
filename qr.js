@@ -418,6 +418,46 @@ function saveOptions() {
 	chrome.storage.local.set(options, null);
 }
 
+function setDoiMetaPermissions(enable) {
+	return new Promise((resolve) => {
+		if (enable === undefined) {
+			var stgFetch = [
+				"history",
+				"history_fetch_title"
+			];
+
+			chrome.storage.local.get(stgFetch, function(stg) {
+				resolve(stg.history === true && stg.history_fetch_title === true);
+			});
+		} else {
+			resolve(enable);
+		}
+	})
+	.then(function(enable) {
+		return new Promise((resolve) => {
+			if (enable) {
+				chrome.permissions.request({
+					origins: [
+						"https://*.doi.org/",
+						"https://*.crossref.org/",
+						"https://*.datacite.org/",
+						"https://*.medra.org/"
+					]
+				}, resolve);
+			} else {
+				chrome.permissions.remove({
+					origins: [
+						"https://*.doi.org/",
+						"https://*.crossref.org/",
+						"https://*.datacite.org/",
+						"https://*.medra.org/"
+					]
+				}, resolve);
+			}
+		});
+	});
+}
+
 function toggleTitleMessageListeners(enable) {
 	var qrFetchTitle = document.getElementById("qrFetchTitle");
 	var qrManualMessage = document.getElementById("qrManualMessage");
@@ -450,7 +490,6 @@ function toggleTitleMessageOptions(event) {
 		toggleTitleMessageListeners(true);
 	} else {
 		// Permissions will be cleaned when last QR/Citation tab is closed
-		var setDoiMetaPermissions = chrome.extension.getBackgroundPage().setDoiMetaPermissions;
 		setDoiMetaPermissions(qrFetchTitle.checked)
 		.then((success) => {
 			if (qrFetchTitle.checked) {
@@ -571,7 +610,7 @@ function insertQr(doiInput, qrParms) {
 			}
 
 			// Permissions will be cleaned when last QR/Citation tab is closed
-			chrome.extension.getBackgroundPage().setDoiMetaPermissions(true)
+			setDoiMetaPermissions(true)
 			.then(function(granted) {
 				if (granted) {
 					console.log("Fetching title from network");
@@ -626,7 +665,11 @@ function insertQr(doiInput, qrParms) {
 		qrParms.text = stringToEncode;
 		createQrImage(qrParms);
 
-		chrome.extension.getBackgroundPage().recordDoiAction(doiInput);
+		var recordDoiAction = chrome.extension.getBackgroundPage().recordDoiAction;
+		setDoiMetaPermissions()
+		.then(function () {
+			return recordDoiAction(doiInput);
+		});
 	}
 }
 

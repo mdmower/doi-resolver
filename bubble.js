@@ -87,6 +87,46 @@ function bubbleMessage(message) {
 	messageDiv.style.display = "block";
 }
 
+function setDoiMetaPermissions(enable) {
+	return new Promise((resolve) => {
+		if (enable === undefined) {
+			var stgFetch = [
+				"history",
+				"history_fetch_title"
+			];
+
+			chrome.storage.local.get(stgFetch, function(stg) {
+				resolve(stg.history === true && stg.history_fetch_title === true);
+			});
+		} else {
+			resolve(enable);
+		}
+	})
+	.then(function(enable) {
+		return new Promise((resolve) => {
+			if (enable) {
+				chrome.permissions.request({
+					origins: [
+						"https://*.doi.org/",
+						"https://*.crossref.org/",
+						"https://*.datacite.org/",
+						"https://*.medra.org/"
+					]
+				}, resolve);
+			} else {
+				chrome.permissions.remove({
+					origins: [
+						"https://*.doi.org/",
+						"https://*.crossref.org/",
+						"https://*.datacite.org/",
+						"https://*.medra.org/"
+					]
+				}, resolve);
+			}
+		});
+	});
+}
+
 // Process the form
 function formSubmitHandler() {
 	var trim = chrome.extension.getBackgroundPage().trim;
@@ -99,18 +139,32 @@ function formSubmitHandler() {
 	case "qr":
 		if (checkValidDoi(doiInput)) {
 			// Allow DOI recording to happen asynchronously
-			recordDoiAction(doiInput);
+			setDoiMetaPermissions()
+			.then(function () {
+				recordDoiAction(doiInput);
+			})
+			.then(function () {
+				qrGen(doiInput);
+			});
+		} else {
+			// Allow tab to open with invalid DOI
+			qrGen(doiInput);
 		}
-		// Allow tab to open with invalid DOI
-		qrGen(doiInput);
 		break;
 	case "cite":
 		if (checkValidDoi(doiInput)) {
 			// Allow DOI recording to happen asynchronously
-			recordDoiAction(doiInput);
+			setDoiMetaPermissions()
+			.then(function () {
+				recordDoiAction(doiInput);
+			})
+			.then(function () {
+				citeDOI(doiInput);
+			});
+		} else {
+			// Allow tab to open with invalid DOI
+			citeDOI(doiInput);
 		}
-		// Allow tab to open with invalid DOI
-		citeDOI(doiInput);
 		break;
 	case "doi":
 		if (!checkValidDoi(doiInput)) {
@@ -118,8 +172,13 @@ function formSubmitHandler() {
 			return;
 		}
 		// Allow DOI recording to happen asynchronously
-		recordDoiAction(doiInput);
-		resolveURL(doiInput);
+		setDoiMetaPermissions()
+		.then(function () {
+			recordDoiAction(doiInput);
+		})
+		.then(function () {
+			resolveURL(doiInput);
+		});
 		break;
 	case "options":
 		if (chrome.runtime.openOptionsPage) {

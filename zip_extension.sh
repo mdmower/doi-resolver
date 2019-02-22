@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-zip -r doi.zip . -x ".git*" ".jshintrc" "output_styles.sh" "styles/*" "locales/*" "citeproc-js/*" "*README.md" "*Readme.md" "*Readme.markdown" "zip_extension.sh" "doi.zip" "*LICENSE*" "icons/*.svg" "icons/icon512.png"
+zip -r doi.zip . -x ".git*" ".jshintrc" ".eslintrc.json" "output_styles.sh" "styles/*" "locales/*" "citeproc-js/*" "*README.md" "*Readme.md" "*Readme.markdown" "zip_extension.sh" "doi.zip" "*LICENSE*" "icons/*.svg" "icons/icon512.png"

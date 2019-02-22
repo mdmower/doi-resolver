@@ -1,0 +1,25 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true,
+        "worker": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 6
+    },
+    "extends": "eslint:recommended",
+    "rules": {
+        "no-console": "off",
+        "no-empty": "off",
+        "semi": [2, "always"]
+    },
+    "globals": {
+        "chrome": "readonly",
+        "Headers": "readonly",
+        "Request": "readonly",
+        "qrcodegen": "readonly",
+        "canvg": "readonly",
+        "CSL": "readonly",
+        "iro": "readonly"
+    }
+}

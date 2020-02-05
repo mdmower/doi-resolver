@@ -59,7 +59,7 @@ Copyright (c) 2009-2019 Frank Bennett
 
 var CSL = {
 
-    PROCESSOR_VERSION: "1.2.17",
+    PROCESSOR_VERSION: "1.2.31",
 
     error: function(str) { // default error function
         if ("undefined" === typeof Error) {
@@ -615,7 +615,8 @@ var CSL = {
         "original-author",
         "recipient",
         "reviewed-author",
-        "translator"
+        "translator",
+        "commenter"
     ],
     CREATORS: [
         "author",
@@ -630,7 +631,8 @@ var CSL = {
         "original-author",
         "recipient",
         "reviewed-author",
-        "translator"
+        "translator",
+        "commenter"
     ],
     NUMERIC_VARIABLES: [
         "call-number",
@@ -645,6 +647,7 @@ var CSL = {
         "number",
         "number-of-pages",
         "number-of-volumes",
+        "version",
         "volume",
         // "section", ??? add this?
         "supplement",
@@ -743,18 +746,22 @@ var CSL = {
                     // If short title exists and matches exactly to a split-point, use that split-point only.
                     // Otherwise if there is just one split-point, use that as main/sub split.
                     // Otherwise use all split-points ... which is handled in titleCaseSentenceOrNormal, not here.
-                    if (shortTitle && shortTitle === vals[title.title]) {
+                    if (shortTitle && shortTitle.toLowerCase() === vals[title.title].toLowerCase()) {
                         vals[title.main] = vals[title.title];
                         vals[title.subjoin] = "";
                         vals[title.sub] = "";
                     } else if (shortTitle) {
                         // check for valid match to shortTitle
-                        var checkAhead = vals[title.title].slice(shortTitle.replace(/[\?\!]+$/, "").length);
-                        var m = CSL.TITLE_SPLIT_REGEXP.matchfirst.exec(checkAhead);
-                        if (m) {
-                            vals[title.main] = shortTitle;
+                        var tail = vals[title.title].slice(shortTitle.replace(/[\?\!]+$/, "").length);
+                        var top = vals[title.title].replace(tail.replace(/^[\?\!]+/, ""), "").trim();
+                        var m = CSL.TITLE_SPLIT_REGEXP.matchfirst.exec(tail);
+                        if (m && top.toLowerCase() === shortTitle.toLowerCase()) {
+                            vals[title.main] = top;
                             vals[title.subjoin] = m[1].replace(/[\?\!]+(\s*)$/, "$1");
-                            vals[title.sub] = checkAhead.replace(CSL.TITLE_SPLIT_REGEXP.matchfirst, "");
+                            vals[title.sub] = tail.replace(CSL.TITLE_SPLIT_REGEXP.matchfirst, "");
+                            if (this.opt.development_extensions.force_short_title_casing_alignment) {
+                                vals[title["short"]] = vals[title.main];
+                            }
                         } else {
                             var splitTitle = CSL.TITLE_SPLIT(vals[title.title]);
                             if (splitTitle.length == 3) {
@@ -773,6 +780,15 @@ var CSL = {
                             vals[title.main] = splitTitle[0];
                             vals[title.subjoin] = splitTitle[1];
                             vals[title.sub] = splitTitle[2];
+                            if (this.opt.development_extensions.implicit_short_title && Item.type !== "legal_case") {
+                                if (!Item[title.short] && !vals[title.main].match(/^[\-\.[0-9]+$/)) {
+                                    var punct = vals[title.subjoin].trim();
+                                    if (["?", "!"].indexOf(punct) === -1) {
+                                        punct = "";
+                                    }
+                                    vals[title.short] = vals[title.main] + punct;
+                                }
+                            }
                         } else {
                             vals[title.main] = vals[title.title];
                             vals[title.subjoin] = "";
@@ -1202,7 +1218,9 @@ var CSL = {
         "prioritize_disambiguate_condition",
         "csl_reverse_lookup_support",
         "main_title_from_short_title",
-        "uppercase_subtitles"
+        "uppercase_subtitles",
+        "force_short_title_casing_alignment",
+        "implicit_short_title"
     ],
 
     TITLE_SPLIT_REGEXP: (function() {
@@ -1240,6 +1258,138 @@ var CSL = {
             }
         }
         return lst;
+    },
+    
+    GET_COURT_CLASS: function(state, Item, sortKey){
+        // Get authority as a string
+        var cls = "";
+        var authority = null;
+        var country = Item.jurisdiction ? Item.jurisdiction.split(":")[0] : null;
+        // inStyle versus in module
+        var classType = "court_condition_classes";
+        if (sortKey) {
+            classType = "court_key_classes";
+        }
+        if (country && Item.authority) {
+            if ("string" === typeof Item.authority) {
+                authority = Item.authority;
+            } else {
+                if (Item.authority[0] && Item.authority[0].literal) {
+                    authority = Item.authority[0].literal;
+                }
+            }
+        }
+        if (authority) {
+            if (this.lang && state.locale[this.lang].opts[classType] && state.locale[this.lang].opts[classType][country] && state.locale[this.lang].opts[classType][country][authority]) {
+                cls = state.locale[this.lang].opts[classType][country][authority];
+            } else if (state.locale[state.opt["default-locale"][0]].opts[classType] && state.locale[state.opt["default-locale"][0]].opts[classType][country] && state.locale[state.opt["default-locale"][0]].opts[classType][country][authority]) {
+                cls = state.locale[state.opt["default-locale"][0]].opts[classType][country][authority]
+            }
+        }
+        return cls;
+    },
+
+    SET_COURT_CLASSES: function(state, lang, myxml, dataObj) {
+        var nodes = myxml.getNodesByName(dataObj, 'court-class');
+        for (var pos = 0, len = myxml.numberofnodes(nodes); pos < len; pos += 1) {
+            var courtclass = nodes[pos];
+            var attributes = myxml.attributes(courtclass);
+            var cls = attributes["@name"];
+            var country = attributes["@country"];
+            var courts = attributes["@courts"];
+            
+            // Okay, this is a hack.
+            // If state.registry IS NOT yet defined, this is an in-style declaration.
+            // If state.registry IS defined, this is an in-module declaration.
+            var classType = "court_key_classes";
+            if (state.registry) {
+                classType = "court_condition_classes";
+            }
+            
+            if (cls && country && courts) {
+                courts = courts.trim().split(/\s+/);
+                if (!state.locale[lang].opts[classType]) {
+                    state.locale[lang].opts[classType] = {};
+                }
+                if (!state.locale[lang].opts[classType][country]) {
+                    state.locale[lang].opts[classType][country] = {};
+                }
+                for (var i=0,ilen=courts.length;i<ilen;i++) {
+                    state.locale[lang].opts[classType][country][courts[i]] = cls;
+                }
+            }
+        }
+    },
+
+    INIT_JURISDICTION_MACROS: function (state, Item, macroName) {
+        if (!state.sys.retrieveStyleModule || !CSL.MODULE_MACROS[macroName] || !Item.jurisdiction) {
+            return false;
+        }
+        var jurisdictionList = state.getJurisdictionList(Item.jurisdiction);
+        // Set up a list of jurisdictions here, we will reuse it
+        if (!state.opt.jurisdictions_seen[jurisdictionList[0]]) {
+            var res = state.retrieveAllStyleModules(jurisdictionList);
+            // Okay. We have code for each of the novel modules in the
+            // hierarchy. Load them all into the processor.
+            for (var jurisdiction in res) {
+                var macroCount = 0;
+                state.juris[jurisdiction] = {};
+                var myXml = CSL.setupXml(res[jurisdiction]);
+                myXml.addMissingNameNodes(myXml.dataObj);
+                myXml.addInstitutionNodes(myXml.dataObj);
+                myXml.insertPublisherAndPlace(myXml.dataObj);
+                myXml.flagDateMacros(myXml.dataObj);
+                var myNodes = myXml.getNodesByName(myXml.dataObj, "law-module");
+                for (var i=0,ilen=myNodes.length;i<ilen;i++) {
+                    var myTypes = myXml.getAttributeValue(myNodes[i],"types");
+                    if (myTypes) {
+                        state.juris[jurisdiction].types = {};
+                        myTypes =  myTypes.split(/\s+/);
+                        for (var j=0,jlen=myTypes.length;j<jlen;j++) {
+                            state.juris[jurisdiction].types[myTypes[j]] = true;
+                        }
+                    }
+                }
+                
+                var lang = state.opt.lang ? state.opt.lang : state.opt["default-locale"][0];
+                CSL.SET_COURT_CLASSES(state, lang, myXml, myXml.dataObj);
+                
+                if (!state.juris[jurisdiction].types) {
+                    state.juris[jurisdiction].types = CSL.MODULE_TYPES;
+                }
+                var myNodes = myXml.getNodesByName(myXml.dataObj, "macro");
+                for (var i=0,ilen=myNodes.length;i<ilen;i++) {
+                    var myName = myXml.getAttributeValue(myNodes[i], "name");
+                    if (!CSL.MODULE_MACROS[myName]) {
+                        CSL.debug("CSL: skipping non-modular macro name \"" + myName + "\" in module context");
+                        continue;
+                    }
+                    macroCount++;
+                    state.juris[jurisdiction][myName] = [];
+                    // Must use the same XML parser for style and modules.
+                    state.buildTokenLists(myNodes[i], state.juris[jurisdiction][myName]);
+                    state.configureTokenList(state.juris[jurisdiction][myName]);
+                }
+                //if (macroCount < Object.keys(CSL.MODULE_MACROS).length) {
+                //    var missing = [];
+                //    throw "CSL ERROR: Incomplete jurisdiction style module for: " + jurisdiction;
+                //}
+            }
+        }
+        if (state.opt.parallel.enable) {
+            if (!state.parallel) {
+                state.parallel = new CSL.Parallel(state);
+            }
+        }
+        // Identify the best jurisdiction for the item and return true, otherwise return false
+        for (var i=0,ilen=jurisdictionList.length;i<ilen;i++) {
+            var jurisdiction = jurisdictionList[i];
+            if(state.juris[jurisdiction] && state.juris[jurisdiction].types[Item.type]) {
+                Item["best-jurisdiction"] = jurisdiction;
+                return true;
+            }
+        }
+        return false;
     }
 };
 
@@ -3105,6 +3255,7 @@ CSL.DateParser = function () {
         var yearIsNegative = false;
         var lst;
         if (txt) {
+            txt = txt.replace(/^(.*[0-9])T[0-9].*/, "$1");
             // If string leads with a minus sign, strip and memo it.
             if (txt.slice(0, 1) === "-") {
                 yearIsNegative = true;
@@ -3425,8 +3576,6 @@ CSL.Engine = function (sys, style, lang, forceLang) {
         CSL.stringCompare = this.sys.stringCompare;
     }
     this.sys.AbbreviationSegments = CSL.AbbreviationSegments;
-    this.parallel = new CSL.Parallel(this);
-    //this.parallel.use_parallels = true;
 
     this.transform = new CSL.Transform(this);
     // true or false
@@ -3467,7 +3616,7 @@ CSL.Engine = function (sys, style, lang, forceLang) {
         }
         
     }
-    if (this.opt.development_extensions.uppercase_subtitles) {
+    if (this.opt.development_extensions.uppercase_subtitles || this.opt.development_extensions.implicit_short_title) {
         this.opt.development_extensions.main_title_from_short_title = true;
     }
     if (this.opt.development_extensions.csl_reverse_lookup_support) {
@@ -3592,6 +3741,10 @@ CSL.Engine = function (sys, style, lang, forceLang) {
     this.build.area = "intext";
     var area_nodes = this.cslXml.getNodesByName(this.cslXml.dataObj, this.build.area);
     this.buildTokenLists(area_nodes, this[this.build.area].tokens);
+
+    if (this.opt.parallel.enable) {
+        this.parallel = new CSL.Parallel(this);
+    }
 
     this.juris = {};
 
@@ -6013,6 +6166,11 @@ CSL.Output.Queue.adjust = function (punctInQuote) {
 /*global CSL: true */
 
 CSL.Engine.Opt = function () {
+    this.parallel = {
+        enable: false,
+        no_repeat: null,
+        changes_in: {}
+    },
     this.has_disambiguate = false;
     this.mode = "html";
     this.dates = {};
@@ -6176,6 +6334,8 @@ CSL.Engine.Opt = function () {
     this.development_extensions.throw_on_empty = false;
     this.development_extensions.strict_inputs = true;
     this.development_extensions.prioritize_disambiguate_condition = false;
+    this.development_extensions.force_short_title_casing_alignment = true;
+    this.development_extensions.implicit_short_title = false;
 };
 
 CSL.Engine.Tmp = function () {
@@ -6246,8 +6406,9 @@ CSL.Engine.Tmp = function () {
         label_form:  undefined,
         parallel_condition: undefined,
         parallel_result: undefined,
-        no_repeat_condition: undefined,
         parallel_repeats: undefined,
+        no_repeat_condition: undefined,
+        no_repeat_repeats: undefined,
         condition: false,
         force_suppress: false,
         done_vars: []
@@ -6747,7 +6908,7 @@ CSL.Engine.prototype.processCitationCluster = function (citation, citationsPre, 
 
     // attach the sorted list to the citation item
     citation.sortedItems = sortedItems;
-    
+
     // build reconstituted citations list in current document order
     var citationByIndex = [];
     var citationById = {};
@@ -6931,7 +7092,10 @@ CSL.Engine.prototype.processCitationCluster = function (citation, citationsPre, 
     }
 
     // evaluate parallels
-    this.parallel.StartCitation(citation.sortedItems);
+
+    if (this.opt.parallel.enable) {
+        this.parallel.StartCitation(citation.sortedItems);
+    }
 
     var citations;
     if (this.opt.update_mode === CSL.POSITION) {
@@ -7072,10 +7236,15 @@ CSL.Engine.prototype.processCitationCluster = function (citation, citationsPre, 
                             if (prevCitation.properties.mode === "author-only" && j > 1) {
                                 old_last_id_offset = 2;
                             }
-                            oldlastid =  citations[j - old_last_id_offset].sortedItems.slice(-1)[0][1].id;
-                            oldlastxloc =  citations[j - old_last_id_offset].sortedItems.slice(-1)[0][1]["locator-extra"];
-                            if (prevCitation.sortedItems[0].slice(-1)[0].legislation_id) {
-                                oldlastid = prevCitation.sortedItems[0].slice(-1)[0].legislation_id;
+                            var adjusted_offset = (j - old_last_id_offset);
+                            if (citations[adjusted_offset].sortedItems.length) {
+                                oldlastid =  citations[adjusted_offset].sortedItems.slice(-1)[0][1].id;
+                                oldlastxloc =  citations[j - old_last_id_offset].sortedItems.slice(-1)[0][1]["locator-extra"];
+                            }
+                            if (prevCitation.sortedItems.length) {
+                                if (prevCitation.sortedItems[0].slice(-1)[0].legislation_id) {
+                                    oldlastid = prevCitation.sortedItems[0].slice(-1)[0].legislation_id;
+                                }
                             }
                         }
                         if (j > 0 && k === 0 && prevCitation.properties.noteIndex !== thisCitation.properties.noteIndex) {
@@ -7461,7 +7630,9 @@ CSL.Engine.prototype.makeCitationCluster = function (rawList) {
         inputList.sort(this.citation.srt.compareCompositeKeys);
     }
     this.tmp.citation_errors = [];
-    this.parallel.StartCitation(inputList);
+    if (this.opt.parallel.enable) {
+        this.parallel.StartCitation(inputList);
+    }
     var str = CSL.getCitationCluster.call(this, inputList);
     return str;
 };
@@ -7486,8 +7657,11 @@ CSL.getAmbiguousCite = function (Item, disambig, visualForm, item) {
         label_form: flags.label_form,
         parallel_condition: flags.parallel_condition,
         parallel_result: flags.parallel_result,
+        changes_in_condition: flags.changes_in_condition,
         no_repeat_condition: flags.no_repeat_condition,
-        parallel_repeats: flags.parallel_result,
+        parallel_delimiter_override: flags.parallel_delimiter_override,
+        parallel_repeats: flags.parallel_repeats,
+        no_repeat_repeats: flags.no_repeat_repeats,
         condition: flags.condition,
         force_suppress: flags.force_suppress,
         done_vars: flags.done_vars.slice()
@@ -7747,6 +7921,8 @@ CSL.getCitationCluster = function (inputList, citation) {
 
         this.tmp.in_cite_predecessor = false;
         // true is to block reset of shadow numbers
+        
+        
         if (pos > 0) {
             CSL.getCite.call(this, Item, item, "" + inputList[(pos - 1)][0].id, true);
         } else {
@@ -7801,7 +7977,9 @@ CSL.getCitationCluster = function (inputList, citation) {
         }
     }
 
-    this.parallel.purgeGroupsIfParallel();
+    if (this.opt.parallel.enable) {
+        this.parallel.purgeGroupsIfParallel();
+    }
     //
     // output.queue is a simple array.  do a slice
     // of it to get each cite item, setting params from
@@ -9213,6 +9391,10 @@ CSL.Engine.prototype.localeSet = function (myxml, lang_in, lang_out) {
             this.locale[lang_out].dates[myxml.getAttributeValue(date, "form")] = date;
         }
     }
+    //
+    // Xml: get list of nodes by node type
+    //
+    CSL.SET_COURT_CLASSES(this, lang_out, myxml, locale);
 };
 
 
@@ -9998,7 +10180,9 @@ CSL.Node.group = {
                         label_form: label_form,
                         label_capitalize_if_first: label_capitalize_if_first,
                         parallel_condition: this.strings.set_parallel_condition,
+                        changes_in_condition: this.strings.set_changes_in_condition,
                         no_repeat_condition: this.strings.set_no_repeat_condition,
+                        parallel_delimiter_override: this.strings.set_parallel_delimiter_override,
                         parallel_result: undefined,
                         parallel_repeats: undefined,
                         condition: condition,
@@ -10077,62 +10261,8 @@ CSL.Node.group = {
 
                 func = (function (macroName) {
                     return function (Item) {
-                        if (!state.sys.retrieveStyleModule || !CSL.MODULE_MACROS[macroName] || !Item.jurisdiction) {
-                            return false;
-                        }
-                        var jurisdictionList = state.getJurisdictionList(Item.jurisdiction);
-                        // Set up a list of jurisdictions here, we will reuse it
-                        if (!state.opt.jurisdictions_seen[jurisdictionList[0]]) {
-                            var res = state.retrieveAllStyleModules(jurisdictionList);
-                            // Okay. We have code for each of the novel modules in the
-                            // hierarchy. Load them all into the processor.
-                            for (var jurisdiction in res) {
-                                var macroCount = 0;
-                                state.juris[jurisdiction] = {};
-                                var myXml = CSL.setupXml(res[jurisdiction]);
-                                var myNodes = myXml.getNodesByName(myXml.dataObj, "law-module");
-                                for (var i=0,ilen=myNodes.length;i<ilen;i++) {
-                                    var myTypes = myXml.getAttributeValue(myNodes[i],"types");
-                                    if (myTypes) {
-                                        state.juris[jurisdiction].types = {};
-                                        myTypes =  myTypes.split(/\s+/);
-                                        for (var j=0,jlen=myTypes.length;j<jlen;j++) {
-                                            state.juris[jurisdiction].types[myTypes[j]] = true;
-                                        }
-                                    }
-                                }
-                                if (!state.juris[jurisdiction].types) {
-                                    state.juris[jurisdiction].types = CSL.MODULE_TYPES;
-                                }
-                                var myNodes = myXml.getNodesByName(myXml.dataObj, "macro");
-                                for (var i=0,ilen=myNodes.length;i<ilen;i++) {
-                                    var myName = myXml.getAttributeValue(myNodes[i], "name");
-                                    if (!CSL.MODULE_MACROS[myName]) {
-                                        CSL.debug("CSL: skipping non-modular macro name \"" + myName + "\" in module context");
-                                        continue;
-                                    }
-                                    macroCount++;
-                                    state.juris[jurisdiction][myName] = [];
-                                    // Must use the same XML parser for style and modules.
-                                    state.buildTokenLists(myNodes[i], state.juris[jurisdiction][myName]);
-                                    state.configureTokenList(state.juris[jurisdiction][myName]);
-                                }
-                                //if (macroCount < Object.keys(CSL.MODULE_MACROS).length) {
-                                //    var missing = [];
-                                //    throw "CSL ERROR: Incomplete jurisdiction style module for: " + jurisdiction;
-                                //}
-                            }
-                        }
-                        // Identify the best jurisdiction for the item and return true, otherwise return false
-                        for (var i=0,ilen=jurisdictionList.length;i<ilen;i++) {
-                            var jurisdiction = jurisdictionList[i];
-                            if(state.juris[jurisdiction] && state.juris[jurisdiction].types[Item.type]) {
-                                Item["best-jurisdiction"] = jurisdiction;
-                                return true;
-                            }
-                        }
-                        return false;
-                    };
+                        return CSL.INIT_JURISDICTION_MACROS(state, Item, macroName);
+                    }
                 }(this.juris));
                 
                 if_start.tests ? {} : if_start.tests = [];
@@ -10179,7 +10309,7 @@ CSL.Node.group = {
             }
             
             // quashnonfields
-            func = function (state, Item) {
+            func = function (state, Item, item) {
                 state.output.endTag();
                 if (this.realGroup) {
                     var flags = state.tmp.group_context.pop();
@@ -10211,17 +10341,38 @@ CSL.Node.group = {
                         }
                         var blobs = state.output.current.value().blobs;
                         var pos = state.output.current.value().blobs.length - 1;
-                        if (!state.tmp.just_looking && (flags.parallel_condition || flags.no_repeat_condition)) {
+                        if (!state.tmp.just_looking && (flags.parallel_condition || flags.no_repeat_condition || flags.parallel_delimiter_override)) {
                             var parallel_condition_object = {
                                 blobs: blobs,
-                                condition: flags.parallel_condition,
-                                result: flags.parallel_result,
-                                norepeat: flags.no_repeat_condition,
-                                repeats: flags.parallel_repeats,
+                                condition: flags.condition,
+                                parallel_condition: flags.parallel_condition,
+                                parallel_result: flags.parallel_result,
+                                changes_in_condition: flags.changes_in_condition,
+                                parallel_repeats: flags.parallel_repeats,
+                                no_repeat_condition: flags.no_repeat_condition,
+                                no_repeat_repeats: flags.no_repeat_repeats,
+                                parallel_delimiter_override: flags.parallel_delimiter_override,
                                 id: Item.id,
                                 pos: pos
                             };
-                            state.parallel.parallel_conditional_blobs_list.push(parallel_condition_object);
+                            if (state.parallel.checkRepeats(parallel_condition_object)) {
+                                if (blobs) {
+                                    blobs.pop();
+                                }
+                                if (parallel_condition_object.parallel_delimiter_override) {
+                                    state.output.queue.slice(-1)[0].parallel_delimiter = parallel_condition_object.parallel_delimiter_override;
+                                }
+                            }
+                            if (state.parallel.checkParallels(parallel_condition_object, Item)) {
+                                if (blobs) {
+                                    blobs.pop();
+                                }
+                            }
+                            if (state.tmp.area === "citation" && !item.prefix && ["mid", "last"].indexOf(parallel_condition_object.parallel_result) > -1) {
+                                if (parallel_condition_object.parallel_delimiter_override) {
+                                    state.output.queue.slice(-1)[0].parallel_delimiter = parallel_condition_object.parallel_delimiter_override;
+                                }
+                            }
                         }
                     } else {
                         state.tmp.term_predecessor = flags.old_term_predecessor;
@@ -10671,6 +10822,13 @@ CSL.Node.key = {
                     var altvar = false;
                     var transfall = true;
                     func = state.transform.getOutputFunction(this.variables, abbrevfam, abbrfall, altvar, transfall);
+                } else if ("court-class" === variable) {
+                    func = function(state, Item) {
+                        CSL.INIT_JURISDICTION_MACROS(state, Item, "juris-main")
+                        // true is for sortKey mode
+                        var cls = CSL.GET_COURT_CLASS(state, Item, true);
+                        state.output.append(cls, "empty");
+                    }
                 } else {
                     func = function (state, Item) {
                         var varval = Item[variable];
@@ -14570,7 +14728,6 @@ CSL.Node.sort = {
         target = state[state.build.root + "_sort"].tokens;
         if (this.tokentype === CSL.START) {
             if (state.build.area === "citation") {
-                state.parallel.use_parallels = false;
                 state.opt.sort_citations = true;
             }
             state.build.area = state.build.root + "_sort";
@@ -14919,7 +15076,10 @@ CSL.Node.text = {
 
                     // Deal with multi-fields and ordinary fields separately.
                     if (CSL.MULTI_FIELDS.indexOf(this.variables_real[0]) > -1
-                        || ["language-name", "language-name-original"].indexOf(this.variables_real[0]) > -1) {
+                        || this.variables_real[0].indexOf("-main") > -1
+                        || this.variables_real[0].indexOf("-sub") > -1
+                        || ["language-name", "language-name-original"].indexOf(this.variables_real[0]) > -1
+                       ) {
 
                         // multi-fields
                         // Initialize transform factory according to whether
@@ -14983,6 +15143,12 @@ CSL.Node.text = {
                                 if (this.variables[0]) {
                                     value = state.getVariable(Item, this.variables[0], form);
                                     if (value) {
+                                        if (this.variables[0] === "URL" && form === "short") {
+                                            value = value.replace(/(.*\.[^\/]+)\/.*/, "$1");
+                                            if (value.match(/\/\/www\./)) {
+                                                value = value.replace(/https?:\/\//, "");
+                                            }
+                                        }
                                         // true is for non-suppression of periods
                                         if (state.opt.development_extensions.wrap_url_and_doi) {
                                             if (!this.decorations.length || this.decorations[0][0] !== "@" + this.variables[0]) {
@@ -15186,7 +15352,7 @@ CSL.Attributes["@is-numeric"] = function (state, arg) {
                 if (state.tmp.shadow_numbers[variable].numeric) {
                     return true;
                 }
-            } else if (["title", "locator-extra","version"].indexOf(variable) > -1) {
+            } else if (["title","version"].indexOf(variable) > -1) {
                 if (myitem[variable].slice(-1) === "" + parseInt(myitem[variable].slice(-1), 10)) {
                     return true;
                 }
@@ -15246,7 +15412,6 @@ CSL.Attributes["@position"] = function (state, arg) {
     this.tests ? {} : this.tests = [];
     var tryposition;
     state.opt.update_mode = CSL.POSITION;
-    state.parallel.use_parallels = null;
     var trypositions = arg.split(/\s+/);
     var testSubsequentNear = function (Item, item) {
         if (item && item.position >= CSL.POSITION_SUBSEQUENT && item["near-note"]) {
@@ -15940,15 +16105,51 @@ CSL.Attributes["@locale-internal"] = function (state, arg) {
 };
 
 
+CSL.Attributes["@court-class"] = function (state, arg) {
+    this.tests ? {} : this.tests = [];
+	var tryclasses = arg.split(/\s+/);
+    var maketest = function (tryclass) {
+        return function(Item) {
+            var cls = CSL.GET_COURT_CLASS(state, Item);
+            if (cls === tryclass) {
+                return true;
+            } else {
+                return false;
+            }
+        };
+    };
+    for (var i=0,ilen=tryclasses.length; i<ilen; i++) {
+        this.tests.push(maketest(tryclasses[i]));
+    }
+};
+
 // These are not evaluated as conditions immediately: they only
 // set parameters that are picked up during processing.
 CSL.Attributes["@is-parallel"] = function (state, arg) {
+    state.opt.parallel.enable = true;
     this.strings.set_parallel_condition = arg;
 };
-CSL.Attributes["@no-repeat"] = function (state, arg) {
-    this.strings.set_no_repeat_condition = arg.split(/\s+/);
+CSL.Attributes["@changes-in"] = function (state, arg) {
+    var lst = arg.split(/\s+/);
+    for (var i=0,ilen=lst.length;i<ilen;i++) {
+        state.opt.parallel.changes_in[lst[i]] = true;
+    }
+    this.strings.set_changes_in_condition = lst;
 };
-
+CSL.Attributes["@no-repeat"] = function (state, arg) {
+    if (!state.opt.parallel.no_repeat) {
+        state.opt.parallel.no_repeat = {};
+    }
+    var lst = arg.split(/\s+/);
+    state.opt.parallel.enable = true;
+    for (var i=0,ilen=lst.length;i<ilen;i++) {
+        state.opt.parallel.no_repeat[lst[i]] = true;
+    }
+    this.strings.set_no_repeat_condition = lst;
+};
+CSL.Attributes["@parallel-delimiter-override"] = function (state, arg) {
+    this.strings.set_parallel_delimiter_override = arg;
+};
 
 
 CSL.Attributes["@require"] = function (state, arg) {
@@ -16644,35 +16845,86 @@ CSL.Stack.prototype.length = function () {
  */
 CSL.Parallel = function (state) {
     this.state = state;
-    this.info = {};
 };
 
-CSL.Parallel.prototype.setSeriesRels = function(prevID, currID, seriesRels) {
-    if (this.info[prevID][currID]) {
-        if (!seriesRels) {
-            seriesRels = JSON.parse(JSON.stringify(this.info[prevID]));
+CSL.Parallel.Partnerships = function(state, items) {
+    this.state = state;
+    this.items = items.concat([[{},{}]]);
+    this.partnerMap = null;
+    this.partnerStatus = null;
+    this.repeatMap = null;
+};
+
+CSL.Parallel.Partnerships.prototype.update = function(i) {
+    var currItem = this.items[i][0];
+    var nextItem = this.items[i+1][0];
+    this.partnerStatus = null;
+    if (this.partnerMap) {
+        if (this.partnerMap[nextItem.id]) {
+            this.partnerStatus = "mid";
+        } else {
+            this.partnerMap = null;
+            this.partnerStatus = "last";
         }
     } else {
-        seriesRels = false;
+        // set partnerMap for this and its partner if none present
+        if (this._setPartnerMap(i)) {
+            this.partnerStatus = "first";
+        }
     }
-    return seriesRels;
+    // set repeatMap for this and its partner
+    // This really isn't the place for this stuff, if we can avoid it.
+    // We're tracking ALL VARIABLES, after which we'll filter out the
+    // ones we're interested in. Very wasteful. And that goes for
+    // the partnerMap code as well.
+    // At the very least, this should all be disabled if the style
+    // does not use one of is-parallel or no-repeat.
 }
 
-CSL.Parallel.prototype.getRepeats = function(prev, curr) {
-    var rex = /(?:type|id|seeAlso|.*-sub|.*-subjoin|.*-main)/;
-    var ret = {};
-    for (var key in prev) {
-        if (key.match(rex)) {
-            continue;
-        }
-        if (typeof prev[key] === "string" || !prev[key]) {
-            if (prev[key] && prev[key] === curr[key]) {
-                ret[key] = true;
+CSL.Parallel.Partnerships.prototype.getPartnerStatus = function(i) {
+    return this.partnerStatus;
+}
+
+CSL.Parallel.Partnerships.prototype.getID = function(i) {
+    return this.items[i][0].id;
+}
+
+CSL.Parallel.Partnerships.prototype._setPartnerMap = function(i) {
+    var currItem = this.items[i][0];
+    var nextItem = this.items[i+1][0]
+    var hasMap = false;
+    if (currItem.seeAlso) {
+        if (currItem.seeAlso.indexOf(nextItem.id) > -1) {
+            this.partnerMap = {};
+            for (var j=0,jlen=currItem.seeAlso.length; j<jlen; j++) {
+                this.partnerMap[currItem.seeAlso[j]] = true;
             }
-        } else if (typeof prev[key] === "object") {
-            // Could do better than this.
-            if (JSON.stringify(prev[key]) === JSON.stringify(curr[key])) {
-                ret[key] = true;
+            hasMap = true;
+        }
+    }
+    return hasMap;
+}
+
+CSL.Parallel.Partnerships.prototype._getPartnerRepeats = function(i, mode) {
+    var currItem = this.items[i][0];
+    var nextItem = this.items[i+1][0];
+    var rex = /(?:type|multi|id|seeAlso|.*-sub|.*-subjoin|.*-main)/;
+    var ret = {};
+    for (var key in this.state.opt.parallel[mode]) {
+        if (currItem[key]) {
+            if (key.match(rex)) {
+                continue;
+            }
+            if (!currItem[key]) continue;
+            if (typeof currItem[key] === "string") {
+                if (currItem[key] === nextItem[key]) {
+                    ret[key] = true;
+                }
+            } else if (typeof currItem[key] === "object") {
+                // Could do better than this, should be proper deepEqual polyfill
+                if (JSON.stringify(currItem[key]) === JSON.stringify(nextItem[key])) {
+                    ret[key] = true;
+                }
             }
         }
     }
@@ -16681,81 +16933,41 @@ CSL.Parallel.prototype.getRepeats = function(prev, curr) {
 
 CSL.Parallel.prototype.StartCitation = function (sortedItems, out) {
     this.parallel_conditional_blobs_list = [];
-    this.info = {};
     if (sortedItems.length > 1) {
-        // Harder than it looks.
-        // On a first pass, get the seeAlso of each item.
-        for (var i=0,ilen=sortedItems.length; i<ilen; i++) {
-            var curr = sortedItems[i][0];
-            this.info[curr.id] = {};
-            if (curr.seeAlso) {
-                for (var j=0,jlen=curr.seeAlso.length; j<jlen; j++) {
-                    if (curr.id === curr.seeAlso[j]) {
-                        continue;
-                    }
-                    this.info[curr.id][curr.seeAlso[j]] = true;
-                }
-            }
-        }
-        // On a second pass, set an item to FIRST if the current
-        // item is in its seeAlso. The seeAlso of the FIRST item control
-        // until (a) a non-member is encountered at CURRENT, or
-        // (b) the end of the array is reached.
-        // The seeAlso keys are deleted as each is seen.
-        // If neither (a) nor (b), set the current item to MID.
-        // If (a) and the previous item is FIRST, delete its
-        // parallel marker.
-        // If (b) and the current item is FIRST, delete its
-        // parallel marker.
-        // If (a) and the previous item is not FIRST, set it to
-        // LAST, and reset seeAlso from the current item.
-        // If (b) and the current item is not FIRST, set it to
-        // LAST.
-        var seriesRels = false;
+        var partners = new CSL.Parallel.Partnerships(this.state, sortedItems);
         var masterID = false;
-        for (var i=1,ilen=sortedItems.length; i<ilen; i++) {
-            var prev = sortedItems[i-1][0];
-            var curr = sortedItems[i][0];
-            var newSeriesRels = this.setSeriesRels(prev.id, curr.id, seriesRels);
-            if (!seriesRels) {
-                if (newSeriesRels) {
-                    // first
-                    seriesRels = newSeriesRels;
-                    delete seriesRels[curr.id];
-                    sortedItems[i-1][1].parallel = "first";
-                    sortedItems[i][1].parallel = "mid";
-                    sortedItems[i][1].repeats = this.getRepeats(prev, curr);
-                    sortedItems[i-1][1].repeats = sortedItems[i][1].repeats;
-                    if (!sortedItems[i][1].prefix) {
-                        sortedItems[i][1].prefix = ", ";
-                    }
-                    masterID = prev.id;
-                    this.state.registry.registry[masterID].master = true;
-                    this.state.registry.registry[masterID].siblings = [curr.id];
-
+        for (var i=0,ilen=sortedItems.length; i<ilen; i++) {
+            partners.update(i);
+            var status = partners.getPartnerStatus();
+            var currentID = partners.getID(i);
+            if (status === "first") {
+                sortedItems[i][1].parallel = "first";
+                if (i < ilen-1) {
+                    sortedItems[i+1][1].parallel_repeats = partners._getPartnerRepeats(i, "changes_in");
+                    sortedItems[i][1].parallel_repeats = sortedItems[i+1][1].parallel_repeats;
                 }
-            } else {
-                if (seriesRels[curr.id]) {
-                    sortedItems[i][1].parallel = "mid";
-                    if (!sortedItems[i][1].prefix) {
-                        sortedItems[i][1].prefix = ", ";
-                    }
-                    delete seriesRels[curr.id];
-                    sortedItems[i][1].repeats = this.getRepeats(prev, curr);
-                    //sortedItems[i-1][1].repeats = sortedItems[i][1].repeats;
-                    this.state.registry.registry[masterID].siblings.push(curr.id);
-                } else {
-                    sortedItems[i-1][1].parallel = "last";
-                    sortedItems[i][1].repeats = this.getRepeats(prev, curr);
-                    seriesRels = false;
+                masterID = currentID;
+                this.state.registry.registry[masterID].master = true;
+                this.state.registry.registry[masterID].siblings = [];
+            } else if (status === "mid") {
+                sortedItems[i][1].parallel = "mid";
+                if (i < ilen-1) {
+                    sortedItems[i+1][1].parallel_repeats = partners._getPartnerRepeats(i, "changes_in");
                 }
+                this.state.registry.registry[masterID].siblings.push(currentID);
+                this.state.registry.masterMap[currentID] = masterID;
+            } else if (status === "last") {
+                sortedItems[i][1].parallel = "last";
+                if (i < ilen-1) {
+                    sortedItems[i+1][1].parallel_repeats = partners._getPartnerRepeats(i, "changes_in");
+                }
+                this.state.registry.registry[masterID].siblings.push(currentID);
+                this.state.registry.masterMap[currentID] = masterID;
             }
-            if (i === (sortedItems.length-1)) {
-                if (sortedItems[i][1].parallel === "mid") {
-                    sortedItems[i][1].parallel = "last";
-                    sortedItems[i][1].repeats = this.getRepeats(prev, curr);
-                } else if (sortedItems[i][1].parallel !== "last") {
-                    delete sortedItems[i][1].repeats;
+            // Set repeats map here?
+            if (this.state.opt.parallel.no_repeat) {
+                if (i < ilen-1) {
+                    sortedItems[i+1][1].no_repeat_repeats = partners._getPartnerRepeats(i, "no_repeat");
                 }
             }
         }
@@ -16763,46 +16975,48 @@ CSL.Parallel.prototype.StartCitation = function (sortedItems, out) {
 };
 
 
-CSL.Parallel.prototype.purgeGroupsIfParallel = function () {
-    for (var i = this.parallel_conditional_blobs_list.length - 1; i > -1; i += -1) {
-        var obj = this.parallel_conditional_blobs_list[i];
-        if (!obj.result && !obj.repeats) {
+CSL.Parallel.prototype.checkRepeats = function(obj) {
+    var purgeme = false;
+    if (obj.no_repeat_repeats && obj.no_repeat_condition) {
+        var matches = 0;
+        for (var j=0,jlen=obj.no_repeat_condition.length; j<jlen; j++) {
+            if (obj.no_repeat_repeats[obj.no_repeat_condition[j]]) {
+                matches += 1;
+            }
+        }
+        if (matches === obj.no_repeat_condition.length) {
+            purgeme = true;
+        }
+    }
+    return purgeme;
+};
+
+CSL.Parallel.prototype.checkParallels = function(obj, Item) {
+    var purgeme = false;
+    if (obj.parallel_result && obj.parallel_condition) {
+        purgeme = true;
+        if (obj.parallel_result === obj.parallel_condition) {
             purgeme = false;
-        } else {
-            if (obj.condition) {
-                var purgeme = true;
-                if (obj.result === obj.condition) {
-                    purgeme = false;
+        }
+        if (purgeme && obj.changes_in_condition && obj.parallel_repeats) {
+            //if (purgeme && obj.changes_in_condition && obj.parallel_repeats)
+            purgeme = false;
+            var matches = 0;
+            for (var j=0,jlen=obj.changes_in_condition.length; j<jlen; j++) {
+                if (obj.parallel_repeats[obj.changes_in_condition[j]]) {
+                    matches += 1;
                 }
             }
-            if (purgeme && obj.norepeat && obj.repeats) {
-                purgeme = false;
-                var matches = 0;
-                for (var j=0,jlen=obj.norepeat.length; j<jlen; j++) {
-                    if (obj.repeats[obj.norepeat[j]]) {
-                        matches += 1;
-                    }
-                }
-                if (matches === obj.norepeat.length) {
-                    purgeme = true;
-                }
+            if (matches === obj.changes_in_condition.length) {
+                purgeme = true;
             }
         }
-        if (purgeme) {
-            var buffer = [];
-            while (obj.blobs.length > obj.pos) {
-                buffer.push(obj.blobs.pop());
-            }
-            if (buffer.length) {
-                buffer.pop();
-            }
-            while (buffer.length) {
-                obj.blobs.push(buffer.pop());
-            }
-        }
-        this.parallel_conditional_blobs_list.pop();
     }
+    return purgeme;
 };
+
+
+CSL.Parallel.prototype.purgeGroupsIfParallel = function() {};
 
 /*global CSL: true */
 
@@ -17424,7 +17638,10 @@ CSL.Transform = function (state) {
                 primary_tok.strings.suffix = primary_tok.strings.suffix.replace(/[ .,]+$/,"");
                 state.output.append(primary, primary_tok);
                 state.tmp.probably_rendered_something = true;
-                
+
+                if (primary === secondary) {
+                    secondary = false;
+                }
                 if (secondary) {
                     secondary_tok.strings.prefix = state.opt.citeAffixes[langPrefs][slot.secondary].prefix;
                     secondary_tok.strings.suffix = state.opt.citeAffixes[langPrefs][slot.secondary].suffix;
@@ -17453,6 +17670,10 @@ CSL.Transform = function (state) {
                     // Suppress supplementary multilingual info on subsequent
                     // partners of a parallel cite?
                 }
+                if (primary === tertiary) {
+                    tertiary = false;
+                }
+                
                 if (tertiary) {
                     tertiary_tok.strings.prefix = state.opt.citeAffixes[langPrefs][slot.tertiary].prefix;
                     tertiary_tok.strings.suffix = state.opt.citeAffixes[langPrefs][slot.tertiary].suffix;
@@ -18603,8 +18824,12 @@ CSL.Util.substituteStart = function (state, target) {
         if (item && item.parallel) {
             state.tmp.group_context.tip.parallel_result = item.parallel;
         }
-        if (item && item.repeats && Object.keys(item.repeats).length > 0) {
-            state.tmp.group_context.tip.parallel_repeats = item.repeats;
+        //if (item && item.repeats && Object.keys(item.repeats).length > 0) {
+        if (item && item.parallel_repeats) {
+            state.tmp.group_context.tip.parallel_repeats = item.parallel_repeats;
+        }
+        if (item && item.no_repeat_repeats) {
+            state.tmp.group_context.tip.no_repeat_repeats = item.no_repeat_repeats;
         }
         for (var i = 0, ilen = this.decorations.length; i < ilen; i += 1) {
             if ("@strip-periods" === this.decorations[i][0] && "true" === this.decorations[i][1]) {
@@ -21719,7 +21944,10 @@ CSL.Registry = function (state) {
     // See CSL.NameOutput.prototype.outputNames
     // and CSL.Registry.prototype.doinserts
     this.authorstrings = {};
-
+    
+    // for parallel delimiter support
+    this.masterMap = {};
+    
     //
     // shared scratch vars
     this.mylist = [];
@@ -22436,11 +22664,9 @@ CSL.getSortKeys = function (Item, key_type) {
     this.tmp.extension = "_sort";
     this.tmp.disambig_override = true;
     this.tmp.disambig_request = false;
-    this.parallel.use_parallels = (this.parallel.use_parallels === true || this.parallel.use_parallels === null) ? null : false;
     this.tmp.suppress_decorations = true;
     CSL.getCite.call(this, Item);
     this.tmp.suppress_decorations = false;
-    this.parallel.use_parallels = this.parallel.use_parallels === null ? true : false;
     this.tmp.disambig_override = false;
     len = this[key_type].keys.length;
     for (pos = 0; pos < len; pos += 1) {

@@ -181,7 +181,7 @@ Rust language:
     let chrs: Vec<char> = "3141592653589793238462643383".chars().collect();
     let segs = QrSegment::make_segments(&chrs);
     let qr = QrCode::encode_segments_advanced(
-        &segs, QrCodeEcc::High, 5, 5, Some(2), false).unwrap();
+        &segs, QrCodeEcc::High, 5, 5, Some(Mask::new(2)), false).unwrap();
     for y in 0 .. qr.size() {
         for x in 0 .. qr.size() {
             (... paint qr.get_module(x, y) ...)
@@ -192,7 +192,7 @@ Rust language:
 License
 -------
 
-Copyright © 2018 Project Nayuki. (MIT License)  
+Copyright © 2019 Project Nayuki. (MIT License)  
 [https://www.nayuki.io/page/qr-code-generator-library](https://www.nayuki.io/page/qr-code-generator-library)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of

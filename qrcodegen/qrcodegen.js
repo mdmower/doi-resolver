@@ -113,8 +113,8 @@ var qrcodegen = new function() {
 		if (mask == -1) {  // Automatically choose best mask
 			var minPenalty = Infinity;
 			for (var i = 0; i < 8; i++) {
-				drawFormatBits(i);
 				applyMask(i);
+				drawFormatBits(i);
 				var penalty = getPenaltyScore();
 				if (penalty < minPenalty) {
 					mask = i;
@@ -125,8 +125,8 @@ var qrcodegen = new function() {
 		}
 		if (mask < 0 || mask > 7)
 			throw "Assertion error";
-		drawFormatBits(mask);  // Overwrite old format bits
 		applyMask(mask);  // Apply the final choice of mask
+		drawFormatBits(mask);  // Overwrite old format bits
 		
 		isFunction = null;
 		
@@ -339,11 +339,11 @@ var qrcodegen = new function() {
 			
 			// Split data into blocks and append ECC to each block
 			var blocks = [];
-			var rs = new ReedSolomonGenerator(blockEccLen);
+			var rsDiv = QrCode.reedSolomonComputeDivisor(blockEccLen);
 			for (var i = 0, k = 0; i < numBlocks; i++) {
 				var dat = data.slice(k, k + shortBlockLen - blockEccLen + (i < numShortBlocks ? 0 : 1));
 				k += dat.length;
-				var ecc = rs.getRemainder(dat);
+				var ecc = QrCode.reedSolomonComputeRemainder(dat, rsDiv);
 				if (i < numShortBlocks)
 					dat.push(0);
 				blocks.push(dat.concat(ecc));
@@ -429,55 +429,51 @@ var qrcodegen = new function() {
 			
 			// Adjacent modules in row having same color, and finder-like patterns
 			for (var y = 0; y < size; y++) {
-				var runHistory = [0,0,0,0,0,0,0];
-				var color = false;
+				var runColor = false;
 				var runX = 0;
+				var runHistory = [0,0,0,0,0,0,0];
+				var padRun = size;
 				for (var x = 0; x < size; x++) {
-					if (modules[y][x] == color) {
+					if (modules[y][x] == runColor) {
 						runX++;
 						if (runX == 5)
 							result += QrCode.PENALTY_N1;
 						else if (runX > 5)
 							result++;
 					} else {
-						QrCode.addRunToHistory(runX, runHistory);
-						if (!color && QrCode.hasFinderLikePattern(runHistory))
-							result += QrCode.PENALTY_N3;
-						color = modules[y][x];
+						QrCode.finderPenaltyAddHistory(runX + padRun, runHistory);
+						padRun = 0;
+						if (!runColor)
+							result += finderPenaltyCountPatterns(runHistory) * QrCode.PENALTY_N3;
+						runColor = modules[y][x];
 						runX = 1;
 					}
 				}
-				QrCode.addRunToHistory(runX, runHistory);
-				if (color)
-					QrCode.addRunToHistory(0, runHistory);  // Dummy run of white
-				if (QrCode.hasFinderLikePattern(runHistory))
-					result += QrCode.PENALTY_N3;
+				result += finderPenaltyTerminateAndCount(runColor, runX + padRun, runHistory) * QrCode.PENALTY_N3;
 			}
 			// Adjacent modules in column having same color, and finder-like patterns
 			for (var x = 0; x < size; x++) {
-				var runHistory = [0,0,0,0,0,0,0];
-				var color = false;
+				var runColor = false;
 				var runY = 0;
+				var runHistory = [0,0,0,0,0,0,0];
+				var padRun = size;
 				for (var y = 0; y < size; y++) {
-					if (modules[y][x] == color) {
+					if (modules[y][x] == runColor) {
 						runY++;
 						if (runY == 5)
 							result += QrCode.PENALTY_N1;
 						else if (runY > 5)
 							result++;
 					} else {
-						QrCode.addRunToHistory(runY, runHistory);
-						if (!color && QrCode.hasFinderLikePattern(runHistory))
-							result += QrCode.PENALTY_N3;
-						color = modules[y][x];
+						QrCode.finderPenaltyAddHistory(runY + padRun, runHistory);
+						padRun = 0;
+						if (!runColor)
+							result += finderPenaltyCountPatterns(runHistory) * QrCode.PENALTY_N3;
+						runColor = modules[y][x];
 						runY = 1;
 					}
 				}
-				QrCode.addRunToHistory(runY, runHistory);
-				if (color)
-					QrCode.addRunToHistory(0, runHistory);  // Dummy run of white
-				if (QrCode.hasFinderLikePattern(runHistory))
-					result += QrCode.PENALTY_N3;
+				result += finderPenaltyTerminateAndCount(runColor, runY + padRun, runHistory) * QrCode.PENALTY_N3;
 			}
 			
 			// 2*2 blocks of modules having same color
@@ -522,6 +518,30 @@ var qrcodegen = new function() {
 					result.splice(1, 0, pos);
 				return result;
 			}
+		}
+		
+		
+		// Can only be called immediately after a white run is added, and
+		// returns either 0, 1, or 2. A helper function for getPenaltyScore().
+		function finderPenaltyCountPatterns(runHistory) {
+			var n = runHistory[1];
+			if (n > size * 3)
+				throw "Assertion error";
+			var core = n > 0 && runHistory[2] == n && runHistory[3] == n * 3 && runHistory[4] == n && runHistory[5] == n;
+			return (core && runHistory[0] >= n * 4 && runHistory[6] >= n ? 1 : 0)
+			     + (core && runHistory[6] >= n * 4 && runHistory[0] >= n ? 1 : 0);
+		}
+		
+		
+		// Must be called at the end of a line (row or column) of modules. A helper function for getPenaltyScore().
+		function finderPenaltyTerminateAndCount(currentRunColor, currentRunLength, runHistory) {
+			if (currentRunColor) {  // Terminate black run
+				QrCode.finderPenaltyAddHistory(currentRunLength, runHistory);
+				currentRunLength = 0;
+			}
+			currentRunLength += size;  // Add white border to final run
+			QrCode.finderPenaltyAddHistory(currentRunLength, runHistory);
+			return finderPenaltyCountPatterns(runHistory);
 		}
 		
 		
@@ -667,11 +687,70 @@ var qrcodegen = new function() {
 	};
 	
 	
-	// Inserts the given value to the front of the given array, which shifts over the
-	// existing values and deletes the last value. A helper function for getPenaltyScore().
-	QrCode.addRunToHistory = function(run, history) {
-		history.pop();
-		history.unshift(run);
+	// Returns a Reed-Solomon ECC generator polynomial for the given degree. This could be
+	// implemented as a lookup table over all possible parameter values, instead of as an algorithm.
+	QrCode.reedSolomonComputeDivisor = function(degree) {
+		if (degree < 1 || degree > 255)
+			throw "Degree out of range";
+		// Polynomial coefficients are stored from highest to lowest power, excluding the leading term which is always 1.
+		// For example the polynomial x^3 + 255x^2 + 8x + 93 is stored as the uint8 array [255, 8, 93].
+		var result = [];
+		for (var i = 0; i < degree - 1; i++)
+			result.push(0);
+		result.push(1);  // Start off with the monomial x^0
+		
+		// Compute the product polynomial (x - r^0) * (x - r^1) * (x - r^2) * ... * (x - r^{degree-1}),
+		// and drop the highest monomial term which is always 1x^degree.
+		// Note that r = 0x02, which is a generator element of this field GF(2^8/0x11D).
+		var root = 1;
+		for (var i = 0; i < degree; i++) {
+			// Multiply the current product by (x - r^i)
+			for (var j = 0; j < result.length; j++) {
+				result[j] = QrCode.reedSolomonMultiply(result[j], root);
+				if (j + 1 < result.length)
+					result[j] ^= result[j + 1];
+			}
+			root = QrCode.reedSolomonMultiply(root, 0x02);
+		}
+		return result;
+	};
+	
+	
+	// Returns the Reed-Solomon error correction codeword for the given data and divisor polynomials.
+	QrCode.reedSolomonComputeRemainder = function(data, divisor) {
+		var result = divisor.map(function() { return 0; });
+		data.forEach(function(b) {  // Polynomial division
+			var factor = b ^ result.shift();
+			result.push(0);
+			divisor.forEach(function(coef, i) {
+				result[i] ^= QrCode.reedSolomonMultiply(coef, factor);
+			});
+		});
+		return result;
+	};
+	
+	
+	// Returns the product of the two given field elements modulo GF(2^8/0x11D). The arguments and result
+	// are unsigned 8-bit integers. This could be implemented as a lookup table of 256*256 entries of uint8.
+	QrCode.reedSolomonMultiply = function(x, y) {
+		if (x >>> 8 != 0 || y >>> 8 != 0)
+			throw "Byte out of range";
+		// Russian peasant multiplication
+		var z = 0;
+		for (var i = 7; i >= 0; i--) {
+			z = (z << 1) ^ ((z >>> 7) * 0x11D);
+			z ^= ((y >>> i) & 1) * x;
+		}
+		if (z >>> 8 != 0)
+			throw "Assertion error";
+		return z;
+	};
+	
+	
+	// Pushes the given value to the front and drops the last value. A helper function for getPenaltyScore().
+	QrCode.finderPenaltyAddHistory = function(currentRunLength, runHistory) {
+		runHistory.pop();
+		runHistory.unshift(currentRunLength);
 	};
 	
 	
@@ -951,76 +1030,6 @@ var qrcodegen = new function() {
 		}
 		return result;
 	}
-	
-	
-	
-	/* 
-	 * A private helper class that computes the Reed-Solomon error correction codewords for a sequence of
-	 * data codewords at a given degree. Objects are immutable, and the state only depends on the degree.
-	 * This class exists because each data block in a QR Code shares the same the divisor polynomial.
-	 * This constructor creates a Reed-Solomon ECC generator for the given degree. This could be implemented
-	 * as a lookup table over all possible parameter values, instead of as an algorithm.
-	 */
-	function ReedSolomonGenerator(degree) {
-		if (degree < 1 || degree > 255)
-			throw "Degree out of range";
-		
-		// Coefficients of the divisor polynomial, stored from highest to lowest power, excluding the leading term which
-		// is always 1. For example the polynomial x^3 + 255x^2 + 8x + 93 is stored as the uint8 array {255, 8, 93}.
-		var coefficients = [];
-		
-		// Start with the monomial x^0
-		for (var i = 0; i < degree - 1; i++)
-			coefficients.push(0);
-		coefficients.push(1);
-		
-		// Compute the product polynomial (x - r^0) * (x - r^1) * (x - r^2) * ... * (x - r^{degree-1}),
-		// drop the highest term, and store the rest of the coefficients in order of descending powers.
-		// Note that r = 0x02, which is a generator element of this field GF(2^8/0x11D).
-		var root = 1;
-		for (var i = 0; i < degree; i++) {
-			// Multiply the current product by (x - r^i)
-			for (var j = 0; j < coefficients.length; j++) {
-				coefficients[j] = ReedSolomonGenerator.multiply(coefficients[j], root);
-				if (j + 1 < coefficients.length)
-					coefficients[j] ^= coefficients[j + 1];
-			}
-			root = ReedSolomonGenerator.multiply(root, 0x02);
-		}
-		
-		// Computes and returns the Reed-Solomon error correction codewords for the given
-		// sequence of data codewords. The returned object is always a new byte array.
-		// This method does not alter this object's state (because it is immutable).
-		this.getRemainder = function(data) {
-			// Compute the remainder by performing polynomial division
-			var result = coefficients.map(function() { return 0; });
-			data.forEach(function(b) {
-				var factor = b ^ result.shift();
-				result.push(0);
-				coefficients.forEach(function(coef, i) {
-					result[i] ^= ReedSolomonGenerator.multiply(coef, factor);
-				});
-			});
-			return result;
-		};
-	}
-	
-	// This static function returns the product of the two given field elements modulo GF(2^8/0x11D). The arguments and
-	// result are unsigned 8-bit integers. This could be implemented as a lookup table of 256*256 entries of uint8.
-	ReedSolomonGenerator.multiply = function(x, y) {
-		if (x >>> 8 != 0 || y >>> 8 != 0)
-			throw "Byte out of range";
-		// Russian peasant multiplication
-		var z = 0;
-		for (var i = 7; i >= 0; i--) {
-			z = (z << 1) ^ ((z >>> 7) * 0x11D);
-			z ^= ((y >>> i) & 1) * x;
-		}
-		if (z >>> 8 != 0)
-			throw "Assertion error";
-		return z;
-	};
-	
 	
 	
 	/* 

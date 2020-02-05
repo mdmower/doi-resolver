@@ -373,7 +373,6 @@ function startBackgroundFeatures() {
 }
 
 function updateBackgroundFeatureStates(changes) {
-	console.log('updateBackgroundFeatureStates\n', changes);
 	if (changes.context_menu !== undefined) {
 		toggleContextMenu(changes.context_menu.newValue);
 	}

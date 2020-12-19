@@ -981,5 +981,5 @@ function getLocalMessages() {
 	message = chrome.i18n.getMessage("svgIconInfo");
 	document.querySelector("#icon-info title").innerHTML = message;
 
-	document.getElementById("extensionVersion").innerHTML = chrome.app.getDetails().version;
+	document.getElementById("extensionVersion").innerHTML = chrome.runtime.getManifest().version;
 }

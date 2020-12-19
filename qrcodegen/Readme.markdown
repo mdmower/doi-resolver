@@ -15,10 +15,11 @@ Features
 
 Core features:
 
-* Available in 7 programming languages, all with nearly equal functionality: Java, JavaScript, TypeScript, Python, C++, C, Rust
+* Available in 6 programming languages, all with nearly equal functionality: Java, TypeScript/JavaScript, Python, Rust, C++, C
 * Significantly shorter code but more documentation comments compared to competing libraries
 * Supports encoding all 40 versions (sizes) and all 4 error correction levels, as per the QR Code Model 2 standard
-* Output formats: Raw modules/pixels of the QR symbol (all languages), SVG XML string (all languages except C), `BufferedImage` raster bitmap (Java only), HTML5 canvas (JavaScript and TypeScript only)
+* Output formats: Raw modules/pixels of the QR symbol (all languages), SVG XML string (all languages except C), `BufferedImage` raster bitmap (Java only), HTML5 canvas (TypeScript/JavaScript only)
+* Detects finder-like penalty patterns more accurately than other implementations
 * Encodes numeric and special-alphanumeric text in less space than general text
 * Open source code under the permissive MIT License
 
@@ -62,7 +63,7 @@ Java language:
         }
     }
 
-JavaScript language:
+TypeScript/JavaScript languages:
 
     // Name abbreviated for the sake of these examples here
     var QRC = qrcodegen.QrCode;
@@ -76,24 +77,6 @@ JavaScript language:
     var qr1 = QRC.encodeSegments(segs, QRC.Ecc.HIGH, 5, 5, 2, false);
     for (var y = 0; y < qr1.size; y++) {
         for (var x = 0; x < qr1.size; x++) {
-            (... paint qr1.getModule(x, y) ...)
-        }
-    }
-
-TypeScript language:
-
-    // Simple operation
-    let qr0: qrcodegen.QrCode = qrcodegen.QrCode.encodeText(
-        "Hello, world!", qrcodegen.QrCode.Ecc.MEDIUM);
-    let svg: string = qr0.toSvgString(4);
-    
-    // Manual operation
-    let segs: Array<qrcodegen.QrSegment> =
-        qrcodegen.QrSegment.makeSegments("3141592653589793238462643383");
-    let qr1: qrcodegen.QrCode = qrcodegen.QrCode.encodeSegments(
-        segs, qrcodegen.QrCode.Ecc.HIGH, 5, 5, 2, false);
-    for (let y = 0; y < qr1.size; y++) {
-        for (let x = 0; x < qr1.size; x++) {
             (... paint qr1.getModule(x, y) ...)
         }
     }
@@ -192,7 +175,7 @@ Rust language:
 License
 -------
 
-Copyright © 2019 Project Nayuki. (MIT License)  
+Copyright © 2020 Project Nayuki. (MIT License)  
 [https://www.nayuki.io/page/qr-code-generator-library](https://www.nayuki.io/page/qr-code-generator-library)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of

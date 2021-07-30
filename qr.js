@@ -328,7 +328,7 @@ function isHexColor(code) {
 	return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(code);
 }
 
-function colorChanged(color, changes) {
+function colorChanged(color/*, changes*/) {
 	this.value = color.hexString;
 	this.style.background = "linear-gradient(90deg, #FFF 50%, " + color.hexString + " 50%)";
 	saveOptions();

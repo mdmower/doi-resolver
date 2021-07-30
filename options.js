@@ -462,7 +462,7 @@ function setAutolink() {
 			if (granted) {
 				console.log("Autolink permissions added");
 				chrome.extension.getBackgroundPage().autolinkDois()
-				.then((result) => {
+				.then((/* result */) => {
 					// Result is pretty much guaranteed, no need to verify
 					optionsDisplayUpdates();
 					startChangeListeners();
@@ -481,7 +481,7 @@ function setAutolink() {
 			if (removed) {
 				console.log("Autolink permissions removed");
 				chrome.extension.getBackgroundPage().autolinkDois()
-				.then((result) => {
+				.then((/* result */) => {
 					// Result is pretty much guaranteed, no need to verify
 					optionsDisplayUpdates();
 					startChangeListeners();
@@ -768,7 +768,7 @@ function saveHistoryTitles(doiTitleReference) {
 			var stgUpdated = false;
 
 			for (var doi in doiTitleReference) {
-				if (doiTitleReference.hasOwnProperty(doi)) {
+				if (Object.prototype.hasOwnProperty.call(doiTitleReference, doi)) {
 					var title = doiTitleReference[doi];
 
 					var index = stg.recorded_dois.findIndex(function(item) {

@@ -306,7 +306,8 @@ function storageChangeHandler(changes, namespace) {
 
 		var updatedOptions = {};
 		for (change in changes) {
-			if (changes.hasOwnProperty(change) && syncOptions.indexOf(change) >= 0) {
+			if (Object.prototype.hasOwnProperty.call(changes, change)
+					&& syncOptions.indexOf(change) >= 0) {
 				updatedOptions[change] = changes[change].newValue;
 			}
 		}
@@ -501,6 +502,7 @@ function fetchDoiTitle(doi) {
 	});
 }
 
+/* exported getSavedDoiTitle */
 function getSavedDoiTitle(doi) {
 	return new Promise(function(resolve) {
 
@@ -539,6 +541,7 @@ function removeDoiMetaPermissions(callback) {
 	}, callback);
 }
 
+/* exported recordDoiAction */
 function recordDoiAction(doi) {
 	return new Promise((resolve) => {
 		var stgFetch = [
@@ -665,6 +668,7 @@ function recordDoi(doi, title) {
 	});
 }
 
+/* exported sortHistoryEntries */
 function sortHistoryEntries(entries, method) {
 	function doiCompare(a, b) {
 		if (a.doi.toLowerCase() < b.doi.toLowerCase())
@@ -713,6 +717,7 @@ function sortHistoryEntries(entries, method) {
 	}
 }
 
+/* exported escapeHtml */
 function escapeHtml(unsafe) {
 	return unsafe
 		.replace(/&/g, "&amp;")
@@ -722,6 +727,7 @@ function escapeHtml(unsafe) {
 		.replace(/'/g, "&#039;");
 }
 
+/* exported filterSelectByText */
 function filterSelectByText(select, text, trySelect) {
 	var options = Array.from(select.options);
 	var showAll = !text;

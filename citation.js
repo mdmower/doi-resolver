@@ -397,7 +397,7 @@ function renderBib(cjsResponse, cslResponse, locResponse, locale, forceLocale) {
 	var citations = { "Item-1": cjsResponse };
 
 	var citeprocSys = {
-		retrieveLocale: function(locale) {
+		retrieveLocale: function(/* locale */) {
 			return locResponse;
 		},
 		retrieveItem: function(id) {
@@ -414,7 +414,7 @@ function renderBib(cjsResponse, cslResponse, locResponse, locale, forceLocale) {
 
 	var itemIDs = [];
 	for (var key in citations) {
-		if (citations.hasOwnProperty(key)) {
+		if (Object.prototype.hasOwnProperty.call(citations, key)) {
 			itemIDs.push(key);
 		}
 	}

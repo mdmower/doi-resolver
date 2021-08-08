@@ -106,7 +106,8 @@ function getSaveMap() {
 		{ selector: "#historySortBy", func: saveOptions, events: ['change'] },
 		{ selector: "#historyLength", func: dbHistoryLengthUpdate, events: ['change'] },
 		{ selector: "#historyFetchTitle", func: setHistoryTitlePermissions, events: ['change'] },
-		{ selector: "#context", func: saveOptions, events: ['change'] },
+		{ selector: "#context", func: setContextMenu, events: ['change'] },
+		{ selector: "#contextMatch", func: setContextMenuMatch, events: ['change'] },
 		{ selector: "#meta", func: saveOptions, events: ['change'] },
 		{ selector: "#autolink", func: setAutolink, events: ['change'] },
 		{ selector: "#autolinkRewrite", func: saveOptions, events: ['change'] },
@@ -235,6 +236,7 @@ function restoreOptions(callback) {
 		"auto_link_rewrite",
 		"autolink_exclusions",
 		"context_menu",
+		"context_menu_match",
 		"cr_autolink",
 		"cr_bubble",
 		"cr_context",
@@ -265,6 +267,7 @@ function restoreOptions(callback) {
 		document.getElementById("historyLength").value = stg.history_length;
 		document.getElementById("historyFetchTitle").checked = stg.history_fetch_title;
 		document.getElementById("context").checked = stg.context_menu;
+		document.getElementById("contextMatch").checked = stg.context_menu_match;
 		document.getElementById("meta").checked = stg.meta_buttons;
 		document.getElementById("customResolver").checked = stg.custom_resolver;
 		document.getElementById("syncData").checked = stg.sync_data;
@@ -462,7 +465,7 @@ function setAutolink() {
 			if (granted) {
 				console.log("Autolink permissions added");
 				chrome.extension.getBackgroundPage().autolinkDois()
-				.then((result) => {
+				.then((/* result */) => {
 					// Result is pretty much guaranteed, no need to verify
 					optionsDisplayUpdates();
 					startChangeListeners();
@@ -474,24 +477,120 @@ function setAutolink() {
 			}
 		});
 	} else {
-		chrome.permissions.remove({
-			permissions: [ "tabs" ],
-			origins: [ "http://*/*", "https://*/*" ]
-		}, function(removed) {
-			if (removed) {
-				console.log("Autolink permissions removed");
-				chrome.extension.getBackgroundPage().autolinkDois()
-				.then((result) => {
-					// Result is pretty much guaranteed, no need to verify
-					optionsDisplayUpdates();
+		chrome.storage.local.get(["context_menu_match"], function(stg) {
+			if (stg.context_menu_match) {
+				chrome.extension.getBackgroundPage().autolinkToggleListener(false);
+				console.log("Autolink listeners disabled");
+				chrome.storage.local.set({ auto_link: false }, function() {
 					startChangeListeners();
 				});
 			} else {
-				console.log("Autolink permissions could not be removed");
-				chrome.extension.getBackgroundPage().autolinkToggleListener(false);
-				console.log("Autolink listeners manually disabled");
-				chrome.storage.local.set({ auto_link: false }, function() {
+				chrome.permissions.remove({
+					permissions: [ "tabs" ],
+					origins: [ "http://*/*", "https://*/*" ]
+				}, function(removed) {
+					if (removed) {
+						console.log("Autolink permissions removed");
+						chrome.extension.getBackgroundPage().autolinkDois()
+						.then((/* result */) => {
+							// Result is pretty much guaranteed, no need to verify
+							optionsDisplayUpdates();
+							startChangeListeners();
+						});
+					} else {
+						console.log("Autolink permissions could not be removed");
+						chrome.extension.getBackgroundPage().autolinkToggleListener(false);
+						console.log("Autolink listeners manually disabled");
+						chrome.storage.local.set({ auto_link: false }, function() {
+							startChangeListeners();
+						});
+					}
+				});
+			}
+		});
+	}
+}
+
+function setContextMenu() {
+	var contextMenuElm = document.getElementById("context");
+	if (contextMenuElm.checked) {
+		saveOptions();
+	} else {
+		haltChangeListeners();
+		var contextMatchElm = document.getElementById("contextMatch");
+		contextMatchElm.checked = false;
+		setContextMenuMatch(saveOptions);
+	}
+}
+
+/*
+ * settingsUpdatedHandler ignores the context_menu_match setting in storage, so
+ * it's safe to update it in the background (via contextMenuMatch) without worry
+ * of triggering the change handler. The checkbox change handler does need to be
+ * disabled, though, as we may end up programmatically setting the check state
+ * if permissions are not accepted.
+ */
+function setContextMenuMatch(callback) {
+	var contextMatchElm = document.getElementById("contextMatch");
+	haltChangeListeners();
+
+	if (contextMatchElm.checked) {
+		chrome.permissions.request({
+			permissions: [ "tabs" ],
+			origins: [ "http://*/*", "https://*/*" ]
+		}, function(granted) {
+			if (granted) {
+				console.log("Context menu match permissions added");
+				chrome.extension.getBackgroundPage().toggleContextMenu(false);
+				chrome.extension.getBackgroundPage().contextMenuMatch()
+				.then((/* result */) => {
+					// Result is pretty much guaranteed, no need to verify
+					optionsDisplayUpdates();
 					startChangeListeners();
+					typeof callback === "function" && callback();
+				});
+			} else {
+				console.log("Context menu match permissions not granted");
+				contextMatchElm.checked = false;
+				startChangeListeners();
+				typeof callback === "function" && callback();
+			}
+		});
+	} else {
+		chrome.storage.local.get(["auto_link", "context_menu"], function(stg) {
+			if (stg.auto_link) {
+				chrome.extension.getBackgroundPage().contextMenuMatchToggleListener(false);
+				console.log("Context menu match listeners disabled");
+				chrome.storage.local.set({ context_menu_match: false }, function() {
+					chrome.extension.getBackgroundPage().toggleContextMenu(stg.context_menu);
+					startChangeListeners();
+					typeof callback === "function" && callback();
+				});
+			} else {
+				chrome.permissions.remove({
+					permissions: [ "tabs" ],
+					origins: [ "http://*/*", "https://*/*" ]
+				}, function(removed) {
+					if (removed) {
+						console.log("Context menu match permissions removed");
+						chrome.extension.getBackgroundPage().contextMenuMatch()
+						.then((/* result */) => {
+							// Result is pretty much guaranteed, no need to verify
+							optionsDisplayUpdates();
+							chrome.extension.getBackgroundPage().toggleContextMenu(stg.context_menu);
+							startChangeListeners();
+							typeof callback === "function" && callback();
+						});
+					} else {
+						console.log("Context menu match permissions could not be removed");
+						chrome.extension.getBackgroundPage().contextMenuMatchToggleListener(false);
+						console.log("Context menu match listeners manually disabled");
+						chrome.storage.local.set({ context_menu_match: false }, function() {
+							chrome.extension.getBackgroundPage().toggleContextMenu(stg.context_menu);
+							startChangeListeners();
+							typeof callback === "function" && callback();
+						});
+					}
 				});
 			}
 		});
@@ -768,7 +867,7 @@ function saveHistoryTitles(doiTitleReference) {
 			var stgUpdated = false;
 
 			for (var doi in doiTitleReference) {
-				if (doiTitleReference.hasOwnProperty(doi)) {
+				if (Object.prototype.hasOwnProperty.call(doiTitleReference, doi)) {
 					var title = doiTitleReference[doi];
 
 					var index = stg.recorded_dois.findIndex(function(item) {
@@ -913,6 +1012,8 @@ function getLocalMessages() {
 		"optionAutolinkRewrite",
 		"optionAutolinkTestExclusion",
 		"optionContextMenu",
+		"optionContextMatch",
+		"optionContextMatchInfo",
 		"optionCrAutolink",
 		"optionCrBubble",
 		"optionCrContext",

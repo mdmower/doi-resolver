@@ -207,6 +207,14 @@
 		"description": "A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
 		"message": "Enable right-click context menu for selected text"
 	},
+	"optionContextMatch": {
+		"description": "A setting to enable DOI detection when a user highlights text on a webpage, determining whether to show 'Resolve DOI' in the context menu",
+		"message": "Only show context menu entry if a DOI is selected"
+	},
+	"optionContextMatchInfo": {
+		"description": "Cautionary remarks about context menu match feature",
+		"message": "This feature requires permission to access pages you are viewing and parse selected text. You will need to refresh open tabs for this option to take effect."
+	},
 	"optionCrAutolink": {
 		"description": "Label to choose whether custom resolver is enabled for autolinker",
 		"message": "Autolink"

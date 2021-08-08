@@ -49,6 +49,9 @@ function startListeners() {
 		case "autolink_vars":
 			sendAutolinkVariables(sendResponse);
 			break;
+		case "context_menu_toggle":
+			toggleContextMenu(request.enable);
+			break;
 		default:
 			break;
 		}
@@ -65,6 +68,7 @@ function allOptions() {
 		"cite_locale",
 		"cite_style",
 		"context_menu",
+		"context_menu_match",
 		"cr_autolink",
 		"cr_bubble",
 		"cr_bubble_last",
@@ -100,6 +104,7 @@ function allOptions() {
 function excludeFromSync() {
 	return [
 		"auto_link", // Requires permissions to enable
+		"context_menu_match", // Requires permissions to enable
 		"history_doi_queue", // Queue for recordDoi
 		"history_fetch_title", // Requires permissions to enable
 		"qr_title", // Requires permissions to enable
@@ -122,6 +127,7 @@ function getDefaultOption(opt) {
 		cite_locale: "auto",
 		cite_style: "bibtex",
 		context_menu: true,
+		context_menu_match: false,
 		cr_autolink: "custom",
 		cr_bubble: "custom",
 		cr_bubble_last: "custom",
@@ -306,7 +312,8 @@ function storageChangeHandler(changes, namespace) {
 
 		var updatedOptions = {};
 		for (change in changes) {
-			if (changes.hasOwnProperty(change) && syncOptions.indexOf(change) >= 0) {
+			if (Object.prototype.hasOwnProperty.call(changes, change)
+					&& syncOptions.indexOf(change) >= 0) {
 				updatedOptions[change] = changes[change].newValue;
 			}
 		}
@@ -351,24 +358,40 @@ function storageChangeHandler(changes, namespace) {
 function startBackgroundFeatures() {
 	var stgFetch = [
 		"auto_link",
-		"context_menu"
+		"context_menu",
+		"context_menu_match"
 	];
 
 	chrome.storage.local.get(stgFetch, function(stg) {
-		if (stg.auto_link) {
+		var autolinkDoisPromise = stg.auto_link ?
 			autolinkDois()
 			.then((enabled) => {
 				if (!enabled) {
 					console.log("Autolink was enabled in settings, but had to be disabled since necessary permissions are not available");
 				}
-				storageListener(true);
+			}) : Promise.resolve();
+
+		var contextMenuMatchPromise = stg.context_menu && stg.context_menu_match ?
+			contextMenuMatch()
+			.then((enabled) => {
+				if (!enabled) {
+					console.log("Context menu match was enabled in settings, but had to be disabled since necessary permissions are not available");
+					if (stg.context_menu) {
+						toggleContextMenu(true);
+					}
+				}
+			}) : new Promise((resolve) => {
+				if (stg.context_menu) {
+					toggleContextMenu(true);
+				}
+				resolve();
 			});
-		} else {
+
+
+		Promise.all([autolinkDoisPromise, contextMenuMatchPromise])
+		.then(() => {
 			storageListener(true);
-		}
-		if (stg.context_menu) {
-			toggleContextMenu(true);
-		}
+		});
 	});
 }
 
@@ -501,6 +524,7 @@ function fetchDoiTitle(doi) {
 	});
 }
 
+/* exported getSavedDoiTitle */
 function getSavedDoiTitle(doi) {
 	return new Promise(function(resolve) {
 
@@ -539,6 +563,7 @@ function removeDoiMetaPermissions(callback) {
 	}, callback);
 }
 
+/* exported recordDoiAction */
 function recordDoiAction(doi) {
 	return new Promise((resolve) => {
 		var stgFetch = [
@@ -665,6 +690,7 @@ function recordDoi(doi, title) {
 	});
 }
 
+/* exported sortHistoryEntries */
 function sortHistoryEntries(entries, method) {
 	function doiCompare(a, b) {
 		if (a.doi.toLowerCase() < b.doi.toLowerCase())
@@ -713,6 +739,7 @@ function sortHistoryEntries(entries, method) {
 	}
 }
 
+/* exported escapeHtml */
 function escapeHtml(unsafe) {
 	return unsafe
 		.replace(/&/g, "&amp;")
@@ -722,6 +749,7 @@ function escapeHtml(unsafe) {
 		.replace(/'/g, "&#039;");
 }
 
+/* exported filterSelectByText */
 function filterSelectByText(select, text, trySelect) {
 	var options = Array.from(select.options);
 	var showAll = !text;
@@ -763,6 +791,11 @@ function filterSelectByText(select, text, trySelect) {
 }
 
 function toggleContextMenu(enable) {
+	if (toggleContextMenu.status === enable) {
+		return;
+	}
+	toggleContextMenu.status = enable;
+
 	chrome.contextMenus.removeAll(function() {
 		if (enable) {
 			chrome.contextMenus.create({
@@ -777,7 +810,7 @@ function toggleContextMenu(enable) {
 
 function contextMenuResolve(info) {
 	var doiInput = encodeURI(trim(info.selectionText));
-	var doiPrefixRegEx = new RegExp("^doi:?", "ig");
+	var doiPrefixRegEx = /^doi:?\s*/ig;
 	doiInput = doiInput.replace(doiPrefixRegEx, '');
 
 	if (!checkValidDoi(doiInput)) {
@@ -797,10 +830,70 @@ function contextMenuResolve(info) {
 	});
 }
 
+function contextMenuMatchListener(tabId, changeInfo, tab) {
+	if (changeInfo.status !== "complete") {
+		return;
+	}
+
+	if (!/^https?:\/\//i.test(tab.url) || /^https:?\/\/chrome\.google\.com\/webstore[/$]/i.test(tab.url)) {
+		return;
+	}
+
+	chrome.tabs.executeScript(tabId, {file: "context_match.js"}, function(results) {
+		if (chrome.runtime.lastError || results === undefined) {
+			console.log("Context menu match listener failed to run on " + tab.url);
+		}
+	});
+}
+
+function contextMenuMatchToggleListener(enable) {
+	if (enable) {
+		chrome.tabs.onUpdated.addListener(contextMenuMatchListener);
+	} else {
+		chrome.tabs.onUpdated.removeListener(contextMenuMatchListener);
+	}
+}
+
+function contextMenuMatch() {
+	return new Promise((resolve) => {
+
+		contextMenuMatchToggleListener(false);
+		contextMenuMatchVerifyPermissions()
+		.then((result) => {
+			if (result) {
+				chrome.storage.local.set({ context_menu_match: true }, function() {
+					contextMenuMatchToggleListener(true);
+					console.log('Context menu match listeners enabled for http and https');
+					resolve(true);
+				});
+			} else {
+				chrome.storage.local.set({ context_menu_match: false }, function() {
+					console.log('Context menu match listeners disabled');
+					resolve(false);
+				});
+			}
+		});
+
+	});
+}
+
+function contextMenuMatchVerifyPermissions() {
+	return new Promise((resolve) => {
+
+		chrome.permissions.contains({
+			permissions: [ 'tabs' ],
+			origins: [ 'http://*/*', 'https://*/*' ]
+		}, function(result) {
+			resolve(result);
+		});
+
+	});
+}
+
 function cleanupPermissions() {
 	return new Promise((resolve) => {
 
-		chrome.storage.local.get(["auto_link"], function(stg) {
+		chrome.storage.local.get(["auto_link", "context_menu_match"], function(stg) {
 			var removeOrigins = [
 				'https://*.doi.org/',
 				'https://*.crossref.org/',
@@ -808,7 +901,7 @@ function cleanupPermissions() {
 				'https://raw.githubusercontent.com/'
 			];
 
-			if (!stg.auto_link) {
+			if (!stg.auto_link && !stg.context_menu_match) {
 				removeOrigins.push('http://*/*');
 				removeOrigins.push('https://*/*');
 			}
@@ -983,7 +1076,7 @@ function omniListener(text, disposition) {
 		console.log('omnibox: ' + text);
 
 		var doiInput = encodeURI(trim(text));
-		var doiPrefixRegEx = new RegExp("^doi:?", "ig");
+		var doiPrefixRegEx = /^doi:?\s*/ig;
 		doiInput = doiInput.replace(doiPrefixRegEx, '');
 
 		if (!checkValidDoi(doiInput)) {

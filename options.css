@@ -250,6 +250,7 @@ input[type="text"] {
 }
 
 #historySubOptions,
+#contextSubOptions,
 #alRewriteLinks,
 #alExclusions {
 	margin-left: 26px;
@@ -268,12 +269,14 @@ input[type="text"] {
 	display: block;
 }
 
-#historySubOptions {
+#historySubOptions,
+#contextSubOptions {
 	line-height: 1.5;
 	display: none;
 }
 
-#history:checked~#historySubOptions {
+#history:checked~#historySubOptions,
+#context:checked~#contextSubOptions {
 	display: block;
 }
 

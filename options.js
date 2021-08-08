@@ -482,6 +482,7 @@ function setAutolink() {
 				chrome.extension.getBackgroundPage().autolinkToggleListener(false);
 				console.log("Autolink listeners disabled");
 				chrome.storage.local.set({ auto_link: false }, function() {
+					optionsDisplayUpdates();
 					startChangeListeners();
 				});
 			} else {
@@ -502,6 +503,7 @@ function setAutolink() {
 						chrome.extension.getBackgroundPage().autolinkToggleListener(false);
 						console.log("Autolink listeners manually disabled");
 						chrome.storage.local.set({ auto_link: false }, function() {
+							optionsDisplayUpdates();
 							startChangeListeners();
 						});
 					}
@@ -545,7 +547,6 @@ function setContextMenuMatch(callback) {
 				chrome.extension.getBackgroundPage().contextMenuMatch()
 				.then((/* result */) => {
 					// Result is pretty much guaranteed, no need to verify
-					optionsDisplayUpdates();
 					startChangeListeners();
 					typeof callback === "function" && callback();
 				});
@@ -576,7 +577,6 @@ function setContextMenuMatch(callback) {
 						chrome.extension.getBackgroundPage().contextMenuMatch()
 						.then((/* result */) => {
 							// Result is pretty much guaranteed, no need to verify
-							optionsDisplayUpdates();
 							chrome.extension.getBackgroundPage().toggleContextMenu(stg.context_menu);
 							startChangeListeners();
 							typeof callback === "function" && callback();

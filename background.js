@@ -579,6 +579,8 @@ function recordDoiAction(doi) {
 					stg.history_doi_queue.push(doi);
 				delete stg.history;
 				chrome.storage.local.set(stg, resolve);
+			} else {
+				resolve();
 			}
 		});
 	});

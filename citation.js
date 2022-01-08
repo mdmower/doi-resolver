@@ -227,15 +227,18 @@ function formSubmitHandler() {
 		return;
 	}
 
-	// Allow DOI recording to happen asynchronously
+	// Do not allow DOI recording to happen asynchronously. If history is not
+	// enabled, setDoiMetaPermissions() can end up removing origin permissions
+	// just as the citation request is starting.
 	var recordDoiAction = chrome.extension.getBackgroundPage().recordDoiAction;
 	setDoiMetaPermissions()
 	.then(function () {
 		return recordDoiAction(doi);
+	})
+	.then(function () {
+		saveSelections();
+		getCitation(doi);
 	});
-
-	saveSelections();
-	getCitation(doi);
 }
 
 function saveSelections() {

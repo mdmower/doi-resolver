@@ -18,8 +18,8 @@ Matthew D. Mower (https://github.com/mdmower).
 Portions of this software depend on
 
   iro.js:
-  https://rakujira.jp/projects/iro/
-  MIT license
+  https://iro.js.org/
+  Mozilla Public License 2.0
   https://github.com/jaames/iro.js/blob/master/LICENSE.txt
 
   QR Code generator library:

@@ -721,17 +721,24 @@ function createQrImage(qrParms) {
 	var qr = qrcodegen.QrCode.encodeText(qrParms.text, ecl);
 	var svg = toSvg(qr, qrParms);
 
-	var dataUrl = "";
+	var svgDataUrl = "data:image/svg+xml;utf8," + encodeURIComponent(svg.outerHTML);
 	if (qrParms.imgType === "png") {
 		var canvas = document.createElement("canvas");
-		canvg(canvas, svg.outerHTML, {log: true});
+		canvas.width = qrParms.size;
+		canvas.height = qrParms.size;
 		document.getElementById("qrDiv").appendChild(canvas);
-		dataUrl = canvas.toDataURL("image/png");
+
+		var ctx = canvas.getContext('2d');
+		var img = new Image();
+		img.onload = function() {
+			ctx.drawImage(img, 0, 0);
+			linkifyQrImage(qrParms.imgType, canvas.toDataURL("image/png"));
+		};
+		img.src = svgDataUrl;
 	} else {
 		document.getElementById("qrDiv").appendChild(svg);
-		dataUrl = "data:image/svg+xml;utf8," + encodeURIComponent(svg.outerHTML);
+		linkifyQrImage(qrParms.imgType, svgDataUrl);
 	}
-	linkifyQrImage(qrParms.imgType, dataUrl);
 }
 
 function updateMessage(stringToEncode, titleRetrieval) {

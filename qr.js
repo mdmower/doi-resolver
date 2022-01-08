@@ -673,29 +673,53 @@ function insertQr(doiInput, qrParms) {
 	}
 }
 
-function createQrImage(qrParms) {
-	var segs = qrcodegen.QrSegment.makeSegments(qrParms.text);
-	var ecl = qrcodegen.QrCode.Ecc.MEDIUM;
-	var minVer = 1;
-	var maxVer = 40;
-	var mask = -1;
-	var boostEcc = true;
-	var qr = qrcodegen.QrCode.encodeSegments(segs, ecl, minVer, maxVer, mask, boostEcc);
-	var code = qr.toSvgString(qrParms.border);
+function toSvg(qr, qrParams) {
+	var border = qrParams.border;
+	var viewBox = qr.size + border * 2;
 
-	var domParser = new DOMParser();
-	var svgDoc = domParser.parseFromString(code, "text/xml");
-	var svg = svgDoc.getElementsByTagName("svg")[0];
-
-	if (qrParms.bgcolor === null) {
-		svg.getElementsByTagName("rect")[0].setAttribute("fill-opacity", "0.0");
-		svg.getElementsByTagName("rect")[0].setAttribute("fill", "#ffffff");
-	} else {
-		svg.getElementsByTagName("rect")[0].setAttribute("fill", qrParms.bgcolor);
+	var parts = [];
+	for (var y = 0; y < qr.size; y++) {
+		for (var x = 0; x < qr.size; x++) {
+			if (qr.getModule(x, y))
+				parts.push("M" + (x + border) + "," + (y + border) + "h1v1h-1z");
+		}
 	}
-	svg.getElementsByTagName("path")[0].setAttribute("fill", qrParms.fgcolor);
-	svg.setAttribute("width", qrParms.size);
-	svg.setAttribute("height", qrParms.size);
+
+	var ns = "http://www.w3.org/2000/svg";
+
+	var svg = document.createElementNS(ns, "svg");
+	svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+	svg.setAttribute("version", "1.1");
+	svg.setAttribute("viewBox", `0 0 ${viewBox} ${viewBox}`);
+	svg.setAttribute("stroke", "none");
+	svg.setAttribute("width", qrParams.size);
+	svg.setAttribute("height", qrParams.size);
+
+	// Background
+	var rect = document.createElementNS(ns, "rect");
+	rect.setAttribute("width", "100%");
+	rect.setAttribute("height", "100%");
+	if (qrParams.bgcolor === null) {
+		rect.setAttribute("fill", "#ffffff");
+		rect.setAttribute("fill-opacity", "0.0");
+	} else {
+		rect.setAttribute("fill", qrParams.bgcolor);
+	}
+
+	// Foreground
+	var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+	path.setAttribute("fill", qrParams.fgcolor);
+	path.setAttribute("d", parts.join(" "));
+
+	svg.appendChild(rect);
+	svg.appendChild(path);
+	return svg;
+}
+
+function createQrImage(qrParms) {
+	var ecl = qrcodegen.QrCode.Ecc.MEDIUM;
+	var qr = qrcodegen.QrCode.encodeText(qrParms.text, ecl);
+	var svg = toSvg(qr, qrParms);
 
 	var dataUrl = "";
 	if (qrParms.imgType === "png") {

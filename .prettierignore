@@ -1,0 +1,7 @@
+csl-styles/**
+dist/**
+node_modules/**
+pkg/**
+resources/icon/**
+src/csl/**
+src/qrcodegen/**

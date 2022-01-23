@@ -1,0 +1,61 @@
+{
+  "name": "doi-resolver-chrome",
+  "version": "5.0.0",
+  "description": "An extension for Chrome to quickly resolve digital object identifiers to their web destinations",
+  "private": true,
+  "scripts": {
+    "lint": "eslint src build",
+    "format": "prettier --write \"build/**/*.js\" \"src/**/*.ts\" \"html/**/*.html\" \"css/**/*.css\"",
+    "build": "node build/dist.js",
+    "build-debug": "node build/dist.js --debug",
+    "update-csl": "node build/update-csl.js",
+    "pkg": "node build/pkg.js",
+    "clean": "node build/clean.js",
+    "release": "npm run lint && npm run clean && npm run build && npm run pkg"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mdmower/doi-resolver-chrome.git"
+  },
+  "keywords": [
+    "doi",
+    "resolve",
+    "resolver",
+    "chrome",
+    "extension"
+  ],
+  "author": "Matthew D. Mower <mdmower@cmphys.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/mdmower/doi-resolver-chrome/issues"
+  },
+  "homepage": "https://github.com/mdmower/doi-resolver-chrome#readme",
+  "dependencies": {
+    "@jaames/iro": "^5.5.2",
+    "citeproc": "^2.4.62"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.0.176",
+    "@types/html-minifier": "^4.0.2",
+    "@types/node": "^17.0.10",
+    "@types/sortablejs": "^1.10.7",
+    "@typescript-eslint/eslint-plugin": "^5.10.0",
+    "@typescript-eslint/parser": "^5.10.0",
+    "@xmldom/xmldom": "^0.8.0",
+    "archiver": "^5.3.0",
+    "clean-css": "^5.2.2",
+    "colors": "^1.4.0",
+    "cross-fetch": "^3.1.5",
+    "eslint": "^8.7.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jsdoc": "^37.6.3",
+    "eslint-plugin-prettier": "^4.0.0",
+    "fs-extra": "^10.0.0",
+    "html-minifier": "^4.0.0",
+    "minimist": "^1.2.5",
+    "prettier": "^2.5.1",
+    "ts-loader": "^9.2.6",
+    "typescript": "^4.5.5",
+    "webpack": "^5.67.0"
+  }
+}

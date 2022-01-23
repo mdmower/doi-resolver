@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!-- @license Apache-2.0 -->
+
+<html>
+  <head>
+    <title>Citation Generator</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="citation.css" />
+    <script type="text/javascript" src="citation.js"></script>
+  </head>
+
+  <body>
+    <svg
+      class="hidden"
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+    >
+      <defs>
+        <symbol id="icon-arrow-down2" viewBox="0 0 32 32">
+          <title>arrow-down2</title>
+          <path
+            d="M27.414 19.414l-10 10c-0.781 0.781-2.047 0.781-2.828 0l-10-10c-0.781-0.781-0.781-2.047 0-2.828s2.047-0.781 2.828 0l6.586 6.586v-19.172c0-1.105 0.895-2 2-2s2 0.895 2 2v19.172l6.586-6.586c0.39-0.39 0.902-0.586 1.414-0.586s1.024 0.195 1.414 0.586c0.781 0.781 0.781 2.047 0 2.828z"
+          ></path>
+        </symbol>
+        <symbol id="icon-cross" viewBox="0 0 32 32">
+          <title>cross</title>
+          <path
+            d="M31.708 25.708c-0-0-0-0-0-0l-9.708-9.708 9.708-9.708c0-0 0-0 0-0 0.105-0.105 0.18-0.227 0.229-0.357 0.133-0.356 0.057-0.771-0.229-1.057l-4.586-4.586c-0.286-0.286-0.702-0.361-1.057-0.229-0.13 0.048-0.252 0.124-0.357 0.228 0 0-0 0-0 0l-9.708 9.708-9.708-9.708c-0-0-0-0-0-0-0.105-0.104-0.227-0.18-0.357-0.228-0.356-0.133-0.771-0.057-1.057 0.229l-4.586 4.586c-0.286 0.286-0.361 0.702-0.229 1.057 0.049 0.13 0.124 0.252 0.229 0.357 0 0 0 0 0 0l9.708 9.708-9.708 9.708c-0 0-0 0-0 0-0.104 0.105-0.18 0.227-0.229 0.357-0.133 0.355-0.057 0.771 0.229 1.057l4.586 4.586c0.286 0.286 0.702 0.361 1.057 0.229 0.13-0.049 0.252-0.124 0.357-0.229 0-0 0-0 0-0l9.708-9.708 9.708 9.708c0 0 0 0 0 0 0.105 0.105 0.227 0.18 0.357 0.229 0.356 0.133 0.771 0.057 1.057-0.229l4.586-4.586c0.286-0.286 0.362-0.702 0.229-1.057-0.049-0.13-0.124-0.252-0.229-0.357z"
+          ></path>
+        </symbol>
+      </defs>
+    </svg>
+    <h1 id="citeHeading"></h1>
+    <h2 id="citeSubHeading"></h2>
+    <div id="container">
+      <form name="citeForm" id="citeForm">
+        <div id="mainForm">
+          <div id="inputContainer">
+            <label for="doiInput" id="doiInputLabel"></label>
+            <input type="text" id="doiInput" value="" autofocus list="doiHistory" />
+            <svg id="openHistory" class="icon icon-arrow-down2">
+              <use xlink:href="#icon-arrow-down2"></use>
+            </svg>
+            <svg id="closeHistory" class="icon icon-cross">
+              <use xlink:href="#icon-cross"></use>
+            </svg>
+            <select id="doiHistory"></select>
+          </div>
+          <div id="stylesContainer">
+            <div id="stylesFilterContainer">
+              <label for="citeStyleFilter" id="citeStyleFilterLabel"></label>
+              <input id="citeStyleFilter" type="text" />
+            </div>
+            <select id="styleList" size="11"></select>
+          </div>
+          <div id="localSubmitContainer">
+            <label for="citeLocale" id="citeLocaleLabel"></label>
+            <select id="citeLocaleInput"></select>
+            <button id="submitButton"></button>
+          </div>
+        </div>
+        <div id="notifyDiv"></div>
+      </form>
+      <div id="citeDiv"></div>
+    </div>
+  </body>
+</html>

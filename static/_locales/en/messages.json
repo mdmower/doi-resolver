@@ -1,0 +1,446 @@
+{
+  "appDesc": {
+    "description": "A description of what the application does. This extension is used to...",
+    "message": "Quickly resolve digital object identifiers to their web destinations"
+  },
+  "appName": {
+    "description": "The title of the application",
+    "message": "DOI Resolver"
+  },
+  "autolinkExclusionsInfoText": {
+    "description": "Guidelines for entries in the autolink exclusions text(area) box",
+    "message": "List websites &ndash; one per line &ndash; that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.<br><br><span style=\"text-decoration: underline;\">Normal matching</span>: Websites will be matched based on whether the string matches the URL, <em>beginning</em> with the hostname. Wildcards are not supported.<br>Example: <strong>example.com/abc</strong> will match http://example.com/abc/def but will not match http://www.example.com/abc/def.<br><br><span style=\"text-decoration: underline;\">Regex matching</span>: Surround an entry by forward slashes (/) to perform a regex match on an entire URL, beginning with the hostname.<br>Example: <strong>/example\\.com\\/abc.*/</strong> will match both http://example.com/abc/def and http://www.example.com/abc/def."
+  },
+  "autolinkExclusionsInvalidUrl": {
+    "description": "Report that test URL is invalid due to missing http/https protocol",
+    "message": "Invalid URL (missing protocol)"
+  },
+  "autolinkExclusionsMatch": {
+    "description": "Confirm that a URL is matched by one of the autolink exclusions",
+    "message": "Exclusion matched"
+  },
+  "autolinkExclusionsNoMatch": {
+    "description": "Report that no match was found for the URL against the autolink exclusions",
+    "message": "No exclusion matched"
+  },
+  "citeHeading": {
+    "description": "The title on the citation generator page",
+    "message": "Citation Generator"
+  },
+  "citeLocaleLabel": {
+    "description": "A label next to the locale chooser for formatted citations",
+    "message": "Locale"
+  },
+  "citeLocaleLoadFailP1": {
+    "description": "Failure message when locale.xml retrieval fails (first part)",
+    "message": "Could not load locales-"
+  },
+  "citeLocaleLoadFailP2": {
+    "description": "Failure message when locale.xml retrieval fails (second part)",
+    "message": ".xml from <a href=\"https://github.com/citation-style-language/locales\">GitHub</a>"
+  },
+  "citeStyle": {
+    "description": "A label next to the style chooser for formatted citations",
+    "message": "Style"
+  },
+  "citeStyleFilterLabel": {
+    "description": "The label for the style filter box on the Citations page",
+    "message": "Style filter"
+  },
+  "citeStyleGenFail": {
+    "description": "General failure message for citation generation",
+    "message": "Citation generation failed"
+  },
+  "citeStyleLoadFailP1": {
+    "description": "Failure message when style.csl retrieval fails (first part)",
+    "message": "Could not load style "
+  },
+  "citeStyleLoadFailP2": {
+    "description": "Failure message when style.csl retrieval fails (second part)",
+    "message": ".csl from <a href=\"https://github.com/citation-style-language/styles\">GitHub</a>"
+  },
+  "citeStyleNotSelected": {
+    "description": "Failure message when user has not selected a CSL style",
+    "message": "No style has been selected"
+  },
+  "citeSubHeading": {
+    "description": "Subheading message on the citation generator page",
+    "message": "Generate a formatted citation for a DOI"
+  },
+  "citeSubmit": {
+    "description": "The text that appears on the button to start the citation generator",
+    "message": "Citation"
+  },
+  "contextText": {
+    "description": "When a user highlights a DOI on a webpage and right clicks on the highlighted text, this entry appears in the context menu to resolve the DOI",
+    "message": "Resolve DOI"
+  },
+  "doiInputLabel": {
+    "description": "Label for text input to indicate a DOI should go here",
+    "message": "DOI"
+  },
+  "doiOutputUrlExample": {
+    "description": "Label for the currently set resolver URL",
+    "message": "Preview URL tail:"
+  },
+  "headingAutolink": {
+    "description": "Heading on options page for Autolink",
+    "message": "Autolink"
+  },
+  "headingContextMenu": {
+    "description": "Heading on options page for the Context Menu",
+    "message": "Context Menu"
+  },
+  "headingCustomResolver": {
+    "description": "Heading on options page for the Custom DOI Resolver",
+    "message": "Custom DOI Resolver"
+  },
+  "headingHistory": {
+    "description": "Heading on options page for History",
+    "message": "History"
+  },
+  "headingMeta": {
+    "description": "Heading on options page for QR and Citation Features",
+    "message": "QR and Citation Features"
+  },
+  "headingOmnibox": {
+    "description": "Heading on options page for Omnibox",
+    "message": "Omnibox"
+  },
+  "headingSync": {
+    "description": "Heading on options page for Sync",
+    "message": "Sync"
+  },
+  "historyClear": {
+    "description": "Text for a button that clears all DOI history",
+    "message": "Clear History"
+  },
+  "historyCopyTitle": {
+    "description": "Hover text for button to copy a history entry title",
+    "message": "Copy"
+  },
+  "historyFetchTitleLabel": {
+    "description": "Text for checkbox that enables title fetch when DOI is recorded",
+    "message": "Automatically fetch title when a new DOI is recorded"
+  },
+  "historyNoticeText": {
+    "description": "Text on history page to notify user that history is not enabled",
+    "message": "History is not enabled"
+  },
+  "historySaveInfoText": {
+    "description": "A description of how the save feature works on the history page",
+    "message": "DOIs marked 'Save' will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."
+  },
+  "historySavedEntryLabel": {
+    "description": "A word to indicate an entry has been marked for save; label displayed in the history drop-down",
+    "message": "Saved"
+  },
+  "historySortByDate": {
+    "description": "Option to sort history by date added",
+    "message": "Date Added"
+  },
+  "historySortByDoi": {
+    "description": "Option to sort history by DOI",
+    "message": "DOI"
+  },
+  "historySortByLabel": {
+    "description": "A label for the history sort-by selector",
+    "message": "Sort by"
+  },
+  "historySortBySave": {
+    "description": "Option to sort history by save status",
+    "message": "Save Status"
+  },
+  "historySortByTitle": {
+    "description": "Option to sort history by title",
+    "message": "Title"
+  },
+  "historyTitleRefresh": {
+    "description": "Text for button that fetches missing history entry titles",
+    "message": "Fetch Missing Titles"
+  },
+  "iconHover": {
+    "description": "The tooltip message displayed to a user when the mouse hovers on the extension's icon",
+    "message": "Resolve DOI code"
+  },
+  "imgPreview": {
+    "description": "Text to indicate a sample output image",
+    "message": "Sample output"
+  },
+  "invalidDoiAlert": {
+    "description": "A warning presented to user if the DOI code is not valid",
+    "message": "Not a valid DOI"
+  },
+  "invalidQrSizeAlert": {
+    "description": "A warning presented to user if the QR image size entered is too large or too small",
+    "message": "Not a valid size"
+  },
+  "loading": {
+    "description": "A temporary message while resources load",
+    "message": "Loading..."
+  },
+  "needCitationPerm": {
+    "description": "A notice to the user that additional permissions must be accepted for the citation generator to work",
+    "message": "Citations are retrieved from crossref.org, datacite.org, and doi.org. These permissions must be accepted before the generator will function."
+  },
+  "noCitationFound": {
+    "description": "A notice to the user that a citation could not be found",
+    "message": "No citation found"
+  },
+  "optionAutolink": {
+    "description": "A setting to enable the extension to scan every page visited by the user and convert DOI codes into clickable links.",
+    "message": "Automatically turn DOI codes on web pages into links"
+  },
+  "optionAutolinkExclusions": {
+    "description": "Label for textbox area to enter exclusions for the autolink feature",
+    "message": "Exclusions:"
+  },
+  "optionAutolinkInfo": {
+    "description": "Cautionary remarks about the autolink feature",
+    "message": "The autolink feature requires permission to access and modify pages you are viewing. You will need to refresh open tabs for this option to take effect."
+  },
+  "optionAutolinkRewrite": {
+    "description": "A setting to enable the extension to scan every page visited by the user and rewite doi.org and dx.doi.org links to be handled by the custom DOI resolver instead.",
+    "message": "Rewrite existing doi.org and dx.doi.org links to use the Custom DOI Resolver"
+  },
+  "optionAutolinkTestExclusion": {
+    "description": "Label for text input to verify whether a URL will be matched by an autolink exclusion",
+    "message": "Test a URL for exclusion:"
+  },
+  "optionContextMenu": {
+    "description": "A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
+    "message": "Enable right-click context menu for selected text"
+  },
+  "optionContextMatch": {
+    "description": "A setting to enable DOI detection when a user highlights text on a webpage, determining whether to show 'Resolve DOI' in the context menu",
+    "message": "Only show context menu entry if a DOI is selected"
+  },
+  "optionContextMatchInfo": {
+    "description": "Cautionary remarks about context menu match feature",
+    "message": "This feature requires permission to access pages you are viewing and parse selected text. You will need to refresh open tabs for this option to take effect."
+  },
+  "optionCrAutolink": {
+    "description": "Label to choose whether custom resolver is enabled for autolinker",
+    "message": "Autolink"
+  },
+  "optionCrBubble": {
+    "description": "Label to choose whether custom resolver is enabled for bubble",
+    "message": "Popup"
+  },
+  "optionCrContext": {
+    "description": "Label to choose whether custom resolver is enabled for context menu",
+    "message": "Context Menu"
+  },
+  "optionCrCustom": {
+    "description": "Label for custom resolver",
+    "message": "Custom"
+  },
+  "optionCrDefault": {
+    "description": "Label for default resolver",
+    "message": "Default"
+  },
+  "optionCrHistory": {
+    "description": "Label to choose whether custom resolver is enabled for history page",
+    "message": "History Page"
+  },
+  "optionCrLabelBubble": {
+    "description": "Label for choice of custom or default resolver in bubble",
+    "message": "Resolver: "
+  },
+  "optionCrOmnibox": {
+    "description": "Label to choose whether custom resolver is enabled for omnibox",
+    "message": "Omnibox"
+  },
+  "optionCrSelectable": {
+    "description": "Label for selectable resolver",
+    "message": "Selectable"
+  },
+  "optionCustomResolver": {
+    "description": "A setting to enable custom entry of DOI and ShortDOI resolvers",
+    "message": "Use a custom DOI resolver"
+  },
+  "optionCustomResolverSelection": {
+    "description": "Settings to allow choice of default or custom resolver",
+    "message": "Select resolver for each service:"
+  },
+  "optionHistory": {
+    "description": "Label for history option checkbox",
+    "message": "Retain history of DOIs"
+  },
+  "optionHistoryLength": {
+    "description": "Label for history option to retain up to N history entries",
+    "message": "Number of history entries to retain (1 &le; N &le; 1000)"
+  },
+  "optionHistoryShowSave": {
+    "description": "Label for history option to only show saved items in text box drop-downs",
+    "message": "Only show saved entries in text input box drop-downs"
+  },
+  "optionHistoryShowTitles": {
+    "description": "Label for history option to show titles instead of DOIs in text box drop-downs",
+    "message": "Show titles instead of DOIs in text input box drop-downs"
+  },
+  "optionMetaButtons": {
+    "description": "A setting to enable additional buttons in the popup",
+    "message": "Enable additional features in popup"
+  },
+  "optionOmniboxOpento": {
+    "description": "Label for selectable option to open omnibox queries in current or new tab",
+    "message": "Omnibox entry should by default open result in:"
+  },
+  "optionOmniboxOpentoCurtab": {
+    "description": "Label for current tab",
+    "message": "Current tab"
+  },
+  "optionOmniboxOpentoNewBacktab": {
+    "description": "Label for new background tab",
+    "message": "New background tab"
+  },
+  "optionOmniboxOpentoNewForetab": {
+    "description": "Label for new foreground tab",
+    "message": "New foreground tab"
+  },
+  "optionSyncData": {
+    "description": "Label for data sync feature",
+    "message": "Synchronize this extension's settings across Chrome installations"
+  },
+  "optionsSubmit": {
+    "description": "The text that appears on the button to open the Options page",
+    "message": "Options"
+  },
+  "optionsTitle": {
+    "description": "The title of options page",
+    "message": "DOI Resolver Options"
+  },
+  "qrBgColorInputLabel": {
+    "description": "The label for the background color text box on the QR page",
+    "message": "Background color"
+  },
+  "qrBgTransLabel": {
+    "description": "The label for the transparent background check box on the QR page",
+    "message": "Transparent background"
+  },
+  "qrBorderInputLabel": {
+    "description": "A label for the border text box on the QR page",
+    "message": "Border"
+  },
+  "qrDisabled": {
+    "description": "A notice that QR title retrieval is not enabled",
+    "message": "Disabled"
+  },
+  "qrFetchTitleLabel": {
+    "description": "A setting to fetch the title of the reference and include it in the generated QR code.",
+    "message": "Include title of reference in QR code"
+  },
+  "qrFgColorInputLabel": {
+    "description": "The label for the foreground color text box on the QR page",
+    "message": "Foreground color"
+  },
+  "qrHeading": {
+    "description": "Title for QR generator page",
+    "message": "QR Code Generator"
+  },
+  "qrImageTypeLabel": {
+    "description": "A label for the radio selection of image save format",
+    "message": "Image type"
+  },
+  "qrManualMessageLabel": {
+    "description": "The label for the manual message check box on the QR page",
+    "message": "Include message in QR code"
+  },
+  "qrManualMessageTextLabel": {
+    "description": "The label for the manual message text box on the QR page",
+    "message": "Message"
+  },
+  "qrMessageEncoded": {
+    "description": "Label for message encoded in QR code",
+    "message": "Encoded message: "
+  },
+  "qrSave": {
+    "description": "Instructions on how to save QR image",
+    "message": "Click on the image to save it"
+  },
+  "qrSizeInputLabel": {
+    "description": "A label for the size text box on the QR page",
+    "message": "Size"
+  },
+  "qrSubHeading": {
+    "description": "Subheading message on the QR generator page",
+    "message": "Generate a QR code that can be scanned by smartphones and links directly to a DOI destination"
+  },
+  "qrSubmit": {
+    "description": "Text for the button to open QR page",
+    "message": "QR Code"
+  },
+  "qrTitleFailure": {
+    "description": "Failing status of title retrieval for QR encoding",
+    "message": "No title found"
+  },
+  "qrTitleStatus": {
+    "description": "Label for status of title retrieval for QR encoding",
+    "message": "Title retrieval: "
+  },
+  "qrTitleSuccess": {
+    "description": "Successful status of title retrieval for QR encoding",
+    "message": "Found"
+  },
+  "resetButton": {
+    "description": "The text on a reset button",
+    "message": "Reset"
+  },
+  "resolveSubmit": {
+    "description": "The text that appears on the button to submit a DOI code for resolving",
+    "message": "Go"
+  },
+  "submitButton": {
+    "description": "The text that appears on the button to submit a form",
+    "message": "Submit"
+  },
+  "svgIconCog": {
+    "description": "Default title for SVG icon-cog",
+    "message": "Options"
+  },
+  "svgIconCopy": {
+    "description": "Default title for SVG icon-copy",
+    "message": "Copy"
+  },
+  "svgIconHistory": {
+    "description": "Default title for SVG icon-history",
+    "message": "History"
+  },
+  "svgIconInfo": {
+    "description": "Default title for SVG icon-info",
+    "message": "About"
+  },
+  "syncDataInfo": {
+    "description": "Additional information about sync feature",
+    "message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur.<br><br>The following options are not included in sync because they require permissions to be accepted by the user before enabling: <ul><li>Autolink</li><li>QR: Include title of reference in QR code</li><li>History: Automatically fetch title when a new DOI is recorded</li></ul>"
+  },
+  "syncDataWipeButton": {
+    "description": "Text for sync wipe button",
+    "message": "Reset Sync"
+  },
+  "syncDataWipeDescription": {
+    "description": "Description for sync wipe button",
+    "message": "&#8618; Wipe all synced data and disable Sync"
+  },
+  "tableHeadingDelete": {
+    "description": "Heading on history page for Delete column",
+    "message": "Delete"
+  },
+  "tableHeadingDoi": {
+    "description": "Heading on history page for DOI column",
+    "message": "DOI"
+  },
+  "tableHeadingSave": {
+    "description": "Heading on history page for Save column",
+    "message": "Save"
+  },
+  "textDoiResolverInput": {
+    "description": "Label for text box where a URL will be entered for DOIs",
+    "message": "URL for DOI resolver:"
+  },
+  "textShortDoiResolverInput": {
+    "description": "Label for text box where a URL will be entered for ShortDOIs",
+    "message": "URL for ShortDOI resolver:"
+  }
+}

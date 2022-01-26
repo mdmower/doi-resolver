@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import './css/options.css';
+import './css/options.scss';
 import {
   HistoryDoi,
   StorageOptions,

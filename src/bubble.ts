@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import './css/bubble.css';
+import './css/bubble.scss';
 import {
   CustomResolverSelection,
   HistoryDoi,

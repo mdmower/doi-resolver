@@ -181,7 +181,7 @@
   },
   "needCitationPerm": {
     "description": "A notice to the user that additional permissions must be accepted for the citation generator to work",
-    "message": "Citations are retrieved from crossref.org, datacite.org, and doi.org. These permissions must be accepted before the generator will function."
+    "message": "Citations are retrieved from crossref.org, datacite.org, medra.org, and doi.org. These permissions must be accepted before the generator will function."
   },
   "noCitationFound": {
     "description": "A notice to the user that a citation could not be found",

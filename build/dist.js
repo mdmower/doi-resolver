@@ -5,7 +5,6 @@
 const fse = require('fs-extra');
 const path = require('path');
 const htmlMinifier = require('html-minifier');
-const CleanCSS = require('clean-css');
 const webpack = require('webpack');
 const minimist = require('minimist');
 const manifest = require('./manifest');
@@ -59,58 +58,6 @@ async function minifyHtml(debug, distDirPath) {
   } catch (ex) {
     console.error(
       colors.bold.red(`[Build error] Unexpected error in ${minifyHtml.name}`) + '\n',
-      ex
-    );
-  }
-
-  return Promise.reject();
-}
-
-/**
- * Minify CSS
- * @param {boolean} debug Whether to run in debug mode
- * @param {string} distDirPath Path to destination dir
- * @returns {Promise<void>}
- */
-async function minifyCss(debug, distDirPath) {
-  try {
-    const cssDirPath = path.resolve(__dirname, '..', 'css');
-    const filenames = await fse.readdir(cssDirPath);
-    const cssFiles = filenames
-      .filter((filename) => /\.css$/i.test(filename))
-      .map((filename) => {
-        return {
-          filename: filename,
-          inputPath: path.join(cssDirPath, filename),
-          outputPath: path.join(distDirPath, filename),
-        };
-      });
-
-    if (debug) {
-      console.log(`${colors.bold.green('[Copying CSS]')} ${filenames.join(', ')}`);
-      return Promise.all(
-        cssFiles.map(async (cssFile) => {
-          return fse.copyFile(cssFile.inputPath, cssFile.outputPath);
-        })
-      );
-    }
-
-    const cleanCSS = new CleanCSS({
-      level: 2,
-    });
-
-    console.log(`${colors.bold.green('[Minifying CSS]')} ${filenames.join(', ')}`);
-    return Promise.all(
-      cssFiles.map(async (cssFile) => {
-        const css = await fse.readFile(cssFile.inputPath, 'utf-8');
-        const minCSS = cleanCSS.minify(css).styles;
-
-        return fse.writeFile(cssFile.outputPath, minCSS, 'utf-8');
-      })
-    );
-  } catch (ex) {
-    console.error(
-      colors.bold.red(`[Build error] Unexpected error in ${minifyCss.name}`) + '\n',
       ex
     );
   }
@@ -173,7 +120,7 @@ async function writeManifest(debug, distDirPath) {
 }
 
 /**
- * Compile JS for browser target
+ * Compile JS and CSS for browser target
  * @param {boolean} debug Whether to run in debug mode
  * @param {string} distDirPath Path to destination dir
  * @returns {Promise<void>}
@@ -253,7 +200,6 @@ async function compileJs(debug, distDirPath) {
   try {
     await Promise.all([
       minifyHtml(debug, distDirPath),
-      minifyCss(debug, distDirPath),
       copyStaticFiles(debug, distDirPath),
       writeManifest(debug, distDirPath),
     ]);

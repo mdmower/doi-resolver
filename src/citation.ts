@@ -2,6 +2,7 @@
  * @license Apache-2.0
  */
 
+import './css/citation.css';
 import {HistoryDoi, getDefaultOptions, getOptions, setOptions} from './storage';
 import {requestCitationPermissions} from './permissions';
 import {filterSelectByText, isObject, isValidDoi, sortHistoryEntries, trimDoi} from './utils';

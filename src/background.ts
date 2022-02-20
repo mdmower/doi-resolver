@@ -240,9 +240,8 @@ class DoiBackground {
     changes: {[key: string]: chrome.storage.StorageChange | undefined},
     area: chrome.storage.AreaName
   ): void {
-    // TODO: Disable debugging
     // Debugging
-    console.log(`Change in ${area} storage\n`, changes);
+    // console.log(`Change in ${area} storage\n`, changes);
 
     const updatedOptionsUnsafe = Object.keys(changes).reduce((prev, curr) => {
       prev[curr] = changes[curr]?.newValue;
@@ -396,8 +395,10 @@ class DoiBackground {
         } catch (ex) {
           console.warn(`Unable to record dois in history: ${queue.join(', ')}`, ex);
         } finally {
-          // TODO: Remove this?
-          await removeMetaPermissions();
+          const stg = await getOptions('local', ['history', 'history_fetch_title']);
+          if (!(stg.history && stg.history_fetch_title)) {
+            await removeMetaPermissions();
+          }
         }
       }
     }

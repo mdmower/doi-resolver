@@ -10,34 +10,92 @@
 
   <body>
     <div id="containerDiv">
-      <form name="doiForm" id="doiForm">
-        <div id="mainForm">
+      <form name="doiForm" id="doiForm" class="container-fluid">
+        <div id="mainForm" class="row gx-2 mb-2">
           <input type="hidden" id="hiddenButtonInput" />
-          <input type="text" id="textInput" autofocus placeholder="DOI" />
-          <button id="resolveSubmit"></button>
+          <div class="col">
+            <input type="text" id="textInput" autofocus placeholder="DOI" class="form-control" />
+          </div>
+          <div class="col-auto">
+            <button id="resolveSubmit" class="btn btn-primary"></button>
+          </div>
         </div>
-        <div id="crRadios">
-          <div style="float: left">
+        <div id="historyDiv" hidden class="row mb-2">
+          <div class="col">
+            <select id="doiHistory" class="form-select"></select>
+          </div>
+        </div>
+        <div id="crRadios" hidden class="row mb-2">
+          <div class="col-auto">
             <span id="optionCrLabelBubble"></span>
           </div>
-          <div style="float: right">
-            <input type="radio" id="crRadioBubbleCustom" name="crRadio" value="custom" />
-            <label id="optionCrCustom" for="crRadioBubbleCustom"></label>
-            <input type="radio" id="crRadioBubbleDefault" name="crRadio" value="default" />
-            <label id="optionCrDefault" for="crRadioBubbleDefault"></label>
+          <div class="col-auto">
+            <div class="form-check form-check-inline">
+              <input
+                type="radio"
+                id="crRadioBubbleCustom"
+                name="crRadio"
+                value="custom"
+                class="form-check-input"
+              />
+              <label id="optionCrCustom" for="crRadioBubbleCustom" class="form-check-label"></label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                type="radio"
+                id="crRadioBubbleDefault"
+                name="crRadio"
+                value="default"
+                class="form-check-input"
+              />
+              <label
+                id="optionCrDefault"
+                for="crRadioBubbleDefault"
+                class="form-check-label"
+              ></label>
+            </div>
           </div>
         </div>
-        <div id="metaButtons">
-          <button id="optionsSubmit"></button>
-          <span id="metaButtonsFlexSpacer"></span>
-          <button id="citeSubmit"></button>
-          <button id="qrSubmit"></button>
+        <div id="metaButtons" hidden class="row gx-2">
+          <div class="col">
+            <button id="optionsSubmit" class="btn btn-outline-secondary">
+              <!-- prettier-ignore -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="d-inline-block" width="16" height="16" fill="currentColor" class="bi bi-gear" viewBox="0 0 16 16">
+                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+              </svg>
+              <span id="optionsSubmitText" class="d-inline-block align-middle"></span>
+            </button>
+          </div>
+          <div class="col-auto">
+            <button id="citeSubmit" class="btn btn-outline-secondary">
+              <!-- prettier-ignore -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="d-inline-block" width="16" height="16" fill="currentColor" class="bi bi-list-ol" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"/>
+                <path d="M1.713 11.865v-.474H2c.217 0 .363-.137.363-.317 0-.185-.158-.31-.361-.31-.223 0-.367.152-.373.31h-.59c.016-.467.373-.787.986-.787.588-.002.954.291.957.703a.595.595 0 0 1-.492.594v.033a.615.615 0 0 1 .569.631c.003.533-.502.8-1.051.8-.656 0-1-.37-1.008-.794h.582c.008.178.186.306.422.309.254 0 .424-.145.422-.35-.002-.195-.155-.348-.414-.348h-.3zm-.004-4.699h-.604v-.035c0-.408.295-.844.958-.844.583 0 .96.326.96.756 0 .389-.257.617-.476.848l-.537.572v.03h1.054V9H1.143v-.395l.957-.99c.138-.142.293-.304.293-.508 0-.18-.147-.32-.342-.32a.33.33 0 0 0-.342.338v.041zM2.564 5h-.635V2.924h-.031l-.598.42v-.567l.629-.443h.635V5z"/>
+              </svg>
+              <span id="citeSubmitText" class="d-inline-block align-middle"></span>
+            </button>
+          </div>
+          <div class="col-auto">
+            <button id="qrSubmit" class="btn btn-outline-secondary">
+              <!-- prettier-ignore -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="d-inline-block" width="16" height="16" fill="currentColor" class="bi bi-qr-code" viewBox="0 0 16 16">
+                <path d="M2 2h2v2H2V2Z"/>
+                <path d="M6 0v6H0V0h6ZM5 1H1v4h4V1ZM4 12H2v2h2v-2Z"/>
+                <path d="M6 10v6H0v-6h6Zm-5 1v4h4v-4H1Zm11-9h2v2h-2V2Z"/>
+                <path d="M10 0v6h6V0h-6Zm5 1v4h-4V1h4ZM8 1V0h1v2H8v2H7V1h1Zm0 5V4h1v2H8ZM6 8V7h1V6h1v2h1V7h5v1h-4v1H7V8H6Zm0 0v1H2V8H1v1H0V7h3v1h3Zm10 1h-1V7h1v2Zm-1 0h-1v2h2v-1h-1V9Zm-4 0h2v1h-1v1h-1V9Zm2 3v-1h-1v1h-1v1H9v1h3v-2h1Zm0 0h3v1h-2v1h-1v-2Zm-4-1v1h1v-2H7v1h2Z"/>
+                <path d="M7 12h1v3h4v1H7v-4Zm9 2v2h-3v-1h2v-1h1Z"/>
+              </svg>
+              <span id="qrSubmitText" class="d-inline-block align-middle"></span>
+            </button>
+          </div>
         </div>
-        <div id="historyDiv">
-          <select id="doiHistory"></select>
+        <div id="messageDiv" hidden class="row mt-2">
+          <div class="col">
+            <div id="messageOutput" class="alert alert-primary mb-0">Not a valid DOI</div>
+          </div>
         </div>
-        <div id="messageDiv"></div>
-        <div style="clear: both"></div>
       </form>
     </div>
   </body>

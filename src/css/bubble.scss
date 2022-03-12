@@ -2,135 +2,18 @@
  * @license Apache-2.0
  */
 
-// @import '~bootstrap/scss/bootstrap';
+@import '~bootstrap/scss/bootstrap';
 
-body {
-  font-size: 100%;
-  margin: 0;
-  padding: 3px;
-  min-width: 350px;
-  overflow-x: hidden;
+#containerDiv {
+  width: 600px;
+  padding: $container-padding-x 0;
 }
 
-button {
-  border: 1px solid #aaa;
-  padding: 3px 10px;
-  background-color: #eee;
-  box-sizing: border-box;
-}
-
-input[type='text'] {
-  font-size: 14px;
-}
-
-input[type='radio'] {
-  margin: 0;
-}
-
-#mainForm {
-  display: flex;
-  flex: 1;
-}
-
-#textInput {
-  order: 1;
-  flex: 1;
-  margin-right: 2px;
-}
-
-#resolveSubmit {
-  order: 2;
-}
-
-#crRadios {
-  display: none;
-  clear: both;
-  font-size: 0.9em;
-  margin-top: 4px;
-  height: 21px;
-}
-
-#crRadios > div > * {
-  vertical-align: middle;
-  height: 21px;
-  line-height: 21px;
-}
-
-#optionCrCustom {
-  margin-right: 8px;
-}
-
-#metaButtons {
-  margin-top: 4px;
-  display: none;
-  clear: both;
-  flex: 1;
-}
-
-#citeSubmit,
-#qrSubmit {
-  margin-left: 2px;
-}
-
-#optionsSubmit {
-  order: 1;
-}
-
-#metaButtonsFlexSpacer {
-  flex: 1;
-  order: 2;
-  display: inline-block;
-}
-
-#citeSubmit {
-  order: 3;
-}
-
-#qrSubmit {
-  order: 4;
-}
-
-#messageDiv {
-  display: none;
-  margin-top: 4px;
-  clear: both;
-  text-align: center;
-  height: 3em;
-  line-height: 3em;
-}
-
-#historyDiv {
-  display: none;
-  clear: both;
-  margin-top: 4px;
-  width: 100%;
-}
-
-#doiHistory {
-  width: 100%;
-}
-
-#doiHistory option {
-  position: relative;
+#metaButtons svg {
+  width: $font-size-base;
+  height: $font-size-base;
 }
 
 #doiHistory option[disabled] {
-  border-top: 1px solid #aaa;
-  font-size: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-#doiHistory option.save::after {
-  content: '✔';
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  height: 100%;
-  line-height: 1.3em;
-  display: block;
-  text-align: center;
-  background: rgb(255, 255, 255, 0.8);
-  width: 1.3em;
+  font-size: 50%;
 }

@@ -55,6 +55,7 @@ class DoiBubble {
     hiddenButtonInput: HTMLInputElement;
     historyDiv: HTMLDivElement;
     messageDiv: HTMLDivElement;
+    messageOutput: HTMLDivElement;
     metaButtons: HTMLDivElement;
     optionsSubmit: HTMLButtonElement;
     qrSubmit: HTMLButtonElement;
@@ -101,6 +102,9 @@ class DoiBubble {
       messageDiv:
         document.querySelector<HTMLDivElement>('div#messageDiv') ||
         elementMissing('div#messageDiv'),
+      messageOutput:
+        document.querySelector<HTMLDivElement>('div#messageOutput') ||
+        elementMissing('div#messageOutput'),
       metaButtons:
         document.querySelector<HTMLDivElement>('div#metaButtons') ||
         elementMissing('div#metaButtons'),
@@ -197,8 +201,8 @@ class DoiBubble {
    * Clear message space
    */
   private resetMessageSpace(): void {
-    this.elements_.messageDiv.innerHTML = '';
-    this.elements_.messageDiv.style.display = 'none';
+    this.elements_.messageOutput.innerHTML = '';
+    this.elements_.messageDiv.hidden = true;
   }
 
   /**
@@ -207,8 +211,8 @@ class DoiBubble {
    */
   private bubbleMessage(message: string): void {
     this.resetMessageSpace();
-    this.elements_.messageDiv.innerHTML = message;
-    this.elements_.messageDiv.style.display = 'block';
+    this.elements_.messageOutput.innerHTML = message;
+    this.elements_.messageDiv.hidden = false;
   }
 
   /**
@@ -330,13 +334,9 @@ class DoiBubble {
   async showHideOptionalElms(): Promise<void> {
     const stg = await getOptions('local', ['meta_buttons', 'custom_resolver', 'cr_bubble']);
 
-    this.elements_.metaButtons.style.display = stg.meta_buttons ? 'flex' : '';
-
-    if (stg.custom_resolver && stg.cr_bubble === CustomResolverSelection.Selectable) {
-      this.elements_.crRadios.style.display = 'block';
-    } else {
-      this.elements_.crRadios.style.display = '';
-    }
+    this.elements_.metaButtons.hidden = !stg.meta_buttons;
+    this.elements_.crRadios.hidden =
+      !stg.custom_resolver || stg.cr_bubble !== CustomResolverSelection.Selectable;
   }
 
   /**
@@ -367,15 +367,15 @@ class DoiBubble {
     ]);
 
     if (!stg.meta_buttons || !stg.history) {
-      this.elements_.historyDiv.style.display = '';
+      this.elements_.historyDiv.hidden = true;
       return;
     }
     if (!stg.recorded_dois || stg.recorded_dois.length < 1) {
-      this.elements_.historyDiv.style.display = '';
+      this.elements_.historyDiv.hidden = true;
       return;
     }
 
-    this.elements_.historyDiv.style.display = 'block';
+    this.elements_.historyDiv.hidden = false;
 
     // Skip holes in the array (should not occur)
     stg.recorded_dois = stg.recorded_dois.filter(Boolean);
@@ -431,13 +431,20 @@ class DoiBubble {
    * Get localization strings and populate their corresponding elements' HTML.
    */
   getLocalMessages(): void {
+    const nestedMessageIds = ['citeSubmit', 'optionsSubmit', 'qrSubmit'];
+
+    nestedMessageIds.forEach((messageId) => {
+      const message = chrome.i18n.getMessage(messageId);
+      const element = document.getElementById(messageId + 'Text');
+      if (element) {
+        element.innerHTML = message;
+      }
+    });
+
     const messageIds = [
-      'citeSubmit',
       'optionCrCustom',
       'optionCrDefault',
       'optionCrLabelBubble',
-      'optionsSubmit',
-      'qrSubmit',
       'resolveSubmit',
     ];
 

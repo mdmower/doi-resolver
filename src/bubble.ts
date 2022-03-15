@@ -387,6 +387,7 @@ class DoiBubble {
       const element = document.createElement('option');
       element.value = doi;
       element.textContent = stg.history_showtitles && title ? title : doi;
+      element.title = [doi, title].join(' - ');
       if (save) {
         element.classList.add('save');
       }

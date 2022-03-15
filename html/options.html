@@ -9,247 +9,569 @@
   </head>
 
   <body>
-    <svg
-      class="hidden"
-      version="1.1"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
-    >
+    <!-- prettier-ignore -->
+    <svg hidden version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <defs>
-        <symbol id="icon-copy" viewBox="0 0 32 32">
-          <title>Copy</title>
-          <path
-            d="M20 8v-8h-14l-6 6v18h12v8h20v-24h-12zM6 2.828v3.172h-3.172l3.172-3.172zM2 22v-14h6v-6h10v6l-6 6v8h-10zM18 10.828v3.172h-3.172l3.172-3.172zM30 30h-16v-14h6v-6h10v20z"
-          ></path>
+        <symbol id="icon-settings" viewBox="0 0 16 16">
+          <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+          <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
         </symbol>
-        <symbol id="icon-history" viewBox="0 0 34 32">
-          <title>History</title>
-          <path
-            d="M20 2c7.732 0 14 6.268 14 14s-6.268 14-14 14v-3c2.938 0 5.701-1.144 7.778-3.222s3.222-4.84 3.222-7.778c0-2.938-1.144-5.701-3.222-7.778s-4.84-3.222-7.778-3.222c-2.938 0-5.701 1.144-7.778 3.222-1.598 1.598-2.643 3.601-3.041 5.778h5.819l-7 8-7-8h5.143c0.971-6.784 6.804-12 13.857-12zM26 14v4h-8v-10h4v6z"
-          ></path>
+        <symbol id="icon-history" viewBox="0 0 16 16">
+          <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z"/>
+          <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
+          <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
         </symbol>
-        <symbol id="icon-cog" viewBox="0 0 32 32">
-          <title>Options</title>
-          <path
-            d="M29.181 19.070c-1.679-2.908-0.669-6.634 2.255-8.328l-3.145-5.447c-0.898 0.527-1.943 0.829-3.058 0.829-3.361 0-6.085-2.742-6.085-6.125h-6.289c0.008 1.044-0.252 2.103-0.811 3.070-1.679 2.908-5.411 3.897-8.339 2.211l-3.144 5.447c0.905 0.515 1.689 1.268 2.246 2.234 1.676 2.903 0.672 6.623-2.241 8.319l3.145 5.447c0.895-0.522 1.935-0.82 3.044-0.82 3.35 0 6.067 2.725 6.084 6.092h6.289c-0.003-1.034 0.259-2.080 0.811-3.038 1.676-2.903 5.399-3.894 8.325-2.219l3.145-5.447c-0.899-0.515-1.678-1.266-2.232-2.226zM16 22.479c-3.578 0-6.479-2.901-6.479-6.479s2.901-6.479 6.479-6.479c3.578 0 6.479 2.901 6.479 6.479s-2.901 6.479-6.479 6.479z"
-          ></path>
+        <symbol id="icon-about" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
         </symbol>
-        <symbol id="icon-info" viewBox="0 0 32 32">
-          <title>About</title>
-          <path
-            d="M14 9.5c0-0.825 0.675-1.5 1.5-1.5h1c0.825 0 1.5 0.675 1.5 1.5v1c0 0.825-0.675 1.5-1.5 1.5h-1c-0.825 0-1.5-0.675-1.5-1.5v-1z"
-          ></path>
-          <path d="M20 24h-8v-2h2v-6h-2v-2h6v8h2z"></path>
-          <path
-            d="M16 0c-8.837 0-16 7.163-16 16s7.163 16 16 16 16-7.163 16-16-7.163-16-16-16zM16 29c-7.18 0-13-5.82-13-13s5.82-13 13-13 13 5.82 13 13-5.82 13-13 13z"
-          ></path>
+        <symbol id="icon-copy" viewBox="0 0 16 16">
+          <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
+          <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/>
+        </symbol>
+        <symbol id="icon-info" viewBox="0 0 16 16">
+          <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+        </symbol>
+        <symbol id="icon-unlock" viewBox="0 0 16 16">
+          <path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2z"/>
+        </symbol>
+        <symbol id="icon-reset" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+          <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+        </symbol>
+        <symbol id="icon-trash" viewBox="0 0 16 16">
+          <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
         </symbol>
       </defs>
     </svg>
-    <h1>DOI Resolver</h1>
-    <!-- https://freefrontend.com/css-tabs/ and https://codepen.io/woranov/pen/NRqLWK -->
-    <div class="tabs">
-      <input type="radio" id="optionsTab" name="tab-control" checked />
-      <input type="radio" id="historyTab" name="tab-control" />
-      <input type="radio" id="aboutTab" name="tab-control" />
-      <ul>
-        <li title="Options">
-          <label for="optionsTab" role="button">
-            <svg class="icon icon-cog"><use xlink:href="#icon-cog"></use></svg>
-            <br />
-            <span>Options</span>
-          </label>
-        </li>
-        <li title="History">
-          <label for="historyTab" role="button">
-            <svg class="icon icon-history"><use xlink:href="#icon-history"></use></svg>
-            <br />
-            <span>History</span>
-          </label>
-        </li>
-        <li title="About">
-          <label for="aboutTab" role="button">
-            <svg class="icon icon-info"><use xlink:href="#icon-info"></use></svg>
-            <br />
-            <span>About</span>
-          </label>
-        </li>
-      </ul>
-      <div class="slider">
-        <div class="indicator"></div>
+
+    <h1 class="page-title text-center mb-3">DOI Resolver</h1>
+
+    <div class="page-content mx-auto">
+      <div class="container-fluid mb-3">
+        <ul id="main-nav" class="nav nav-pills nav-justified" role="tablist">
+          <li title="Options" class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="pills-options-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-options"
+              data-hash="tab-options"
+              type="button"
+              role="tab"
+              aria-controls="pills-options"
+              aria-selected="true"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon icon-settings"
+                fill="currentColor"
+              >
+                <use xlink:href="#icon-settings"></use>
+              </svg>
+              <span class="d-inline-block align-middle">Options</span>
+            </button>
+          </li>
+          <li title="History" class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="pills-history-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-history"
+              data-hash="tab-history"
+              type="button"
+              role="tab"
+              aria-controls="pills-history"
+              aria-selected="false"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-history" fill="currentColor">
+                <use xlink:href="#icon-history"></use>
+              </svg>
+              <span class="d-inline-block align-middle">History</span>
+            </button>
+          </li>
+          <li title="About" class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="pills-about-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-about"
+              data-hash="tab-about"
+              type="button"
+              role="tab"
+              aria-controls="pills-about"
+              aria-selected="false"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-about" fill="currentColor">
+                <use xlink:href="#icon-about"></use>
+              </svg>
+              <span class="d-inline-block align-middle">About</span>
+            </button>
+          </li>
+        </ul>
       </div>
 
-      <div class="content">
-        <section id="content_options">
-          <div class="option_container">
-            <h3 class="option_title" id="headingOmnibox"></h3>
-            <span id="optionOmniboxOpento"></span>
-            <select type="selection" id="omniboxOpento">
-              <option id="optionOmniboxOpentoCurtab" value="curtab"></option>
-              <option id="optionOmniboxOpentoNewForetab" value="newfgtab"></option>
-              <option id="optionOmniboxOpentoNewBacktab" value="newbgtab"></option>
-            </select>
-          </div>
-
-          <div class="option_container">
-            <h3 class="option_title" id="headingHistory"></h3>
-            <input type="checkbox" id="history" />
-            <label id="optionHistory" for="history"></label>
-            <div id="historySubOptions">
-              <input type="checkbox" id="historyShowSave" />
-              <label id="optionHistoryShowSave" for="historyShowSave"></label><br />
-              <input type="checkbox" id="historyShowTitles" />
-              <label id="optionHistoryShowTitles" for="historyShowTitles"></label><br />
-              <input type="checkbox" id="historyFetchTitle" />
-              <label id="historyFetchTitleLabel" for="historyFetchTitle"></label><br />
-              <input type="number" id="historyLength" max="1000" min="1" />
-              <label id="optionHistoryLength" for="historyLength"></label>
+      <div class="tab-content" id="pills-tabContent">
+        <section
+          class="container-fluid tab-pane fade show active"
+          id="pills-options"
+          role="tabpanel"
+          aria-labelledby="pills-options-tab"
+        >
+          <div class="row mt-4">
+            <div class="col">
+              <h3 id="headingOmnibox"></h3>
+              <div class="row align-items-center gx-3">
+                <div class="col-auto">
+                  <label id="optionOmniboxOpento" for="omniboxOpento"></label>
+                </div>
+                <div class="col-auto">
+                  <select
+                    type="selection"
+                    id="omniboxOpento"
+                    class="form-select"
+                    aria-label="Omnibox open-to target"
+                  >
+                    <option id="optionOmniboxOpentoCurtab" value="curtab"></option>
+                    <option id="optionOmniboxOpentoNewForetab" value="newfgtab"></option>
+                    <option id="optionOmniboxOpentoNewBacktab" value="newbgtab"></option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="option_container">
-            <h3 class="option_title" id="headingContextMenu"></h3>
-            <input type="checkbox" id="context" />
-            <label id="optionContextMenu" for="context"></label>
-            <div id="contextSubOptions">
-              <input type="checkbox" id="contextMatch" />
-              <label id="optionContextMatch" for="contextMatch" class="tooltip"
-                ><span id="optionContextMatchInfo" class="tooltiptext"></span
-              ></label>
-            </div>
-            <div id="img_context">
-              <span class="imgPreview"></span>
-              <div id="img_context_off"></div>
-              <div id="img_context_on"></div>
+          <div class="row mt-4">
+            <div class="col">
+              <h3 id="headingHistory"></h3>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="history" />
+                <label id="optionHistory" class="form-check-label" for="history"></label>
+              </div>
+              <div id="historySubOptions" class="ms-3" hidden>
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="historyShowSave" />
+                  <label
+                    id="optionHistoryShowSave"
+                    class="form-check-label"
+                    for="historyShowSave"
+                  ></label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="historyShowTitles" />
+                  <label
+                    id="optionHistoryShowTitles"
+                    class="form-check-label"
+                    for="historyShowTitles"
+                  ></label>
+                </div>
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="historyFetchTitle" />
+                  <label
+                    id="historyFetchTitleLabel"
+                    class="form-check-label"
+                    for="historyFetchTitle"
+                  ></label>
+                </div>
+                <div class="row gx-3">
+                  <div class="col-auto">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="historyLength"
+                      max="1000"
+                      min="1"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <label
+                      id="optionHistoryLength"
+                      class="col-form-label"
+                      for="historyLength"
+                    ></label>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="option_container">
-            <h3 class="option_title" id="headingMeta"></h3>
-            <input type="checkbox" id="meta" />
-            <label id="optionMetaButtons" for="meta"></label>
-            <div id="img_bubblemeta">
-              <span class="imgPreview"></span>
-              <div id="img_bubblemeta_off"></div>
-              <div id="img_bubblemeta_on"></div>
+          <div class="row mt-4">
+            <div class="col">
+              <h3 id="headingContextMenu"></h3>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="context" />
+                <label id="optionContextMenu" class="form-check-label" for="context"></label>
+                <a
+                  class="ms-1 d-inline-block align-middle"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#infoModal"
+                  data-modal-title="optionContextMenuModalTitle"
+                  data-modal-body="optionContextMenuModalBody"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-info bigger form-check-icon align-top"
+                    fill="currentColor"
+                  >
+                    <use xlink:href="#icon-info"></use>
+                  </svg>
+                </a>
+              </div>
+              <div id="contextSubOptions" class="ms-3" hidden>
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" id="contextMatch" />
+                  <label
+                    id="optionContextMatch"
+                    class="form-check-label"
+                    for="contextMatch"
+                  ></label>
+                  <a
+                    class="ms-1 d-inline-block align-middle"
+                    href="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#infoModal"
+                    data-modal-title="optionContextMatchModalTitle"
+                    data-modal-body="optionContextMatchModalBody"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="icon icon-unlock bigger form-check-icon align-top"
+                      fill="currentColor"
+                    >
+                      <use xlink:href="#icon-unlock"></use>
+                    </svg>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div class="option_container">
-            <h3 class="option_title" id="headingCustomResolver"></h3>
-            <input type="checkbox" id="customResolver" />
-            <label id="optionCustomResolver" for="customResolver"></label><br />
-            <div class="row">
-              <div id="customResolverLeft">
-                <div id="customResolverFields">
-                  <div class="cr_input_container">
-                    <label id="textDoiResolverInput" for="doiResolverInput"></label><br />
-                    <input type="text" id="doiResolverInput" value="" />
-                    <button id="doiResolverInputReset"></button><br />
-                    <div class="cr_preview">
-                      <span id="doiOutputUrlExample"></span> <span id="doiResolverOutput"></span>
+          <div class="row mt-4">
+            <div class="col">
+              <h3 id="headingMeta"></h3>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="meta" />
+                <label id="optionMetaButtons" class="form-check-label" for="meta"></label>
+                <a
+                  class="ms-1 d-inline-block align-middle"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#infoModal"
+                  data-modal-title="optionMetaButtonsModalTitle"
+                  data-modal-body="optionMetaButtonsModalBody"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-info bigger form-check-icon align-top"
+                    fill="currentColor"
+                  >
+                    <use xlink:href="#icon-info"></use>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="col">
+              <h3 id="headingCustomResolver"></h3>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="customResolver" />
+                <label
+                  id="optionCustomResolver"
+                  class="form-check-label"
+                  for="customResolver"
+                ></label>
+              </div>
+              <div hidden id="customResolverSubOptions" class="row">
+                <div class="col-6">
+                  <div class="ms-3">
+                    <div class="mt-3">
+                      <label
+                        id="textDoiResolverInput"
+                        class="form-label"
+                        for="doiResolverInput"
+                      ></label>
+                      <div class="row gx-1">
+                        <div class="col">
+                          <input type="text" class="form-control" id="doiResolverInput" value="" />
+                        </div>
+                        <div class="col-auto">
+                          <button id="doiResolverInputReset" class="btn btn-secondary"></button>
+                        </div>
+                      </div>
+                      <div class="cr_preview">
+                        <span id="doiOutputUrlExample"></span>
+                        <span id="doiResolverOutput"></span>
+                      </div>
+                    </div>
+                    <div class="mt-3">
+                      <label
+                        id="textShortDoiResolverInput"
+                        class="form-label"
+                        for="shortDoiResolverInput"
+                      ></label>
+                      <div class="row gx-1">
+                        <div class="col">
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="shortDoiResolverInput"
+                            value=""
+                          />
+                        </div>
+                        <div class="col-auto">
+                          <button
+                            id="shortDoiResolverInputReset"
+                            class="btn btn-secondary"
+                          ></button>
+                        </div>
+                      </div>
+                      <div class="cr_preview">
+                        <span id="shortDoiOutputUrlExample"></span>
+                        <span id="shortDoiResolverOutput"></span>
+                      </div>
                     </div>
                   </div>
-                  <div class="cr_input_container">
-                    <label id="textShortDoiResolverInput" for="shortDoiResolverInput"></label><br />
-                    <input type="text" id="shortDoiResolverInput" value="" />
-                    <button id="shortDoiResolverInputReset"></button><br />
-                    <div class="cr_preview">
-                      <span id="shortDoiOutputUrlExample"></span>
-                      <span id="shortDoiResolverOutput"></span>
+                </div>
+                <div class="col-6">
+                  <div id="optionCustomResolverSelection" class="mt-3"></div>
+                  <div class="row align-items-center gx-3 mt-1">
+                    <div class="col-4">
+                      <select type="selection" id="crAutolink" class="crSelections form-select">
+                        <option class="optionCrCustom" value="custom"></option>
+                        <option class="optionCrDefault" value="default"></option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <label
+                        id="optionCrAutolink"
+                        for="crAutolink"
+                        class="crLabels form-label"
+                      ></label>
+                    </div>
+                  </div>
+                  <div class="row align-items-center gx-3 mt-1">
+                    <div class="col-4">
+                      <select type="selection" id="crBubble" class="crSelections form-select">
+                        <option class="optionCrCustom" value="custom"></option>
+                        <option class="optionCrDefault" value="default"></option>
+                        <option class="optionCrSelectable" value="selectable"></option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <label id="optionCrBubble" for="crBubble" class="crLabels form-label"></label>
+                    </div>
+                  </div>
+                  <div class="row align-items-center gx-3 mt-1">
+                    <div class="col-4">
+                      <select type="selection" id="crContext" class="crSelections form-select">
+                        <option class="optionCrCustom" value="custom"></option>
+                        <option class="optionCrDefault" value="default"></option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <label
+                        id="optionCrContext"
+                        for="crContext"
+                        class="crLabels form-label"
+                      ></label>
+                    </div>
+                  </div>
+                  <div class="row align-items-center gx-3 mt-1">
+                    <div class="col-4">
+                      <select type="selection" id="crOmnibox" class="crSelections form-select">
+                        <option class="optionCrCustom" value="custom"></option>
+                        <option class="optionCrDefault" value="default"></option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <label
+                        id="optionCrOmnibox"
+                        for="crOmnibox"
+                        class="crLabels form-label"
+                      ></label>
+                    </div>
+                  </div>
+                  <div class="row align-items-center gx-3 mt-1">
+                    <div class="col-4">
+                      <select type="selection" id="crHistory" class="crSelections form-select">
+                        <option class="optionCrCustom" value="custom"></option>
+                        <option class="optionCrDefault" value="default"></option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <label
+                        id="optionCrHistory"
+                        for="crHistory"
+                        class="crLabels form-label"
+                      ></label>
                     </div>
                   </div>
                 </div>
               </div>
-              <div id="customResolverRight">
-                <div id="optionCustomResolverSelection"></div>
-                <select type="selection" id="crAutolink" class="crSelections">
-                  <option class="optionCrCustom" value="custom"></option>
-                  <option class="optionCrDefault" value="default"></option></select
-                ><label id="optionCrAutolink" for="crAutolink" class="crLabels"></label><br />
-                <select type="selection" id="crBubble" class="crSelections">
-                  <option class="optionCrCustom" value="custom"></option>
-                  <option class="optionCrDefault" value="default"></option>
-                  <option class="optionCrSelectable" value="selectable"></option></select
-                ><label id="optionCrBubble" for="crBubble" class="crLabels"></label><br />
-                <select type="selection" id="crContext" class="crSelections">
-                  <option class="optionCrCustom" value="custom"></option>
-                  <option class="optionCrDefault" value="default"></option></select
-                ><label id="optionCrContext" for="crContext" class="crLabels"></label><br />
-                <select type="selection" id="crOmnibox" class="crSelections">
-                  <option class="optionCrCustom" value="custom"></option>
-                  <option class="optionCrDefault" value="default"></option></select
-                ><label id="optionCrOmnibox" for="crOmnibox" class="crLabels"></label><br />
-                <select type="selection" id="crHistory" class="crSelections">
-                  <option class="optionCrCustom" value="custom"></option>
-                  <option class="optionCrDefault" value="default"></option></select
-                ><label id="optionCrHistory" for="crHistory" class="crLabels"></label>
+            </div>
+          </div>
+
+          <div class="row mt-4">
+            <div class="col">
+              <h3 id="headingAutolink"></h3>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="autolink" />
+                <label id="optionAutolink" class="form-check-label" for="autolink"></label>
+                <a
+                  class="ms-1 d-inline-block align-middle"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#infoModal"
+                  data-modal-title="optionAutolinkModalTitle"
+                  data-modal-body="optionAutolinkModalBody"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-unlock bigger form-check-icon align-top"
+                    fill="currentColor"
+                  >
+                    <use xlink:href="#icon-unlock"></use>
+                  </svg>
+                </a>
+              </div>
+              <div id="autolinkSubOptions" class="ms-3">
+                <div id="alRewriteLinks" class="form-check">
+                  <input type="checkbox" class="form-check-input" id="autolinkRewrite" />
+                  <label
+                    id="optionAutolinkRewrite"
+                    class="form-check-label"
+                    for="autolinkRewrite"
+                  ></label>
+                </div>
+                <div id="alExclusions" class="mt-3">
+                  <label
+                    id="optionAutolinkExclusions"
+                    class="form-label"
+                    for="autolinkExclusions"
+                  ></label>
+                  <a
+                    class="ms-1 d-inline-block align-middle"
+                    href="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#infoModal"
+                    data-modal-title="optionAutolinkExclusionsModalTitle"
+                    data-modal-body="optionAutolinkExclusionsModalBody"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="icon icon-info bigger form-check-icon align-top"
+                      fill="currentColor"
+                    >
+                      <use xlink:href="#icon-info"></use>
+                    </svg>
+                  </a>
+                  <textarea id="autolinkExclusions" class="form-control" rows="4"></textarea>
+                  <div class="row align-items-center gx-3 mt-1">
+                    <div class="col-auto">
+                      <label id="optionAutolinkTestExclusion" for="autolinkTestExclusion"></label>
+                    </div>
+                    <div class="col">
+                      <input type="text" class="form-control" id="autolinkTestExclusion" />
+                    </div>
+                    <div class="col-3">
+                      <span id="autolinkTestExclusionResult"></span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <div class="option_container">
-            <h3 class="option_title tooltip" id="headingAutolink">
-              <span id="optionAutolinkInfo" class="tooltiptext"></span>
-            </h3>
-            <br />
-            <input type="checkbox" id="autolink" />
-            <label id="optionAutolink" for="autolink"></label>
-            <div id="alRewriteLinks">
-              <input type="checkbox" id="autolinkRewrite" />
-              <label id="optionAutolinkRewrite" for="autolinkRewrite"></label>
-            </div>
-            <div id="alExclusions">
-              <label id="optionAutolinkExclusions" class="tooltip" for="autolinkExclusions"
-                ><span id="autolinkExclusionsInfoText" class="tooltiptext"></span
-              ></label>
-              <textarea id="autolinkExclusions" rows="4"></textarea>
-              <div id="autolinkTestExclusionContainer">
-                <label id="optionAutolinkTestExclusion" for="autolinkTestExclusion"></label>
-                <input type="text" id="autolinkTestExclusion" />
-                <span id="autolinkTestExclusionResult"></span>
+          <div class="row mt-3">
+            <div class="col">
+              <h3 id="headingSync"></h3>
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="syncData" />
+                <label id="optionSyncData" class="form-check-label" for="syncData"></label>
+                <a
+                  class="ms-1 d-inline-block align-middle"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#infoModal"
+                  data-modal-title="optionSyncDataModalTitle"
+                  data-modal-body="optionSyncDataModalBody"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-info bigger form-check-icon align-top"
+                    fill="currentColor"
+                  >
+                    <use xlink:href="#icon-info"></use>
+                  </svg>
+                </a>
               </div>
-            </div>
-          </div>
-
-          <div class="option_container" id="last_option_container">
-            <h3 class="option_title tooltip" id="headingSync">
-              <span id="syncDataInfo" class="tooltiptext"></span>
-            </h3>
-            <br />
-            <input type="checkbox" id="syncData" />
-            <label id="optionSyncData" for="syncData"></label>
-            <div id="syncDataWipe">
-              <span id="syncDataWipeDescription"></span> <button id="syncDataWipeButton"></button>
+              <div class="row align-items-center gx-1 mt-3 ms-3">
+                <div class="col-auto">
+                  <span id="syncDataWipeDescription"></span>
+                </div>
+                <div class="col-auto">
+                  <button id="syncDataWipeButton" class="btn btn-secondary"></button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="content_history">
-          <table id="historyList">
-            <tr id="historyHeading">
-              <th class="history_entry_save">
-                <span id="tableHeadingSave" class="tooltip"
-                  ><span id="historySaveInfoText" class="tooltiptext"></span
-                ></span>
-              </th>
-              <th class="history_entry_delete">
-                <span id="tableHeadingDelete"></span>
-              </th>
-              <th class="history_entry_doi">
-                <span id="tableHeadingDoi"></span>
-              </th>
-              <th>
+        <section
+          class="container-fluid tab-pane fade"
+          id="pills-history"
+          role="tabpanel"
+          aria-labelledby="pills-history-tab"
+        >
+          <div class="form-control mt-4 mb-3">
+            <div class="row align-items-center gx-3">
+              <div class="col-auto">
                 <label id="historySortByLabel" for="historySortBy"></label>
-                <select id="historySortBy">
+              </div>
+              <div class="col-auto">
+                <select id="historySortBy" class="form-select">
                   <option id="historySortByDate" value="date"></option>
                   <option id="historySortByTitle" value="title"></option>
                   <option id="historySortByDoi" value="doi"></option>
                   <option id="historySortBySave" value="save"></option>
                 </select>
-                <button id="historyClear"></button>
-                <button id="historyTitleRefresh"></button>
+              </div>
+              <div class="col text-end">
+                <button id="historyClear" class="btn btn-secondary"></button>
+                <button id="historyTitleRefresh" class="btn btn-secondary"></button>
                 <span id="historySpinner"></span>
+              </div>
+            </div>
+          </div>
+          <table id="historyList" class="table">
+            <tr id="historyHeading">
+              <th class="history_entry_save" scope="col">
+                <span id="tableHeadingSave" data-tooltip-message="true"></span>
+                <a
+                  class="ms-1 d-inline-block align-middle"
+                  href="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#infoModal"
+                  data-modal-title="historySaveModalTitle"
+                  data-modal-body="historySaveModalBody"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="icon icon-info bigger form-check-icon align-top"
+                    fill="currentColor"
+                  >
+                    <use xlink:href="#icon-info"></use>
+                  </svg>
+                </a>
+              </th>
+              <th class="history_entry_delete" scope="col">
+                <span id="tableHeadingDelete"></span>
+              </th>
+              <th class="history_entry_doi" scope="col">
+                <span id="tableHeadingDoi"></span>
               </th>
             </tr>
             <tr id="historySeparator"></tr>
@@ -257,28 +579,17 @@
           <div id="historyNotice">
             <span id="historyNoticeText"></span>
           </div>
-          <template id="history_entry_template">
-            <tr class="history_entry">
-              <td class="history_entry_save">
-                <input class="history_input_save" type="checkbox" />
-              </td>
-              <td class="history_entry_delete">
-                <button class="history_input_delete">✖</button>
-              </td>
-              <td class="history_entry_doi" colspan="2">
-                <a class="history_entry_link" target="_blank"></a>
-                <div class="history_entry_title">
-                  <button class="history_entry_title_copy">
-                    <svg class="icon icon-copy"><use xlink:href="#icon-copy"></use></svg></button
-                  ><span class="history_entry_title_display"></span>
-                </div>
-              </td>
-            </tr>
-          </template>
         </section>
 
-        <section id="content_about">
-          <img id="extLogo" src="icons/icon128.png" />
+        <section
+          class="container-fluid tab-pane fade"
+          id="pills-about"
+          role="tabpanel"
+          aria-labelledby="pills-about-tab"
+        >
+          <div class="row mt-4 mb-3">
+            <div class="col text-center"><img id="extLogo" src="icons/icon128.png" /></div>
+          </div>
           <p id="optionsVersion">Version <span id="extensionVersion"></span></p>
           <p id="optionsDisclaimer">
             DOI Resolver is open source software, licensed under the
@@ -333,5 +644,53 @@
         </section>
       </div>
     </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="infoModal"
+      tabindex="-1"
+      aria-labelledby="modalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalLabel">Info</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Templates -->
+    <template id="history_entry_template">
+      <tr class="history_entry">
+        <td class="history_entry_save align-middle">
+          <input class="history_input_save form-check-input" type="checkbox" />
+        </td>
+        <td class="history_entry_delete align-middle">
+          <button class="history_input_delete btn btn-outline-dark btn-sm">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon icon-trash d-block"
+              fill="currentColor"
+            >
+              <use xlink:href="#icon-trash"></use>
+            </svg>
+          </button>
+        </td>
+        <td class="history_entry_doi">
+          <a class="history_entry_link" target="_blank"></a>
+          <div class="history_entry_title"></div>
+        </td>
+      </tr>
+    </template>
   </body>
 </html>

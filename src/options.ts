@@ -3,6 +3,8 @@
  */
 
 import './css/options.scss';
+import 'bootstrap/js/dist/tab';
+import 'bootstrap/js/dist/modal';
 import {
   HistoryDoi,
   StorageOptions,
@@ -21,12 +23,12 @@ import {
   requestContentScriptPermissions,
   requestMetaPermissions,
 } from './permissions';
-import {debounce, sortHistoryEntries} from './utils';
+import {debounce, isObject, sortHistoryEntries} from './utils';
 
 enum UrlHashPage {
-  Options = 'options',
-  History = 'history',
-  About = 'about',
+  Options = 'tab-options',
+  History = 'tab-history',
+  About = 'tab-about',
 }
 
 interface SaveMapItem {
@@ -59,22 +61,25 @@ class DoiOptions {
   private storageListenerStatus_: boolean;
 
   private elements_: {
-    aboutTab: HTMLInputElement;
+    aboutTab: HTMLButtonElement;
     alExclusions: HTMLDivElement;
     alRewriteLinks: HTMLDivElement;
     autolink: HTMLInputElement;
     autolinkExclusions: HTMLTextAreaElement;
     autolinkRewrite: HTMLInputElement;
+    autolinkSubOptions: HTMLDivElement;
     autolinkTestExclusion: HTMLInputElement;
     autolinkTestExclusionResult: HTMLSpanElement;
     context: HTMLInputElement;
     contextMatch: HTMLInputElement;
+    contextSubOptions: HTMLDivElement;
     crAutolink: HTMLSelectElement;
     crBubble: HTMLSelectElement;
     crContext: HTMLSelectElement;
     crHistory: HTMLSelectElement;
     crOmnibox: HTMLSelectElement;
     customResolver: HTMLInputElement;
+    customResolverSubOptions: HTMLDivElement;
     doiOutputUrlExample: HTMLSpanElement;
     doiResolverInput: HTMLInputElement;
     doiResolverInputReset: HTMLButtonElement;
@@ -90,12 +95,14 @@ class DoiOptions {
     historyShowTitles: HTMLInputElement;
     historySortBy: HTMLSelectElement;
     historySpinner: HTMLSpanElement;
-    historyTab: HTMLInputElement;
+    historySubOptions: HTMLDivElement;
+    historyTab: HTMLButtonElement;
     historyTitleRefresh: HTMLButtonElement;
     history_entry_template: HTMLTemplateElement;
+    infoModal: HTMLDivElement;
     meta: HTMLInputElement;
     omniboxOpento: HTMLSelectElement;
-    optionsTab: HTMLInputElement;
+    optionsTab: HTMLButtonElement;
     shortDoiOutputUrlExample: HTMLSpanElement;
     shortDoiResolverInput: HTMLInputElement;
     shortDoiResolverInputReset: HTMLButtonElement;
@@ -195,8 +202,8 @@ class DoiOptions {
     };
     this.elements_ = {
       aboutTab:
-        document.querySelector<HTMLInputElement>('input#aboutTab') ||
-        elementMissing('input#aboutTab'),
+        document.querySelector<HTMLButtonElement>('button#pills-about-tab') ||
+        elementMissing('button#pills-about-tab'),
       alExclusions:
         document.querySelector<HTMLDivElement>('div#alExclusions') ||
         elementMissing('div#alExclusions'),
@@ -212,6 +219,9 @@ class DoiOptions {
       autolinkRewrite:
         document.querySelector<HTMLInputElement>('input#autolinkRewrite') ||
         elementMissing('input#autolinkRewrite'),
+      autolinkSubOptions:
+        document.querySelector<HTMLDivElement>('div#autolinkSubOptions') ||
+        elementMissing('div#autolinkSubOptions'),
       autolinkTestExclusion:
         document.querySelector<HTMLInputElement>('input#autolinkTestExclusion') ||
         elementMissing('input#autolinkTestExclusion'),
@@ -224,6 +234,9 @@ class DoiOptions {
       contextMatch:
         document.querySelector<HTMLInputElement>('input#contextMatch') ||
         elementMissing('input#contextMatch'),
+      contextSubOptions:
+        document.querySelector<HTMLDivElement>('div#contextSubOptions') ||
+        elementMissing('div#contextSubOptions'),
       crAutolink:
         document.querySelector<HTMLSelectElement>('select#crAutolink') ||
         elementMissing('select#crAutolink'),
@@ -242,6 +255,9 @@ class DoiOptions {
       customResolver:
         document.querySelector<HTMLInputElement>('input#customResolver') ||
         elementMissing('input#customResolver'),
+      customResolverSubOptions:
+        document.querySelector<HTMLDivElement>('div#customResolverSubOptions') ||
+        elementMissing('div#customResolverSubOptions'),
       doiOutputUrlExample:
         document.querySelector<HTMLSpanElement>('span#doiOutputUrlExample') ||
         elementMissing('span#doiOutputUrlExample'),
@@ -287,22 +303,27 @@ class DoiOptions {
       historySpinner:
         document.querySelector<HTMLSpanElement>('span#historySpinner') ||
         elementMissing('span#historySpinner'),
+      historySubOptions:
+        document.querySelector<HTMLDivElement>('div#historySubOptions') ||
+        elementMissing('div#historySubOptions'),
       historyTab:
-        document.querySelector<HTMLInputElement>('input#historyTab') ||
-        elementMissing('input#historyTab'),
+        document.querySelector<HTMLButtonElement>('button#pills-history-tab') ||
+        elementMissing('button#pills-history-tab'),
       historyTitleRefresh:
         document.querySelector<HTMLButtonElement>('button#historyTitleRefresh') ||
         elementMissing('button#historyTitleRefresh'),
       history_entry_template:
         document.querySelector<HTMLTemplateElement>('template#history_entry_template') ||
         elementMissing('template#history_entry_template'),
+      infoModal:
+        document.querySelector<HTMLDivElement>('div#infoModal') || elementMissing('div#infoModal'),
       meta: document.querySelector<HTMLInputElement>('input#meta') || elementMissing('input#meta'),
       omniboxOpento:
         document.querySelector<HTMLSelectElement>('select#omniboxOpento') ||
         elementMissing('select#omniboxOpento'),
       optionsTab:
-        document.querySelector<HTMLInputElement>('input#optionsTab') ||
-        elementMissing('input#optionsTab'),
+        document.querySelector<HTMLButtonElement>('button#pills-options-tab') ||
+        elementMissing('button#pills-options-tab'),
       shortDoiOutputUrlExample:
         document.querySelector<HTMLSpanElement>('span#shortDoiOutputUrlExample') ||
         elementMissing('span#shortDoiOutputUrlExample'),
@@ -340,12 +361,13 @@ class DoiOptions {
    * Read #hash from URL and open corresponding tab
    */
   openTabByHash() {
-    if (location.hash === '#' + UrlHashPage.About) {
-      this.elements_.aboutTab.checked = true;
-    } else if (location.hash === '#' + UrlHashPage.History) {
-      this.elements_.historyTab.checked = true;
-    } else if (location.hash === '#' + UrlHashPage.Options) {
-      this.elements_.optionsTab.checked = true;
+    const hash = location.hash ? location.hash.substring(1) : '';
+    if (hash === UrlHashPage.About) {
+      this.elements_.aboutTab.click();
+    } else if (hash === UrlHashPage.History) {
+      this.elements_.historyTab.click();
+    } else if (hash === UrlHashPage.Options) {
+      // Do nothing
     } else if (location.hash) {
       location.hash = '';
     }
@@ -364,13 +386,13 @@ class DoiOptions {
   startClickListeners(): void {
     const tabChangeHandler = (event: Event) => {
       const target = event.currentTarget;
-      if (target instanceof HTMLInputElement && target.checked) {
-        location.hash = target.id.replace('Tab', '');
+      if (target instanceof HTMLButtonElement) {
+        location.hash = target.dataset.hash || '';
       }
     };
-    this.elements_.aboutTab.addEventListener('change', tabChangeHandler);
-    this.elements_.historyTab.addEventListener('change', tabChangeHandler);
-    this.elements_.optionsTab.addEventListener('change', tabChangeHandler);
+    this.elements_.aboutTab.addEventListener('show.bs.tab', tabChangeHandler);
+    this.elements_.historyTab.addEventListener('show.bs.tab', tabChangeHandler);
+    this.elements_.optionsTab.addEventListener('show.bs.tab', tabChangeHandler);
 
     const defaultDoiResolver = this.defaultDoiResolver_;
     const handleDoiResolverReset = function (this: HTMLInputElement) {
@@ -404,6 +426,49 @@ class DoiOptions {
       clearOptions('sync').catch((error) => {
         console.error('Failed to clear sync storage', error);
       });
+    });
+
+    // Bootstrap types are incomplete. Event types not available.
+    const infoModal = this.elements_.infoModal;
+    infoModal.addEventListener('show.bs.modal', function (event: unknown) {
+      if (!isObject(event)) {
+        return;
+      }
+
+      const trigger = event.relatedTarget;
+      if (!(trigger instanceof HTMLElement)) {
+        return;
+      }
+
+      const titleElm = infoModal.querySelector('.modal-title');
+      const bodyElm = infoModal.querySelector('.modal-body');
+      if (!titleElm || !bodyElm) {
+        console.warn('Unable to update modal because elements are missing');
+        return;
+      }
+
+      const title = chrome.i18n.getMessage(trigger.dataset.modalTitle || '');
+      const body = chrome.i18n.getMessage(trigger.dataset.modalBody || '');
+      if (!title || !body) {
+        console.warn('Unable to update modal because message not defined');
+        return;
+      }
+
+      titleElm.innerHTML = title;
+      bodyElm.innerHTML = body;
+    });
+
+    // Bootstrap types are incomplete. Event types not available.
+    infoModal.addEventListener('hidden.bs.modal', function () {
+      const titleElm = infoModal.querySelector('.modal-title');
+      const bodyElm = infoModal.querySelector('.modal-body');
+      if (!titleElm || !bodyElm) {
+        console.warn('Unable to update modal because elements are missing');
+        return;
+      }
+
+      titleElm.innerHTML = 'Info';
+      bodyElm.innerHTML = '';
     });
   }
 
@@ -716,8 +781,7 @@ class DoiOptions {
     this.elements_.shortDoiResolverInput.value =
       stg.shortdoi_resolver ?? defaultOptions.shortdoi_resolver;
     this.elements_.history.checked = stg.history ?? defaultOptions.history;
-    this.elements_.historyNotice.style.display =
-      stg.history ?? defaultOptions.history ? 'none' : '';
+    this.elements_.historyNotice.hidden = stg.history ?? defaultOptions.history;
     this.elements_.historyShowSave.checked =
       stg.history_showsave ?? defaultOptions.history_showsave;
     this.elements_.historyShowTitles.checked =
@@ -754,20 +818,23 @@ class DoiOptions {
    * Update display based on option states
    */
   optionsDisplayUpdates() {
+    this.elements_.historySubOptions.hidden = !this.elements_.history.checked;
+    this.elements_.contextSubOptions.hidden = !this.elements_.context.checked;
+
     const customResolver = this.elements_.customResolver.checked;
     if (customResolver) {
       this.setCrPreviews();
     }
+    this.elements_.customResolverSubOptions.hidden = !customResolver;
 
-    const history = this.elements_.history.checked;
-    this.elements_.historyNotice.style.display = history ? 'none' : '';
+    this.elements_.historyNotice.hidden = this.elements_.history.checked;
 
     const autolink = this.elements_.autolink.checked;
-    this.elements_.alExclusions.style.display = autolink ? '' : 'none';
-
+    this.elements_.autolinkSubOptions.hidden = !autolink;
     const crAutolink = this.elements_.crAutolink.value;
     const showAlRewriteLinks = autolink && customResolver && crAutolink === 'custom';
-    this.elements_.alRewriteLinks.style.display = showAlRewriteLinks ? '' : 'none';
+    this.elements_.alExclusions.hidden = !this.elements_.autolink.checked;
+    this.elements_.alRewriteLinks.hidden = !showAlRewriteLinks;
   }
 
   /**
@@ -1099,20 +1166,9 @@ class DoiOptions {
     const history_entry = clone.querySelector<HTMLTableRowElement>('tr.history_entry');
     const history_input_save = clone.querySelector<HTMLInputElement>('input.history_input_save');
     const history_entry_link = clone.querySelector<HTMLAnchorElement>('a.history_entry_link');
-    const history_entry_title_copy = clone.querySelector<HTMLButtonElement>(
-      'button.history_entry_title_copy'
-    );
-    const history_entry_title_display = clone.querySelector<HTMLSpanElement>(
-      'span.history_entry_title_display'
-    );
+    const history_entry_title = clone.querySelector<HTMLDivElement>('div.history_entry_title');
 
-    if (
-      !history_entry ||
-      !history_input_save ||
-      !history_entry_link ||
-      !history_entry_title_copy ||
-      !history_entry_title_display
-    ) {
+    if (!history_entry || !history_input_save || !history_entry_link || !history_entry_title) {
       return null;
     }
 
@@ -1120,19 +1176,39 @@ class DoiOptions {
     history_input_save.checked = recordedDoi.save;
     history_entry_link.href = this.getHistoryUrl(recordedDoi.doi);
     history_entry_link.textContent = recordedDoi.doi;
-    history_entry_title_copy.title = chrome.i18n.getMessage('historyCopyTitle');
-    history_entry_title_display.textContent = recordedDoi.title;
-    history_entry_title_display.title = recordedDoi.title;
+    history_entry_title.title = chrome.i18n.getMessage('historyCopyTitle');
+    history_entry_title.textContent = recordedDoi.title;
 
-    history_entry_title_copy.addEventListener('click', function () {
-      if (!navigator.clipboard?.writeText) {
-        return;
-      }
+    const delta = 6;
+    let startX = 0;
+    let startY = 0;
 
-      navigator.clipboard.writeText(recordedDoi.title).catch((error) => {
-        console.error('Unable to write to clipboard', error);
-      });
+    history_entry_title.addEventListener('mousedown', function (event) {
+      startX = event.pageX;
+      startY = event.pageY;
     });
+
+    history_entry_title.addEventListener('mouseup', function (event) {
+      if (Math.abs(event.pageX - startX) < delta && Math.abs(event.pageY - startY) < delta) {
+        if (!navigator.clipboard?.writeText) {
+          return;
+        }
+
+        navigator.clipboard.writeText(recordedDoi.title).catch((error) => {
+          console.error('Unable to write to clipboard', error);
+        });
+      }
+    });
+
+    // history_entry_title.addEventListener('click', function () {
+    //   if (!navigator.clipboard?.writeText) {
+    //     return;
+    //   }
+
+    //   navigator.clipboard.writeText(recordedDoi.title).catch((error) => {
+    //     console.error('Unable to write to clipboard', error);
+    //   });
+    // });
 
     return clone;
   }
@@ -1473,19 +1549,14 @@ class DoiOptions {
       if (!element) {
         return;
       }
-      if (element.classList.contains('tooltip')) {
-        element.innerHTML = message + element.innerHTML;
-      } else {
-        element.innerHTML = message;
+      element.innerHTML = message;
+      if (element.dataset.tooltipMessage === 'true') {
+        const tooltipMessage = chrome.i18n.getMessage(messageId + 'Tooltip');
+        element.title = tooltipMessage;
       }
     });
 
-    const messageClasses = [
-      'imgPreview',
-      'optionCrCustom',
-      'optionCrDefault',
-      'optionCrSelectable',
-    ];
+    const messageClasses = ['optionCrCustom', 'optionCrDefault', 'optionCrSelectable'];
 
     messageClasses.forEach((messageClass) => {
       const message = chrome.i18n.getMessage(messageClass);

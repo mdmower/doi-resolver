@@ -7,10 +7,6 @@
     "description": "The title of the application",
     "message": "DOI Resolver"
   },
-  "autolinkExclusionsInfoText": {
-    "description": "Guidelines for entries in the autolink exclusions text(area) box",
-    "message": "List websites &ndash; one per line &ndash; that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.<br><br><span style=\"text-decoration: underline;\">Normal matching</span>: Websites will be matched based on whether the string matches the URL, <em>beginning</em> with the hostname. Wildcards are not supported.<br>Example: <strong>example.com/abc</strong> will match http://example.com/abc/def but will not match http://www.example.com/abc/def.<br><br><span style=\"text-decoration: underline;\">Regex matching</span>: Surround an entry by forward slashes (/) to perform a regex match on an entire URL, beginning with the hostname.<br>Example: <strong>/example\\.com\\/abc.*/</strong> will match both http://example.com/abc/def and http://www.example.com/abc/def."
-  },
   "autolinkExclusionsInvalidUrl": {
     "description": "Report that test URL is invalid due to missing http/https protocol",
     "message": "Invalid URL (missing protocol)"
@@ -116,8 +112,8 @@
     "message": "Clear History"
   },
   "historyCopyTitle": {
-    "description": "Hover text for button to copy a history entry title",
-    "message": "Copy"
+    "description": "Hover text for history title to inform user about copy to clipboard feature",
+    "message": "Click title to copy to clipboard"
   },
   "historyFetchTitleLabel": {
     "description": "Text for checkbox that enables title fetch when DOI is recorded",
@@ -127,9 +123,13 @@
     "description": "Text on history page to notify user that history is not enabled",
     "message": "History is not enabled"
   },
-  "historySaveInfoText": {
-    "description": "A description of how the save feature works on the history page",
-    "message": "DOIs marked 'Save' will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."
+  "historySaveModalBody": {
+    "description": "The message body to display in an info modal for the save feature on the history page",
+    "message": "Saved DOIs will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."
+  },
+  "historySaveModalTitle": {
+    "description": "The heading to display in an info modal for the save feature on the history page",
+    "message": "Save history entry"
   },
   "historySavedEntryLabel": {
     "description": "A word to indicate an entry has been marked for save; label displayed in the history drop-down",
@@ -193,11 +193,23 @@
   },
   "optionAutolinkExclusions": {
     "description": "Label for textbox area to enter exclusions for the autolink feature",
-    "message": "Exclusions:"
+    "message": "Exclude URLs and URL patterns from autolink"
   },
-  "optionAutolinkInfo": {
-    "description": "Cautionary remarks about the autolink feature",
-    "message": "The autolink feature requires permission to access and modify pages you are viewing. You will need to refresh open tabs for this option to take effect."
+  "optionAutolinkExclusionsModalBody": {
+    "description": "The message body to display in an info modal for the autolink exclusion feature",
+    "message": "List websites &ndash; one per line &ndash; that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.<br><br><span style=\"text-decoration: underline;\">Normal matching</span>: Websites will be matched based on whether the string matches the URL, <em>beginning</em> with the hostname. Wildcards are not supported.<br>Example: <strong>example.com/abc</strong> will match http://example.com/abc/def but will not match http://www.example.com/abc/def.<br><br><span style=\"text-decoration: underline;\">Regex matching</span>: Surround an entry by forward slashes (/) to perform a regex match on an entire URL, beginning with the hostname.<br>Example: <strong>/example\\.com\\/abc.*/</strong> will match both http://example.com/abc/def and http://www.example.com/abc/def."
+  },
+  "optionAutolinkExclusionsModalTitle": {
+    "description": "The heading to display in an info modal for the autolink exclusion feature",
+    "message": "Autolink exclusions"
+  },
+  "optionAutolinkModalBody": {
+    "description": "The message body to display in an info modal for the autolink feature",
+    "message": "This feature requires permission to access and modify pages you are viewing. You will need to refresh open tabs for this option to take effect."
+  },
+  "optionAutolinkModalTitle": {
+    "description": "The heading to display in an info modal for the autolink feature",
+    "message": "Autolink permissions"
   },
   "optionAutolinkRewrite": {
     "description": "A setting to enable the extension to scan every page visited by the user and rewite doi.org and dx.doi.org links to be handled by the custom DOI resolver instead.",
@@ -207,17 +219,29 @@
     "description": "Label for text input to verify whether a URL will be matched by an autolink exclusion",
     "message": "Test a URL for exclusion:"
   },
-  "optionContextMenu": {
-    "description": "A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
-    "message": "Enable right-click context menu for selected text"
-  },
   "optionContextMatch": {
     "description": "A setting to enable DOI detection when a user highlights text on a webpage, determining whether to show 'Resolve DOI' in the context menu",
     "message": "Only show context menu entry if a DOI is selected"
   },
-  "optionContextMatchInfo": {
-    "description": "Cautionary remarks about context menu match feature",
+  "optionContextMatchModalBody": {
+    "description": "The message body to display in an info modal for the context menu match feature",
     "message": "This feature requires permission to access pages you are viewing and parse selected text. You will need to refresh open tabs for this option to take effect."
+  },
+  "optionContextMatchModalTitle": {
+    "description": "The heading to display in an info modal for the context menu match feature",
+    "message": "Context menu permissions"
+  },
+  "optionContextMenu": {
+    "description": "A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
+    "message": "Enable right-click context menu for selected text"
+  },
+  "optionContextMenuModalBody": {
+    "description": "The message body to display in an info modal for the context menu feature",
+    "message": "<p>This feature adds a 'Resolve DOI' entry in the context menu for selected text.</p><div class='text-center'><img class='img-fluid' src='img/context_menu.png'></div>"
+  },
+  "optionContextMenuModalTitle": {
+    "description": "The heading to display in an info modal for the context menu feature",
+    "message": "Context menu"
   },
   "optionCrAutolink": {
     "description": "Label to choose whether custom resolver is enabled for autolinker",
@@ -280,8 +304,16 @@
     "message": "Show titles instead of DOIs in text input box drop-downs"
   },
   "optionMetaButtons": {
-    "description": "A setting to enable additional buttons in the popup",
-    "message": "Enable additional features in popup"
+    "description": "A setting to enable additional buttons in the browser action bubble",
+    "message": "Enable additional features in the browser action bubble"
+  },
+  "optionMetaButtonsModalBody": {
+    "description": "The message body to display in an info modal for the meta buttons feature",
+    "message": "<p>This feature will add buttons to access Options, the Citation Generator, and the QR Code Generator to the browser action bubble.</p><div class='text-center'><img class='img-fluid' src='img/bubble_meta.png'></div>"
+  },
+  "optionMetaButtonsModalTitle": {
+    "description": "The heading to display in an info modal for the meta buttons feature",
+    "message": "Meta buttons"
   },
   "optionOmniboxOpento": {
     "description": "Label for selectable option to open omnibox queries in current or new tab",
@@ -302,6 +334,14 @@
   "optionSyncData": {
     "description": "Label for data sync feature",
     "message": "Synchronize this extension's settings across Chrome installations"
+  },
+  "optionSyncDataModalBody": {
+    "description": "The message body to display in an info modal for the sync feature",
+    "message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work. This option needs to be enabled on each Chrome installation where you would like sync to occur.<br><br>The following options are not included in sync because they require permissions to be accepted by the user before enabling: <ul><li>Autolink</li><li>QR: Include title of reference in QR code</li><li>History: Automatically fetch title when a new DOI is recorded</li></ul>"
+  },
+  "optionSyncDataModalTitle": {
+    "description": "The heading to display in an info modal for the sync feature",
+    "message": "Sync"
   },
   "optionsSubmit": {
     "description": "The text that appears on the button to open the Options page",
@@ -411,17 +451,13 @@
     "description": "Default title for SVG icon-info",
     "message": "About"
   },
-  "syncDataInfo": {
-    "description": "Additional information about sync feature",
-    "message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work correctly. This option should be manually enabled on each Chrome installation where you would like sync to occur.<br><br>The following options are not included in sync because they require permissions to be accepted by the user before enabling: <ul><li>Autolink</li><li>QR: Include title of reference in QR code</li><li>History: Automatically fetch title when a new DOI is recorded</li></ul>"
-  },
   "syncDataWipeButton": {
     "description": "Text for sync wipe button",
     "message": "Reset Sync"
   },
   "syncDataWipeDescription": {
     "description": "Description for sync wipe button",
-    "message": "&#8618; Wipe all synced data and disable Sync"
+    "message": "Wipe all synced data and disable Sync"
   },
   "tableHeadingDelete": {
     "description": "Heading on history page for Delete column",
@@ -429,7 +465,7 @@
   },
   "tableHeadingDoi": {
     "description": "Heading on history page for DOI column",
-    "message": "DOI"
+    "message": "DOI & Title"
   },
   "tableHeadingSave": {
     "description": "Heading on history page for Save column",
@@ -437,10 +473,10 @@
   },
   "textDoiResolverInput": {
     "description": "Label for text box where a URL will be entered for DOIs",
-    "message": "URL for DOI resolver:"
+    "message": "URL for DOI resolver"
   },
   "textShortDoiResolverInput": {
     "description": "Label for text box where a URL will be entered for ShortDOIs",
-    "message": "URL for ShortDOI resolver:"
+    "message": "URL for ShortDOI resolver"
   }
 }

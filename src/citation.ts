@@ -3,6 +3,7 @@
  */
 
 import './css/citation.scss';
+import 'bootstrap/js/dist/modal';
 import {HistoryDoi, getDefaultOptions, getOptions, setOptions} from './storage';
 import {requestCitationPermissions} from './permissions';
 import {filterSelectByText, isObject, isValidDoi, sortHistoryEntries, trimDoi} from './utils';
@@ -48,7 +49,6 @@ class DoiCitation {
     recordTab: (tabId: number) => void;
   };
   private defaultDoiResolver_: string;
-  private historyBoxSize_?: number;
   private cslStyles_?: CslStyles;
   private cslLocales_?: CslLocales;
   private elements_: {
@@ -56,14 +56,12 @@ class DoiCitation {
     citeForm: HTMLFormElement;
     citeLocaleInput: HTMLSelectElement;
     citeStyleFilter: HTMLInputElement;
-    closeHistory: SVGElement;
     doiHistory: HTMLSelectElement;
     doiInput: HTMLInputElement;
-    inputContainer: HTMLDivElement;
-    localSubmitContainer: HTMLDivElement;
-    mainForm: HTMLDivElement;
+    filterHistory: HTMLInputElement;
+    historyModalClose: HTMLButtonElement;
     notifyDiv: HTMLDivElement;
-    openHistory: SVGElement;
+    openHistory: HTMLAnchorElement;
     styleList: HTMLSelectElement;
   };
 
@@ -92,27 +90,23 @@ class DoiCitation {
       citeStyleFilter:
         document.querySelector<HTMLInputElement>('input#citeStyleFilter') ||
         elementMissing('input#citeStyleFilter'),
-      closeHistory:
-        document.querySelector<SVGElement>('svg#closeHistory') ||
-        elementMissing('svg#closeHistory'),
       doiHistory:
         document.querySelector<HTMLSelectElement>('select#doiHistory') ||
         elementMissing('select#doiHistory'),
       doiInput:
         document.querySelector<HTMLInputElement>('input#doiInput') ||
         elementMissing('input#doiInput'),
-      inputContainer:
-        document.querySelector<HTMLDivElement>('div#inputContainer') ||
-        elementMissing('div#inputContainer'),
-      localSubmitContainer:
-        document.querySelector<HTMLDivElement>('div#localSubmitContainer') ||
-        elementMissing('div#localSubmitContainer'),
-      mainForm:
-        document.querySelector<HTMLDivElement>('div#mainForm') || elementMissing('div#mainForm'),
+      filterHistory:
+        document.querySelector<HTMLInputElement>('input#filterHistory') ||
+        elementMissing('input#filterHistory'),
+      historyModalClose:
+        document.querySelector<HTMLButtonElement>('button#historyModalClose') ||
+        elementMissing('button#historyModalClose'),
       notifyDiv:
         document.querySelector<HTMLDivElement>('div#notifyDiv') || elementMissing('div#notifyDiv'),
       openHistory:
-        document.querySelector<SVGElement>('svg#openHistory') || elementMissing('svg#openHistory'),
+        document.querySelector<HTMLAnchorElement>('a#openHistory') ||
+        elementMissing('a#openHistory'),
       styleList:
         document.querySelector<HTMLSelectElement>('select#styleList') ||
         elementMissing('select#styleList'),
@@ -338,9 +332,9 @@ class DoiCitation {
    */
   private resetSpace(): void {
     this.elements_.notifyDiv.innerHTML = '';
-    this.elements_.notifyDiv.style.display = 'none';
+    this.elements_.notifyDiv.hidden = true;
     this.elements_.citeDiv.innerHTML = '';
-    this.elements_.citeDiv.style.display = 'none';
+    this.elements_.citeDiv.hidden = true;
   }
 
   /**
@@ -350,7 +344,7 @@ class DoiCitation {
   private simpleNotification(message: string): void {
     this.resetSpace();
     this.elements_.notifyDiv.innerHTML = message;
-    this.elements_.notifyDiv.style.display = 'block';
+    this.elements_.notifyDiv.hidden = false;
   }
 
   /**
@@ -360,7 +354,7 @@ class DoiCitation {
   private outputCitation(citation: string): void {
     this.resetSpace();
     this.elements_.citeDiv.innerHTML = citation;
-    this.elements_.citeDiv.style.display = 'block';
+    this.elements_.citeDiv.hidden = false;
   }
 
   /**
@@ -541,7 +535,7 @@ class DoiCitation {
     ]);
 
     if (!stg.history || !stg.recorded_dois || !stg.recorded_dois.length) {
-      this.elements_.openHistory.style.display = 'none';
+      this.elements_.openHistory.hidden = true;
       return;
     }
 
@@ -576,7 +570,6 @@ class DoiCitation {
     optionElements.push(...savedOptions, ...dividerOptions, ...unsavedOptions);
 
     const selectBox = this.elements_.doiHistory;
-    selectBox.size = 15;
     selectBox.selectedIndex = -1;
     optionElements.forEach((optionElement) => selectBox.appendChild(optionElement));
 
@@ -584,61 +577,16 @@ class DoiCitation {
       filterSelectByText(selectBox, this.value, false);
     };
 
-    const textInput = this.elements_.doiInput;
+    const doiInput = this.elements_.doiInput;
+    const textInput = this.elements_.filterHistory;
     textInput.addEventListener('input', filterInput);
 
-    const toggleHistoryBox = this.toggleHistoryBox.bind(this);
+    const historyModalClose = this.elements_.historyModalClose;
     selectBox.addEventListener('change', function () {
-      textInput.removeEventListener('input', filterInput);
-      textInput.value = this.value;
-      textInput.addEventListener('input', filterInput);
+      doiInput.value = this.value;
       this.selectedIndex = -1;
-      filterSelectByText(selectBox, '', false);
-      toggleHistoryBox(false);
+      historyModalClose.click();
     });
-
-    this.elements_.openHistory.addEventListener('click', function () {
-      toggleHistoryBox(true);
-    });
-
-    this.elements_.closeHistory.addEventListener('click', function () {
-      toggleHistoryBox(false);
-    });
-
-    const mainForm = this.elements_.mainForm;
-    document.addEventListener('click', function (event) {
-      if (event.target instanceof HTMLElement && !mainForm.contains(event.target)) {
-        toggleHistoryBox(false);
-      }
-    });
-  }
-
-  /**
-   * Calculate the history box size in px
-   */
-  private getHistoryBoxSize(): number {
-    const inputContainer = this.elements_.inputContainer;
-    const localSubmitContainer = this.elements_.localSubmitContainer;
-    const boxTop = inputContainer.offsetTop + inputContainer.offsetHeight + 2;
-    const boxBottom = localSubmitContainer.offsetTop - 2;
-    return boxBottom - boxTop;
-  }
-
-  /**
-   * Show/hide the history box
-   * @param enable Whether history should be shown or not
-   */
-  private toggleHistoryBox(enable: boolean): void {
-    const selectBox = this.elements_.doiHistory;
-    if (this.historyBoxSize_ === undefined) {
-      this.historyBoxSize_ = this.getHistoryBoxSize();
-      selectBox.style.height = `${this.historyBoxSize_}px`;
-    }
-    const openHistory = this.elements_.openHistory;
-    const closeHistory = this.elements_.closeHistory;
-    selectBox.style.display = enable ? 'block' : '';
-    openHistory.style.display = enable ? 'none' : '';
-    closeHistory.style.display = enable ? 'block' : '';
   }
 
   /**
@@ -664,5 +612,20 @@ class DoiCitation {
         element.innerHTML = message;
       }
     });
+
+    const openHistory = document.getElementById('openHistory');
+    if (openHistory) {
+      openHistory.title = chrome.i18n.getMessage('headingHistory');
+    }
+
+    const filterHistory = document.querySelector<HTMLInputElement>('input#filterHistory');
+    if (filterHistory) {
+      filterHistory.placeholder = chrome.i18n.getMessage('filterHistoryLabel');
+    }
+
+    const modalLabel = document.getElementById('modalLabel');
+    if (modalLabel) {
+      modalLabel.innerHTML = chrome.i18n.getMessage('headingHistory');
+    }
   }
 }

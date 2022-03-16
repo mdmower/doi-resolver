@@ -41,7 +41,7 @@
   },
   "citeStyleFilterLabel": {
     "description": "The label for the style filter box on the Citations page",
-    "message": "Style filter"
+    "message": "Filter styles"
   },
   "citeStyleGenFail": {
     "description": "General failure message for citation generation",
@@ -78,6 +78,10 @@
   "doiOutputUrlExample": {
     "description": "Label for the currently set resolver URL",
     "message": "Preview URL tail:"
+  },
+  "filterHistoryLabel": {
+    "description": "Label for a history filter input",
+    "message": "Filter"
   },
   "headingAutolink": {
     "description": "Heading on options page for Autolink",

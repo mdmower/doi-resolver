@@ -146,7 +146,7 @@ export function filterSelectByText(
 
   if (showAll) {
     options.forEach((option) => {
-      option.style.display = '';
+      option.hidden = false;
     });
     if (select.selectedOptions.length) {
       select.selectedOptions[0].scrollIntoView();
@@ -161,11 +161,11 @@ export function filterSelectByText(
     const visibleOptions = [] as HTMLOptionElement[];
     options.forEach((option) => {
       if (regex.test(option.textContent || '') || regex.test(option.value)) {
-        option.style.display = '';
+        option.hidden = false;
         visibleOptions.push(option);
       } else {
         option.selected = false;
-        option.style.display = 'none';
+        option.hidden = true;
       }
     });
 

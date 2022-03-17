@@ -127,6 +127,10 @@
     "description": "Text on history page to notify user that history is not enabled",
     "message": "History is not enabled"
   },
+  "historySaveDivider": {
+    "description": "Text to indicate history items that are saved are above the divider and unsaved items are below",
+    "message": "↑ Saved / Unsaved ↓"
+  },
   "historySaveModalBody": {
     "description": "The message body to display in an info modal for the save feature on the history page",
     "message": "Saved DOIs will not be automatically deleted when the history length is exceeded. If the history length would be exceeded by adding a new entry, the oldest non-saved entry is removed."

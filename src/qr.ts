@@ -23,6 +23,7 @@ import {
 } from './utils';
 import iro from '@jaames/iro';
 import {ColorPickerProps, IroColorPicker} from '@jaames/iro/dist/ColorPicker';
+import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './messaging';
 
 interface CreateQrParams {
   size: number;
@@ -222,6 +223,98 @@ class DoiQr {
         this.actions_.recordTab(tab.id);
       }
     });
+
+    const selectBox = this.elements_.doiHistory;
+    const filterInput = function (this: HTMLInputElement): void {
+      filterSelectByText(selectBox, this.value, false);
+    };
+
+    const textInput = this.elements_.doiInput;
+    textInput.addEventListener('input', filterInput);
+
+    const toggleHistoryBox = this.toggleHistoryBox.bind(this);
+    selectBox.addEventListener('change', function () {
+      textInput.removeEventListener('input', filterInput);
+      textInput.value = this.value;
+      textInput.addEventListener('input', filterInput);
+      this.selectedIndex = -1;
+      filterSelectByText(selectBox, '', false);
+      toggleHistoryBox(false);
+    });
+
+    this.elements_.openHistory.addEventListener('click', function () {
+      toggleHistoryBox(true);
+    });
+
+    this.elements_.closeHistory.addEventListener('click', function () {
+      toggleHistoryBox(false);
+    });
+
+    const mainForm = this.elements_.mainForm;
+    document.addEventListener('click', function (event) {
+      if (event.target instanceof HTMLElement && !mainForm.contains(event.target)) {
+        toggleHistoryBox(false);
+      }
+    });
+
+    chrome.runtime.onMessage.addListener(this.runtimeMessageHandler.bind(this));
+  }
+
+  /**
+   * Handle runtime messages
+   * @param message Internal message
+   */
+  private runtimeMessageHandler(message: unknown): boolean | void {
+    if (!isInternalMessage(message)) {
+      return;
+    }
+
+    switch (message.cmd) {
+      case MessageCmd.SettingsUpdated:
+        if (isSettingsUpdatedMessage(message) && message.data) {
+          this.handleSettingsUpdate(message.data.options).catch((error) => {
+            console.error('Failed to handle settings update', error);
+          });
+        }
+        break;
+      default:
+        break;
+    }
+
+    return true; // Required to allow async sendResponse
+  }
+
+  /**
+   * Handle settings updated runtime message
+   * @param updatedOptions Updated options
+   */
+  async handleSettingsUpdate(updatedOptions: StorageOptions): Promise<void> {
+    console.log('Storage changed, checking for updates');
+
+    if (Object.keys(updatedOptions).length === 0) {
+      console.log('Nothing to update');
+      return;
+    }
+
+    const historyRefreshOptions: (keyof StorageOptions)[] = [
+      'cr_history',
+      'custom_resolver',
+      'doi_resolver',
+      'history_sortby',
+      'recorded_dois',
+      'shortdoi_resolver',
+    ];
+
+    const historyUpdated = historyRefreshOptions.some(
+      (option) => updatedOptions[option] !== undefined
+    );
+
+    if (historyUpdated) {
+      console.log('History updated');
+      await this.populateHistory();
+    } else {
+      console.log('No relevant updates found');
+    }
   }
 
   /**
@@ -392,7 +485,7 @@ class DoiQr {
       'history_sortby',
     ]);
 
-    if (!stg.history || !stg.recorded_dois || stg.recorded_dois.length < 1) {
+    if (!stg.history || !stg.recorded_dois || !stg.recorded_dois.length) {
       this.elements_.openHistory.style.display = 'none';
       return;
     }
@@ -423,6 +516,7 @@ class DoiQr {
     if (savedOptions.length && unsavedOptions.length) {
       const dividerOption = document.createElement('option');
       dividerOption.disabled = true;
+      dividerOption.textContent = chrome.i18n.getMessage('historySaveDivider');
       dividerOptions.push(dividerOption);
     }
     optionElements.push(...savedOptions, ...dividerOptions, ...unsavedOptions);
@@ -430,39 +524,10 @@ class DoiQr {
     const selectBox = this.elements_.doiHistory;
     selectBox.size = 12;
     selectBox.selectedIndex = -1;
+    while (selectBox.firstChild) {
+      selectBox.removeChild(selectBox.firstChild);
+    }
     optionElements.forEach((optionElement) => selectBox.appendChild(optionElement));
-
-    const filterInput = function (this: HTMLInputElement): void {
-      filterSelectByText(selectBox, this.value, false);
-    };
-
-    const textInput = this.elements_.doiInput;
-    textInput.addEventListener('input', filterInput);
-
-    const toggleHistoryBox = this.toggleHistoryBox.bind(this);
-    selectBox.addEventListener('change', function () {
-      textInput.removeEventListener('input', filterInput);
-      textInput.value = this.value;
-      textInput.addEventListener('input', filterInput);
-      this.selectedIndex = -1;
-      filterSelectByText(selectBox, '', false);
-      toggleHistoryBox(false);
-    });
-
-    this.elements_.openHistory.addEventListener('click', function () {
-      toggleHistoryBox(true);
-    });
-
-    this.elements_.closeHistory.addEventListener('click', function () {
-      toggleHistoryBox(false);
-    });
-
-    const mainForm = this.elements_.mainForm;
-    document.addEventListener('click', function (event) {
-      if (event.target instanceof HTMLElement && !mainForm.contains(event.target)) {
-        toggleHistoryBox(false);
-      }
-    });
   }
 
   /**

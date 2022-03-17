@@ -4,10 +4,11 @@
 
 import './css/citation.scss';
 import 'bootstrap/js/dist/modal';
-import {HistoryDoi, getDefaultOptions, getOptions, setOptions} from './storage';
+import {HistoryDoi, getDefaultOptions, getOptions, setOptions, StorageOptions} from './storage';
 import {requestCitationPermissions} from './permissions';
 import {filterSelectByText, isObject, isValidDoi, sortHistoryEntries, trimDoi} from './utils';
 import {CiteProcSys} from 'citeproc';
+import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './messaging';
 
 interface CitationResources {
   citeProcJson: Record<string, unknown>;
@@ -146,6 +147,22 @@ class DoiCitation {
         this.actions_.recordTab(tab.id);
       }
     });
+
+    const doiHistory = this.elements_.doiHistory;
+    const textInput = this.elements_.filterHistory;
+    textInput.addEventListener('input', function () {
+      filterSelectByText(doiHistory, this.value, false);
+    });
+
+    const doiInput = this.elements_.doiInput;
+    const historyModalClose = this.elements_.historyModalClose;
+    doiHistory.addEventListener('change', function () {
+      doiInput.value = this.value;
+      this.selectedIndex = -1;
+      historyModalClose.click();
+    });
+
+    chrome.runtime.onMessage.addListener(this.runtimeMessageHandler.bind(this));
   }
 
   /**
@@ -240,6 +257,63 @@ class DoiCitation {
     this.elements_.citeStyleFilter.addEventListener('input', function () {
       filterSelectByText(styleList, this.value, true);
     });
+  }
+
+  /**
+   * Handle runtime messages
+   * @param message Internal message
+   */
+  private runtimeMessageHandler(message: unknown): boolean | void {
+    if (!isInternalMessage(message)) {
+      return;
+    }
+
+    switch (message.cmd) {
+      case MessageCmd.SettingsUpdated:
+        if (isSettingsUpdatedMessage(message) && message.data) {
+          this.handleSettingsUpdate(message.data.options).catch((error) => {
+            console.error('Failed to handle settings update', error);
+          });
+        }
+        break;
+      default:
+        break;
+    }
+
+    return true; // Required to allow async sendResponse
+  }
+
+  /**
+   * Handle settings updated runtime message
+   * @param updatedOptions Updated options
+   */
+  async handleSettingsUpdate(updatedOptions: StorageOptions): Promise<void> {
+    console.log('Storage changed, checking for updates');
+
+    if (Object.keys(updatedOptions).length === 0) {
+      console.log('Nothing to update');
+      return;
+    }
+
+    const historyRefreshOptions: (keyof StorageOptions)[] = [
+      'cr_history',
+      'custom_resolver',
+      'doi_resolver',
+      'history_sortby',
+      'recorded_dois',
+      'shortdoi_resolver',
+    ];
+
+    const historyUpdated = historyRefreshOptions.some(
+      (option) => updatedOptions[option] !== undefined
+    );
+
+    if (historyUpdated) {
+      console.log('History updated');
+      await this.populateHistory();
+    } else {
+      console.log('No relevant updates found');
+    }
   }
 
   /**
@@ -565,28 +639,17 @@ class DoiCitation {
     if (savedOptions.length && unsavedOptions.length) {
       const dividerOption = document.createElement('option');
       dividerOption.disabled = true;
+      dividerOption.textContent = chrome.i18n.getMessage('historySaveDivider');
       dividerOptions.push(dividerOption);
     }
     optionElements.push(...savedOptions, ...dividerOptions, ...unsavedOptions);
 
     const selectBox = this.elements_.doiHistory;
     selectBox.selectedIndex = -1;
+    while (selectBox.firstChild) {
+      selectBox.removeChild(selectBox.firstChild);
+    }
     optionElements.forEach((optionElement) => selectBox.appendChild(optionElement));
-
-    const filterInput = function (this: HTMLInputElement): void {
-      filterSelectByText(selectBox, this.value, false);
-    };
-
-    const doiInput = this.elements_.doiInput;
-    const textInput = this.elements_.filterHistory;
-    textInput.addEventListener('input', filterInput);
-
-    const historyModalClose = this.elements_.historyModalClose;
-    selectBox.addEventListener('change', function () {
-      doiInput.value = this.value;
-      this.selectedIndex = -1;
-      historyModalClose.click();
-    });
   }
 
   /**

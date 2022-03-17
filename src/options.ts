@@ -700,7 +700,6 @@ class DoiOptions {
 
     const options: StorageOptions = {
       auto_link_rewrite: this.elements_.autolinkRewrite.checked,
-      autolink_exclusions: this.elements_.autolinkExclusions.value.split('\n').filter(Boolean),
       history: this.elements_.history.checked,
       history_showsave: this.elements_.historyShowSave.checked,
       history_showtitles: this.elements_.historyShowTitles.checked,
@@ -735,7 +734,13 @@ class DoiOptions {
       sync_data: this.elements_.syncData.checked,
     };
 
-    /* If history is disabled, remove all history entries */
+    // Strip protocol from user-entered autolink exclusions before saving
+    options.autolink_exclusions = this.elements_.autolinkExclusions.value
+      .split('\n')
+      .map((str) => str.replace(/^\s*https?:\/\//i, '').trim())
+      .filter(Boolean);
+
+    // If history is disabled, remove all history entries
     if (!options.history) {
       options.recorded_dois = [];
       this.haltHistoryChangeListeners();
@@ -743,6 +748,14 @@ class DoiOptions {
     }
 
     await this.saveIndividualOptions(options);
+
+    // Restore autolink exclusions if it was modified before saving
+    if (this.elements_.autolinkExclusions.value.trim() !== options.autolink_exclusions.join('\n')) {
+      console.log('Matt!');
+      this.haltChangeListeners();
+      this.elements_.autolinkExclusions.value = options.autolink_exclusions.join('\n');
+      this.startChangeListeners();
+    }
   }
 
   /**
@@ -951,12 +964,17 @@ class DoiOptions {
   async outputAutolinkExclusionTestResults(): Promise<void> {
     const autolinkTestExclusionResult = this.elements_.autolinkTestExclusionResult;
 
+    autolinkTestExclusionResult.classList.remove('match', 'nomatch');
+
     const testUrl = this.elements_.autolinkTestExclusion.value;
+    if (!testUrl) {
+      autolinkTestExclusionResult.innerHTML = '';
+      return;
+    }
     if (!/https?:\/\//i.test(testUrl)) {
       autolinkTestExclusionResult.innerHTML = chrome.i18n.getMessage(
         'autolinkExclusionsInvalidUrl'
       );
-      autolinkTestExclusionResult.style.color = 'black';
       return;
     }
 
@@ -965,10 +983,10 @@ class DoiOptions {
 
     if (matched) {
       autolinkTestExclusionResult.innerHTML = chrome.i18n.getMessage('autolinkExclusionsMatch');
-      autolinkTestExclusionResult.style.color = 'darkgreen';
+      autolinkTestExclusionResult.classList.add('match');
     } else {
       autolinkTestExclusionResult.innerHTML = chrome.i18n.getMessage('autolinkExclusionsNoMatch');
-      autolinkTestExclusionResult.style.color = 'black';
+      autolinkTestExclusionResult.classList.add('nomatch');
     }
   }
 

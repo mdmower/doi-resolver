@@ -46,3 +46,13 @@ body {
 .modal-dialog {
   max-width: 700px;
 }
+
+#alExclusions {
+  .match {
+    color: $green;
+  }
+
+  .nomatch {
+    color: $red;
+  }
+}

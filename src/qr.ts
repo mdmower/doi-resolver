@@ -3,6 +3,7 @@
  */
 
 import './css/qr.scss';
+import 'bootstrap/js/dist/modal';
 import {
   HistoryDoi,
   QrImageType,
@@ -59,7 +60,6 @@ class DoiQr {
     recordTab: (tabId: number) => void;
   };
   private defaultDoiResolver_: string;
-  private historyBoxSize_?: number;
   private savedBgInputColorStyle_?: string;
   private fgColorPicker_?: IroColorPicker;
   private bgColorPicker_?: IroColorPicker;
@@ -71,15 +71,15 @@ class DoiQr {
   private iroBgColorChangeHandler_?: (color: iro.Color) => void;
 
   private elements_: {
-    closeHistory: SVGElement;
     doiForm: HTMLFormElement;
     doiHistory: HTMLSelectElement;
     doiInput: HTMLInputElement;
-    inputContainer: HTMLInputElement;
+    filterHistory: HTMLInputElement;
+    historyModalClose: HTMLButtonElement;
     mainForm: HTMLDivElement;
     notify_template: HTMLTemplateElement;
     notifyDiv: HTMLDivElement;
-    openHistory: SVGElement;
+    openHistory: HTMLAnchorElement;
     qrBgColorInput: HTMLInputElement;
     qrBgColorPicker: HTMLDivElement;
     qrBgTrans: HTMLInputElement;
@@ -115,9 +115,6 @@ class DoiQr {
       throw new Error(`Required element is missing from the page: ${selector}`);
     };
     this.elements_ = {
-      closeHistory:
-        document.querySelector<SVGElement>('svg#closeHistory') ||
-        elementMissing('svg#closeHistory'),
       doiForm:
         document.querySelector<HTMLFormElement>('form#doiForm') || elementMissing('form#doiForm'),
       doiHistory:
@@ -126,9 +123,12 @@ class DoiQr {
       doiInput:
         document.querySelector<HTMLInputElement>('input#doiInput') ||
         elementMissing('input#doiInput'),
-      inputContainer:
-        document.querySelector<HTMLInputElement>('div#inputContainer') ||
-        elementMissing('div#inputContainer'),
+      filterHistory:
+        document.querySelector<HTMLInputElement>('input#filterHistory') ||
+        elementMissing('input#filterHistory'),
+      historyModalClose:
+        document.querySelector<HTMLButtonElement>('button#historyModalClose') ||
+        elementMissing('button#historyModalClose'),
       mainForm:
         document.querySelector<HTMLDivElement>('div#mainForm') || elementMissing('div#mainForm'),
       notify_template:
@@ -137,7 +137,8 @@ class DoiQr {
       notifyDiv:
         document.querySelector<HTMLDivElement>('div#notifyDiv') || elementMissing('div#notifyDiv'),
       openHistory:
-        document.querySelector<SVGElement>('svg#openHistory') || elementMissing('svg#openHistory'),
+        document.querySelector<HTMLAnchorElement>('a#openHistory') ||
+        elementMissing('a#openHistory'),
       qrBgColorInput:
         document.querySelector<HTMLInputElement>('input#qrBgColorInput') ||
         elementMissing('input#qrBgColorInput'),
@@ -224,37 +225,18 @@ class DoiQr {
       }
     });
 
-    const selectBox = this.elements_.doiHistory;
-    const filterInput = function (this: HTMLInputElement): void {
-      filterSelectByText(selectBox, this.value, false);
-    };
+    const doiHistory = this.elements_.doiHistory;
+    const textInput = this.elements_.filterHistory;
+    textInput.addEventListener('input', function () {
+      filterSelectByText(doiHistory, this.value, false);
+    });
 
-    const textInput = this.elements_.doiInput;
-    textInput.addEventListener('input', filterInput);
-
-    const toggleHistoryBox = this.toggleHistoryBox.bind(this);
-    selectBox.addEventListener('change', function () {
-      textInput.removeEventListener('input', filterInput);
-      textInput.value = this.value;
-      textInput.addEventListener('input', filterInput);
+    const doiInput = this.elements_.doiInput;
+    const historyModalClose = this.elements_.historyModalClose;
+    doiHistory.addEventListener('change', function () {
+      doiInput.value = this.value;
       this.selectedIndex = -1;
-      filterSelectByText(selectBox, '', false);
-      toggleHistoryBox(false);
-    });
-
-    this.elements_.openHistory.addEventListener('click', function () {
-      toggleHistoryBox(true);
-    });
-
-    this.elements_.closeHistory.addEventListener('click', function () {
-      toggleHistoryBox(false);
-    });
-
-    const mainForm = this.elements_.mainForm;
-    document.addEventListener('click', function (event) {
-      if (event.target instanceof HTMLElement && !mainForm.contains(event.target)) {
-        toggleHistoryBox(false);
-      }
+      historyModalClose.click();
     });
 
     chrome.runtime.onMessage.addListener(this.runtimeMessageHandler.bind(this));
@@ -341,13 +323,9 @@ class DoiQr {
     if (transparent) {
       this.savedBgInputColorStyle_ = qrBgColorInput.getAttribute('style') || '';
       qrBgColorInput.removeAttribute('style');
-      qrBgColorInput.style.color = 'transparent';
-      qrBgColorInput.style.backgroundImage =
-        'linear-gradient(45deg, #aaa 25%, transparent 25%), linear-gradient(-45deg, #aaa 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #aaa 75%), linear-gradient(-45deg, transparent 75%, #aaa 75%)';
-      qrBgColorInput.style.backgroundSize = '20px 20px';
-      qrBgColorInput.style.backgroundPosition = '0 0, 0 10px, 10px -10px, -10px 0px';
+      qrBgColorInput.classList.add('transparentInput');
     } else {
-      qrBgColorInput.removeAttribute('style');
+      qrBgColorInput.classList.remove('transparentInput');
       if (this.savedBgInputColorStyle_) {
         qrBgColorInput.setAttribute('style', this.savedBgInputColorStyle_);
       }
@@ -466,7 +444,7 @@ class DoiQr {
       this.elements_.qrManualMessage.disabled = true;
     } else if (stg.qr_message) {
       this.elements_.qrManualMessage.checked = true;
-      this.elements_.qrManualMessageTextDiv.style.display = 'flex';
+      this.elements_.qrManualMessageTextDiv.hidden = false;
       this.elements_.qrFetchTitle.disabled = true;
     }
 
@@ -486,7 +464,7 @@ class DoiQr {
     ]);
 
     if (!stg.history || !stg.recorded_dois || !stg.recorded_dois.length) {
-      this.elements_.openHistory.style.display = 'none';
+      this.elements_.openHistory.hidden = true;
       return;
     }
 
@@ -522,40 +500,11 @@ class DoiQr {
     optionElements.push(...savedOptions, ...dividerOptions, ...unsavedOptions);
 
     const selectBox = this.elements_.doiHistory;
-    selectBox.size = 12;
     selectBox.selectedIndex = -1;
     while (selectBox.firstChild) {
       selectBox.removeChild(selectBox.firstChild);
     }
     optionElements.forEach((optionElement) => selectBox.appendChild(optionElement));
-  }
-
-  /**
-   * Calculate the history box size in px
-   */
-  private getHistoryBoxSize(): number {
-    const inputContainer = this.elements_.inputContainer;
-    const boxTop = inputContainer.offsetTop + inputContainer.offsetHeight + 2;
-    const submitButton = this.elements_.submitButton;
-    const boxBottom = submitButton.offsetTop - 2;
-    return boxBottom - boxTop;
-  }
-
-  /**
-   * Show/hide the history box
-   * @param enable Whether history should be shown or not
-   */
-  private toggleHistoryBox(enable: boolean): void {
-    const selectBox = this.elements_.doiHistory;
-    if (this.historyBoxSize_ === undefined) {
-      this.historyBoxSize_ = this.getHistoryBoxSize();
-      selectBox.style.height = `${this.historyBoxSize_}px`;
-    }
-    const openHistory = this.elements_.openHistory;
-    const closeHistory = this.elements_.closeHistory;
-    selectBox.style.display = enable ? 'block' : '';
-    openHistory.style.display = enable ? 'none' : '';
-    closeHistory.style.display = enable ? 'block' : '';
   }
 
   /**
@@ -588,11 +537,12 @@ class DoiQr {
       this.toggleBgColor(true);
     }
 
+    const {width} = qrFgColorInput.getBoundingClientRect();
     const colorPickerProps = (color: string): Partial<ColorPickerProps> => ({
       padding: 4,
       sliderMargin: 12,
-      width: 180,
-      height: 180,
+      width: width,
+      height: width,
       color,
     });
 
@@ -703,10 +653,10 @@ class DoiQr {
       if (qrManualMessage.checked) {
         qrFetchTitle.checked = false;
         qrFetchTitle.disabled = true;
-        qrManualMessageTextDiv.style.display = 'flex';
+        qrManualMessageTextDiv.hidden = false;
       } else {
         qrFetchTitle.disabled = false;
-        qrManualMessageTextDiv.style.display = '';
+        qrManualMessageTextDiv.hidden = true;
       }
       await this.saveOptionsAsync();
     } else {
@@ -718,7 +668,7 @@ class DoiQr {
           // Permission successfully added
           qrManualMessage.checked = false;
           qrManualMessage.disabled = true;
-          qrManualMessageTextDiv.style.display = '';
+          qrManualMessageTextDiv.hidden = true;
           await this.saveOptionsAsync();
         } else {
           qrFetchTitle.checked = false;
@@ -736,11 +686,11 @@ class DoiQr {
    * Clear message and QR spaces
    */
   private resetSpace(): void {
-    this.elements_.notifyDiv.removeAttribute('class');
+    this.elements_.notifyDiv.classList.remove('advanced');
     this.elements_.notifyDiv.innerHTML = '';
-    this.elements_.notifyDiv.style.display = 'none';
+    this.elements_.notifyDiv.hidden = true;
     this.elements_.qrDiv.innerHTML = '';
-    this.elements_.qrDiv.style.display = 'none';
+    this.elements_.qrDiv.hidden = true;
   }
 
   /**
@@ -750,7 +700,7 @@ class DoiQr {
   private simpleNotification(message: string): void {
     this.resetSpace();
     this.elements_.notifyDiv.innerHTML = message;
-    this.elements_.notifyDiv.style.display = 'block';
+    this.elements_.notifyDiv.hidden = false;
   }
 
   /**
@@ -761,7 +711,7 @@ class DoiQr {
     this.resetSpace();
     this.elements_.notifyDiv.classList.add('advanced');
     this.elements_.notifyDiv.appendChild(fragment);
-    this.elements_.notifyDiv.style.display = 'block';
+    this.elements_.notifyDiv.hidden = false;
   }
 
   /**
@@ -1035,7 +985,7 @@ class DoiQr {
     saveLink.appendChild(qrImg);
     qrDiv.appendChild(saveLink);
 
-    this.elements_.qrDiv.style.display = 'block';
+    this.elements_.qrDiv.hidden = false;
   }
 
   /**
@@ -1068,5 +1018,20 @@ class DoiQr {
         element.innerHTML = message;
       }
     });
+
+    const openHistory = document.getElementById('openHistory');
+    if (openHistory) {
+      openHistory.title = chrome.i18n.getMessage('headingHistory');
+    }
+
+    const filterHistory = document.querySelector<HTMLInputElement>('input#filterHistory');
+    if (filterHistory) {
+      filterHistory.placeholder = chrome.i18n.getMessage('filterHistoryLabel');
+    }
+
+    const modalLabel = document.getElementById('modalLabel');
+    if (modalLabel) {
+      modalLabel.innerHTML = chrome.i18n.getMessage('headingHistory');
+    }
   }
 }

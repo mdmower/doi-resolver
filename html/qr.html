@@ -9,102 +9,264 @@
   </head>
 
   <body>
-    <svg
-      class="hidden"
-      version="1.1"
-      xmlns="http://www.w3.org/2000/svg"
-      xmlns:xlink="http://www.w3.org/1999/xlink"
-    >
+    <!-- prettier-ignore -->
+    <svg hidden version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <defs>
-        <symbol id="icon-arrow-down2" viewBox="0 0 32 32">
-          <title>arrow-down2</title>
-          <path
-            d="M27.414 19.414l-10 10c-0.781 0.781-2.047 0.781-2.828 0l-10-10c-0.781-0.781-0.781-2.047 0-2.828s2.047-0.781 2.828 0l6.586 6.586v-19.172c0-1.105 0.895-2 2-2s2 0.895 2 2v19.172l6.586-6.586c0.39-0.39 0.902-0.586 1.414-0.586s1.024 0.195 1.414 0.586c0.781 0.781 0.781 2.047 0 2.828z"
-          ></path>
-        </symbol>
-        <symbol id="icon-cross" viewBox="0 0 32 32">
-          <title>cross</title>
-          <path
-            d="M31.708 25.708c-0-0-0-0-0-0l-9.708-9.708 9.708-9.708c0-0 0-0 0-0 0.105-0.105 0.18-0.227 0.229-0.357 0.133-0.356 0.057-0.771-0.229-1.057l-4.586-4.586c-0.286-0.286-0.702-0.361-1.057-0.229-0.13 0.048-0.252 0.124-0.357 0.228 0 0-0 0-0 0l-9.708 9.708-9.708-9.708c-0-0-0-0-0-0-0.105-0.104-0.227-0.18-0.357-0.228-0.356-0.133-0.771-0.057-1.057 0.229l-4.586 4.586c-0.286 0.286-0.361 0.702-0.229 1.057 0.049 0.13 0.124 0.252 0.229 0.357 0 0 0 0 0 0l9.708 9.708-9.708 9.708c-0 0-0 0-0 0-0.104 0.105-0.18 0.227-0.229 0.357-0.133 0.355-0.057 0.771 0.229 1.057l4.586 4.586c0.286 0.286 0.702 0.361 1.057 0.229 0.13-0.049 0.252-0.124 0.357-0.229 0-0 0-0 0-0l9.708-9.708 9.708 9.708c0 0 0 0 0 0 0.105 0.105 0.227 0.18 0.357 0.229 0.356 0.133 0.771 0.057 1.057-0.229l4.586-4.586c0.286-0.286 0.362-0.702 0.229-1.057-0.049-0.13-0.124-0.252-0.229-0.357z"
-          ></path>
+        <symbol id="icon-history" viewBox="0 0 16 16">
+          <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zm2.004.45a7.003 7.003 0 0 0-.985-.299l.219-.976c.383.086.76.2 1.126.342l-.36.933zm1.37.71a7.01 7.01 0 0 0-.439-.27l.493-.87a8.025 8.025 0 0 1 .979.654l-.615.789a6.996 6.996 0 0 0-.418-.302zm1.834 1.79a6.99 6.99 0 0 0-.653-.796l.724-.69c.27.285.52.59.747.91l-.818.576zm.744 1.352a7.08 7.08 0 0 0-.214-.468l.893-.45a7.976 7.976 0 0 1 .45 1.088l-.95.313a7.023 7.023 0 0 0-.179-.483zm.53 2.507a6.991 6.991 0 0 0-.1-1.025l.985-.17c.067.386.106.778.116 1.17l-1 .025zm-.131 1.538c.033-.17.06-.339.081-.51l.993.123a7.957 7.957 0 0 1-.23 1.155l-.964-.267c.046-.165.086-.332.12-.501zm-.952 2.379c.184-.29.346-.594.486-.908l.914.405c-.16.36-.345.706-.555 1.038l-.845-.535zm-.964 1.205c.122-.122.239-.248.35-.378l.758.653a8.073 8.073 0 0 1-.401.432l-.707-.707z"/>
+          <path d="M8 1a7 7 0 1 0 4.95 11.95l.707.707A8.001 8.001 0 1 1 8 0v1z"/>
+          <path d="M7.5 3a.5.5 0 0 1 .5.5v5.21l3.248 1.856a.5.5 0 0 1-.496.868l-3.5-2A.5.5 0 0 1 7 9V3.5a.5.5 0 0 1 .5-.5z"/>
         </symbol>
       </defs>
     </svg>
-    <h1 id="qrHeading"></h1>
-    <h2 id="qrSubHeading"></h2>
-    <div id="container">
-      <form name="doiForm" id="doiForm">
-        <div id="leftForm">
-          <div id="mainForm">
-            <div id="inputContainer">
-              <label for="doiInput" id="doiInputLabel"></label>
-              <input type="text" id="doiInput" autofocus />
-              <svg id="openHistory" class="icon icon-arrow-down2">
-                <use xlink:href="#icon-arrow-down2"></use>
-              </svg>
-              <svg id="closeHistory" class="icon icon-cross">
-                <use xlink:href="#icon-cross"></use>
-              </svg>
-              <select id="doiHistory"></select>
-            </div>
-            <div id="sizeParam">
-              <label for="qrSizeInput" id="qrSizeInputLabel"></label>
-              <input type="number" id="qrSizeInput" min="80" />
-              <div id="pxSizeLabel">px</div>
-              <label for="qrBorderInput" id="qrBorderInputLabel"></label>
-              <input type="number" id="qrBorderInput" min="0" />
-              <div id="pxBorderLabel">module(s)</div>
-            </div>
-            <div id="imageTypeParam">
-              <span id="qrImageTypeLabel"></span>
-              <input type="radio" id="qrImageTypePng" name="qrImageType" value="png" />
-              <label for="qrImageTypePng" id="qrImageTypePngLabel">PNG</label>
-              <input type="radio" id="qrImageTypeSvg" name="qrImageType" value="svg" />
-              <label for="qrImageTypeSvg" id="qrImageTypeSvgLabel">SVG</label>
-            </div>
-            <div id="bgTransDiv">
-              <input type="checkbox" id="qrBgTrans" />
-              <label id="qrBgTransLabel" for="qrBgTrans"></label>
-            </div>
-            <div id="qrManualMessageDiv">
-              <input type="checkbox" id="qrManualMessage" />
-              <label id="qrManualMessageLabel" for="qrManualMessage"></label>
-              <div id="qrManualMessageTextDiv">
-                <label id="qrManualMessageTextLabel" for="qrManualMessageText"></label>
-                <input type="text" id="qrManualMessageText" />
+
+    <h1 id="qrHeading" class="page-title text-center"></h1>
+    <h5 id="qrSubHeading" class="mb-3 text-center"></h5>
+
+    <div class="page-content mx-auto">
+      <div class="container-fluid mb-3">
+        <form name="doiForm" id="doiForm" class="my-3">
+          <div class="row">
+            <div class="col-6">
+              <div id="mainForm">
+                <div class="row align-items-center gx-3">
+                  <div class="col-auto">
+                    <label for="doiInput" id="doiInputLabel"></label>
+                  </div>
+                  <div class="col">
+                    <input
+                      type="text"
+                      id="doiInput"
+                      value=""
+                      autofocus
+                      list="doiHistory"
+                      class="form-control"
+                    />
+                  </div>
+                  <div class="col-auto">
+                    <a
+                      id="openHistory"
+                      class="align-middle"
+                      href="#"
+                      data-bs-toggle="modal"
+                      data-bs-target="#historyModal"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="icon icon-history bigger"
+                        fill="currentColor"
+                      >
+                        <use xlink:href="#icon-history"></use>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+                <div class="row align-items-center gx-3 mt-3">
+                  <div class="col-auto">
+                    <label for="qrSizeInput" id="qrSizeInputLabel"></label>
+                  </div>
+                  <div class="col">
+                    <div class="row align-items-center gx-1">
+                      <div class="col-3">
+                        <input type="number" id="qrSizeInput" min="80" class="form-control" />
+                      </div>
+                      <div class="col-auto">
+                        <span>px</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row align-items-center gx-3 mt-3">
+                  <div class="col-auto">
+                    <label for="qrBorderInput" id="qrBorderInputLabel"></label>
+                  </div>
+                  <div class="col">
+                    <div class="row align-items-center gx-1">
+                      <div class="col-3">
+                        <input type="number" id="qrBorderInput" min="0" class="form-control" />
+                      </div>
+                      <div class="col-auto">
+                        <span>module(s)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row gx-3 mt-3">
+                  <div class="col-auto">
+                    <span id="qrImageTypeLabel"></span>
+                  </div>
+                  <div class="col">
+                    <div class="form-check form-check-inline">
+                      <input
+                        type="radio"
+                        id="qrImageTypePng"
+                        name="qrImageType"
+                        class="form-check-input"
+                        value="png"
+                      />
+                      <label for="qrImageTypePng" id="qrImageTypePngLabel" class="form-check-label"
+                        >PNG</label
+                      >
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input
+                        type="radio"
+                        id="qrImageTypeSvg"
+                        name="qrImageType"
+                        class="form-check-input"
+                        value="svg"
+                      />
+                      <label for="qrImageTypeSvg" id="qrImageTypeSvgLabel" class="form-check-label"
+                        >SVG</label
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="row gx-3 mt-1">
+                  <div class="col">
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" id="qrBgTrans" class="form-check-input" />
+                      <label id="qrBgTransLabel" for="qrBgTrans" class="form-check-label"></label>
+                    </div>
+                  </div>
+                </div>
+                <div class="row gx-3 mt-1">
+                  <div class="col">
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" id="qrManualMessage" class="form-check-input" />
+                      <label
+                        id="qrManualMessageLabel"
+                        for="qrManualMessage"
+                        class="form-check-label"
+                      ></label>
+                    </div>
+                  </div>
+                </div>
+                <div
+                  id="qrManualMessageTextDiv"
+                  hidden
+                  class="row align-items-center gx-3 mt-1 ms-3"
+                >
+                  <div class="col-auto">
+                    <label id="qrManualMessageTextLabel" for="qrManualMessageText"></label>
+                  </div>
+                  <div class="col">
+                    <input type="text" id="qrManualMessageText" class="form-control" />
+                  </div>
+                </div>
+                <div class="row gx-3 mt-1">
+                  <div class="col">
+                    <div class="form-check form-check-inline">
+                      <input type="checkbox" id="qrFetchTitle" class="form-check-input" />
+                      <label
+                        id="qrFetchTitleLabel"
+                        for="qrFetchTitle"
+                        class="form-check-label"
+                      ></label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row gx-3 mt-3">
+                <div class="col">
+                  <button id="submitButton" class="btn btn-primary"></button>
+                </div>
               </div>
             </div>
-            <div id="finalParams">
-              <div id="qrFetchTitleDiv">
-                <input type="checkbox" id="qrFetchTitle" />
-                <label id="qrFetchTitleLabel" for="qrFetchTitle"></label>
+            <div class="col-6">
+              <div class="row">
+                <div class="col-6">
+                  <div class="row">
+                    <div class="col">
+                      <label for="qrFgColorInput" id="qrFgColorInputLabel"></label>
+                    </div>
+                    <div class="row">
+                      <div class="col">
+                        <input
+                          type="text"
+                          id="qrFgColorInput"
+                          class="form-control font-monospace"
+                        />
+                      </div>
+                    </div>
+                    <div class="row mt-3">
+                      <div class="col">
+                        <div id="qrFgColorPicker"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="row">
+                    <div class="col">
+                      <label for="qrBgColorInput" id="qrBgColorInputLabel"></label>
+                    </div>
+                    <div class="row">
+                      <div class="col">
+                        <input
+                          type="text"
+                          id="qrBgColorInput"
+                          class="form-control font-monospace"
+                        />
+                      </div>
+                    </div>
+                    <div class="row mt-3">
+                      <div class="col">
+                        <div id="qrBgColorPicker"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-          <button id="submitButton"></button>
-        </div>
-        <div id="colorParams">
-          <div id="fgColorDiv">
-            <label for="qrFgColorInput" id="qrFgColorInputLabel"></label><br />
-            <input type="text" id="qrFgColorInput" />
-            <div id="qrFgColorPicker"></div>
-          </div>
-          <div id="bgColorDiv">
-            <label for="qrBgColorInput" id="qrBgColorInputLabel"></label><br />
-            <input type="text" id="qrBgColorInput" />
-            <div id="qrBgColorPicker"></div>
-          </div>
-        </div>
-      </form>
-      <div id="notifyDiv"></div>
-      <template id="notifyTemplate">
-        <span class="notifyHeading"></span>
-        <span class="notifyContent"></span>
-        <br />
-        <span class="notifyHeading"></span>
-        <span class="notifyContent"></span>
-      </template>
-      <div id="qrDiv"></div>
+        </form>
+        <div id="notifyDiv" hidden class="mt-3 form-control"></div>
+        <div id="qrDiv" hidden class="mt-3 form-control text-center"></div>
+      </div>
     </div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="historyModal"
+      tabindex="-1"
+      aria-labelledby="modalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalLabel"></h5>
+            <button
+              type="button"
+              id="historyModalClose"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <input
+              type="text"
+              id="filterHistory"
+              class="form-control mb-1"
+              value=""
+              placeholder=""
+            />
+            <select id="doiHistory" class="form-select" size="15"></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Templates -->
+    <template id="notifyTemplate">
+      <span class="notifyHeading fw-bolder"></span>
+      <span class="notifyContent"></span>
+      <br />
+      <span class="notifyHeading fw-bolder"></span>
+      <span class="notifyContent"></span>
+    </template>
   </body>
 </html>

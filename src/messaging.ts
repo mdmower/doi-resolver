@@ -11,8 +11,8 @@ export function sendInternalMessage<
   T extends InternalMessage<unknown>,
   R extends InternalMessage<unknown> | undefined
 >(message: T, responseCallback?: (response: R) => void): void {
-  // TODO: Remove debugging
-  console.log(`Sending message: ${message.cmd}\n`, message);
+  // Debugging
+  // console.log(`Sending message: ${message.cmd}\n`, message);
   // Avoid "context invalidated" errors when extension updates but content
   // scripts on page have not been reloaded.
   if (chrome.runtime?.id) {

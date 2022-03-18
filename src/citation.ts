@@ -288,10 +288,12 @@ class DoiCitation {
    * @param updatedOptions Updated options
    */
   async handleSettingsUpdate(updatedOptions: StorageOptions): Promise<void> {
-    console.log('Storage changed, checking for updates');
+    // Debugging
+    // console.log('Storage changed, checking for updates');
 
     if (Object.keys(updatedOptions).length === 0) {
-      console.log('Nothing to update');
+      // Debugging
+      // console.log('Nothing to update');
       return;
     }
 
@@ -312,7 +314,8 @@ class DoiCitation {
       console.log('History updated');
       await this.populateHistory();
     } else {
-      console.log('No relevant updates found');
+      // Debugging
+      // console.log('No relevant updates found');
     }
   }
 

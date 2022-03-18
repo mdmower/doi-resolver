@@ -999,14 +999,14 @@ class DoiQr {
       'doiInputLabel',
       'qrBgColorInputLabel',
       'qrBgTransLabel',
+      'qrBorderInputLabel',
       'qrFetchTitleLabel',
       'qrFgColorInputLabel',
       'qrHeading',
+      'qrImageTypeLabel',
       'qrManualMessageLabel',
       'qrManualMessageTextLabel',
       'qrSizeInputLabel',
-      'qrBorderInputLabel',
-      'qrImageTypeLabel',
       'qrSubHeading',
       'submitButton',
     ];
@@ -1016,6 +1016,8 @@ class DoiQr {
       const element = document.getElementById(messageId);
       if (element) {
         element.innerHTML = message;
+      } else {
+        console.info(`Message for #${messageId} not inserted because element not found.`);
       }
     });
 

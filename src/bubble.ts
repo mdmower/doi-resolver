@@ -454,6 +454,8 @@ class DoiBubble {
       const element = document.getElementById(messageId);
       if (element) {
         element.innerHTML = message;
+      } else {
+        console.info(`Message for #${messageId} not inserted because element not found.`);
       }
     });
   }

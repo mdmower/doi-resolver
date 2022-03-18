@@ -1508,7 +1508,6 @@ class DoiOptions {
     document.title = title;
 
     const messageIds = [
-      'autolinkExclusionsInfoText',
       'headingAutolink',
       'headingContextMenu',
       'headingCustomResolver',
@@ -1519,7 +1518,6 @@ class DoiOptions {
       'historyClear',
       'historyFetchTitleLabel',
       'historyNoticeText',
-      'historySaveInfoText',
       'historySortByDate',
       'historySortByDoi',
       'historySortByLabel',
@@ -1528,12 +1526,10 @@ class DoiOptions {
       'historyTitleRefresh',
       'optionAutolink',
       'optionAutolinkExclusions',
-      'optionAutolinkInfo',
       'optionAutolinkRewrite',
       'optionAutolinkTestExclusion',
-      'optionContextMenu',
       'optionContextMatch',
-      'optionContextMatchInfo',
+      'optionContextMenu',
       'optionCrAutolink',
       'optionCrBubble',
       'optionCrContext',
@@ -1551,7 +1547,6 @@ class DoiOptions {
       'optionOmniboxOpentoNewBacktab',
       'optionOmniboxOpentoNewForetab',
       'optionSyncData',
-      'syncDataInfo',
       'syncDataWipeButton',
       'syncDataWipeDescription',
       'tableHeadingDelete',
@@ -1565,6 +1560,7 @@ class DoiOptions {
       const message = chrome.i18n.getMessage(messageId);
       const element = document.getElementById(messageId);
       if (!element) {
+        console.info(`Message for #${messageId} not inserted because element not found.`);
         return;
       }
       element.innerHTML = message;

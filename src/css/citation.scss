@@ -1,0 +1,128 @@
+/**
+ * @license Apache-2.0
+ */
+
+@import '~bootstrap/scss/bootstrap';
+
+body {
+  background: $light;
+  padding: 3rem 0;
+}
+
+.page-title {
+  color: $blue;
+}
+
+.page-content {
+  width: 950px;
+  padding: 2rem;
+  background: $white;
+  border-radius: 1rem;
+}
+
+.icon {
+  width: $font-size-base;
+  height: $font-size-base;
+
+  &.bigger {
+    width: 1.25 * $font-size-base;
+    height: 1.25 * $font-size-base;
+  }
+}
+
+.modal-dialog {
+  max-width: 700px;
+}
+
+#doiHistory option[disabled] {
+  text-align: center;
+}
+
+/* citeproc-js styles */
+/* https://github.com/Juris-M/citeproc-js/blob/master/demo/local.css */
+
+#citeDiv {
+  li {
+    margin-bottom: 0.5em;
+  }
+
+  .footnote {
+    text-indent: -1.3em;
+    margin-left: 1.3em;
+    margin-bottom: 0.2em;
+  }
+
+  .pagebreak {
+    page-break-before: always;
+  }
+
+  .hangindent {
+    text-indent: -2em;
+    margin-left: 2em;
+  }
+
+  h2 {
+    font-size: 110%;
+    margin-top: 1em;
+    margin-bottom: 0em;
+    padding-top: 0em;
+    padding-bottom: 0em;
+  }
+
+  h3 {
+    font-size: 95%;
+    margin-top: 0.9em;
+    margin-bottom: 0em;
+    padding-top: 0em;
+    padding-bottom: 0em;
+  }
+
+  .csl-left-margin {
+    width: 2em;
+    float: left;
+    text-indent: 1em;
+    padding: 0.4em 0px 0.4em 0em;
+  }
+
+  .csl-right-inline {
+    margin-left: 2em;
+    padding: 0.4em 0.4em 0.4em 1em;
+  }
+
+  .csl-indent {
+    margin-top: 0.5em;
+    margin-left: 2em;
+    padding-bottom: 0.2em;
+    padding-left: 0.5em;
+    border-left: 5px solid #ccc;
+  }
+
+  .dateindent {
+    .csl-block {
+      font-weight: bold;
+    }
+
+    .csl-left-margin {
+      width: 3em;
+      float: left;
+      text-indent: 1em;
+      padding: 0.4em 0px 0.4em 0em;
+    }
+
+    .csl-right-inline {
+      margin-left: 3em;
+      padding: 0.4em 0.4em 0.4em 1em;
+    }
+  }
+
+  .heading {
+    border-top: 5px solid #ccc;
+    border-bottom: 5px solid #ccc;
+  }
+
+  .csl-bib-body {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    margin-bottom: 1em;
+  }
+}

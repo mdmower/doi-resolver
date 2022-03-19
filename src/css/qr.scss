@@ -1,0 +1,50 @@
+/**
+ * @license Apache-2.0
+ */
+
+@import '~bootstrap/scss/bootstrap';
+
+body {
+  background: $light;
+  padding: 3rem 0;
+}
+
+.page-title {
+  color: $blue;
+}
+
+.page-content {
+  width: 950px;
+  padding: 2rem;
+  background: $white;
+  border-radius: 1rem;
+}
+
+.icon {
+  width: $font-size-base;
+  height: $font-size-base;
+
+  &.bigger {
+    width: 1.25 * $font-size-base;
+    height: 1.25 * $font-size-base;
+  }
+}
+
+.modal-dialog {
+  max-width: 700px;
+}
+
+#doiHistory option[disabled] {
+  text-align: center;
+}
+
+.transparentInput {
+  color: transparent;
+  background-image: linear-gradient(45deg, $gray-300 25%, transparent 25%),
+    linear-gradient(-45deg, $gray-300 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, $gray-300 75%),
+    linear-gradient(-45deg, transparent 75%, $gray-300 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  pointer-events: none;
+}

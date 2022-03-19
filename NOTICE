@@ -18,8 +18,8 @@ Matthew D. Mower (https://github.com/mdmower).
 Portions of this software depend on
 
   iro.js:
-  https://rakujira.jp/projects/iro/
-  MIT license
+  https://iro.js.org/
+  Mozilla Public License 2.0
   https://github.com/jaames/iro.js/blob/master/LICENSE.txt
 
   QR Code generator library:
@@ -27,17 +27,12 @@ Portions of this software depend on
   MIT license
   https://github.com/nayuki/QR-Code-generator#license
 
-  canvg:
-  https://github.com/canvg/canvg
-  MIT License
-  https://github.com/canvg/canvg/blob/master/MIT-LICENSE.txt
-
   citeproc-js:
   https://citeproc-js.readthedocs.io/
   Common Public Attribution License Version 1.0
   https://github.com/Juris-M/citeproc-js/blob/master/LICENSE
 
   Citation Style Language (CSL) citation styles:
-  http://citationstyles.org/
+  https://citationstyles.org/
   Creative Commons Attribution-ShareAlike 3.0 Unported
-  http://creativecommons.org/licenses/by-sa/3.0/
+  https://creativecommons.org/licenses/by-sa/3.0/

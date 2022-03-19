@@ -1,0 +1,19 @@
+/**
+ * @license Apache-2.0
+ */
+
+@import '~bootstrap/scss/bootstrap';
+
+#containerDiv {
+  width: 600px;
+  padding: $container-padding-x 0;
+}
+
+#metaButtons svg {
+  width: $font-size-base;
+  height: $font-size-base;
+}
+
+#doiHistory option[disabled] {
+  font-size: 50%;
+}

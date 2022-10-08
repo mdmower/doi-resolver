@@ -16,7 +16,10 @@ export function sendInternalMessage<
   // Avoid "context invalidated" errors when extension updates but content
   // scripts on page have not been reloaded.
   if (chrome.runtime?.id) {
-    chrome.runtime.sendMessage(message, responseCallback);
+    // HACK: Get around incorrect type definition for .sendMessage in MV2. An
+    // undefined response is allowed and necessary when an async response is not
+    // expected (otherwise a runtime error is reported).
+    chrome.runtime.sendMessage(message, responseCallback as unknown as () => void);
   }
 }
 

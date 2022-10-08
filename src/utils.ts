@@ -20,7 +20,7 @@ export function isObject(val: unknown): val is Record<string, unknown> {
  * Get typed object keys.
  * @param obj Object with known key types
  */
-export function getTypedKeys<T>(obj: T): Array<keyof T> {
+export function getTypedKeys<T extends object>(obj: T): Array<keyof T> {
   return Object.keys(obj) as Array<keyof typeof obj>;
 }
 

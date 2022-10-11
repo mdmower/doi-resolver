@@ -43,7 +43,7 @@
     "@types/sortablejs": "^1.15.0",
     "@typescript-eslint/eslint-plugin": "^5.39.0",
     "@typescript-eslint/parser": "^5.39.0",
-    "@xmldom/xmldom": "^0.8.2",
+    "@xmldom/xmldom": "^0.8.3",
     "archiver": "^5.3.1",
     "clean-css": "^5.3.1",
     "colors": "^1.4.0",

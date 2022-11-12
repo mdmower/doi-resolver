@@ -751,7 +751,6 @@ class DoiOptions {
 
     // Restore autolink exclusions if it was modified before saving
     if (this.elements_.autolinkExclusions.value.trim() !== options.autolink_exclusions.join('\n')) {
-      console.log('Matt!');
       this.haltChangeListeners();
       this.elements_.autolinkExclusions.value = options.autolink_exclusions.join('\n');
       this.startChangeListeners();

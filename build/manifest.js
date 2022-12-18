@@ -6,9 +6,9 @@ const packageJson = require('../package.json');
 
 module.exports = {
   background: {
-    scripts: ['background.js'],
+    service_worker: 'sw.js',
   },
-  browser_action: {
+  action: {
     default_icon: {
       16: 'icons/icon16.png',
       19: 'icons/icon19.png',
@@ -31,12 +31,13 @@ module.exports = {
     48: 'icons/icon48.png',
     128: 'icons/icon128.png',
   },
-  manifest_version: 2,
+  manifest_version: 3,
   name: '__MSG_appName__',
   omnibox: {
     keyword: 'doi',
   },
-  optional_permissions: ['https://*/*', 'http://*/*', 'tabs'],
+  optional_host_permissions: ['https://*/*', 'http://*/*'],
+  optional_permissions: ['offscreen', 'scripting', 'tabs'],
   options_page: 'options.html',
   permissions: ['contextMenus', 'clipboardWrite', 'storage'],
   version: packageJson.version,

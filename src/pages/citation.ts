@@ -2,13 +2,15 @@
  * @license Apache-2.0
  */
 
-import './css/citation.scss';
+import '../css/citation.scss';
 import 'bootstrap/js/dist/modal';
-import {HistoryDoi, getDefaultOptions, getOptions, setOptions, StorageOptions} from './storage';
-import {requestCitationPermissions} from './permissions';
-import {filterSelectByText, isObject, isValidDoi, sortHistoryEntries, trimDoi} from './utils';
+import {HistoryDoi, getDefaultOptions, getOptions, setOptions, StorageOptions} from '../options';
+import {requestCitationPermissions} from '../permissions';
+import {filterSelectByText, isObject, isValidDoi, sortHistoryEntries, trimDoi} from '../utils';
 import {CiteProcSys} from 'citeproc';
-import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './messaging';
+import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from '../messaging';
+import {queueRecordDoi} from '../history';
+import {logDebug, logError, logInfo} from '../logger';
 
 interface CitationResources {
   citeProcJson: Record<string, unknown>;
@@ -38,17 +40,13 @@ document.addEventListener(
   'DOMContentLoaded',
   function () {
     new DoiCitation().init().catch((error) => {
-      console.error('Init failed', error);
+      logError('Init failed', error);
     });
   },
   false
 );
 
 class DoiCitation {
-  private actions_: {
-    queueRecordDoi: (doi: string) => Promise<void>;
-    recordTab: (tabId: number) => void;
-  };
   private defaultDoiResolver_: string;
   private cslStyles_?: CslStyles;
   private cslLocales_?: CslLocales;
@@ -67,14 +65,6 @@ class DoiCitation {
   };
 
   constructor() {
-    const doiBackground = chrome.extension.getBackgroundPage()?.doiBackground;
-    if (!doiBackground) {
-      throw new Error('Could not get background page');
-    }
-    this.actions_ = {
-      queueRecordDoi: doiBackground.queueRecordDoi.bind(doiBackground),
-      recordTab: doiBackground.recordTab.bind(doiBackground),
-    };
     this.defaultDoiResolver_ = getDefaultOptions()['doi_resolver'];
 
     const elementMissing = (selector: string) => {
@@ -130,9 +120,9 @@ class DoiCitation {
    * Import CSL styles and locales
    */
   private async importCslData(): Promise<void> {
-    const {default: cslStyles} = await import('./csl/styles/styles.json');
+    const {default: cslStyles} = await import('../csl/styles/styles.json');
     this.cslStyles_ = cslStyles;
-    const {default: cslLocales} = await import('./csl/locales/locales.json');
+    const {default: cslLocales} = await import('../csl/locales/locales.json');
     this.cslLocales_ = cslLocales;
   }
 
@@ -141,12 +131,6 @@ class DoiCitation {
    */
   private startListeners(): void {
     this.elements_.citeForm.addEventListener('submit', this.formSubmitHandler.bind(this));
-
-    chrome.tabs.getCurrent((tab) => {
-      if (tab?.id !== undefined) {
-        this.actions_.recordTab(tab.id);
-      }
-    });
 
     const doiHistory = this.elements_.doiHistory;
     const textInput = this.elements_.filterHistory;
@@ -272,15 +256,13 @@ class DoiCitation {
       case MessageCmd.SettingsUpdated:
         if (isSettingsUpdatedMessage(message) && message.data) {
           this.handleSettingsUpdate(message.data.options).catch((error) => {
-            console.error('Failed to handle settings update', error);
+            logError('Failed to handle settings update', error);
           });
         }
         break;
       default:
         break;
     }
-
-    return true; // Required to allow async sendResponse
   }
 
   /**
@@ -289,11 +271,11 @@ class DoiCitation {
    */
   async handleSettingsUpdate(updatedOptions: StorageOptions): Promise<void> {
     // Debugging
-    // console.log('Storage changed, checking for updates');
+    // logInfo('Storage changed, checking for updates');
 
     if (Object.keys(updatedOptions).length === 0) {
       // Debugging
-      // console.log('Nothing to update');
+      // logInfo('Nothing to update');
       return;
     }
 
@@ -311,11 +293,11 @@ class DoiCitation {
     );
 
     if (historyUpdated) {
-      console.log('History updated');
+      logInfo('History updated');
       await this.populateHistory();
     } else {
       // Debugging
-      // console.log('No relevant updates found');
+      // logInfo('No relevant updates found');
     }
   }
 
@@ -356,7 +338,7 @@ class DoiCitation {
       defaultLocaleForStyle
     ).catch((error) => {
       this.simpleNotification(chrome.i18n.getMessage('noCitationFound'));
-      console.error('Failed to handle form submission', error);
+      logError('Failed to handle form submission', error);
     });
   }
 
@@ -382,7 +364,7 @@ class DoiCitation {
       return;
     }
 
-    await this.actions_.queueRecordDoi(doi);
+    await queueRecordDoi(doi);
     await setOptions('local', {
       cite_style: style,
       cite_locale: locale,
@@ -454,13 +436,13 @@ class DoiCitation {
     const [citeProcJson, styleXml, localeXml] = responses;
 
     if (!citeProcJson) {
-      console.error('Invalid CiteProc JSON');
+      logError('Invalid CiteProc JSON');
       this.simpleNotification(chrome.i18n.getMessage('noCitationFound'));
       return;
     }
 
     if (!styleXml) {
-      console.error('Invalid style XML');
+      logError('Invalid style XML');
       this.simpleNotification(
         chrome.i18n.getMessage('citeStyleLoadFailP1') +
           style +
@@ -470,7 +452,7 @@ class DoiCitation {
     }
 
     if (!localeXml) {
-      console.error('Invalid locale XML');
+      logError('Invalid locale XML');
       this.simpleNotification(
         chrome.i18n.getMessage('citeLocaleLoadFailP1') +
           locale +
@@ -496,7 +478,8 @@ class DoiCitation {
     });
 
     let json: Record<string, unknown> | null = null;
-    console.time('Citeproc JSON download');
+    logDebug('Downloading citeproc JSON');
+    // console.time('Citeproc JSON download');
     try {
       const response = await fetch(request);
       if (!response.ok) {
@@ -508,9 +491,9 @@ class DoiCitation {
       }
       json = unsafeJson;
     } catch (ex) {
-      console.error('Unable to download citation JSON', ex);
+      logError('Unable to download citation JSON', ex);
     }
-    console.timeEnd('Citeproc JSON download');
+    // console.timeEnd('Citeproc JSON download');
     return json;
   }
 
@@ -520,7 +503,8 @@ class DoiCitation {
    */
   private async getStyleXml(style: string): Promise<string> {
     let text = '';
-    console.time('Style XML download');
+    logDebug('Downloading style XML');
+    // console.time('Style XML download');
     try {
       const response = await fetch(
         `https://raw.githubusercontent.com/citation-style-language/styles/master/${style}.csl`
@@ -530,9 +514,9 @@ class DoiCitation {
       }
       text = await response.text();
     } catch (ex) {
-      console.error('Unable to download style XML', ex);
+      logError('Unable to download style XML', ex);
     }
-    console.timeEnd('Style XML download');
+    // console.timeEnd('Style XML download');
     return text;
   }
 
@@ -542,7 +526,8 @@ class DoiCitation {
    */
   private async getLocaleXml(locale: string): Promise<string> {
     let text = '';
-    console.time('Locale XML download');
+    logDebug('Downloading locale XML');
+    // console.time('Locale XML download');
     try {
       const response = await fetch(
         `https://raw.githubusercontent.com/citation-style-language/locales/master/locales-${locale}.xml`
@@ -552,9 +537,9 @@ class DoiCitation {
       }
       text = await response.text();
     } catch (ex) {
-      console.error('Unable to download locale XML', ex);
+      logError('Unable to download locale XML', ex);
     }
-    console.timeEnd('Locale XML download');
+    // console.timeEnd('Locale XML download');
     return text;
   }
 
@@ -677,7 +662,7 @@ class DoiCitation {
       if (element) {
         element.innerHTML = message;
       } else {
-        console.info(`Message for #${messageId} not inserted because element not found.`);
+        logInfo(`Message for #${messageId} not inserted because element not found.`);
       }
     });
 

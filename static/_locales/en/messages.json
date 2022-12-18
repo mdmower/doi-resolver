@@ -383,6 +383,10 @@
     "description": "The label for the foreground color text box on the QR page",
     "message": "Foreground color"
   },
+  "qrGenerationFailed": {
+    "description": "The message to output when a QR code could not be generated",
+    "message": "An error occurred while generating the QR code."
+  },
   "qrHeading": {
     "description": "Title for QR generator page",
     "message": "QR Code Generator"

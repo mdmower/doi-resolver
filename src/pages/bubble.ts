@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import './css/bubble.scss';
+import '../css/bubble.scss';
 import {
   CustomResolverSelection,
   HistoryDoi,
@@ -10,16 +10,18 @@ import {
   getOptions,
   isCustomResolverSelection,
   setOptions,
-} from './storage';
-import {TargetTab} from './background';
-import {requestMetaPermissions} from './permissions';
-import {filterSelectByText, isValidDoi, sortHistoryEntries, trimDoi} from './utils';
+} from '../options';
+import {requestMetaPermissions} from '../permissions';
+import {filterSelectByText, isValidDoi, sortHistoryEntries, trimDoi} from '../utils';
+import {queueRecordDoi} from '../history';
+import {resolveDoi} from '../resolve';
+import {logError, logInfo} from '../logger';
 
 document.addEventListener(
   'DOMContentLoaded',
   function () {
     new DoiBubble().init().catch((error) => {
-      console.error('Init failed', error);
+      logError('Init failed', error);
     });
   },
   false
@@ -41,10 +43,6 @@ function isBubbleAction(val: unknown): val is BubbleAction {
 }
 
 class DoiBubble {
-  private actions_: {
-    queueRecordDoi: (doi: string) => Promise<void>;
-    resolveDoi: (doi: string, useCustomResolver: boolean, targetTab?: TargetTab) => Promise<void>;
-  };
   private elements_: {
     citeSubmit: HTMLButtonElement;
     crRadioBubbleCustom: HTMLInputElement;
@@ -64,15 +62,6 @@ class DoiBubble {
   };
 
   constructor() {
-    const doiBackground = chrome.extension.getBackgroundPage()?.doiBackground;
-    if (!doiBackground) {
-      throw new Error('Could not get background page');
-    }
-    this.actions_ = {
-      queueRecordDoi: doiBackground.queueRecordDoi.bind(doiBackground),
-      resolveDoi: doiBackground.resolveDoi.bind(doiBackground),
-    };
-
     const elementMissing = (selector: string) => {
       throw new Error(`Required element is missing from the page: ${selector}`);
     };
@@ -180,7 +169,7 @@ class DoiBubble {
 
     if (Object.keys(options).length) {
       setOptions('local', options).catch((error) => {
-        console.error('Unable to save options', error);
+        logError('Unable to save options', error);
       });
     }
   }
@@ -221,12 +210,12 @@ class DoiBubble {
   private formSubmitHandler(): void {
     const action = this.elements_.hiddenButtonInput.value;
     if (!isBubbleAction(action)) {
-      console.error('Unrecognized action');
+      logError('Unrecognized action');
       return;
     }
     const doiInput = encodeURI(trimDoi(this.elements_.textInput.value));
     this.formSubmitHandlerAsync(action, doiInput).catch((error) => {
-      console.error('Failed to submit form', error);
+      logError('Failed to submit form', error);
     });
   }
 
@@ -240,7 +229,7 @@ class DoiBubble {
       case BubbleAction.Qr:
         if (isValidDoi(doiInput)) {
           await this.maybeRequestMetaPermissions();
-          await this.actions_.queueRecordDoi(doiInput);
+          await queueRecordDoi(doiInput);
         }
         // Allow tab to open with invalid DOI
         this.openQrGenerator(doiInput);
@@ -248,7 +237,7 @@ class DoiBubble {
       case BubbleAction.Cite:
         if (isValidDoi(doiInput)) {
           await this.maybeRequestMetaPermissions();
-          await this.actions_.queueRecordDoi(doiInput);
+          await queueRecordDoi(doiInput);
         }
         // Allow tab to open with invalid DOI
         this.openCitationGenerator(doiInput);
@@ -256,7 +245,7 @@ class DoiBubble {
       case BubbleAction.Doi:
         if (isValidDoi(doiInput)) {
           await this.maybeRequestMetaPermissions();
-          await this.actions_.queueRecordDoi(doiInput);
+          await queueRecordDoi(doiInput);
           await this.resolveDoi(doiInput);
         } else {
           this.bubbleMessage(chrome.i18n.getMessage('invalidDoiAlert'));
@@ -302,7 +291,7 @@ class DoiBubble {
         (stg.cr_bubble === 'selectable' && stg.cr_bubble_last === 'custom'))
     );
 
-    await this.actions_.resolveDoi(doi, useCustomResolver, 'newForegroundTab');
+    await resolveDoi(doi, useCustomResolver, 'newForegroundTab');
     window.close();
   }
 
@@ -455,7 +444,7 @@ class DoiBubble {
       if (element) {
         element.innerHTML = message;
       } else {
-        console.info(`Message for #${messageId} not inserted because element not found.`);
+        logInfo(`Message for #${messageId} not inserted because element not found.`);
       }
     });
   }

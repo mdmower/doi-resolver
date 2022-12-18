@@ -1,3 +1,7 @@
+/**
+ * @license Apache-2.0
+ */
+
 // https://citeproc-js.readthedocs.io/en/latest/running.html
 
 // Minimal declarations needed by this extension.

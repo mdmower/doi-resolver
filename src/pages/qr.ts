@@ -28,6 +28,7 @@ import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from '../messag
 import {getSavedDoiTitle, recordDoi, queueRecordDoi} from '../history';
 import {fetchDoiTitle} from '../metadata';
 import {logError, logInfo} from '../logger';
+import {applyTheme} from './utils';
 
 interface CreateQrParams {
   size: number;
@@ -172,6 +173,7 @@ class DoiQr {
    */
   public async init(): Promise<void> {
     this.getLocalMessages();
+    await applyTheme(window);
     this.initializeDoiInput();
     await this.restoreOptions();
     await this.prepareColorPickers();

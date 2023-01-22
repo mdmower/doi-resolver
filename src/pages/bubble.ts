@@ -16,6 +16,7 @@ import {filterSelectByText, isValidDoi, sortHistoryEntries, trimDoi} from '../ut
 import {queueRecordDoi} from '../history';
 import {resolveDoi} from '../resolve';
 import {logError, logInfo} from '../logger';
+import {applyTheme} from './utils';
 
 document.addEventListener(
   'DOMContentLoaded',
@@ -118,6 +119,7 @@ class DoiBubble {
   public async init() {
     await this.restoreOptions();
     this.getLocalMessages();
+    await applyTheme(window);
     await this.showHideOptionalElms();
     await this.populateHistory();
     this.startListeners();

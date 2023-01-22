@@ -111,6 +111,10 @@
     "description": "Heading on options page for Sync",
     "message": "Sync"
   },
+  "headingTheme": {
+    "description": "Heading on options page for Theme",
+    "message": "Theme"
+  },
   "historyClear": {
     "description": "Text for a button that clears all DOI history",
     "message": "Clear History"
@@ -342,6 +346,22 @@
   "optionSyncData": {
     "description": "Label for data sync feature",
     "message": "Synchronize this extension's settings across Chrome installations"
+  },
+  "optionTheme": {
+    "description": "Label for selectable option to choose a dark or light theme",
+    "message": "Color theme for pages:"
+  },
+  "optionThemeDark": {
+    "description": "Label for dark theme",
+    "message": "Dark"
+  },
+  "optionThemeLight": {
+    "description": "Label for light theme",
+    "message": "Light"
+  },
+  "optionThemeSystem": {
+    "description": "Label for default theme (follow system)",
+    "message": "System"
   },
   "optionSyncDataModalBody": {
     "description": "The message body to display in an info modal for the sync feature",

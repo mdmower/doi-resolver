@@ -3,11 +3,15 @@
  */
 
 import '../css/notification.scss';
+import {logError} from '../logger';
+import {applyTheme} from './utils';
 
 document.addEventListener(
   'DOMContentLoaded',
   function () {
-    new DoiNotification().init();
+    new DoiNotification().init().catch((error) => {
+      logError('Init failed', error);
+    });
   },
   false
 );
@@ -35,8 +39,9 @@ class DoiNotification {
   /**
    * Initialize notification.
    */
-  public init() {
+  public async init() {
     this.renderNotification();
+    await applyTheme(window);
     this.startListeners();
   }
 

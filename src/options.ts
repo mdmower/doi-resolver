@@ -79,6 +79,12 @@ export enum OmniboxTab {
   CurrentTab = 'curtab',
 }
 
+export enum DisplayTheme {
+  System = 'system',
+  Light = 'light',
+  Dark = 'dark',
+}
+
 export interface StorageOptions {
   auto_link?: boolean;
   auto_link_rewrite?: boolean;
@@ -117,6 +123,7 @@ export interface StorageOptions {
   storage_listener_disabled?: boolean;
   sync_data?: boolean;
   sync_reset?: boolean; // Deprecated
+  theme?: DisplayTheme;
 }
 
 export interface SafeStorageOptions extends StorageOptions {
@@ -156,6 +163,7 @@ export interface SafeStorageOptions extends StorageOptions {
   shortdoi_resolver: string;
   storage_listener_disabled: boolean;
   sync_data: boolean;
+  theme: DisplayTheme;
 }
 
 /**
@@ -203,6 +211,14 @@ export function isHistoryDoi(val: unknown): val is HistoryDoi {
     typeof val['title'] === 'string' &&
     typeof val['save'] === 'boolean'
   );
+}
+
+/**
+ * Verify an item is an instance of DisplayTheme
+ * @param val Unverified item
+ */
+export function isDisplayTheme(val: unknown): val is DisplayTheme {
+  return typeof val === 'string' && (Object.values(DisplayTheme) as string[]).includes(val);
 }
 
 /**
@@ -254,6 +270,7 @@ export function toStorageOptions(obj: unknown): StorageOptions {
     storage_listener_disabled,
     sync_data,
     sync_reset,
+    theme,
   } = obj;
 
   if (typeof auto_link === 'boolean') {
@@ -367,6 +384,9 @@ export function toStorageOptions(obj: unknown): StorageOptions {
   if (typeof sync_reset === 'boolean') {
     storageOptions.sync_reset = sync_reset;
   }
+  if (isDisplayTheme(theme)) {
+    storageOptions.theme = theme;
+  }
 
   return storageOptions;
 }
@@ -418,6 +438,7 @@ export function isStorageOptions(obj: unknown): obj is StorageOptions {
     storage_listener_disabled,
     sync_data,
     sync_reset,
+    theme,
   } = obj;
 
   if (auto_link !== undefined && typeof auto_link !== 'boolean') {
@@ -540,6 +561,9 @@ export function isStorageOptions(obj: unknown): obj is StorageOptions {
   if (sync_reset !== undefined && typeof sync_reset !== 'boolean') {
     return false;
   }
+  if (theme !== undefined && !isDisplayTheme(theme)) {
+    return false;
+  }
 
   return true;
 }
@@ -586,6 +610,7 @@ export function getDefaultOptions(): SafeStorageOptions {
     storage_listener_disabled: false,
     sync_data: false,
     sync_reset: undefined,
+    theme: DisplayTheme.System,
   };
 }
 

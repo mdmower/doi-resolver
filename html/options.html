@@ -120,6 +120,29 @@
         >
           <div class="row mt-5">
             <div class="col">
+              <h4 id="headingTheme"></h4>
+              <div class="row align-items-center gx-3">
+                <div class="col-auto">
+                  <label id="optionTheme" for="theme"></label>
+                </div>
+                <div class="col-auto">
+                  <select
+                    type="selection"
+                    id="theme"
+                    class="form-select"
+                    aria-label="Select light or dark theme"
+                  >
+                    <option id="optionThemeSystem" value="system"></option>
+                    <option id="optionThemeLight" value="light"></option>
+                    <option id="optionThemeDark" value="dark"></option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-5">
+            <div class="col">
               <h4 id="headingOmnibox"></h4>
               <div class="row align-items-center gx-3">
                 <div class="col-auto">
@@ -676,7 +699,7 @@
           <input class="history_input_save form-check-input" type="checkbox" />
         </td>
         <td class="history_entry_delete align-middle">
-          <button class="history_input_delete btn btn-outline-dark btn-sm">
+          <button class="history_input_delete btn btn-outline-secondary btn-sm">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon icon-trash d-block"

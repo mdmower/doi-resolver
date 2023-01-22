@@ -11,6 +11,7 @@ import {CiteProcSys} from 'citeproc';
 import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from '../messaging';
 import {queueRecordDoi} from '../history';
 import {logDebug, logError, logInfo} from '../logger';
+import {applyTheme} from './utils';
 
 interface CitationResources {
   citeProcJson: Record<string, unknown>;
@@ -111,6 +112,7 @@ class DoiCitation {
     await this.importCslData();
     this.initializeDoiInput();
     this.getLocalMessages();
+    await applyTheme(window);
     await this.initSelections();
     await this.populateHistory();
     this.startListeners();

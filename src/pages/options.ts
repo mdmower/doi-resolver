@@ -15,6 +15,7 @@ import {
   isHistorySort,
   isOmniboxTab,
   setOptions,
+  isDisplayTheme,
 } from '../options';
 import {MessageCmd, isInternalMessage, isSettingsUpdatedMessage} from '../messaging';
 import {
@@ -27,6 +28,7 @@ import {testAutolinkExclusion} from '../autolink';
 import {ContextMenuId, updateContextMenu} from '../context_menu';
 import {fetchDoiTitle} from '../metadata';
 import {logError, logInfo, logWarn} from '../logger';
+import {applyTheme} from './utils';
 
 enum UrlHashPage {
   Options = 'tab-options',
@@ -103,6 +105,7 @@ class DoiOptions {
     shortDoiResolverOutput: HTMLSpanElement;
     syncData: HTMLInputElement;
     syncDataWipeButton: HTMLButtonElement;
+    theme: HTMLSelectElement;
   };
 
   private handlers_: {
@@ -322,6 +325,8 @@ class DoiOptions {
       syncDataWipeButton:
         document.querySelector<HTMLButtonElement>('button#syncDataWipeButton') ||
         elementMissing('button#syncDataWipeButton'),
+      theme:
+        document.querySelector<HTMLSelectElement>('select#theme') || elementMissing('select#theme'),
     };
   }
 
@@ -330,6 +335,7 @@ class DoiOptions {
    */
   async init(): Promise<void> {
     this.getLocalMessages();
+    await applyTheme(window);
     this.openTabByHash();
     this.startClickListeners();
     await this.restoreOptions();
@@ -612,6 +618,11 @@ class DoiOptions {
         handler: this.handlers_.saveOptions,
         events: ['change'],
       },
+      {
+        element: this.elements_.theme,
+        handler: this.handlers_.saveOptions,
+        events: ['change'],
+      },
     ];
   }
 
@@ -710,6 +721,7 @@ class DoiOptions {
         ? this.elements_.omniboxOpento.value
         : undefined,
       sync_data: this.elements_.syncData.checked,
+      theme: isDisplayTheme(this.elements_.theme.value) ? this.elements_.theme.value : undefined,
     };
 
     // Strip protocol from user-entered autolink exclusions before saving
@@ -764,6 +776,7 @@ class DoiOptions {
       'omnibox_tab',
       'shortdoi_resolver',
       'sync_data',
+      'theme',
     ]);
 
     const defaultOptions = getDefaultOptions();
@@ -798,6 +811,7 @@ class DoiOptions {
     this.elements_.autolinkExclusions.value = (
       stg.autolink_exclusions ?? defaultOptions.autolink_exclusions
     ).join('\n');
+    this.elements_.theme.value = stg.theme ?? defaultOptions.theme;
 
     this.optionsDisplayUpdates();
     this.startChangeListeners();
@@ -808,6 +822,13 @@ class DoiOptions {
    * Update display based on option states
    */
   optionsDisplayUpdates() {
+    if (isDisplayTheme(this.elements_.theme.value)) {
+      // No need to await here. This can happen async.
+      applyTheme(window, this.elements_.theme.value).catch((error) => {
+        logError('Failed to refresh theme', error);
+      });
+    }
+
     this.elements_.historySubOptions.hidden = !this.elements_.history.checked;
     this.elements_.contextSubOptions.hidden = !this.elements_.context.checked;
 
@@ -878,6 +899,7 @@ class DoiOptions {
       'omnibox_tab',
       'shortdoi_resolver',
       'sync_data',
+      'theme',
     ];
 
     const historyRefreshOptions: (keyof StorageOptions)[] = [
@@ -1474,6 +1496,7 @@ class DoiOptions {
       'headingMeta',
       'headingOmnibox',
       'headingSync',
+      'headingTheme',
       'historyClear',
       'historyFetchTitleLabel',
       'historyNoticeText',
@@ -1506,6 +1529,10 @@ class DoiOptions {
       'optionOmniboxOpentoNewBacktab',
       'optionOmniboxOpentoNewForetab',
       'optionSyncData',
+      'optionTheme',
+      'optionThemeDark',
+      'optionThemeLight',
+      'optionThemeSystem',
       'syncDataWipeButton',
       'syncDataWipeDescription',
       'tableHeadingDelete',

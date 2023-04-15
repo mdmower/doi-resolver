@@ -50,7 +50,7 @@ export async function fetchDoiTitle(doi: string): Promise<string | undefined> {
 
     await chrome.offscreen.createDocument({
       justification: 'Fetched titles sometimes contain HTML markup that needs to be parsed.',
-      reasons: ['DOM_PARSER'],
+      reasons: [chrome.offscreen.Reason.DOM_PARSER],
       url: 'offscreen.html',
     });
 

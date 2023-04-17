@@ -174,7 +174,7 @@ export function isOffscreenDocMessage(message: unknown): message is OffscreenDoc
  * @param val Unverified item
  */
 export function isOffscreenAction(val: unknown): val is OffscreenAction {
-  return typeof val === 'string' && (Object.values(OffscreenAction) as string[]).includes(val);
+  return typeof val === 'string' && Object.values<string>(OffscreenAction).includes(val);
 }
 
 /**
@@ -199,7 +199,7 @@ export function isInternalMessage(message: unknown): message is InternalMessage<
   return (
     isObject(message) &&
     typeof message.cmd === 'string' &&
-    (Object.values(MessageCmd) as string[]).includes(message.cmd)
+    Object.values<string>(MessageCmd).includes(message.cmd)
   );
 }
 

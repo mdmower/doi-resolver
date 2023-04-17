@@ -40,7 +40,7 @@ enum BubbleAction {
  * @param val Unverified item
  */
 function isBubbleAction(val: unknown): val is BubbleAction {
-  return typeof val === 'string' && (Object.values(BubbleAction) as string[]).includes(val);
+  return typeof val === 'string' && Object.values<string>(BubbleAction).includes(val);
 }
 
 class DoiBubble {

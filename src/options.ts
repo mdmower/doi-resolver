@@ -171,9 +171,7 @@ export interface SafeStorageOptions extends StorageOptions {
  * @param val Unverified item
  */
 export function isCustomResolverSelection(val: unknown): val is CustomResolverSelection {
-  return (
-    typeof val === 'string' && (Object.values(CustomResolverSelection) as string[]).includes(val)
-  );
+  return typeof val === 'string' && Object.values<string>(CustomResolverSelection).includes(val);
 }
 
 /**
@@ -181,7 +179,7 @@ export function isCustomResolverSelection(val: unknown): val is CustomResolverSe
  * @param val Unverified item
  */
 export function isHistorySort(val: unknown): val is HistorySort {
-  return typeof val === 'string' && (Object.values(HistorySort) as string[]).includes(val);
+  return typeof val === 'string' && Object.values<string>(HistorySort).includes(val);
 }
 
 /**
@@ -189,7 +187,7 @@ export function isHistorySort(val: unknown): val is HistorySort {
  * @param val Unverified item
  */
 export function isQrImageType(val: unknown): val is QrImageType {
-  return typeof val === 'string' && (Object.values(QrImageType) as string[]).includes(val);
+  return typeof val === 'string' && Object.values<string>(QrImageType).includes(val);
 }
 
 /**
@@ -197,7 +195,7 @@ export function isQrImageType(val: unknown): val is QrImageType {
  * @param val Unverified item
  */
 export function isOmniboxTab(val: unknown): val is OmniboxTab {
-  return typeof val === 'string' && (Object.values(OmniboxTab) as string[]).includes(val);
+  return typeof val === 'string' && Object.values<string>(OmniboxTab).includes(val);
 }
 
 /**
@@ -218,7 +216,7 @@ export function isHistoryDoi(val: unknown): val is HistoryDoi {
  * @param val Unverified item
  */
 export function isDisplayTheme(val: unknown): val is DisplayTheme {
-  return typeof val === 'string' && (Object.values(DisplayTheme) as string[]).includes(val);
+  return typeof val === 'string' && Object.values<string>(DisplayTheme).includes(val);
 }
 
 /**

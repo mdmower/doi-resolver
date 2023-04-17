@@ -16,7 +16,7 @@ export enum LogLevel {
  * @param val Unverified item
  */
 export function isLogLevel(val: unknown): val is LogLevel {
-  return typeof val === 'string' && (Object.values(LogLevel) as string[]).includes(val);
+  return typeof val === 'number' && val in LogLevel;
 }
 
 /**

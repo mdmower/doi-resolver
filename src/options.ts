@@ -120,7 +120,7 @@ export interface StorageOptions {
   qr_title?: boolean;
   recorded_dois?: HistoryDoi[];
   shortdoi_resolver?: string;
-  storage_listener_disabled?: boolean;
+  storage_listener_disabled?: boolean; // Deprecated
   sync_data?: boolean;
   sync_reset?: boolean; // Deprecated
   theme?: DisplayTheme;
@@ -161,7 +161,6 @@ export interface SafeStorageOptions extends StorageOptions {
   qr_title: boolean;
   recorded_dois: HistoryDoi[];
   shortdoi_resolver: string;
-  storage_listener_disabled: boolean;
   sync_data: boolean;
   theme: DisplayTheme;
 }
@@ -605,7 +604,7 @@ export function getDefaultOptions(): SafeStorageOptions {
     qr_title: false,
     recorded_dois: [] as HistoryDoi[],
     shortdoi_resolver: 'https://doi.org/',
-    storage_listener_disabled: false,
+    storage_listener_disabled: undefined,
     sync_data: false,
     sync_reset: undefined,
     theme: DisplayTheme.System,
@@ -629,7 +628,6 @@ export function getSyncExclusionNames(): (keyof StorageOptions)[] {
     'history_doi_queue', // Queue for recordDoi
     'history_fetch_title', // Requires permissions to enable
     'qr_title', // Requires permissions to enable
-    'storage_listener_disabled', // Flag indicating when sync storage should be ignored
     'sync_data', // Controls sync on/off
     ...getDeprecatedOptionNames(),
   ];
@@ -640,6 +638,29 @@ export function getSyncExclusionNames(): (keyof StorageOptions)[] {
  */
 export function getDeprecatedOptionNames(): (keyof StorageOptions)[] {
   return [
+    'storage_listener_disabled', // Only stored in storage.local
     'sync_reset', // Only stored in storage.sync
+  ];
+}
+
+/**
+ * Get all option names that are allowed to sync
+ */
+export function getAllSyncOptionNames(): (keyof StorageOptions)[] {
+  const syncExclusionNames = getSyncExclusionNames();
+  return getAllOptionNames().filter((name) => !syncExclusionNames.includes(name));
+}
+
+/**
+ * Get all option names that require a forced refresh of the options page when updated
+ */
+export function getForceRefreshOptionNames(): (keyof StorageOptions)[] {
+  return [
+    'cr_history',
+    'custom_resolver',
+    'doi_resolver',
+    'history_sortby',
+    'recorded_dois',
+    'shortdoi_resolver',
   ];
 }

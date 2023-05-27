@@ -8,15 +8,31 @@ import {MessageCmd, SettingsUpdatedMessage, sendInternalMessageAsync} from './me
 import {
   StorageOptions,
   getAllOptionNames,
+  getAllSyncOptionNames,
   getDefaultOptions,
   getDeprecatedOptionNames,
+  getForceRefreshOptionNames,
   getOptions,
-  getSyncExclusionNames,
   removeOptions,
   setOptions,
   toStorageOptions,
 } from './options';
 import {getTypedKeys} from './utils';
+
+const {storageListenerStatus} = new (class {
+  private status: boolean = true;
+
+  /**
+   * Get/Set the flag indicating the storage listener status
+   * @param enable Status to set for the storage listener or undefined to retrieve the status
+   */
+  public storageListenerStatus = (enable?: boolean): boolean => {
+    if (enable !== undefined) {
+      this.status = enable;
+    }
+    return this.status;
+  };
+})();
 
 /**
  * Check for new options when the extension is updated
@@ -55,29 +71,30 @@ export async function removeDeprecatedOptions(): Promise<void> {
  * Check whether all sync storageoptions have been cleared, in which case
  * sync should be disabled.
  */
-export async function verifySyncState(): Promise<void> {
-  const stgLocal = await getOptions('local', ['sync_data']);
-  const stgSync = await getOptions('sync');
-  if (stgLocal.sync_data && !Object.keys(stgSync).length) {
-    await storageListenerStatus(false);
-    logInfo('Sync settings cleared, disabling settings synchronization');
+export async function verifySyncState(): Promise<boolean> {
+  const stg = await getOptions('sync');
+  if (!Object.keys(stg).length) {
+    logInfo('Sync settings cleared, disabling settings synchronization.');
+    storageListenerStatus(false);
     await setOptions('local', {sync_data: false});
-    await storageListenerStatus(true);
+    storageListenerStatus(true);
 
     // If the options page is open, let it know sync should be unchecked.
     await sendInternalMessageAsync<SettingsUpdatedMessage, undefined>({
       cmd: MessageCmd.SettingsUpdated,
       data: {options: {sync_data: false}, forceUpdate: true},
     });
+
+    return false;
   }
+
+  return true;
 }
 
 /**
  * Enable sync feature
  */
 export async function enableSync(): Promise<void> {
-  await storageListenerStatus(false);
-
   // Sync was just toggled 'on', so let sync storage options overwrite
   // local storage options, so long as they are defined. If an option
   // is not defined in sync storage, copy it from local storage, which
@@ -85,12 +102,10 @@ export async function enableSync(): Promise<void> {
 
   const toLocal: Record<string, unknown> = {};
   const toSync: Record<string, unknown> = {};
-  const syncExclusionNames = getSyncExclusionNames();
-  const syncOptionNames = getAllOptionNames().filter((name) => !syncExclusionNames.includes(name));
 
   const stgLocal = await getOptions('local');
   const stgSync = await getOptions('sync');
-  syncOptionNames.forEach((option) => {
+  getAllSyncOptionNames().forEach((option) => {
     if (stgSync[option] !== undefined) {
       toLocal[option] = stgSync[option];
     } else {
@@ -101,10 +116,12 @@ export async function enableSync(): Promise<void> {
   logInfo('.. toLocal: ', toLocal);
   const toSyncOptions = toStorageOptions(toSync);
   const toLocalOptions = toStorageOptions(toLocal);
+
+  storageListenerStatus(false);
   await setOptions('sync', toSyncOptions);
   await setOptions('local', toLocalOptions);
+  storageListenerStatus(true);
 
-  await storageListenerStatus(true);
   await sendInternalMessageAsync<SettingsUpdatedMessage, undefined>({
     cmd: MessageCmd.SettingsUpdated,
     data: {
@@ -112,20 +129,6 @@ export async function enableSync(): Promise<void> {
       forceUpdate: true,
     },
   });
-}
-
-/**
- * Get/Set the flag indicating the storage listener status
- * @param enable Status to set for the storage listener or undefined to retrieve the status
- */
-async function storageListenerStatus(enable?: boolean): Promise<boolean> {
-  if (enable === undefined) {
-    const stg = await getOptions('local', ['storage_listener_disabled']);
-    return !stg.storage_listener_disabled;
-  }
-
-  await setOptions('local', {storage_listener_disabled: !enable});
-  return enable;
 }
 
 /**
@@ -154,30 +157,23 @@ async function storageChangeHandlerAsync(
   // Debugging
   // logInfo(`Change in ${area} storage\n`, changes);
 
-  // storage_listener_disabled is always set in isolation and only locally.
-  // When sync_data is enabled, storage_listener_disabled gets toggled-on/off.
-  // Since this toggle happens within this change handler, it can lead to an
-  // infinite loop if not ignored.
-  if (changes['storage_listener_disabled'] !== undefined) {
+  if (!storageListenerStatus()) {
+    logInfo(`Storage listener disabled, skipping changes in ${area}.`);
     return;
   }
 
-  if (!(await storageListenerStatus())) {
-    return;
-  }
-
-  const updatedOptionsUnsafe = Object.keys(changes).reduce((prev, curr) => {
-    prev[curr] = changes[curr]?.newValue;
-    return prev;
-  }, {} as Record<string, unknown>);
-  const updatedOptions = toStorageOptions(updatedOptionsUnsafe);
+  const updatedOptions = toStorageOptions(
+    Object.keys(changes).reduce<Record<string, unknown>>((prev, curr) => {
+      prev[curr] = changes[curr]?.newValue;
+      return prev;
+    }, {})
+  );
 
   if (area === 'local') {
     await refreshBackgroundFeatures(updatedOptions);
   }
 
-  // Note that sync_data is in the sync exclusions list, so is only
-  // ever set in chrome.storage.local.
+  // Note that sync_data is in the sync exclusions list, so is only ever set in the local area.
   if (area === 'local' && updatedOptions.sync_data !== undefined) {
     if (updatedOptions.sync_data) {
       logInfo('Settings synchronization enabled.');
@@ -191,50 +187,62 @@ async function storageChangeHandlerAsync(
     }
   }
 
+  // Determine whether sync is enabled
+  let syncEnabled = (await getOptions('local', ['sync_data'])).sync_data ?? false;
+
   // When sync storage changes are reported, check whether all options have been cleared,
   // in which case sync should be disabled.
-  if (area === 'sync') {
-    await verifySyncState();
+  if (syncEnabled && area === 'sync') {
+    syncEnabled = await verifySyncState();
   }
 
-  const syncExclusionNames = getSyncExclusionNames();
-  const syncOptionNames = getAllOptionNames().filter((name) => !syncExclusionNames.includes(name));
+  const syncOptionNames = getAllSyncOptionNames();
   const updatedSyncOptions = toStorageOptions(
-    getTypedKeys(updatedOptions).reduce((prev, curr) => {
+    getTypedKeys(updatedOptions).reduce<Record<string, unknown>>((prev, curr) => {
       if (syncOptionNames.includes(curr)) {
         prev[curr] = updatedOptions[curr];
       }
       return prev;
-    }, {} as Record<string, unknown>)
+    }, {})
   );
+  const hasUpdatedSyncSettings = Object.keys(updatedSyncOptions).length > 0;
 
-  const forceRefreshOptionNames: (keyof StorageOptions)[] = [
-    'cr_history',
-    'custom_resolver',
-    'doi_resolver',
-    'history_sortby',
-    'recorded_dois',
-    'shortdoi_resolver',
-  ];
-
-  const forceUpdate = forceRefreshOptionNames.some(
-    (optionName) => updatedSyncOptions[optionName] !== undefined
-  );
-
-  const stg = await getOptions('local', ['sync_data']);
-  if (stg.sync_data) {
+  if (syncEnabled && hasUpdatedSyncSettings) {
     const newArea: chrome.storage.AreaName = area === 'local' ? 'sync' : 'local';
-    await storageListenerStatus(false);
+    // Debugging
+    // if (area === 'local') {
+    //   logInfo('.. toSync: ', updatedSyncOptions);
+    // } else {
+    //   logInfo('.. toLocal: ', updatedSyncOptions);
+    // }
+
+    // This looks scary without surrounding setOptions() by a storage listener
+    // status toggle: "won't this cause an infinite loop of settings updates
+    // between local and sync?" In practice, a deep compare is performed before
+    // changes are reported, so if nothing is actually updated in an area, then
+    // no storage change event is reported.
     await setOptions(newArea, updatedSyncOptions);
-    await storageListenerStatus(true);
   }
 
-  // Only need to send message with updated sync options because local option
-  // changes are handled by local event listeners.
-  await sendInternalMessageAsync<SettingsUpdatedMessage, undefined>({
-    cmd: MessageCmd.SettingsUpdated,
-    data: {options: updatedSyncOptions, forceUpdate},
-  });
+  // Only send messages when the local area is updated. This works because sync
+  // settings updates are always duplicated to the local area just above and
+  // thus avoids redundant notices.
+  //
+  // We only need to send updatedSyncOptions because local-only option changes
+  // are handled by local event listeners.
+  if (area === 'local' && hasUpdatedSyncSettings) {
+    // Debugging
+    // logInfo(`Sending updated settings notification\n`, updatedSyncOptions);
+
+    const forceUpdate = getForceRefreshOptionNames().some(
+      (optionName) => updatedSyncOptions[optionName] !== undefined
+    );
+
+    await sendInternalMessageAsync<SettingsUpdatedMessage, undefined>({
+      cmd: MessageCmd.SettingsUpdated,
+      data: {options: updatedSyncOptions, forceUpdate},
+    });
+  }
 }
 
 /**

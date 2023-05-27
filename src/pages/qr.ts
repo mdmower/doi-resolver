@@ -445,10 +445,12 @@ class DoiQr {
       'history_sortby',
     ]);
 
+    const showHideTarget = this.elements_.openHistory.parentElement ?? this.elements_.openHistory;
     if (!stg.history || !stg.recorded_dois || !stg.recorded_dois.length) {
-      this.elements_.openHistory.hidden = true;
+      showHideTarget.hidden = true;
       return;
     }
+    showHideTarget.hidden = false;
 
     // Skip holes in the array (should not occur)
     stg.recorded_dois = stg.recorded_dois.filter(Boolean);

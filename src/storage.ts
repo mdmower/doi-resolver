@@ -137,7 +137,7 @@ export async function enableSync(): Promise<void> {
  * @param area Storage area
  */
 export function storageChangeHandler(
-  changes: {[key: string]: chrome.storage.StorageChange | undefined},
+  changes: Record<string, chrome.storage.StorageChange | undefined>,
   area: chrome.storage.AreaName
 ): void {
   storageChangeHandlerAsync(changes, area).catch((error) => {
@@ -151,7 +151,7 @@ export function storageChangeHandler(
  * @param area Storage area
  */
 async function storageChangeHandlerAsync(
-  changes: {[key: string]: chrome.storage.StorageChange | undefined},
+  changes: Record<string, chrome.storage.StorageChange | undefined>,
   area: chrome.storage.AreaName
 ): Promise<void> {
   // Debugging

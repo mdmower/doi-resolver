@@ -13,10 +13,10 @@ export function isString(val: unknown): val is string {
 }
 
 /**
- * Determine whether a value is an object (excluding functions, arrays, and null).
+ * Determine whether a value is a record (excluding functions, arrays, and null).
  * @param val Candidate value
  */
-export function isObject(val: unknown): val is Record<string, unknown> {
+export function isRecord(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && !!val && !Array.isArray(val);
 }
 
@@ -162,7 +162,7 @@ export function filterSelectByText(
     search = search.replace(/\s* /g, '\\s*');
     const regex = new RegExp(search, 'i');
 
-    const visibleOptions = [] as HTMLOptionElement[];
+    const visibleOptions: HTMLOptionElement[] = [];
     options.forEach((option) => {
       if (regex.test(option.textContent || '') || regex.test(option.value)) {
         option.hidden = false;

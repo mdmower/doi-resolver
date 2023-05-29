@@ -23,7 +23,7 @@ import {
   requestContentScriptPermissions,
   requestMetaPermissions,
 } from '../permissions';
-import {debounce, isObject, sortHistoryEntries} from '../utils';
+import {debounce, isRecord, sortHistoryEntries} from '../utils';
 import {testAutolinkExclusion} from '../autolink';
 import {ContextMenuId, updateContextMenu} from '../context_menu';
 import {fetchDoiTitles} from '../metadata';
@@ -417,7 +417,7 @@ class DoiOptions {
     // Bootstrap types are incomplete. Event types not available.
     const infoModal = this.elements_.infoModal;
     infoModal.addEventListener('show.bs.modal', function (event: unknown) {
-      if (!isObject(event)) {
+      if (!isRecord(event)) {
         return;
       }
 

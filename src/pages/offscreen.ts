@@ -4,7 +4,7 @@
 
 import {logError} from '../logger';
 import {OffscreenAction, isOffscreenDocMessage, MessageCmd} from '../messaging';
-import {isObject} from '../utils';
+import {isRecord} from '../utils';
 
 document.addEventListener(
   'DOMContentLoaded',
@@ -64,7 +64,7 @@ class DoiOffscreen {
    * @param val The raw titles which may include HTML
    */
   private parseTitles(val?: unknown): Record<string, string | undefined> | undefined {
-    if (!isObject(val)) {
+    if (!isRecord(val)) {
       return;
     }
 

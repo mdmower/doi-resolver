@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import {getTypedKeys, isObject, isString} from './utils';
+import {getTypedKeys, isRecord, isString} from './utils';
 
 /**
  * Get the values of multiple stored options
@@ -162,7 +162,7 @@ export function isOmniboxTab(val: unknown): val is OmniboxTab {
  */
 export function isHistoryDoi(val: unknown): val is HistoryDoi {
   return (
-    isObject(val) &&
+    isRecord(val) &&
     typeof val['doi'] === 'string' &&
     typeof val['title'] === 'string' &&
     typeof val['save'] === 'boolean'
@@ -184,7 +184,7 @@ export function isDisplayTheme(val: unknown): val is DisplayTheme {
 export function toStorageOptions(obj: unknown): StorageOptions {
   const storageOptions: StorageOptions = {};
 
-  if (!isObject(obj)) {
+  if (!isRecord(obj)) {
     return storageOptions;
   }
 
@@ -344,7 +344,7 @@ export function toStorageOptions(obj: unknown): StorageOptions {
  * @param obj Unverified object
  */
 export function isStorageOptions(obj: unknown): obj is StorageOptions {
-  if (!isObject(obj)) {
+  if (!isRecord(obj)) {
     return false;
   }
 
@@ -515,7 +515,7 @@ export function getDefaultOptions(): Required<StorageOptions> {
   return {
     auto_link: false,
     auto_link_rewrite: false,
-    autolink_exclusions: [] as string[],
+    autolink_exclusions: [],
     cite_locale: 'auto',
     cite_style: 'bibtex',
     context_menu: true,
@@ -529,7 +529,7 @@ export function getDefaultOptions(): Required<StorageOptions> {
     custom_resolver: false,
     doi_resolver: 'https://doi.org/',
     history: false,
-    history_doi_queue: [] as string[],
+    history_doi_queue: [],
     history_fetch_title: false,
     history_length: 50,
     history_showsave: false,
@@ -545,7 +545,7 @@ export function getDefaultOptions(): Required<StorageOptions> {
     qr_message: false,
     qr_size: 300,
     qr_title: false,
-    recorded_dois: [] as HistoryDoi[],
+    recorded_dois: [],
     shortdoi_resolver: 'https://doi.org/',
     sync_data: false,
     theme: DisplayTheme.System,

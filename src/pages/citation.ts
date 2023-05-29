@@ -6,7 +6,7 @@ import '../css/citation.scss';
 import 'bootstrap/js/dist/modal';
 import {HistoryDoi, getDefaultOptions, getOptions, setOptions, StorageOptions} from '../options';
 import {requestCitationPermissions} from '../permissions';
-import {filterSelectByText, isObject, isValidDoi, sortHistoryEntries, trimDoi} from '../utils';
+import {filterSelectByText, isRecord, isValidDoi, sortHistoryEntries, trimDoi} from '../utils';
 import {CiteProcSys} from 'citeproc';
 import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from '../messaging';
 import {queueRecordDoi} from '../history';
@@ -28,8 +28,8 @@ interface CslStyles {
 }
 
 interface CslLocales {
-  'primary-dialects': {[key: string]: string | undefined};
-  'language-names': {[key: string]: string[] | undefined};
+  'primary-dialects': Record<string, string | undefined>;
+  'language-names': Record<string, string[] | undefined>;
 }
 
 interface ReadableLocale {
@@ -488,7 +488,7 @@ class DoiCitation {
         throw new Error(`Bad status code: ${response.status}`);
       }
       const unsafeJson: unknown = await response.json();
-      if (!isObject(unsafeJson)) {
+      if (!isRecord(unsafeJson)) {
         throw new Error('Unable to parse response as JSON');
       }
       json = unsafeJson;

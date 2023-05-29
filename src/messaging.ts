@@ -6,7 +6,7 @@ import {sendAutolinkOptions} from './autolink';
 import {ContextMenuId, updateContextMenu} from './context_menu';
 import {isLogLevel, log, logError, LogLevel} from './logger';
 import {StorageOptions, isStorageOptions, getOptions} from './options';
-import {isObject} from './utils';
+import {isRecord} from './utils';
 
 /**
  * Send an internal message between different parts of the extension
@@ -40,7 +40,7 @@ export async function sendInternalMessageAsync<T extends InternalMessage<unknown
     // There will not be a message receiver if content scripts are disabled
     // and no extension pages are open (aside from the sender page).
     if (
-      isObject(error) &&
+      isRecord(error) &&
       typeof error.message === 'string' &&
       /Receiving end does not exist\./.test(error.message)
     ) {
@@ -119,10 +119,10 @@ export interface SettingsUpdatedMessage extends InternalMessage<SettingsUpdated>
  */
 export function isAutolinkVarsMessage(message: unknown): message is AutolinkVarsMessage {
   return (
-    isObject(message) &&
+    isRecord(message) &&
     message.cmd === MessageCmd.AutolinkVars &&
     (message.data === undefined ||
-      (isObject(message.data) &&
+      (isRecord(message.data) &&
         typeof message.data.doiResolver === 'string' &&
         typeof message.data.rewriteAnchorHref === 'boolean'))
   );
@@ -134,9 +134,9 @@ export function isAutolinkVarsMessage(message: unknown): message is AutolinkVars
  */
 export function isContextMenuToggleMessage(message: unknown): message is ContextMenuToggleMessage {
   return (
-    isObject(message) &&
+    isRecord(message) &&
     message.cmd === MessageCmd.ContextMenuToggle &&
-    isObject(message.data) &&
+    isRecord(message.data) &&
     typeof message.data.enable === 'boolean' &&
     (typeof message.data.doi === 'string' || message.data.doi === undefined)
   );
@@ -148,9 +148,9 @@ export function isContextMenuToggleMessage(message: unknown): message is Context
  */
 export function isLoggingMessage(message: unknown): message is LoggingMessage {
   return (
-    isObject(message) &&
+    isRecord(message) &&
     message.cmd === MessageCmd.Logging &&
-    isObject(message.data) &&
+    isRecord(message.data) &&
     isLogLevel(message.data.level) &&
     Array.isArray(message.data.data)
   );
@@ -162,9 +162,9 @@ export function isLoggingMessage(message: unknown): message is LoggingMessage {
  */
 export function isOffscreenDocMessage(message: unknown): message is OffscreenDocMessage<unknown> {
   return (
-    isObject(message) &&
+    isRecord(message) &&
     message.cmd === MessageCmd.OffscreenDoc &&
-    isObject(message.data) &&
+    isRecord(message.data) &&
     isOffscreenAction(message.data.action)
   );
 }
@@ -183,9 +183,9 @@ export function isOffscreenAction(val: unknown): val is OffscreenAction {
  */
 export function isSettingsUpdatedMessage(message: unknown): message is SettingsUpdatedMessage {
   return (
-    isObject(message) &&
+    isRecord(message) &&
     message.cmd === MessageCmd.SettingsUpdated &&
-    isObject(message.data) &&
+    isRecord(message.data) &&
     typeof message.data.forceUpdate === 'boolean' &&
     isStorageOptions(message.data.options)
   );
@@ -197,7 +197,7 @@ export function isSettingsUpdatedMessage(message: unknown): message is SettingsU
  */
 export function isInternalMessage(message: unknown): message is InternalMessage<unknown> {
   return (
-    isObject(message) &&
+    isRecord(message) &&
     typeof message.cmd === 'string' &&
     Object.values<string>(MessageCmd).includes(message.cmd)
   );

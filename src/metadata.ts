@@ -4,7 +4,7 @@
 
 import {checkMetaPermissions} from './permissions';
 import {getDefaultOptions} from './options';
-import {isObject} from './utils';
+import {isRecord} from './utils';
 import {
   MessageCmd,
   OffscreenAction,
@@ -41,7 +41,7 @@ async function fetchRawDoiTitle(doi: string): Promise<string | undefined> {
     }
 
     const json: unknown = await fetchResponse.json();
-    if (!isObject(json) || typeof json.title !== 'string') {
+    if (!isRecord(json) || typeof json.title !== 'string') {
       throw new Error('Invalid JSON response');
     }
 

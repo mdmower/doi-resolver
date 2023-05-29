@@ -68,3 +68,45 @@ body {
     color: $red;
   }
 }
+
+th.history_entry_doi {
+  position: relative;
+}
+
+@keyframes history_spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#historySpinner {
+  position: absolute;
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  top: calc(50% - 0.5em);
+  right: $table-cell-padding-x;
+
+  &.show_spinner::before {
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1em;
+    height: 1em;
+    margin-top: -0.5em;
+    margin-left: -0.5em;
+    border-radius: 50%;
+    border: 2px solid $body-color;
+    border-top-color: transparent;
+    animation: history_spinner 0.8s linear infinite;
+  }
+}
+
+@include color-mode(dark) {
+  #historySpinner.show_spinner::before {
+    border-color: $body-color-dark;
+    border-top-color: transparent;
+  }
+}

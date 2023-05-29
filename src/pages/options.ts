@@ -26,7 +26,7 @@ import {
 import {debounce, isObject, sortHistoryEntries} from '../utils';
 import {testAutolinkExclusion} from '../autolink';
 import {ContextMenuId, updateContextMenu} from '../context_menu';
-import {fetchDoiTitle} from '../metadata';
+import {fetchDoiTitles} from '../metadata';
 import {logError, logInfo, logWarn} from '../logger';
 import {applyTheme} from './utils';
 
@@ -1247,55 +1247,19 @@ class DoiOptions {
 
     logInfo('DOIs queued for title fetch', dois);
 
-    this.toggleHistorySpinner(true);
-
-    const doiTitles = await this.fetchDoiTitles(dois);
-    if (doiTitles) {
-      await this.saveHistoryTitles(doiTitles);
-    }
-    this.toggleHistorySpinner(false);
-  }
-
-  /**
-   * Fetch titles for an array of DOIs
-   * @param dois DOIs
-   */
-  async fetchDoiTitles(dois: string[]): Promise<{[key: string]: string | undefined} | undefined> {
-    if (!dois.length) {
-      return;
-    }
-
     const granted = await requestMetaPermissions();
     if (!granted) {
       logInfo('Aborting new title retrieval because permissions not granted');
       return;
     }
 
-    const doisClone = dois.slice();
-    const doiTitles: {[key: string]: string | undefined} = {};
+    this.toggleHistorySpinner(true);
 
-    const doiTitlePromise = async (doi: string): Promise<void> => {
-      doiTitles[doi] = await fetchDoiTitle(doi);
-      const nextDoi = doisClone.pop();
-      if (nextDoi) {
-        return doiTitlePromise(nextDoi);
-      }
-    };
-
-    // Allow up to 4 simultaneous title fetches
-    const fetchDoiQueues: Promise<void>[] = [];
-    for (let i = 0; i < 4; i++) {
-      const nextDoi = doisClone.pop();
-      if (nextDoi) {
-        fetchDoiQueues.push(doiTitlePromise(nextDoi));
-      } else {
-        break;
-      }
+    const doiTitles = await fetchDoiTitles(dois);
+    if (doiTitles) {
+      await this.saveHistoryTitles(doiTitles);
     }
-
-    await Promise.all(fetchDoiQueues);
-
-    return doiTitles;
+    this.toggleHistorySpinner(false);
   }
 
   /**
@@ -1319,7 +1283,7 @@ class DoiOptions {
    * Save tiles for DOIs in history
    * @param doiTitles DOI-title reference
    */
-  async saveHistoryTitles(doiTitles: {[key: string]: string | undefined}): Promise<void> {
+  async saveHistoryTitles(doiTitles: Record<string, string | undefined>): Promise<void> {
     const dois = Object.keys(doiTitles);
     if (dois.length === 0) {
       return;

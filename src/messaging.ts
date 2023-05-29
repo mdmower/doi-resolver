@@ -60,7 +60,7 @@ export enum MessageCmd {
 }
 
 export enum OffscreenAction {
-  ParseTitle = 'parse_title',
+  ParseTitles = 'parse_titles',
 }
 
 export interface InternalMessage<T> {

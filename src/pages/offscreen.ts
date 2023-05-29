@@ -4,6 +4,7 @@
 
 import {logError} from '../logger';
 import {OffscreenAction, isOffscreenDocMessage, MessageCmd} from '../messaging';
+import {isObject} from '../utils';
 
 document.addEventListener(
   'DOMContentLoaded',
@@ -44,12 +45,12 @@ class DoiOffscreen {
     }
 
     switch (message.data.action) {
-      case OffscreenAction.ParseTitle:
+      case OffscreenAction.ParseTitles:
         sendResponse({
           cmd: MessageCmd.OffscreenDoc,
           data: {
-            action: OffscreenAction.ParseTitle,
-            data: this.parseTitle(message.data?.data),
+            action: OffscreenAction.ParseTitles,
+            data: this.parseTitles(message.data?.data),
           },
         });
         break;
@@ -59,39 +60,45 @@ class DoiOffscreen {
   }
 
   /**
-   * Parse title
-   * @param val The raw title value which may include HTML
+   * Parse titles
+   * @param val The raw titles which may include HTML
    */
-  private parseTitle(val?: unknown): string | undefined {
-    let title: string | undefined;
-
-    if (typeof val !== 'string') {
-      return title;
+  private parseTitles(val?: unknown): Record<string, string | undefined> | undefined {
+    if (!isObject(val)) {
+      return;
     }
 
-    try {
-      const container = document.createElement('div');
-      container.innerHTML = val;
-      let firstChild = container.firstElementChild;
-      while (firstChild) {
-        if (firstChild.tagName === 'SUBTITLE' && firstChild.textContent) {
-          container.replaceChild(
-            document.createTextNode(` - ${firstChild.textContent}`),
-            firstChild
-          );
-        } else if (firstChild.tagName === 'ALT-TITLE' || !firstChild.textContent?.trim()) {
-          container.removeChild(firstChild);
-        } else {
-          container.replaceChild(document.createTextNode(firstChild.textContent), firstChild);
+    return Object.keys(val).reduce<Record<string, string | undefined>>((titles, doi) => {
+      let title: string | undefined;
+
+      const rawTitle = val[doi];
+      if (typeof rawTitle === 'string') {
+        try {
+          const container = document.createElement('div');
+          container.innerHTML = rawTitle;
+          let firstChild = container.firstElementChild;
+          while (firstChild) {
+            if (firstChild.tagName === 'SUBTITLE' && firstChild.textContent) {
+              container.replaceChild(
+                document.createTextNode(` - ${firstChild.textContent}`),
+                firstChild
+              );
+            } else if (firstChild.tagName === 'ALT-TITLE' || !firstChild.textContent?.trim()) {
+              container.removeChild(firstChild);
+            } else {
+              container.replaceChild(document.createTextNode(firstChild.textContent), firstChild);
+            }
+            firstChild = container.firstElementChild;
+          }
+
+          title = container.textContent?.replace(/\s{2,}/g, ' ').trim();
+        } catch (ex) {
+          logError('Failed to parse title', ex);
         }
-        firstChild = container.firstElementChild;
       }
 
-      title = container.textContent?.replace(/\s{2,}/g, ' ').trim();
-    } catch (ex) {
-      logError('Failed to parse title', ex);
-    }
-
-    return title;
+      titles[doi] = title;
+      return titles;
+    }, {});
   }
 }

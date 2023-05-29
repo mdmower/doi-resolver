@@ -62,6 +62,7 @@ class DoiQr {
   private bgColorPicker_?: IroColorPicker;
 
   private saveOptionsDebounced_: () => void;
+  private saveQrDimensionsDebounced_: () => void;
   private qrFetchTitleChangeHandler_?: (event: Event) => void;
   private qrManualMessageChangeHandler_?: (event: Event) => void;
   private iroFgColorChangeHandler_?: (color: iro.Color) => void;
@@ -96,6 +97,7 @@ class DoiQr {
   constructor() {
     this.defaultDoiResolver_ = getDefaultOptions()['doi_resolver'];
     this.saveOptionsDebounced_ = debounce(this.saveOptions.bind(this), 500);
+    this.saveQrDimensionsDebounced_ = debounce(this.saveQrDimensions.bind(this), 500);
 
     const elementMissing = (selector: string) => {
       throw new Error(`Required element is missing from the page: ${selector}`);
@@ -192,11 +194,9 @@ class DoiQr {
     this.elements_.qrImageTypePng.addEventListener('click', saveOptions);
     this.elements_.qrImageTypeSvg.addEventListener('click', saveOptions);
 
-    // A debounced version of saveOptions is used inside the saveQrDimensions
-    // handler to prevent excessive saves.
-    const saveQrDimensions = this.saveQrDimensions.bind(this);
-    this.elements_.qrSizeInput.addEventListener('input', saveQrDimensions);
-    this.elements_.qrBorderInput.addEventListener('input', saveQrDimensions);
+    const saveQrDimensionsDebounced = this.saveQrDimensionsDebounced_;
+    this.elements_.qrSizeInput.addEventListener('input', saveQrDimensionsDebounced);
+    this.elements_.qrBorderInput.addEventListener('input', saveQrDimensionsDebounced);
     this.toggleTitleMessageListeners(true);
 
     // We want the color changes made in the text input to update Iro as soon as
@@ -356,8 +356,8 @@ class DoiQr {
    */
   private saveQrDimensions(): void {
     const qrSizeElm = this.elements_.qrSizeInput;
-    let qrSize = Number(qrSizeElm.value);
-    if (Number.isNaN(qrSize)) {
+    let qrSize = parseInt(qrSizeElm.value);
+    if (isNaN(qrSize)) {
       qrSize = 300;
       qrSizeElm.value = `${qrSize}`;
     } else if (qrSize < 80) {
@@ -366,8 +366,8 @@ class DoiQr {
     }
 
     const qrBorderElm = this.elements_.qrBorderInput;
-    let qrBorder = Number(qrBorderElm.value);
-    if (Number.isNaN(qrBorder)) {
+    let qrBorder = parseInt(qrBorderElm.value);
+    if (isNaN(qrBorder)) {
       qrBorderElm.value = '0';
       qrBorder = 0;
     } else if (qrSize < 0) {
@@ -375,7 +375,7 @@ class DoiQr {
       qrBorder = 0;
     }
 
-    this.saveOptionsDebounced_();
+    this.saveOptions();
   }
 
   /**
@@ -557,8 +557,8 @@ class DoiQr {
   private async saveOptionsAsync(): Promise<void> {
     const options: StorageOptions = {
       qr_bgtrans: this.elements_.qrBgTrans.checked,
-      qr_size: Number(this.elements_.qrSizeInput.value),
-      qr_border: Number(this.elements_.qrBorderInput.value),
+      qr_size: parseInt(this.elements_.qrSizeInput.value),
+      qr_border: parseInt(this.elements_.qrBorderInput.value),
       qr_fgcolor: this.elements_.qrFgColorInput.value,
       qr_bgcolor: this.elements_.qrBgColorInput.value,
       qr_message: this.elements_.qrManualMessage.checked,
@@ -711,8 +711,8 @@ class DoiQr {
       return;
     }
 
-    let qrSize = Number(this.elements_.qrSizeInput.value);
-    let qrBorder = Number(this.elements_.qrBorderInput.value);
+    let qrSize = parseInt(this.elements_.qrSizeInput.value);
+    let qrBorder = parseInt(this.elements_.qrBorderInput.value);
     const fgColor = this.elements_.qrFgColorInput.value;
     const bgColor = this.elements_.qrBgTrans.checked ? null : this.elements_.qrBgColorInput.value;
     const qrImageTypeValue = document.querySelector<HTMLInputElement>(
@@ -720,7 +720,7 @@ class DoiQr {
     )?.value;
     const qrImageType = isQrImageType(qrImageTypeValue) ? qrImageTypeValue : QrImageType.Png;
 
-    if (Number.isNaN(qrSize)) {
+    if (isNaN(qrSize)) {
       qrSize = 300;
       this.elements_.qrSizeInput.value = `${qrSize}`;
     } else if (qrSize < 80) {
@@ -728,7 +728,7 @@ class DoiQr {
       this.elements_.qrSizeInput.value = `${qrSize}`;
     }
 
-    if (Number.isNaN(qrBorder) || qrBorder < 0) {
+    if (isNaN(qrBorder) || qrBorder < 0) {
       qrBorder = 0;
       this.elements_.qrBorderInput.value = `${qrBorder}`;
     }

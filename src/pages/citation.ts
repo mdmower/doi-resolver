@@ -122,9 +122,15 @@ class DoiCitation {
    * Import CSL styles and locales
    */
   private async importCslData(): Promise<void> {
-    const {default: cslStyles} = await import('../csl/styles/styles.json');
+    // TODO: Revert this workaround once https://github.com/webpack/webpack/issues/17042 is resolved.
+    // webpack 5.80.0 introduced a bug where dynamically imported JSON doesn't destructure correctly.
+    // The issue still exists as of webpack 5.84.1.
+
+    // const {default: cslStyles} = await import('../csl/styles/styles.json');
+    const cslStyles = (await import('../csl/styles/styles.json')).default;
     this.cslStyles_ = cslStyles;
-    const {default: cslLocales} = await import('../csl/locales/locales.json');
+    // const {default: cslLocales} = await import('../csl/locales/locales.json');
+    const cslLocales = (await import('../csl/locales/locales.json')).default;
     this.cslLocales_ = cslLocales;
   }
 

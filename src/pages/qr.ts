@@ -331,7 +331,7 @@ class DoiQr {
           this.fgColorPicker_.off('color:change', this.iroFgColorChangeHandler_);
         }
         this.fgColorPicker_.color.hexString = inputElement.value;
-        inputElement.style.background = `linear-gradient(90deg, #fff 50%, ${inputElement.value} 50%)`;
+        inputElement.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${inputElement.value} 50%)`;
         if (this.iroFgColorChangeHandler_) {
           this.fgColorPicker_.on('color:change', this.iroFgColorChangeHandler_);
         }
@@ -340,7 +340,7 @@ class DoiQr {
           this.bgColorPicker_.off('color:change', this.iroBgColorChangeHandler_);
         }
         this.bgColorPicker_.color.hexString = inputElement.value;
-        inputElement.style.background = `linear-gradient(90deg, #fff 50%, ${inputElement.value} 50%)`;
+        inputElement.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${inputElement.value} 50%)`;
         if (this.iroBgColorChangeHandler_) {
           this.bgColorPicker_.on('color:change', this.iroBgColorChangeHandler_);
         }
@@ -511,11 +511,11 @@ class DoiQr {
 
     const qrFgColorInput = this.elements_.qrFgColorInput;
     qrFgColorInput.value = qrFgColor;
-    qrFgColorInput.style.background = `linear-gradient(90deg, #fff 50%, ${qrFgColor} 50%)`;
+    qrFgColorInput.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${qrFgColor} 50%)`;
 
     const qrBgColorInput = this.elements_.qrBgColorInput;
     qrBgColorInput.value = qrBgColor;
-    qrBgColorInput.style.background = `linear-gradient(90deg, #fff 50%, ${qrBgColor} 50%)`;
+    qrBgColorInput.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${qrBgColor} 50%)`;
 
     if (stg.qr_bgtrans) {
       this.toggleBgColor(true);
@@ -533,7 +533,7 @@ class DoiQr {
     const saveOptionsDebounced = this.saveOptionsDebounced_;
     const iroColorChangeHandler = function (this: HTMLInputElement, color: iro.Color): void {
       this.value = color.hexString;
-      this.style.background = `linear-gradient(90deg, #fff 50%, ${color.hexString} 50%)`;
+      this.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${color.hexString} 50%)`;
       saveOptionsDebounced();
     };
 

@@ -36,7 +36,7 @@ export async function setOptions(
  */
 export async function removeOptions(
   area: chrome.storage.AreaName,
-  optionNames: (keyof StorageOptions)[]
+  optionNames: string[]
 ): Promise<void> {
   await chrome.storage[area].remove(optionNames);
 }
@@ -120,49 +120,8 @@ export interface StorageOptions {
   qr_title?: boolean;
   recorded_dois?: HistoryDoi[];
   shortdoi_resolver?: string;
-  storage_listener_disabled?: boolean; // Deprecated
   sync_data?: boolean;
-  sync_reset?: boolean; // Deprecated
   theme?: DisplayTheme;
-}
-
-export interface SafeStorageOptions extends StorageOptions {
-  auto_link: boolean;
-  auto_link_rewrite: boolean;
-  autolink_exclusions: string[];
-  cite_locale: string;
-  cite_style: string;
-  context_menu: boolean;
-  context_menu_match: boolean;
-  cr_autolink: CustomResolverSelection;
-  cr_bubble: CustomResolverSelection;
-  cr_bubble_last: CustomResolverSelection;
-  cr_context: CustomResolverSelection;
-  cr_history: CustomResolverSelection;
-  cr_omnibox: CustomResolverSelection;
-  custom_resolver: boolean;
-  doi_resolver: string;
-  history: boolean;
-  history_doi_queue: string[];
-  history_fetch_title: boolean;
-  history_length: number;
-  history_showsave: boolean;
-  history_showtitles: boolean;
-  history_sortby: HistorySort;
-  meta_buttons: boolean;
-  omnibox_tab: OmniboxTab;
-  qr_bgcolor: string;
-  qr_bgtrans: boolean;
-  qr_border: number;
-  qr_fgcolor: string;
-  qr_imgtype: QrImageType;
-  qr_message: boolean;
-  qr_size: number;
-  qr_title: boolean;
-  recorded_dois: HistoryDoi[];
-  shortdoi_resolver: string;
-  sync_data: boolean;
-  theme: DisplayTheme;
 }
 
 /**
@@ -264,9 +223,7 @@ export function toStorageOptions(obj: unknown): StorageOptions {
     qr_title,
     recorded_dois,
     shortdoi_resolver,
-    storage_listener_disabled,
     sync_data,
-    sync_reset,
     theme,
   } = obj;
 
@@ -372,14 +329,8 @@ export function toStorageOptions(obj: unknown): StorageOptions {
   if (typeof shortdoi_resolver === 'string') {
     storageOptions.shortdoi_resolver = shortdoi_resolver;
   }
-  if (typeof storage_listener_disabled === 'boolean') {
-    storageOptions.storage_listener_disabled = storage_listener_disabled;
-  }
   if (typeof sync_data === 'boolean') {
     storageOptions.sync_data = sync_data;
-  }
-  if (typeof sync_reset === 'boolean') {
-    storageOptions.sync_reset = sync_reset;
   }
   if (isDisplayTheme(theme)) {
     storageOptions.theme = theme;
@@ -432,9 +383,7 @@ export function isStorageOptions(obj: unknown): obj is StorageOptions {
     qr_title,
     recorded_dois,
     shortdoi_resolver,
-    storage_listener_disabled,
     sync_data,
-    sync_reset,
     theme,
   } = obj;
 
@@ -549,13 +498,7 @@ export function isStorageOptions(obj: unknown): obj is StorageOptions {
   if (shortdoi_resolver !== undefined && typeof shortdoi_resolver !== 'string') {
     return false;
   }
-  if (storage_listener_disabled !== undefined && typeof storage_listener_disabled !== 'boolean') {
-    return false;
-  }
   if (sync_data !== undefined && typeof sync_data !== 'boolean') {
-    return false;
-  }
-  if (sync_reset !== undefined && typeof sync_reset !== 'boolean') {
     return false;
   }
   if (theme !== undefined && !isDisplayTheme(theme)) {
@@ -568,7 +511,7 @@ export function isStorageOptions(obj: unknown): obj is StorageOptions {
 /**
  * Get all options with their default values
  */
-export function getDefaultOptions(): SafeStorageOptions {
+export function getDefaultOptions(): Required<StorageOptions> {
   return {
     auto_link: false,
     auto_link_rewrite: false,
@@ -604,9 +547,7 @@ export function getDefaultOptions(): SafeStorageOptions {
     qr_title: false,
     recorded_dois: [] as HistoryDoi[],
     shortdoi_resolver: 'https://doi.org/',
-    storage_listener_disabled: undefined,
     sync_data: false,
-    sync_reset: undefined,
     theme: DisplayTheme.System,
   };
 }
@@ -629,17 +570,16 @@ export function getSyncExclusionNames(): (keyof StorageOptions)[] {
     'history_fetch_title', // Requires permissions to enable
     'qr_title', // Requires permissions to enable
     'sync_data', // Controls sync on/off
-    ...getDeprecatedOptionNames(),
   ];
 }
 
 /**
  * Get option names that have been deprecated
  */
-export function getDeprecatedOptionNames(): (keyof StorageOptions)[] {
+export function getDeprecatedOptionNames(): string[] {
   return [
-    'storage_listener_disabled', // Only stored in storage.local
-    'sync_reset', // Only stored in storage.sync
+    'storage_listener_disabled', // Indicated whether storage change listener should be temporarily disabled
+    'sync_reset', // Indicated whether sync settings should be cleared and sync disabled
   ];
 }
 

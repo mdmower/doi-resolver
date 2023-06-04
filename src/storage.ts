@@ -19,6 +19,15 @@ import {
 } from './options';
 import {getTypedKeys} from './utils';
 
+// CAUTION: Each entry point file gets its own copy of this listener status
+// instance. So, for example, if setOptions() were to incorporate it, the
+// service worker and options page would reference independent instances and
+// ultimately, the storage change handler in the service worker would not be
+// aware that the options page requested that the change handler be temporarily
+// disabled. So long as the use of this instance is restricted to the service
+// worker only, it will work as intended. If it becomes necessary to expand the
+// scope of this listener status to all entry point files, then refer to version
+// 6.0.0 of this extension when setting 'storage_listener_disabled' was used.
 const {storageListenerStatus} = new (class {
   private status: boolean = true;
 
@@ -72,29 +81,31 @@ export async function removeDeprecatedOptions(): Promise<void> {
  * sync should be disabled.
  */
 export async function verifySyncState(): Promise<boolean> {
-  const stg = await getOptions('sync');
-  if (!Object.keys(stg).length) {
-    logInfo('Sync settings cleared, disabling settings synchronization.');
-    storageListenerStatus(false);
-    await setOptions('local', {sync_data: false});
-    storageListenerStatus(true);
+  let syncEnabled = (await getOptions('local', ['sync_data']))['sync_data'] ?? false;
+  if (syncEnabled) {
+    const stg = await getOptions('sync');
+    if (!Object.keys(stg).length) {
+      logInfo('Sync settings cleared, disabling settings synchronization.');
+      storageListenerStatus(false);
+      await setOptions('local', {sync_data: false});
+      syncEnabled = false;
+      storageListenerStatus(true);
 
-    // If the options page is open, let it know sync should be unchecked.
-    await sendInternalMessageAsync<SettingsUpdatedMessage, undefined>({
-      cmd: MessageCmd.SettingsUpdated,
-      data: {options: {sync_data: false}, forceUpdate: true},
-    });
-
-    return false;
+      // If the options page is open, let it know sync should be unchecked.
+      await sendInternalMessageAsync<SettingsUpdatedMessage, undefined>({
+        cmd: MessageCmd.SettingsUpdated,
+        data: {options: {sync_data: false}, forceUpdate: true},
+      });
+    }
   }
 
-  return true;
+  return syncEnabled;
 }
 
 /**
  * Enable sync feature
  */
-export async function enableSync(): Promise<void> {
+async function enableSync(): Promise<void> {
   // Sync was just toggled 'on', so let sync storage options overwrite
   // local storage options, so long as they are defined. If an option
   // is not defined in sync storage, copy it from local storage, which

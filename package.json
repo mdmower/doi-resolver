@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "lint": "eslint src build",
-    "format": "prettier --write \"build/**/*.js\" \"src/**/*.ts\" \"html/**/*.html\" \"src/**/*.scss\"",
+    "format": "prettier --write \"build/**/*.js\" \"html/**/*.html\" \"src/**/*.(ts|scss|json)\"",
     "build": "node build/dist.js",
     "build-debug": "node build/dist.js --debug",
     "update-csl": "node build/update-csl.js",

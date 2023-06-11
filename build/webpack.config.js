@@ -3,13 +3,15 @@ const path = require('path');
 module.exports = {
   mode: 'production',
   entry: {
-    autolink: path.resolve(__dirname, '..', 'src', 'autolink.ts'),
-    background: path.resolve(__dirname, '..', 'src', 'background.ts'),
-    bubble: path.resolve(__dirname, '..', 'src', 'bubble.ts'),
-    citation: path.resolve(__dirname, '..', 'src', 'citation.ts'),
-    context_match: path.resolve(__dirname, '..', 'src', 'context_match.ts'),
-    options: path.resolve(__dirname, '..', 'src', 'options.ts'),
-    qr: path.resolve(__dirname, '..', 'src', 'qr.ts'),
+    autolink: path.resolve(__dirname, '..', 'src', 'content_scripts', 'autolink.ts'),
+    bubble: path.resolve(__dirname, '..', 'src', 'pages', 'bubble.ts'),
+    citation: path.resolve(__dirname, '..', 'src', 'pages', 'citation.ts'),
+    context_match: path.resolve(__dirname, '..', 'src', 'content_scripts', 'context_match.ts'),
+    notification: path.resolve(__dirname, '..', 'src', 'pages', 'notification.ts'),
+    offscreen: path.resolve(__dirname, '..', 'src', 'pages', 'offscreen.ts'),
+    options: path.resolve(__dirname, '..', 'src', 'pages', 'options.ts'),
+    qr: path.resolve(__dirname, '..', 'src', 'pages', 'qr.ts'),
+    sw: path.resolve(__dirname, '..', 'src', 'sw.ts'),
   },
   module: {
     rules: [

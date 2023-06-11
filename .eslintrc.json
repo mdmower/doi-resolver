@@ -1,7 +1,7 @@
 {
   "env": {
     "es2020": true,
-    "browser": true
+    "serviceworker": true
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -21,6 +21,7 @@
     "no-undef": "error",
     "no-var": "error",
     "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/no-unsafe-return": "warn",
     "@typescript-eslint/no-unsafe-assignment": "warn",
     "@typescript-eslint/explicit-module-boundary-types": "warn",

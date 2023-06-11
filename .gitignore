@@ -107,3 +107,4 @@ dist
 .vscode/
 pkg
 csl-styles
+local.manifest.json

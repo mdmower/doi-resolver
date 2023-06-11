@@ -111,6 +111,10 @@
     "description": "Heading on options page for Sync",
     "message": "Sync"
   },
+  "headingTheme": {
+    "description": "Heading on options page for Theme",
+    "message": "Theme"
+  },
   "historyClear": {
     "description": "Text for a button that clears all DOI history",
     "message": "Clear History"
@@ -343,6 +347,22 @@
     "description": "Label for data sync feature",
     "message": "Synchronize this extension's settings across Chrome installations"
   },
+  "optionTheme": {
+    "description": "Label for selectable option to choose a dark or light theme",
+    "message": "Color theme for pages:"
+  },
+  "optionThemeDark": {
+    "description": "Label for dark theme",
+    "message": "Dark"
+  },
+  "optionThemeLight": {
+    "description": "Label for light theme",
+    "message": "Light"
+  },
+  "optionThemeSystem": {
+    "description": "Label for default theme (follow system)",
+    "message": "System"
+  },
   "optionSyncDataModalBody": {
     "description": "The message body to display in an info modal for the sync feature",
     "message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work. This option needs to be enabled on each Chrome installation where you would like sync to occur.<br><br>The following options are not included in sync because they require permissions to be accepted by the user before enabling: <ul><li>Autolink</li><li>QR: Include title of reference in QR code</li><li>History: Automatically fetch title when a new DOI is recorded</li></ul>"
@@ -382,6 +402,10 @@
   "qrFgColorInputLabel": {
     "description": "The label for the foreground color text box on the QR page",
     "message": "Foreground color"
+  },
+  "qrGenerationFailed": {
+    "description": "The message to output when a QR code could not be generated",
+    "message": "An error occurred while generating the QR code."
   },
   "qrHeading": {
     "description": "Title for QR generator page",

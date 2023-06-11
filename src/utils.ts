@@ -1,4 +1,8 @@
-import {HistoryDoi, HistorySort, getDefaultOptions} from './storage';
+/**
+ * @license Apache-2.0
+ */
+
+import {HistoryDoi, HistorySort, getDefaultOptions} from './options';
 
 /**
  * Determine whether a value is a string.
@@ -9,10 +13,10 @@ export function isString(val: unknown): val is string {
 }
 
 /**
- * Determine whether a value is an object (excluding functions, arrays, and null).
+ * Determine whether a value is a record (excluding functions, arrays, and null).
  * @param val Candidate value
  */
-export function isObject(val: unknown): val is Record<string, unknown> {
+export function isRecord(val: unknown): val is Record<string, unknown> {
   return typeof val === 'object' && !!val && !Array.isArray(val);
 }
 
@@ -158,7 +162,7 @@ export function filterSelectByText(
     search = search.replace(/\s* /g, '\\s*');
     const regex = new RegExp(search, 'i');
 
-    const visibleOptions = [] as HTMLOptionElement[];
+    const visibleOptions: HTMLOptionElement[] = [];
     options.forEach((option) => {
       if (regex.test(option.textContent || '') || regex.test(option.value)) {
         option.hidden = false;
@@ -178,4 +182,25 @@ export function filterSelectByText(
       }
     }
   }
+}
+
+/**
+ * Wait for time to elapse (not meant for production)
+ * @param ms Miliseconds to wait
+ */
+export async function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+/**
+ * Find the first valid DOI in a string
+ * @param text String to search
+ */
+export function findDoiInString(text: string): string | undefined {
+  // https://stackoverflow.com/questions/27910/finding-a-doi-in-a-document-or-page
+  const doiRegex = /\b(10\.[0-9]{4,}(?:\.[0-9]+)*\/(?:(?!["&'<>])\S)+)\b/i;
+  const doiMatch = doiRegex.exec(text);
+  return doiMatch ? doiMatch[1] : undefined;
 }

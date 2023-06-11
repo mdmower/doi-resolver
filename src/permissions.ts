@@ -32,9 +32,7 @@ function getCitationOrigins(): string[] {
  */
 export function requestMetaPermissions(): Promise<boolean> {
   const origins = getMetaOrigins();
-  return new Promise((resolve) => {
-    chrome.permissions.request({origins}, resolve);
-  });
+  return chrome.permissions.request({permissions: ['offscreen'], origins});
 }
 
 /**
@@ -42,9 +40,7 @@ export function requestMetaPermissions(): Promise<boolean> {
  */
 export function checkMetaPermissions(): Promise<boolean> {
   const origins = getMetaOrigins();
-  return new Promise((resolve) => {
-    chrome.permissions.contains({origins}, resolve);
-  });
+  return chrome.permissions.contains({permissions: ['offscreen'], origins});
 }
 
 /**
@@ -52,9 +48,7 @@ export function checkMetaPermissions(): Promise<boolean> {
  */
 export function removeMetaPermissions(): Promise<boolean> {
   const origins = getMetaOrigins();
-  return new Promise((resolve) => {
-    chrome.permissions.remove({origins}, resolve);
-  });
+  return chrome.permissions.remove({permissions: ['offscreen'], origins});
 }
 
 /**
@@ -62,9 +56,7 @@ export function removeMetaPermissions(): Promise<boolean> {
  */
 export function requestCitationPermissions(): Promise<boolean> {
   const origins = getCitationOrigins();
-  return new Promise((resolve) => {
-    chrome.permissions.request({origins}, resolve);
-  });
+  return chrome.permissions.request({permissions: ['offscreen'], origins});
 }
 
 /**
@@ -72,9 +64,7 @@ export function requestCitationPermissions(): Promise<boolean> {
  */
 export function checkCitationPermissions(): Promise<boolean> {
   const origins = getCitationOrigins();
-  return new Promise((resolve) => {
-    chrome.permissions.contains({origins}, resolve);
-  });
+  return chrome.permissions.contains({permissions: ['offscreen'], origins});
 }
 
 /**
@@ -82,23 +72,16 @@ export function checkCitationPermissions(): Promise<boolean> {
  */
 export function removeCitationPermissions(): Promise<boolean> {
   const origins = getCitationOrigins();
-  return new Promise((resolve) => {
-    chrome.permissions.remove({origins}, resolve);
-  });
+  return chrome.permissions.remove({permissions: ['offscreen'], origins});
 }
 
 /**
  * Request content script permissions.
  */
 export function requestContentScriptPermissions(): Promise<boolean> {
-  return new Promise((resolve) => {
-    chrome.permissions.request(
-      {
-        permissions: ['tabs'],
-        origins: ['http://*/*', 'https://*/*'],
-      },
-      resolve
-    );
+  return chrome.permissions.request({
+    permissions: ['scripting', 'tabs'],
+    origins: ['http://*/*', 'https://*/*'],
   });
 }
 
@@ -106,14 +89,9 @@ export function requestContentScriptPermissions(): Promise<boolean> {
  * Check whether content script permissions are allowed.
  */
 export function checkContentScriptPermissions(): Promise<boolean> {
-  return new Promise((resolve) => {
-    chrome.permissions.contains(
-      {
-        permissions: ['tabs'],
-        origins: ['http://*/*', 'https://*/*'],
-      },
-      resolve
-    );
+  return chrome.permissions.contains({
+    permissions: ['scripting', 'tabs'],
+    origins: ['http://*/*', 'https://*/*'],
   });
 }
 
@@ -121,14 +99,9 @@ export function checkContentScriptPermissions(): Promise<boolean> {
  * Remove content script permissions.
  */
 export function removeContentScriptPermissions(): Promise<boolean> {
-  return new Promise((resolve) => {
-    chrome.permissions.remove(
-      {
-        permissions: ['tabs'],
-        origins: ['http://*/*', 'https://*/*'],
-      },
-      resolve
-    );
+  return chrome.permissions.remove({
+    permissions: ['scripting', 'tabs'],
+    origins: ['http://*/*', 'https://*/*'],
   });
 }
 
@@ -146,7 +119,5 @@ export function cleanupOriginPermissions(removeWildcardOrigins: boolean): Promis
     origins.push('https://*/*');
   }
 
-  return new Promise((resolve) => {
-    chrome.permissions.remove({origins}, resolve);
-  });
+  return chrome.permissions.remove({origins});
 }

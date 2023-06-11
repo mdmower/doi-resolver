@@ -105,7 +105,19 @@ async function copyStaticFiles(debug, distDirPath) {
  */
 async function writeManifest(debug, distDirPath) {
   try {
-    const manifestJson = JSON.stringify(manifest, undefined, debug ? 2 : undefined);
+    const manifestObj = JSON.parse(JSON.stringify(manifest));
+
+    // If local.manifest.json exists and this is a debug build, override manifest key/value pairs.
+    if (debug) {
+      const localManifestPath = path.resolve(__dirname, '..', 'local.manifest.json');
+      if (fse.existsSync(localManifestPath)) {
+        const localManifestJson = await fse.readFile(localManifestPath, 'utf-8');
+        const localManifestObj = JSON.parse(localManifestJson);
+        Object.assign(manifestObj, localManifestObj);
+      }
+    }
+
+    const manifestJson = JSON.stringify(manifestObj, undefined, debug ? 2 : undefined);
     const mainfestPath = path.join(distDirPath, 'manifest.json');
     console.log(colors.bold.green('[Writing manifest]'));
     return fse.writeFile(mainfestPath, manifestJson, 'utf-8');

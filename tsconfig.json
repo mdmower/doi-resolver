@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
-    "module": "es2020",
+    "lib": ["ES2021", "DOM", "WebWorker"],
+    "module": "ES2020",
     "moduleResolution": "node",
-    "target": "es2017",
+    "target": "ES2021",
     "strict": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,

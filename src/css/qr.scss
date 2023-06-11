@@ -9,6 +9,12 @@ body {
   padding: 3rem 0;
 }
 
+@include color-mode(dark) {
+  body {
+    background: $black;
+  }
+}
+
 .page-title {
   color: $blue;
 }
@@ -18,6 +24,12 @@ body {
   padding: 2rem;
   background: $white;
   border-radius: 1rem;
+}
+
+@include color-mode(dark) {
+  .page-content {
+    background: $dark;
+  }
 }
 
 .icon {

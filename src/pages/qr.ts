@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import './css/qr.scss';
+import '../css/qr.scss';
 import 'bootstrap/js/dist/modal';
 import {
   HistoryDoi,
@@ -12,8 +12,8 @@ import {
   isQrImageType,
   getOptions,
   setOptions,
-} from './storage';
-import {requestMetaPermissions} from './permissions';
+} from '../options';
+import {requestMetaPermissions} from '../permissions';
 import {
   debounce,
   filterSelectByText,
@@ -21,10 +21,14 @@ import {
   isValidDoi,
   sortHistoryEntries,
   trimDoi,
-} from './utils';
+} from '../utils';
 import iro from '@jaames/iro';
 import {ColorPickerProps, IroColorPicker} from '@jaames/iro/dist/ColorPicker';
-import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './messaging';
+import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from '../messaging';
+import {getSavedDoiTitle, recordDoi, queueRecordDoi} from '../history';
+import {fetchDoiTitle} from '../metadata';
+import {logError, logInfo} from '../logger';
+import {applyTheme} from './utils';
 
 interface CreateQrParams {
   size: number;
@@ -45,26 +49,20 @@ document.addEventListener(
   'DOMContentLoaded',
   function () {
     new DoiQr().init().catch((error) => {
-      console.error('Init failed', error);
+      logError('Init failed', error);
     });
   },
   false
 );
 
 class DoiQr {
-  private actions_: {
-    fetchDoiTitle: (doi: string) => Promise<string | undefined>;
-    getSavedDoiTitle: (doi: string) => Promise<string | undefined>;
-    queueRecordDoi: (doi: string) => Promise<void>;
-    recordDoi: (doi: string, title?: string, allowFetch?: boolean) => Promise<void>;
-    recordTab: (tabId: number) => void;
-  };
   private defaultDoiResolver_: string;
   private savedBgInputColorStyle_?: string;
   private fgColorPicker_?: IroColorPicker;
   private bgColorPicker_?: IroColorPicker;
 
   private saveOptionsDebounced_: () => void;
+  private saveQrDimensionsDebounced_: () => void;
   private qrFetchTitleChangeHandler_?: (event: Event) => void;
   private qrManualMessageChangeHandler_?: (event: Event) => void;
   private iroFgColorChangeHandler_?: (color: iro.Color) => void;
@@ -97,19 +95,9 @@ class DoiQr {
   };
 
   constructor() {
-    const doiBackground = chrome.extension.getBackgroundPage()?.doiBackground;
-    if (!doiBackground) {
-      throw new Error('Could not get background page');
-    }
-    this.actions_ = {
-      fetchDoiTitle: doiBackground.fetchDoiTitle.bind(doiBackground),
-      getSavedDoiTitle: doiBackground.getSavedDoiTitle.bind(doiBackground),
-      queueRecordDoi: doiBackground.queueRecordDoi.bind(doiBackground),
-      recordDoi: doiBackground.recordDoi.bind(doiBackground),
-      recordTab: doiBackground.recordTab.bind(doiBackground),
-    };
     this.defaultDoiResolver_ = getDefaultOptions()['doi_resolver'];
     this.saveOptionsDebounced_ = debounce(this.saveOptions.bind(this), 500);
+    this.saveQrDimensionsDebounced_ = debounce(this.saveQrDimensions.bind(this), 500);
 
     const elementMissing = (selector: string) => {
       throw new Error(`Required element is missing from the page: ${selector}`);
@@ -187,6 +175,7 @@ class DoiQr {
    */
   public async init(): Promise<void> {
     this.getLocalMessages();
+    await applyTheme(window);
     this.initializeDoiInput();
     await this.restoreOptions();
     await this.prepareColorPickers();
@@ -205,11 +194,9 @@ class DoiQr {
     this.elements_.qrImageTypePng.addEventListener('click', saveOptions);
     this.elements_.qrImageTypeSvg.addEventListener('click', saveOptions);
 
-    // A debounced version of saveOptions is used inside the saveQrDimensions
-    // handler to prevent excessive saves.
-    const saveQrDimensions = this.saveQrDimensions.bind(this);
-    this.elements_.qrSizeInput.addEventListener('input', saveQrDimensions);
-    this.elements_.qrBorderInput.addEventListener('input', saveQrDimensions);
+    const saveQrDimensionsDebounced = this.saveQrDimensionsDebounced_;
+    this.elements_.qrSizeInput.addEventListener('input', saveQrDimensionsDebounced);
+    this.elements_.qrBorderInput.addEventListener('input', saveQrDimensionsDebounced);
     this.toggleTitleMessageListeners(true);
 
     // We want the color changes made in the text input to update Iro as soon as
@@ -218,12 +205,6 @@ class DoiQr {
     const manualColorChangeHandler = this.manualColorChangeHandler.bind(this);
     this.elements_.qrFgColorInput.addEventListener('input', manualColorChangeHandler);
     this.elements_.qrBgColorInput.addEventListener('input', manualColorChangeHandler);
-
-    chrome.tabs.getCurrent((tab) => {
-      if (tab?.id !== undefined) {
-        this.actions_.recordTab(tab.id);
-      }
-    });
 
     const doiHistory = this.elements_.doiHistory;
     const textInput = this.elements_.filterHistory;
@@ -255,15 +236,13 @@ class DoiQr {
       case MessageCmd.SettingsUpdated:
         if (isSettingsUpdatedMessage(message) && message.data) {
           this.handleSettingsUpdate(message.data.options).catch((error) => {
-            console.error('Failed to handle settings update', error);
+            logError('Failed to handle settings update', error);
           });
         }
         break;
       default:
         break;
     }
-
-    return true; // Required to allow async sendResponse
   }
 
   /**
@@ -272,11 +251,11 @@ class DoiQr {
    */
   async handleSettingsUpdate(updatedOptions: StorageOptions): Promise<void> {
     // Debugging
-    // console.log('Storage changed, checking for updates');
+    // logInfo('Storage changed, checking for updates');
 
     if (Object.keys(updatedOptions).length === 0) {
       // Debugging
-      // console.log('Nothing to update');
+      // logInfo('Nothing to update');
       return;
     }
 
@@ -294,11 +273,11 @@ class DoiQr {
     );
 
     if (historyUpdated) {
-      console.log('History updated');
+      logInfo('History updated');
       await this.populateHistory();
     } else {
       // Debugging
-      // console.log('No relevant updates found');
+      // logInfo('No relevant updates found');
     }
   }
 
@@ -352,7 +331,7 @@ class DoiQr {
           this.fgColorPicker_.off('color:change', this.iroFgColorChangeHandler_);
         }
         this.fgColorPicker_.color.hexString = inputElement.value;
-        inputElement.style.background = `linear-gradient(90deg, #fff 50%, ${inputElement.value} 50%)`;
+        inputElement.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${inputElement.value} 50%)`;
         if (this.iroFgColorChangeHandler_) {
           this.fgColorPicker_.on('color:change', this.iroFgColorChangeHandler_);
         }
@@ -361,7 +340,7 @@ class DoiQr {
           this.bgColorPicker_.off('color:change', this.iroBgColorChangeHandler_);
         }
         this.bgColorPicker_.color.hexString = inputElement.value;
-        inputElement.style.background = `linear-gradient(90deg, #fff 50%, ${inputElement.value} 50%)`;
+        inputElement.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${inputElement.value} 50%)`;
         if (this.iroBgColorChangeHandler_) {
           this.bgColorPicker_.on('color:change', this.iroBgColorChangeHandler_);
         }
@@ -377,8 +356,8 @@ class DoiQr {
    */
   private saveQrDimensions(): void {
     const qrSizeElm = this.elements_.qrSizeInput;
-    let qrSize = Number(qrSizeElm.value);
-    if (Number.isNaN(qrSize)) {
+    let qrSize = parseInt(qrSizeElm.value);
+    if (isNaN(qrSize)) {
       qrSize = 300;
       qrSizeElm.value = `${qrSize}`;
     } else if (qrSize < 80) {
@@ -387,8 +366,8 @@ class DoiQr {
     }
 
     const qrBorderElm = this.elements_.qrBorderInput;
-    let qrBorder = Number(qrBorderElm.value);
-    if (Number.isNaN(qrBorder)) {
+    let qrBorder = parseInt(qrBorderElm.value);
+    if (isNaN(qrBorder)) {
       qrBorderElm.value = '0';
       qrBorder = 0;
     } else if (qrSize < 0) {
@@ -396,7 +375,7 @@ class DoiQr {
       qrBorder = 0;
     }
 
-    this.saveOptionsDebounced_();
+    this.saveOptions();
   }
 
   /**
@@ -466,10 +445,12 @@ class DoiQr {
       'history_sortby',
     ]);
 
+    const showHideTarget = this.elements_.openHistory.parentElement ?? this.elements_.openHistory;
     if (!stg.history || !stg.recorded_dois || !stg.recorded_dois.length) {
-      this.elements_.openHistory.hidden = true;
+      showHideTarget.hidden = true;
       return;
     }
+    showHideTarget.hidden = false;
 
     // Skip holes in the array (should not occur)
     stg.recorded_dois = stg.recorded_dois.filter(Boolean);
@@ -530,11 +511,11 @@ class DoiQr {
 
     const qrFgColorInput = this.elements_.qrFgColorInput;
     qrFgColorInput.value = qrFgColor;
-    qrFgColorInput.style.background = `linear-gradient(90deg, #fff 50%, ${qrFgColor} 50%)`;
+    qrFgColorInput.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${qrFgColor} 50%)`;
 
     const qrBgColorInput = this.elements_.qrBgColorInput;
     qrBgColorInput.value = qrBgColor;
-    qrBgColorInput.style.background = `linear-gradient(90deg, #fff 50%, ${qrBgColor} 50%)`;
+    qrBgColorInput.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${qrBgColor} 50%)`;
 
     if (stg.qr_bgtrans) {
       this.toggleBgColor(true);
@@ -552,7 +533,7 @@ class DoiQr {
     const saveOptionsDebounced = this.saveOptionsDebounced_;
     const iroColorChangeHandler = function (this: HTMLInputElement, color: iro.Color): void {
       this.value = color.hexString;
-      this.style.background = `linear-gradient(90deg, #fff 50%, ${color.hexString} 50%)`;
+      this.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${color.hexString} 50%)`;
       saveOptionsDebounced();
     };
 
@@ -576,8 +557,8 @@ class DoiQr {
   private async saveOptionsAsync(): Promise<void> {
     const options: StorageOptions = {
       qr_bgtrans: this.elements_.qrBgTrans.checked,
-      qr_size: Number(this.elements_.qrSizeInput.value),
-      qr_border: Number(this.elements_.qrBorderInput.value),
+      qr_size: parseInt(this.elements_.qrSizeInput.value),
+      qr_border: parseInt(this.elements_.qrBorderInput.value),
       qr_fgcolor: this.elements_.qrFgColorInput.value,
       qr_bgcolor: this.elements_.qrBgColorInput.value,
       qr_message: this.elements_.qrManualMessage.checked,
@@ -602,7 +583,7 @@ class DoiQr {
    */
   private saveOptions(): void {
     this.saveOptionsAsync().catch((error) => {
-      console.error('Failed to save options', error);
+      logError('Failed to save options', error);
     });
   }
 
@@ -637,7 +618,7 @@ class DoiQr {
   private titleMessageHandler(event: Event): void {
     const elementId = event.target instanceof HTMLElement ? event.target.id : undefined;
     this.titleMessageHandlerAsync(elementId).catch((error) => {
-      console.error('Failed to handle title message change', error);
+      logError('Failed to handle title message change', error);
     });
   }
 
@@ -730,8 +711,8 @@ class DoiQr {
       return;
     }
 
-    let qrSize = Number(this.elements_.qrSizeInput.value);
-    let qrBorder = Number(this.elements_.qrBorderInput.value);
+    let qrSize = parseInt(this.elements_.qrSizeInput.value);
+    let qrBorder = parseInt(this.elements_.qrBorderInput.value);
     const fgColor = this.elements_.qrFgColorInput.value;
     const bgColor = this.elements_.qrBgTrans.checked ? null : this.elements_.qrBgColorInput.value;
     const qrImageTypeValue = document.querySelector<HTMLInputElement>(
@@ -739,7 +720,7 @@ class DoiQr {
     )?.value;
     const qrImageType = isQrImageType(qrImageTypeValue) ? qrImageTypeValue : QrImageType.Png;
 
-    if (Number.isNaN(qrSize)) {
+    if (isNaN(qrSize)) {
       qrSize = 300;
       this.elements_.qrSizeInput.value = `${qrSize}`;
     } else if (qrSize < 80) {
@@ -747,7 +728,7 @@ class DoiQr {
       this.elements_.qrSizeInput.value = `${qrSize}`;
     }
 
-    if (Number.isNaN(qrBorder) || qrBorder < 0) {
+    if (isNaN(qrBorder) || qrBorder < 0) {
       qrBorder = 0;
       this.elements_.qrBorderInput.value = `${qrBorder}`;
     }
@@ -762,8 +743,8 @@ class DoiQr {
     };
 
     this.insertQr(doiInput, qrParms).catch((error) => {
-      //TODO: this.simpleNotification(chrome.i18n.getMessage('xxxxxxxx'));
-      console.error('Failed to insert QR', error);
+      this.simpleNotification(chrome.i18n.getMessage('qrGenerationFailed'));
+      logError('Failed to insert QR', error);
     });
   }
 
@@ -786,10 +767,10 @@ class DoiQr {
     this.simpleNotification('Loading...');
 
     if (this.elements_.qrFetchTitle.checked) {
-      const title = await this.actions_.getSavedDoiTitle(doi);
+      const title = await getSavedDoiTitle(doi);
 
       if (title) {
-        console.log('Found title in history');
+        logInfo('Found title in history');
         messageToEncode = title + '\n' + messageToEncode;
         this.updateMessage(messageToEncode, TitleRetrievalStatus.Found);
         qrParms.text = messageToEncode;
@@ -801,8 +782,8 @@ class DoiQr {
       const granted = await requestMetaPermissions();
 
       if (granted) {
-        console.log('Fetching title from network');
-        const title = await this.actions_.fetchDoiTitle(doi);
+        logInfo('Fetching title from network');
+        const title = await fetchDoiTitle(doi);
 
         if (title) {
           messageToEncode = title + '\n' + messageToEncode;
@@ -814,20 +795,20 @@ class DoiQr {
         await this.createQrImage(qrParms);
 
         try {
-          await this.actions_.recordDoi(doi, title);
+          await recordDoi(doi, title);
         } catch (ex) {
-          console.error('Unable to record DOI', ex);
+          logError('Unable to record DOI', ex);
         }
       } else {
-        console.log('Permissions not granted for title fetch');
+        logInfo('Permissions not granted for title fetch');
         this.updateMessage(messageToEncode, TitleRetrievalStatus.Disabled);
         qrParms.text = messageToEncode;
         await this.createQrImage(qrParms);
 
         try {
-          await this.actions_.recordDoi(doi, undefined, false);
+          await recordDoi(doi, undefined, false);
         } catch (ex) {
-          console.error('Unable to record DOI', ex);
+          logError('Unable to record DOI', ex);
         }
       }
     } else {
@@ -845,7 +826,7 @@ class DoiQr {
       if (stg.history && stg.history_fetch_title) {
         await requestMetaPermissions();
       }
-      await this.actions_.queueRecordDoi(doi);
+      await queueRecordDoi(doi);
     }
   }
 
@@ -855,7 +836,7 @@ class DoiQr {
    * @param qrParams QR image creation parameters
    */
   private toSvg(
-    qr: import('./qrcodegen/qrcodegen').qrcodegen.QrCode,
+    qr: import('../qrcodegen/qrcodegen').qrcodegen.QrCode,
     qrParams: CreateQrParams
   ): SVGElement {
     const border = qrParams.border;
@@ -904,7 +885,7 @@ class DoiQr {
    * @param qrParms QR image creation parameters
    */
   private async createQrImage(qrParms: CreateQrParams): Promise<void> {
-    const {QrCode} = (await import('./qrcodegen/qrcodegen')).qrcodegen;
+    const {QrCode} = (await import('../qrcodegen/qrcodegen')).qrcodegen;
     const ecl = QrCode.Ecc.MEDIUM;
     const qr = QrCode.encodeText(qrParms.text, ecl);
     const svg = this.toSvg(qr, qrParms);
@@ -1020,7 +1001,7 @@ class DoiQr {
       if (element) {
         element.innerHTML = message;
       } else {
-        console.info(`Message for #${messageId} not inserted because element not found.`);
+        logInfo(`Message for #${messageId} not inserted because element not found.`);
       }
     });
 

@@ -120,6 +120,29 @@
         >
           <div class="row mt-5">
             <div class="col">
+              <h4 id="headingTheme"></h4>
+              <div class="row align-items-center gx-3">
+                <div class="col-auto">
+                  <label id="optionTheme" for="theme"></label>
+                </div>
+                <div class="col-auto">
+                  <select
+                    type="selection"
+                    id="theme"
+                    class="form-select"
+                    aria-label="Select light or dark theme"
+                  >
+                    <option id="optionThemeSystem" value="system"></option>
+                    <option id="optionThemeLight" value="light"></option>
+                    <option id="optionThemeDark" value="dark"></option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-5">
+            <div class="col">
               <h4 id="headingOmnibox"></h4>
               <div class="row align-items-center gx-3">
                 <div class="col-auto">
@@ -544,7 +567,6 @@
               <div class="col text-end">
                 <button id="historyClear" class="btn btn-secondary"></button>
                 <button id="historyTitleRefresh" class="btn btn-secondary"></button>
-                <span id="historySpinner"></span>
               </div>
             </div>
           </div>
@@ -574,6 +596,7 @@
               </th>
               <th class="history_entry_doi" scope="col">
                 <span id="tableHeadingDoi"></span>
+                <span id="historySpinner"></span>
               </th>
             </tr>
             <tr id="historySeparator"></tr>
@@ -589,8 +612,8 @@
           role="tabpanel"
           aria-labelledby="pills-about-tab"
         >
-          <div class="row mt-5 mb-3">
-            <div class="col text-center"><img id="extLogo" src="icons/icon128.png" /></div>
+          <div class="row mt-5 mb-3 justify-content-md-center">
+            <img class="col-md-2" src="icons/icon-vector.svg" />
           </div>
           <p id="optionsVersion">Version <span id="extensionVersion"></span></p>
           <p id="optionsDisclaimer">
@@ -676,7 +699,7 @@
           <input class="history_input_save form-check-input" type="checkbox" />
         </td>
         <td class="history_entry_delete align-middle">
-          <button class="history_input_delete btn btn-outline-dark btn-sm">
+          <button class="history_input_delete btn btn-outline-secondary btn-sm">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon icon-trash d-block"

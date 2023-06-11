@@ -1,0 +1,14 @@
+/**
+ * @license Apache-2.0
+ */
+
+@import '~bootstrap/scss/bootstrap';
+
+body {
+  overflow: hidden;
+}
+
+.modal-dialog {
+  height: calc(100% - 2 * $modal-dialog-margin);
+  overflow: hidden;
+}

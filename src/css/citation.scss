@@ -19,6 +19,12 @@ body {
   color: $blue;
 }
 
+@include color-mode(dark) {
+  .page-title {
+    color: $headings-color;
+  }
+}
+
 .page-content {
   width: 950px;
   padding: 2rem;

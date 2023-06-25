@@ -127,6 +127,30 @@
     "description": "Text for checkbox that enables title fetch when DOI is recorded",
     "message": "Automatically fetch title when a new DOI is recorded"
   },
+  "historyImport": {
+    "description": "Text for button that records a list of DOIs to history",
+    "message": "Import"
+  },
+  "historyImportDescription": {
+    "description": "Text content explaining what the history import feature does",
+    "message": "Import a list of DOIs into history. DOIs can be separated by line breaks or commas."
+  },
+  "historyImportFailureBody": {
+    "description": "Body text for info modal on history import failure",
+    "message": "An error was encountered during import. Some DOIs may not have been recorded."
+  },
+  "historyImportFailureTitle": {
+    "description": "Heading text for info modal on history import failure",
+    "message": "Error"
+  },
+  "historyImportModalLabel": {
+    "description": "Heading text for history import modal",
+    "message": "Import DOIs"
+  },
+  "historyImportSubmit": {
+    "description": "Text for button that submits a list of DOIs to record in history",
+    "message": "Submit"
+  },
   "historyNoticeText": {
     "description": "Text on history page to notify user that history is not enabled",
     "message": "History is not enabled"
@@ -178,6 +202,10 @@
   "imgPreview": {
     "description": "Text to indicate a sample output image",
     "message": "Sample output"
+  },
+  "infoModalLabel": {
+    "description": "Heading text for info modal",
+    "message": "Info"
   },
   "invalidDoiAlert": {
     "description": "A warning presented to user if the DOI code is not valid",

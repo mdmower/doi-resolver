@@ -114,6 +114,9 @@ export async function fetchDoiTitles(
       logError('Failed to communicate with offscreen document', ex);
     } finally {
       await chrome.offscreen.closeDocument();
+      // In the event that this method does get called in rapid succession,
+      // add a delay here in hopes that it will avoid a "doc not closed" error.
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
   } catch (ex) {
     logError('Failed to fetch DOI titles', ex);

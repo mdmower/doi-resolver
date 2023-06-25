@@ -3,9 +3,9 @@
  */
 
 import {createContextMenu, ContextMenuId, updateContextMenu} from './context_menu';
-import {recordDoi} from './history';
+import {recordDois} from './history';
 import {logInfo, logWarn} from './logger';
-import {getOptions, setOptions} from './options';
+import {HistoryDoi, getOptions, setOptions} from './options';
 
 /**
  * Add context menu item
@@ -32,7 +32,8 @@ export async function processHistoryDoiQueue(): Promise<void> {
     await setOptions('local', {history_doi_queue: []});
     logInfo(`DOI(s) queued for history: ${queue.join(', ')}`);
     try {
-      await Promise.all(queue.map((doi) => recordDoi(doi)));
+      const historyEntries = queue.map<HistoryDoi>((item) => ({doi: item, title: '', save: false}));
+      await recordDois(historyEntries);
     } catch (ex) {
       logWarn(`Unable to record dois in history: ${queue.join(', ')}`, ex);
     }

@@ -23,12 +23,13 @@ import {
   requestContentScriptPermissions,
   requestMetaPermissions,
 } from '../permissions';
-import {debounce, isRecord, sortHistoryEntries} from '../utils';
+import {debounce, isRecord, isValidDoi, sortHistoryEntries} from '../utils';
 import {testAutolinkExclusion} from '../autolink';
 import {ContextMenuId, updateContextMenu} from '../context_menu';
 import {fetchDoiTitles} from '../metadata';
 import {logError, logInfo, logWarn} from '../logger';
 import {applyTheme} from './utils';
+import {recordDois} from '../history';
 
 enum UrlHashPage {
   Options = 'tab-options',
@@ -84,6 +85,9 @@ class DoiOptions {
     history: HTMLInputElement;
     historyClear: HTMLButtonElement;
     historyFetchTitle: HTMLInputElement;
+    historyImportFailure: HTMLAnchorElement;
+    historyImportInput: HTMLTextAreaElement;
+    historyImportSubmit: HTMLButtonElement;
     historyLength: HTMLInputElement;
     historyNotice: HTMLDivElement;
     historySeparator: HTMLTableRowElement;
@@ -95,6 +99,7 @@ class DoiOptions {
     historyTab: HTMLButtonElement;
     historyTitleRefresh: HTMLButtonElement;
     history_entry_template: HTMLTemplateElement;
+    historyImportModal: HTMLDivElement;
     infoModal: HTMLDivElement;
     meta: HTMLInputElement;
     omniboxOpento: HTMLSelectElement;
@@ -265,6 +270,15 @@ class DoiOptions {
       historyFetchTitle:
         document.querySelector<HTMLInputElement>('input#historyFetchTitle') ||
         elementMissing('input#historyFetchTitle'),
+      historyImportFailure:
+        document.querySelector<HTMLAnchorElement>('a#historyImportFailure') ||
+        elementMissing('a#historyImportFailure'),
+      historyImportInput:
+        document.querySelector<HTMLTextAreaElement>('textarea#historyImportInput') ||
+        elementMissing('textarea#historyImportInput'),
+      historyImportSubmit:
+        document.querySelector<HTMLButtonElement>('button#historyImportSubmit') ||
+        elementMissing('button#historyImportSubmit'),
       historyLength:
         document.querySelector<HTMLInputElement>('input#historyLength') ||
         elementMissing('input#historyLength'),
@@ -298,6 +312,9 @@ class DoiOptions {
       history_entry_template:
         document.querySelector<HTMLTemplateElement>('template#history_entry_template') ||
         elementMissing('template#history_entry_template'),
+      historyImportModal:
+        document.querySelector<HTMLDivElement>('div#historyImportModal') ||
+        elementMissing('div#historyImportModal'),
       infoModal:
         document.querySelector<HTMLDivElement>('div#infoModal') || elementMissing('div#infoModal'),
       meta: document.querySelector<HTMLInputElement>('input#meta') || elementMissing('input#meta'),
@@ -414,6 +431,12 @@ class DoiOptions {
       });
     });
 
+    this.elements_.historyImportSubmit.addEventListener('click', () => {
+      this.importDois().catch((error) => {
+        logError('Failed to import DOIs into history', error);
+      });
+    });
+
     // Bootstrap types are incomplete. Event types not available.
     const infoModal = this.elements_.infoModal;
     infoModal.addEventListener('show.bs.modal', function (event: unknown) {
@@ -444,7 +467,6 @@ class DoiOptions {
       bodyElm.innerHTML = body;
     });
 
-    // Bootstrap types are incomplete. Event types not available.
     infoModal.addEventListener('hidden.bs.modal', function () {
       const titleElm = infoModal.querySelector('.modal-title');
       const bodyElm = infoModal.querySelector('.modal-body');
@@ -455,6 +477,11 @@ class DoiOptions {
 
       titleElm.innerHTML = 'Info';
       bodyElm.innerHTML = '';
+    });
+
+    const historyImportModal = this.elements_.historyImportModal;
+    historyImportModal.addEventListener('shown.bs.modal', () => {
+      this.elements_.historyImportInput.focus();
     });
   }
 
@@ -838,7 +865,13 @@ class DoiOptions {
     }
     this.elements_.customResolverSubOptions.hidden = !customResolver;
 
+    const historyEnabled = this.elements_.history.checked;
     this.elements_.historyNotice.hidden = this.elements_.history.checked;
+    this.elements_.historyImportInput.disabled = !historyEnabled;
+    this.elements_.historyImportInput.placeholder = historyEnabled
+      ? ''
+      : chrome.i18n.getMessage('historyNoticeText');
+    this.elements_.historyImportSubmit.disabled = !historyEnabled;
 
     const autolink = this.elements_.autolink.checked;
     this.elements_.autolinkSubOptions.hidden = !autolink;
@@ -1446,6 +1479,35 @@ class DoiOptions {
   }
 
   /**
+   * Record a list of DOIs into history
+   */
+  async importDois(): Promise<void> {
+    const input = this.elements_.historyImportInput.value;
+    const dois = input
+      .split(/\n|,|;|\|/)
+      .map((str) => str.trim())
+      .filter((str) => isValidDoi(str));
+
+    if (!dois.length) {
+      this.elements_.historyImportInput.value = '';
+      return;
+    }
+
+    this.toggleHistorySpinner(true);
+    try {
+      // Opting to use recordDois directly instead of queueRecordDois since the
+      // expectation is that this options page will remain open and we want the
+      // spinner to indicate that title fetch is still ongoing (if enabled).
+      await recordDois(dois.map((doi) => ({doi, title: '', save: false})));
+      this.elements_.historyImportInput.value = '';
+    } catch (ex) {
+      this.elements_.historyImportFailure.click();
+    } finally {
+      this.toggleHistorySpinner(false);
+    }
+  }
+
+  /**
    * Get localization strings and populate their corresponding elements' HTML.
    */
   getLocalMessages() {
@@ -1463,6 +1525,10 @@ class DoiOptions {
       'headingTheme',
       'historyClear',
       'historyFetchTitleLabel',
+      'historyImport',
+      'historyImportDescription',
+      'historyImportModalLabel',
+      'historyImportSubmit',
       'historyNoticeText',
       'historySortByDate',
       'historySortByDoi',
@@ -1470,6 +1536,7 @@ class DoiOptions {
       'historySortBySave',
       'historySortByTitle',
       'historyTitleRefresh',
+      'infoModalLabel',
       'optionAutolink',
       'optionAutolinkExclusions',
       'optionAutolinkRewrite',
@@ -1514,10 +1581,6 @@ class DoiOptions {
         return;
       }
       element.innerHTML = message;
-      if (element.dataset.tooltipMessage === 'true') {
-        const tooltipMessage = chrome.i18n.getMessage(messageId + 'Tooltip');
-        element.title = tooltipMessage;
-      }
     });
 
     const messageClasses = ['optionCrCustom', 'optionCrDefault', 'optionCrSelectable'];

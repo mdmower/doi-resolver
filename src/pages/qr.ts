@@ -795,7 +795,7 @@ class DoiQr {
         await this.createQrImage(qrParms);
 
         try {
-          await recordDoi(doi, title);
+          await recordDoi({doi, title: title || '', save: false});
         } catch (ex) {
           logError('Unable to record DOI', ex);
         }
@@ -806,7 +806,7 @@ class DoiQr {
         await this.createQrImage(qrParms);
 
         try {
-          await recordDoi(doi, undefined, false);
+          await recordDoi({doi, title: '', save: false}, false);
         } catch (ex) {
           logError('Unable to record DOI', ex);
         }

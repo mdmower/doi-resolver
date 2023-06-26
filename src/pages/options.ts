@@ -1396,8 +1396,8 @@ class DoiOptions {
     const historyLength = Number(this.elements_.historyLength.value);
     if (Number.isNaN(historyLength) || historyLength < 1) {
       this.elements_.historyLength.value = '1';
-    } else if (historyLength > 1000) {
-      this.elements_.historyLength.value = '1000';
+    } else if (historyLength > 5000) {
+      this.elements_.historyLength.value = '5000';
     }
 
     const stg = await getOptions('local', ['recorded_dois']);

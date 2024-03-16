@@ -12,6 +12,7 @@ import {
   sendInternalMessageAsync,
 } from './messaging';
 import {logError, logInfo} from './logger';
+import {parseTitles} from './pages/utils';
 
 /**
  * Fetch the unsanitized title associated with a DOI
@@ -90,6 +91,16 @@ export async function fetchDoiTitles(
 
   await Promise.all(rawTitleQueues);
 
+  const {permissions} = await chrome.permissions.getAll();
+  const needsOffscreen = !!permissions?.includes('offscreen');
+  return needsOffscreen ? parseTitlesOffscreen(rawTitles) : parseTitles(rawTitles);
+}
+
+/**
+ * Send raw titles to offscreen page for HTML parsing
+ * @param rawTitles Raw DOI titles
+ */
+async function parseTitlesOffscreen(rawTitles: Record<string, string | undefined>) {
   try {
     await chrome.offscreen.createDocument({
       justification: 'Fetched titles sometimes contain HTML markup that needs to be parsed.',
@@ -119,7 +130,7 @@ export async function fetchDoiTitles(
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
   } catch (ex) {
-    logError('Failed to fetch DOI titles', ex);
+    logError('Failed to parse DOI titles', ex);
   }
 }
 

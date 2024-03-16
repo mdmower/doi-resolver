@@ -1,23 +1,48 @@
-Quickly resolve DOI (digital object identifier) codes to their web destinations with this extension for Chrome.
+# DOI Resolver
 
-Install this extension from the [Chrome Web Store](https://chrome.google.com/webstore/detail/doi-resolver/goanbaknlbojfglcepjnankoobfakbpg).  
-Using a non-Google-branded variant of Chromium? [Download](https://cmphys.com/doi-resolver/doi-resolver.crx) the self-updating crx.
+Quickly resolve DOI (digital object identifier) codes to their web destinations. Available at:
 
-**Core features:** Resolve DOI and ShortDOI codes through:
+- [Chrome Web Store](https://chrome.google.com/webstore/detail/doi-resolver/goanbaknlbojfglcepjnankoobfakbpg) for Google Chrome
 
-1.  Extension button
-2.  Right-click on selected text (optional setting)
-3.  Omnibox with keyword: doi  
-    _Omnibox usage:_ Type `doi` and press the space key. Now you can input a DOI code and press enter to retrieve the web destination.
+## Features
 
-**Additional features:**
+1. Resolve DOI and ShortDOI codes via:
+   - Extension button
+   - Right-click on selected text (optional setting)
+   - Omnibox with keyword: doi
+     _Omnibox usage:_ Type `doi` and press the space key. Now you can input a DOI code and press enter to retrieve the web destination.
+1. Generate QR codes which can be scanned by smart phones to share a publication
+1. Automatically convert DOI codes on web pages into links (optional setting)
+1. Specify your own DOI resolver URL &ndash; useful if your institution provides a proxy service
+1. Generate formatted citations for publications
+1. Retain history of entered DOI codes
 
-1.  Generate QR codes which can be scanned by smart phones to share a publication
-2.  Automatically convert DOI codes on web pages into links (optional setting)
-3.  Specify your own DOI resolver URL &ndash; useful if your institution provides a proxy service
-4.  Generate formatted citations for publications
+## Build
+
+Clone git repository locally and then install npm packages
+
+```
+npm install
+```
+
+Available npm scripts:
+
+- `npm run lint` - Lint your changes using eslint
+- `npm run format` - Use Prettier to format your changes
+- `npm run build` - Build the extension; output to `dist/`
+- `npm run build-debug` - Build the extension without HTML/CSS minification and include source maps in transpiled JS; output to `dist/`
+- `npm run pkg` - Compress contents of `dist/` to a `.zip` file and output to `pkg/`
+- `npm run clean` - Clear out the contents of `dist/`
+- `npm run release` - Run lint, clean, build, and pkg scripts, in that order
+
+## Languages
+
+Internationalization is supported and contributions are welcome. Reference English UI strings and descriptions in [messages.json](/static/_locales/en/messages.json). Create `static/_locales/xx/manifest.json` where `xx` is a supported locale code from [chrome.i18n: Locales](https://developer.chrome.com/docs/extensions/reference/api/i18n#locales) and prepare a pull request. Thanks!
 
 Languages supported: English
 
-This is open source software, licensed under the Apache License, Version 2.0.  
-© 2016 Matthew D. Mower
+## License
+
+Apache License, Version 2.0.
+
+Copyright 2016 Matthew D. Mower (mdmower)

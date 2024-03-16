@@ -31,7 +31,7 @@ async function fetchRawDoiTitle(doi: string): Promise<string | undefined> {
   const fetchRequest = new Request(jsonUrl, fetchInit);
 
   try {
-    const fetchResponse = await fetch(fetchRequest);
+    const fetchResponse = await fetch(fetchRequest, {credentials: 'omit'});
     if (!fetchResponse.ok) {
       if (fetchResponse.status === 404) {
         logInfo(`Title not found for DOI: ${doi}`);

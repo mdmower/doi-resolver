@@ -489,7 +489,7 @@ class DoiCitation {
     logDebug('Downloading citeproc JSON');
     // console.time('Citeproc JSON download');
     try {
-      const response = await fetch(request);
+      const response = await fetch(request, {credentials: 'omit'});
       if (!response.ok) {
         throw new Error(`Bad status code: ${response.status}`);
       }
@@ -515,7 +515,8 @@ class DoiCitation {
     // console.time('Style XML download');
     try {
       const response = await fetch(
-        `https://raw.githubusercontent.com/citation-style-language/styles/master/${style}.csl`
+        `https://raw.githubusercontent.com/citation-style-language/styles/master/${style}.csl`,
+        {credentials: 'omit'}
       );
       if (!response.ok) {
         throw new Error(`Bad status code: ${response.status}`);
@@ -538,7 +539,8 @@ class DoiCitation {
     // console.time('Locale XML download');
     try {
       const response = await fetch(
-        `https://raw.githubusercontent.com/citation-style-language/locales/master/locales-${locale}.xml`
+        `https://raw.githubusercontent.com/citation-style-language/locales/master/locales-${locale}.xml`,
+        {credentials: 'omit'}
       );
       if (!response.ok) {
         throw new Error(`Bad status code: ${response.status}`);

@@ -49,6 +49,7 @@
     "colors": "^1.4.0",
     "cross-fetch": "^4.0.0",
     "css-loader": "^6.10.0",
+    "deepmerge": "^4.3.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsdoc": "^48.2.1",
@@ -63,6 +64,7 @@
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.1",
     "typescript": "^5.4.2",
-    "webpack": "^5.90.3"
+    "webpack": "^5.90.3",
+    "webpack-merge": "^5.10.0"
   }
 }

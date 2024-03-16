@@ -2,10 +2,7 @@
  * @license Apache-2.0
  */
 
-const manifestCommon = require('./manifest.common');
-
 module.exports = {
-  ...manifestCommon,
   background: {
     scripts: ['background.js'],
   },
@@ -16,11 +13,7 @@ module.exports = {
     },
   },
   // optional_host_permissions is not yet recognized by firefox: https://bugzil.la/1766026
-  optional_host_permissions: undefined,
-  optional_permissions: [
-    ...manifestCommon.optional_permissions,
-    ...manifestCommon.optional_host_permissions,
-  ],
+  optional_permissions: ['scripting', 'tabs', 'https://*/*', 'http://*/*'],
   options_ui: {
     page: 'options.html',
     open_in_tab: true,

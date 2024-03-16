@@ -8,6 +8,8 @@ const htmlMinifier = require('html-minifier');
 const webpack = require('webpack');
 const minimist = require('minimist');
 const colors = require('colors/safe');
+const deepmerge = require('deepmerge');
+const {merge: webpackMerge} = require('webpack-merge');
 
 const browsers = ['chrome', 'edge', 'firefox'];
 
@@ -113,16 +115,20 @@ async function copyStaticFiles(debug, browser, distDirPath) {
  */
 async function writeManifest(debug, browser, distDirPath) {
   try {
-    const manifestPath = path.resolve(__dirname, `manifest.${browser}.js`);
-    const manifestObj = require(manifestPath);
+    const manifestCommon = require(path.resolve(__dirname, 'manifest.common.js'));
+    const manifestBrowser = require(path.resolve(__dirname, `manifest.${browser}.js`));
+    let manifestObj = deepmerge(manifestCommon, manifestBrowser);
 
-    // If local.manifest.json exists and this is a debug build, override manifest key/value pairs.
+    // If local.manifest.json exists and this is a debug build, merge into manifest.
     if (debug) {
       const localManifestPath = path.resolve(__dirname, '..', 'local.manifest.json');
       if (fse.existsSync(localManifestPath)) {
         const localManifestJson = await fse.readFile(localManifestPath, 'utf-8');
         const localManifestObj = JSON.parse(localManifestJson);
-        Object.assign(manifestObj, localManifestObj);
+        if (browser == 'firefox' && 'key' in localManifestObj) {
+          delete localManifestObj.key;
+        }
+        manifestObj = deepmerge(manifestObj, localManifestObj);
       }
     }
 
@@ -149,8 +155,9 @@ async function writeManifest(debug, browser, distDirPath) {
  */
 async function compileJs(debug, browser, distDirPath) {
   try {
-    const webpackPath = path.resolve(__dirname, `webpack.${browser}.js`);
-    const webpackConfig = require(webpackPath);
+    const webpackCommon = require(path.resolve(__dirname, 'webpack.common.js'));
+    const webpackBrowser = require(path.resolve(__dirname, `webpack.${browser}.js`));
+    const webpackConfig = webpackMerge(webpackCommon, webpackBrowser);
 
     webpackConfig.output.path = distDirPath;
 

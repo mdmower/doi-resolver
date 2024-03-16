@@ -55,5 +55,4 @@ module.exports = {
     chunkFilename: '[name].chunk.js',
     path: path.resolve(__dirname, '..', 'dist'),
   },
-  plugins: [],
 };

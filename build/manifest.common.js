@@ -33,8 +33,6 @@ module.exports = {
   omnibox: {
     keyword: 'doi',
   },
-  optional_host_permissions: ['https://*/*', 'http://*/*'],
-  optional_permissions: ['scripting', 'tabs'],
   permissions: ['contextMenus', 'clipboardWrite', 'storage'],
   version: packageJson.version,
 };

@@ -57,6 +57,7 @@ document.addEventListener(
 
 class DoiQr {
   private defaultDoiResolver_: string;
+  private needsHistoryMetaPermissions_: boolean;
   private savedBgInputColorStyle_?: string;
   private fgColorPicker_?: IroColorPicker;
   private bgColorPicker_?: IroColorPicker;
@@ -96,6 +97,7 @@ class DoiQr {
 
   constructor() {
     this.defaultDoiResolver_ = getDefaultOptions()['doi_resolver'];
+    this.needsHistoryMetaPermissions_ = false;
     this.saveOptionsDebounced_ = debounce(this.saveOptions.bind(this), 500);
     this.saveQrDimensionsDebounced_ = debounce(this.saveQrDimensions.bind(this), 500);
 
@@ -179,6 +181,7 @@ class DoiQr {
     this.initializeDoiInput();
     await this.restoreOptions();
     await this.prepareColorPickers();
+    await this.setHistoryMetaPermissions();
     await this.populateHistory();
     this.startListeners();
   }
@@ -267,17 +270,21 @@ class DoiQr {
       'recorded_dois',
       'shortdoi_resolver',
     ];
-
-    const historyUpdated = historyRefreshOptions.some(
+    const refreshHistory = historyRefreshOptions.some(
       (option) => updatedOptions[option] !== undefined
     );
-
-    if (historyUpdated) {
-      logInfo('History updated');
+    if (refreshHistory) {
       await this.populateHistory();
-    } else {
-      // Debugging
-      // logInfo('No relevant updates found');
+      logInfo('History updated');
+    }
+
+    const historyPermissionsOptions: (keyof StorageOptions)[] = ['history', 'history_fetch_title'];
+    const recheckHistoryPermissions = historyPermissionsOptions.some(
+      (option) => updatedOptions[option] !== undefined
+    );
+    if (recheckHistoryPermissions) {
+      await this.setHistoryMetaPermissions();
+      logInfo('History permissions updated');
     }
   }
 
@@ -431,6 +438,15 @@ class DoiQr {
     }
 
     this.elements_.qrBgTrans.checked = !!stg.qr_bgtrans;
+  }
+
+  /**
+   * Determine whether to request meta permissions if history is enabled with
+   * automatic title retrieval.
+   */
+  private async setHistoryMetaPermissions(): Promise<void> {
+    const stg = await getOptions('local', ['history', 'history_fetch_title']);
+    this.needsHistoryMetaPermissions_ = !!(stg.history && stg.history_fetch_title);
   }
 
   /**
@@ -644,12 +660,10 @@ class DoiQr {
       }
       await this.saveOptionsAsync();
     } else {
-      // Permissions will be cleaned when last QR/Citation tab is closed
-      const granted = !qrFetchTitle.checked || (await requestMetaPermissions());
-
       if (qrFetchTitle.checked) {
+        // Permissions will be cleaned when last QR/Citation tab is closed
+        const granted = await requestMetaPermissions();
         if (granted) {
-          // Permission successfully added
           qrManualMessage.checked = false;
           qrManualMessage.disabled = true;
           qrManualMessageTextDiv.hidden = true;
@@ -767,8 +781,10 @@ class DoiQr {
     this.simpleNotification('Loading...');
 
     if (this.elements_.qrFetchTitle.checked) {
-      const title = await getSavedDoiTitle(doi);
+      // These permissions will be cleaned when last QR/Citation tab is closed
+      const granted = await requestMetaPermissions();
 
+      const title = await getSavedDoiTitle(doi);
       if (title) {
         logInfo('Found title in history');
         messageToEncode = title + '\n' + messageToEncode;
@@ -777,9 +793,6 @@ class DoiQr {
         await this.createQrImage(qrParms);
         return;
       }
-
-      // Permissions will be cleaned when last QR/Citation tab is closed
-      const granted = await requestMetaPermissions();
 
       if (granted) {
         logInfo('Fetching title from network');
@@ -812,6 +825,10 @@ class DoiQr {
         }
       }
     } else {
+      if (this.needsHistoryMetaPermissions_) {
+        await requestMetaPermissions();
+      }
+
       if (this.elements_.qrManualMessage.checked) {
         const titleString = this.elements_.qrManualMessageText.value;
         if (titleString) {
@@ -822,10 +839,6 @@ class DoiQr {
       qrParms.text = messageToEncode;
       await this.createQrImage(qrParms);
 
-      const stg = await getOptions('local', ['history', 'history_fetch_title']);
-      if (stg.history && stg.history_fetch_title) {
-        await requestMetaPermissions();
-      }
       await queueRecordDoi(doi);
     }
   }

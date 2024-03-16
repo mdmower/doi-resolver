@@ -44,6 +44,8 @@ function isBubbleAction(val: unknown): val is BubbleAction {
 }
 
 class DoiBubble {
+  private needsHistoryMetaPermissions_: boolean;
+
   private elements_: {
     citeSubmit: HTMLButtonElement;
     crRadioBubbleCustom: HTMLInputElement;
@@ -63,6 +65,8 @@ class DoiBubble {
   };
 
   constructor() {
+    this.needsHistoryMetaPermissions_ = false;
+
     const elementMissing = (selector: string) => {
       throw new Error(`Required element is missing from the page: ${selector}`);
     };
@@ -121,6 +125,7 @@ class DoiBubble {
     this.getLocalMessages();
     await applyTheme(window);
     await this.showHideOptionalElms();
+    await this.setHistoryMetaPermissions();
     await this.populateHistory();
     this.startListeners();
   }
@@ -230,7 +235,9 @@ class DoiBubble {
     switch (action) {
       case BubbleAction.Qr:
         if (isValidDoi(doiInput)) {
-          await this.maybeRequestMetaPermissions();
+          if (this.needsHistoryMetaPermissions_) {
+            await requestMetaPermissions();
+          }
           await queueRecordDoi(doiInput);
         }
         // Allow tab to open with invalid DOI
@@ -238,7 +245,9 @@ class DoiBubble {
         break;
       case BubbleAction.Cite:
         if (isValidDoi(doiInput)) {
-          await this.maybeRequestMetaPermissions();
+          if (this.needsHistoryMetaPermissions_) {
+            await requestMetaPermissions();
+          }
           await queueRecordDoi(doiInput);
         }
         // Allow tab to open with invalid DOI
@@ -246,7 +255,9 @@ class DoiBubble {
         break;
       case BubbleAction.Doi:
         if (isValidDoi(doiInput)) {
-          await this.maybeRequestMetaPermissions();
+          if (this.needsHistoryMetaPermissions_) {
+            await requestMetaPermissions();
+          }
           await queueRecordDoi(doiInput);
           await this.resolveDoi(doiInput);
         } else {
@@ -260,17 +271,6 @@ class DoiBubble {
         break;
       default:
         break;
-    }
-  }
-
-  /**
-   * Request meta permissions if history is enabled with automatic
-   * title retrieval.
-   */
-  private async maybeRequestMetaPermissions(): Promise<void> {
-    const stg = await getOptions('local', ['history', 'history_fetch_title']);
-    if (stg.history && stg.history_fetch_title) {
-      await requestMetaPermissions();
     }
   }
 
@@ -342,6 +342,15 @@ class DoiBubble {
       return 2;
     }
     return numEntries;
+  }
+
+  /**
+   * Determine whether to request meta permissions if history is enabled with
+   * automatic title retrieval.
+   */
+  private async setHistoryMetaPermissions(): Promise<void> {
+    const stg = await getOptions('local', ['history', 'history_fetch_title']);
+    this.needsHistoryMetaPermissions_ = !!(stg.history && stg.history_fetch_title);
   }
 
   /**

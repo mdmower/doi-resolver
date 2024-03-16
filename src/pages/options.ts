@@ -1267,6 +1267,12 @@ class DoiOptions {
    * Look up titles for history DOIs without titles
    */
   async findMissingHistoryTitles(): Promise<void> {
+    const granted = await requestMetaPermissions();
+    if (!granted) {
+      logInfo('Aborting new title retrieval because permissions not granted');
+      return;
+    }
+
     const stg = await getOptions('local', ['recorded_dois']);
     if (!stg.recorded_dois) {
       return;
@@ -1279,12 +1285,6 @@ class DoiOptions {
     }
 
     logInfo('DOIs queued for title fetch', dois);
-
-    const granted = await requestMetaPermissions();
-    if (!granted) {
-      logInfo('Aborting new title retrieval because permissions not granted');
-      return;
-    }
 
     this.toggleHistorySpinner(true);
 

@@ -5,9 +5,6 @@
 const packageJson = require('../package.json');
 
 module.exports = {
-  background: {
-    service_worker: 'sw.js',
-  },
   action: {
     default_icon: {
       16: 'icons/icon16.png',
@@ -37,8 +34,7 @@ module.exports = {
     keyword: 'doi',
   },
   optional_host_permissions: ['https://*/*', 'http://*/*'],
-  optional_permissions: ['offscreen', 'scripting', 'tabs'],
-  options_page: 'options.html',
+  optional_permissions: ['scripting', 'tabs'],
   permissions: ['contextMenus', 'clipboardWrite', 'storage'],
   version: packageJson.version,
 };

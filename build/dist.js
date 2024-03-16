@@ -7,20 +7,26 @@ const path = require('path');
 const htmlMinifier = require('html-minifier');
 const webpack = require('webpack');
 const minimist = require('minimist');
-const manifest = require('./manifest');
-const webpackConfig = require('./webpack.config');
 const colors = require('colors/safe');
+
+const browsers = ['chrome', 'edge', 'firefox'];
 
 /**
  * Minify HTML
  * @param {boolean} debug Whether to run in debug mode
+ * @param {string} browser Target browser
  * @param {string} distDirPath Path to destination dir
  * @returns {Promise<void>}
  */
-async function minifyHtml(debug, distDirPath) {
+async function minifyHtml(debug, browser, distDirPath) {
   try {
     const htmlDirPath = path.resolve(__dirname, '..', 'html');
-    const filenames = await fse.readdir(htmlDirPath);
+    const filenames = (await fse.readdir(htmlDirPath)).filter((filename) => {
+      if (browser === 'firefox') {
+        return !['offscreen.html'].includes(filename);
+      }
+      return true;
+    });
     const htmlFiles = filenames
       .filter((filename) => /\.html?$/i.test(filename))
       .map((filename) => {
@@ -68,10 +74,11 @@ async function minifyHtml(debug, distDirPath) {
 /**
  * Copy static files
  * @param {boolean} debug Whether to run in debug mode
+ * @param {string} browser Target browser
  * @param {string} distDirPath Path to destination dir
  * @returns {Promise<void>}
  */
-async function copyStaticFiles(debug, distDirPath) {
+async function copyStaticFiles(debug, browser, distDirPath) {
   try {
     const staticDirPath = path.resolve(__dirname, '..', 'static');
     const itemnames = await fse.readdir(staticDirPath);
@@ -100,12 +107,14 @@ async function copyStaticFiles(debug, distDirPath) {
 /**
  * Write manifest.json
  * @param {boolean} debug Whether to run in debug mode
+ * @param {string} browser Target browser
  * @param {string} distDirPath Path to destination dir
  * @returns {Promise<void>}
  */
-async function writeManifest(debug, distDirPath) {
+async function writeManifest(debug, browser, distDirPath) {
   try {
-    const manifestObj = JSON.parse(JSON.stringify(manifest));
+    const manifestPath = path.resolve(__dirname, `manifest.${browser}.js`);
+    const manifestObj = require(manifestPath);
 
     // If local.manifest.json exists and this is a debug build, override manifest key/value pairs.
     if (debug) {
@@ -119,7 +128,7 @@ async function writeManifest(debug, distDirPath) {
 
     const manifestJson = JSON.stringify(manifestObj, undefined, debug ? 2 : undefined);
     const mainfestPath = path.join(distDirPath, 'manifest.json');
-    console.log(colors.bold.green('[Writing manifest]'));
+    console.log(colors.bold.green('[Writing manifest] manifest.json'));
     return fse.writeFile(mainfestPath, manifestJson, 'utf-8');
   } catch (ex) {
     console.error(
@@ -134,11 +143,15 @@ async function writeManifest(debug, distDirPath) {
 /**
  * Compile JS and CSS for browser target
  * @param {boolean} debug Whether to run in debug mode
+ * @param {string} browser Target browser
  * @param {string} distDirPath Path to destination dir
  * @returns {Promise<void>}
  */
-async function compileJs(debug, distDirPath) {
+async function compileJs(debug, browser, distDirPath) {
   try {
+    const webpackPath = path.resolve(__dirname, `webpack.${browser}.js`);
+    const webpackConfig = require(webpackPath);
+
     webpackConfig.output.path = distDirPath;
 
     if (debug) {
@@ -186,7 +199,7 @@ async function compileJs(debug, distDirPath) {
 // Build all the things
 (async function () {
   let debug = false;
-  let distDirPath = '';
+  const distDirPaths = {};
 
   try {
     // Read flags
@@ -200,9 +213,11 @@ async function compileJs(debug, distDirPath) {
       console.warn(colors.bold.yellow('Debug mode enabled'));
     }
 
-    // Prepare output directory
-    distDirPath = path.resolve(__dirname, '..', 'dist');
-    fse.mkdirSync(distDirPath, {recursive: true});
+    // Prepare output directories
+    for (const browser of browsers) {
+      distDirPaths[browser] = path.resolve(__dirname, '..', 'dist', browser);
+      fse.mkdirSync(distDirPaths[browser], {recursive: true});
+    }
   } catch (ex) {
     console.error(colors.bold.red(`[Build error] Unexpected error preparing for build`) + '\n', ex);
     process.exit(1);
@@ -210,16 +225,19 @@ async function compileJs(debug, distDirPath) {
 
   // Error output is handled within each method, no need to re-output here.
   try {
-    await Promise.all([
-      minifyHtml(debug, distDirPath),
-      copyStaticFiles(debug, distDirPath),
-      writeManifest(debug, distDirPath),
-    ]);
-    // Keep compilation logs together by calling compileJs independently
-    await compileJs(debug, distDirPath);
+    for (const browser of browsers) {
+      console.log(`\n${colors.bold.cyan('Building for ' + browser)}`);
+      await Promise.all([
+        minifyHtml(debug, browser, distDirPaths[browser]),
+        copyStaticFiles(debug, browser, distDirPaths[browser]),
+        writeManifest(debug, browser, distDirPaths[browser]),
+      ]);
+      // Keep compilation logs together by calling compileJs independently
+      await compileJs(debug, browser, distDirPaths[browser]);
+
+      console.log(`\n${colors.bold.green('[Build successful]')} ${distDirPaths[browser]}`);
+    }
   } catch (ex) {
     process.exit(1);
   }
-
-  console.log(`\n${colors.bold.green('[Build successful]')} ${distDirPath}`);
 })();

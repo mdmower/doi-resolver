@@ -901,10 +901,12 @@ class DoiOptions {
       return;
     }
 
-    logInfo('Storage changed, checking for updates');
+    // Debugging
+    // logInfo('Storage changed, checking for updates');
 
     if (Object.keys(updatedOptions).length === 0) {
-      logInfo('Nothing to update');
+      // Debugging
+      // logInfo('Nothing to update');
       return;
     }
 

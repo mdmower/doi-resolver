@@ -2,7 +2,12 @@
  * @license Apache-2.0
  */
 
-import {createContextMenu, ContextMenuId, updateContextMenu} from './context_menu';
+import {
+  createContextMenu,
+  ContextMenuId,
+  updateContextMenu,
+  removeContextMenu,
+} from './context_menu';
 import {recordDois} from './history';
 import {logInfo, logWarn} from './logger';
 import {HistoryDoi, getOptions, setOptions} from './options';
@@ -11,6 +16,17 @@ import {HistoryDoi, getOptions, setOptions} from './options';
  * Add context menu item
  */
 export function addContextMenu(): void {
+  createContextMenu(ContextMenuId.ResolveDoi);
+}
+
+/**
+ * Reinit (remove and create) context menu
+ *
+ * TODO: This exists only to work around a bug in Firefox. Remove when
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1817287 is fixed.
+ */
+export async function reinitContextMenu(): Promise<void> {
+  await removeContextMenu(ContextMenuId.ResolveDoi);
   createContextMenu(ContextMenuId.ResolveDoi);
 }
 

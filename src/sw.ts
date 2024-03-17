@@ -15,8 +15,11 @@ import {
   verifySyncState,
 } from './storage';
 
-self.addEventListener('install', install);
-self.addEventListener('activate', activate);
+// Reference: https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle
+// TODO: W3C is discussing new listeners (names subject to change): onEnabled, onExtensionLoaded
+// https://github.com/w3c/webextensions/issues/353
+chrome.runtime.onInstalled.addListener(install);
+chrome.runtime.onStartup.addListener(startup);
 
 chrome.storage.onChanged.addListener(storageChangeHandler);
 chrome.omnibox.onInputEntered.addListener(omniHandler);
@@ -26,23 +29,31 @@ chrome.runtime.onMessage.addListener(runtimeMessageHandler);
 chrome.contextMenus.onClicked.addListener(contextMenuHandler);
 
 /**
- * Handle service worker install event
+ * Handle extension install event
+ * @param details Extension install information
  */
-function install() {
+function install(details: chrome.runtime.InstalledDetails) {
+  // Only need to create context menu when extension is installed or updated,
+  // not when the browser is updated.
+  if (details.reason !== 'install' && details.reason !== 'update') {
+    return;
+  }
+
   addContextMenu();
-  logInfo('Service worker installed');
+  startup();
+  logInfo('Extension installed');
 }
 
 /**
- * Handle service worker activate event
+ * Handle browser profile startup event
  */
-function activate() {
+function startup() {
   removeDeprecatedOptions()
     .then(verifySyncState)
     .then(checkForNewOptions)
     .then(resetContextMenu)
-    .then(() => logInfo('Service worker activated'))
+    .then(() => logInfo('Startup event handled'))
     .catch((error) => {
-      logError('Error encountered during service worker activation\n', error);
+      logError('Error encountered while processing startup handler\n', error);
     });
 }

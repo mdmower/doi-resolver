@@ -34,6 +34,31 @@ export function createContextMenu(id: ContextMenuId): void {
 }
 
 /**
+ * Remove the context menu feature
+ * @param id Context menu ID
+ *
+ * This should not be used for visibility changes. Note that .remove() is
+ * synchronous for Chrome and asynchronous for Firefox, but callback has been
+ * verified to run in both browsers. Cast to promise.
+ */
+export function removeContextMenu(id: ContextMenuId): Promise<void> {
+  if (id !== ContextMenuId.ResolveDoi) {
+    // TODO: Support multiple context menu items
+    return Promise.resolve();
+  }
+
+  return Promise.resolve(
+    chrome.contextMenus.remove(id, () => {
+      if (chrome.runtime.lastError) {
+        /* do nothing */
+      }
+    })
+  ).catch(() => {
+    // do nothing
+  });
+}
+
+/**
  * Show/hide the context menu feature
  * @param id Context menu ID
  * @param visible Whether the context menu item should be visible

@@ -1,7 +1,7 @@
 {
   "name": "doi-resolver-chrome",
   "version": "6.0.5",
-  "description": "An extension for Chrome to quickly resolve digital object identifiers to their web destinations",
+  "description": "A browser extension to quickly resolve digital object identifiers to their web destinations",
   "private": true,
   "scripts": {
     "lint": "eslint src build",

@@ -373,7 +373,7 @@
   },
   "optionSyncData": {
     "description": "Label for data sync feature",
-    "message": "Synchronize this extension's settings across Chrome installations"
+    "message": "Synchronize this extension's settings with your profile"
   },
   "optionTheme": {
     "description": "Label for selectable option to choose a dark or light theme",
@@ -393,7 +393,7 @@
   },
   "optionSyncDataModalBody": {
     "description": "The message body to display in an info modal for the sync feature",
-    "message": "You must have <a href=\"https://support.google.com/chrome/answer/165139\">Chrome Sync</a> enabled for this feature to work. This option needs to be enabled on each Chrome installation where you would like sync to occur.<br><br>The following options are not included in sync because they require permissions to be accepted by the user before enabling: <ul><li>Autolink</li><li>QR: Include title of reference in QR code</li><li>History: Automatically fetch title when a new DOI is recorded</li></ul>"
+    "message": "You must be logged into your browser and have settings synchronization enabled for this feature to work. This option needs to be enabled on each browser installation where you would like sync to occur. Cross-browser sync (e.g. Chrome to Firefox/Edge) is not yet supported.<br><br>The following options are not included in sync because they require permissions to be accepted by the user before enabling: <ul><li>Autolink</li><li>QR: Include title of reference in QR code</li><li>History: Automatically fetch title when a new DOI is recorded</li></ul>"
   },
   "optionSyncDataModalTitle": {
     "description": "The heading to display in an info modal for the sync feature",

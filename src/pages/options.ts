@@ -352,6 +352,7 @@ class DoiOptions {
    */
   async init(): Promise<void> {
     this.getLocalMessages();
+    this.initWebStoreLink();
     await applyTheme(window);
     this.openTabByHash();
     this.startClickListeners();
@@ -1618,5 +1619,32 @@ class DoiOptions {
     }
 
     this.elements_.extensionVersion.innerHTML = chrome.runtime.getManifest().version;
+  }
+
+  /**
+   * Add link to relevant web store
+   */
+  private initWebStoreLink(): void {
+    const webStoreLink = document.querySelector<HTMLSpanElement>('#webStoreLink');
+    if (webStoreLink) {
+      let url;
+      let text;
+      const extensionId = chrome.runtime.id;
+      if (extensionId === 'goanbaknlbojfglcepjnankoobfakbpg') {
+        url = 'https://chrome.google.com/webstore/detail/quickip/goanbaknlbojfglcepjnankoobfakbpg';
+        text = 'Chrome Web Store';
+      } else if (extensionId === '{7befad41-6117-42d0-a803-4fbae41bde5a}') {
+        url = `https://addons.mozilla.org/firefox/addon/{7befad41-6117-42d0-a803-4fbae41bde5a}/`;
+        text = 'Firefox Add-ons';
+      }
+
+      if (url && text) {
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.textContent = text;
+        webStoreLink.textContent = ' / ';
+        webStoreLink.appendChild(anchor);
+      }
+    }
   }
 }

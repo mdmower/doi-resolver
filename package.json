@@ -1,6 +1,6 @@
 {
   "name": "doi-resolver-chrome",
-  "version": "6.0.5",
+  "version": "7.0.0",
   "description": "A browser extension to quickly resolve digital object identifiers to their web destinations",
   "private": true,
   "scripts": {

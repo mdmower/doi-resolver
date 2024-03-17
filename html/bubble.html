@@ -11,7 +11,7 @@
   <body>
     <div id="containerDiv">
       <form name="doiForm" id="doiForm" class="container-fluid">
-        <div id="mainForm" class="row gx-2 mb-2">
+        <div id="mainForm" class="row gx-2">
           <input type="hidden" id="hiddenButtonInput" />
           <div class="col">
             <input type="text" id="textInput" autofocus placeholder="DOI" class="form-control" />
@@ -20,12 +20,12 @@
             <button id="resolveSubmit" class="btn btn-primary"></button>
           </div>
         </div>
-        <div id="historyDiv" hidden class="row mb-2">
+        <div id="historyDiv" hidden class="row mt-2">
           <div class="col">
             <select id="doiHistory" class="form-select"></select>
           </div>
         </div>
-        <div id="crRadios" hidden class="row mb-2">
+        <div id="crRadios" hidden class="row mt-2">
           <div class="col-auto">
             <span id="optionCrLabelBubble"></span>
           </div>
@@ -56,7 +56,7 @@
             </div>
           </div>
         </div>
-        <div id="metaButtons" hidden class="row gx-2">
+        <div id="metaButtons" hidden class="row gx-2 mt-2">
           <div class="col">
             <button id="optionsSubmit" class="btn btn-outline-secondary">
               <!-- prettier-ignore -->

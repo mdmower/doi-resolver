@@ -1,3 +1,7 @@
+/**
+ * @license Apache-2.0
+ */
+
 const path = require('path');
 const webpack = require('webpack');
 

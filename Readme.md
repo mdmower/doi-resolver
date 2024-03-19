@@ -3,14 +3,15 @@
 Quickly resolve DOI (digital object identifier) codes to their web destinations. Available at:
 
 - [Chrome Web Store](https://chrome.google.com/webstore/detail/doi-resolver/goanbaknlbojfglcepjnankoobfakbpg) for Google Chrome
+- [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/doi-resolver/) for Firefox
 
 ## Features
 
 1. Resolve DOI and ShortDOI codes via:
    - Extension button
    - Right-click on selected text (optional setting)
-   - Omnibox with keyword: doi
-     _Omnibox usage:_ Type `doi` and press the space key. Now you can input a DOI code and press enter to retrieve the web destination.
+   - Address bar with keyword: doi
+     _Address bar usage:_ Type `doi` and press the space key. Now you can input a DOI code and press enter to retrieve the web destination.
 1. Generate QR codes which can be scanned by smart phones to share a publication
 1. Automatically convert DOI codes on web pages into links (optional setting)
 1. Specify your own DOI resolver URL &ndash; useful if your institution provides a proxy service

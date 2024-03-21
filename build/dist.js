@@ -207,6 +207,7 @@ async function compileJs(debug, browser, distDirPath) {
 (async function () {
   let debug = false;
   const distDirPaths = {};
+  const filteredBrowsers = [];
 
   try {
     // Read flags
@@ -220,8 +221,13 @@ async function compileJs(debug, browser, distDirPath) {
       console.warn(colors.bold.yellow('Debug mode enabled'));
     }
 
+    const cmdlineBrowsers = argv._.filter((s) => browsers.includes(s));
+    filteredBrowsers.push(
+      ...browsers.filter((browser) => !cmdlineBrowsers.length || cmdlineBrowsers.includes(browser))
+    );
+
     // Prepare output directories
-    for (const browser of browsers) {
+    for (const browser of filteredBrowsers) {
       distDirPaths[browser] = path.resolve(__dirname, '..', 'dist', browser);
       fse.mkdirSync(distDirPaths[browser], {recursive: true});
     }
@@ -232,7 +238,7 @@ async function compileJs(debug, browser, distDirPath) {
 
   // Error output is handled within each method, no need to re-output here.
   try {
-    for (const browser of browsers) {
+    for (const browser of filteredBrowsers) {
       console.log(`\n${colors.bold.cyan('Building for ' + browser)}`);
       await Promise.all([
         minifyHtml(debug, browser, distDirPaths[browser]),

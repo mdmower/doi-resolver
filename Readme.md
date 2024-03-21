@@ -30,11 +30,11 @@ Available npm scripts:
 
 - `npm run lint` - Lint your changes using eslint
 - `npm run format` - Use Prettier to format your changes
-- `npm run build` - Build the extension; output to `dist/`
-- `npm run build-debug` - Build the extension without HTML/CSS minification and include source maps in transpiled JS; output to `dist/`
-- `npm run pkg` - Compress contents of `dist/` to a `.zip` file and output to `pkg/`
+- `npm run build [chrome|edge|firefox]` - Build the extension; output to `dist/<browser>/`
+- `npm run build-debug [chrome|edge|firefox]` - Build the extension without HTML/CSS minification and include source maps in transpiled JS; output to `dist/<browser>/`
+- `npm run pkg [chrome|edge|firefox]` - Compress built extension from `dist/<browser>/` into a `.zip` file and output to `pkg/`
 - `npm run clean` - Clear out the contents of `dist/`
-- `npm run release` - Run lint, clean, build, and pkg scripts, in that order
+- `npm run release` - Run lint, clean, build, and pkg scripts, in that order (builds for all browsers)
 
 ## Languages
 

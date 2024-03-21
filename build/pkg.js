@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const archiver = require('archiver');
 const packageJson = require('../package.json');
+const minimist = require('minimist');
 const colors = require('colors/safe');
 
 const browsers = ['chrome', 'edge', 'firefox'];
@@ -50,7 +51,13 @@ async function package(browser) {
 
 (async function () {
   try {
-    for (const browser of browsers) {
+    const argv = minimist(process.argv.slice(2));
+    const cmdlineBrowsers = argv._.filter((s) => browsers.includes(s));
+    const filteredBrowsers = browsers.filter(
+      (browser) => !cmdlineBrowsers.length || cmdlineBrowsers.includes(browser)
+    );
+
+    for (const browser of filteredBrowsers) {
       await package(browser);
     }
   } catch (ex) {

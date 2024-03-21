@@ -4,8 +4,8 @@
   "description": "A browser extension to quickly resolve digital object identifiers to their web destinations",
   "private": true,
   "scripts": {
-    "lint": "eslint src build",
-    "format": "prettier --write \"build/**/*.js\" \"html/**/*.html\" \"src/**/*.(ts|scss|json)\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
     "build": "node build/dist.js",
     "build-debug": "node build/dist.js --debug",
     "update-csl": "node build/update-csl.js",
@@ -39,10 +39,10 @@
     "@fullhuman/postcss-purgecss": "^5.0.0",
     "@types/chrome": "^0.0.263",
     "@types/html-minifier": "^4.0.5",
-    "@types/node": "^18.19.24",
+    "@types/node": "^18.19.26",
     "@types/sortablejs": "^1.15.8",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
-    "@typescript-eslint/parser": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
     "@xmldom/xmldom": "^0.8.10",
     "archiver": "^7.0.1",
     "clean-css": "^5.3.3",
@@ -64,8 +64,8 @@
     "sass-loader": "^14.1.1",
     "style-loader": "^3.3.4",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.4.2",
-    "webpack": "^5.90.3",
+    "typescript": "^5.4.3",
+    "webpack": "^5.91.0",
     "webpack-merge": "^5.10.0"
   }
 }

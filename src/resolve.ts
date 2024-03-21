@@ -43,7 +43,7 @@ export async function resolveDoi(
     case 'newBackgroundTab':
       await chrome.tabs.create({url: doiUrl, active: false});
       break;
-    default:
+    default: {
       // "currentTab"
       const tabs = await chrome.tabs.query({active: true, currentWindow: true});
       const tabId = tabs[0]?.id;
@@ -51,5 +51,6 @@ export async function resolveDoi(
         await chrome.tabs.update(tabId, {url: doiUrl});
       }
       break;
+    }
   }
 }

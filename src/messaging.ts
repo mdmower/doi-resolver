@@ -252,6 +252,7 @@ export function runtimeMessageHandler(
       if (isLoggingMessage(message) && message.data !== undefined) {
         log(message.data.level, ...message.data.data);
       }
+      break;
     default:
       break;
   }

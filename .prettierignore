@@ -1,7 +1,9 @@
 csl-styles/**
 dist/**
-node_modules/**
+package-lock.json
 pkg/**
-resources/icon/**
+resources/**
 src/csl/**
 src/qrcodegen/**
+static/icons/**
+static/img/**

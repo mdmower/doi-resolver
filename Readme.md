@@ -1,24 +1,24 @@
 # DOI Resolver
 
-Quickly resolve DOI (digital object identifier) codes to their web destinations. Available at:
+A browser extension to resolve DOIs (digital object identifiers) to their web destinations. Available at:
 
 - [Chrome Web Store](https://chrome.google.com/webstore/detail/doi-resolver/goanbaknlbojfglcepjnankoobfakbpg) for Google Chrome
 - [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/doi-resolver/) for Firefox
 
 ## Features
 
-1. Resolve DOI and ShortDOI codes via:
-   - Extension button
-   - Right-click on selected text (optional setting)
-   - Address bar with keyword: doi
-     _Address bar usage:_ Type `doi` and press the space key. Now you can input a DOI code and press enter to retrieve the web destination.
-1. Generate QR codes which can be scanned by smart phones to share a publication
-1. Automatically convert DOI codes on web pages into links (optional setting)
-1. Specify your own DOI resolver URL &ndash; useful if your institution provides a proxy service
-1. Generate formatted citations for publications
-1. Retain history of entered DOI codes
+- Resolve DOIs and ShortDOIs via:
+  - Extension button
+  - Selected text context menu
+  - Address bar with keyword: doi  
+    _Address bar usage:_ Type `doi` and press space. Now you can input a DOI and press enter to navigate to the web destination.
+- Maintain a history of visited DOIs along with their automatically fetched titles
+- Generate QR codes which can be scanned by smart phones to share a publication
+- Generate formatted citations for publications
+- Automatically convert DOIs on web pages into links
+- Use your own DOI resolver URL &ndash; useful if your institution provides a proxy service
 
-## Build
+## Development
 
 Clone git repository locally and then install npm packages
 
@@ -28,8 +28,8 @@ npm install
 
 Available npm scripts:
 
-- `npm run lint` - Lint your changes using eslint
-- `npm run format` - Use Prettier to format your changes
+- `npm run lint` - Lint source using eslint
+- `npm run format` - Format source using prettier
 - `npm run build [chrome|edge|firefox]` - Build the extension; output to `dist/<browser>/`
 - `npm run build-debug [chrome|edge|firefox]` - Build the extension without HTML/CSS minification and include source maps in transpiled JS; output to `dist/<browser>/`
 - `npm run pkg [chrome|edge|firefox]` - Compress built extension from `dist/<browser>/` into a `.zip` file and output to `pkg/`

@@ -1,6 +1,6 @@
 {
-  "name": "doi-resolver-chrome",
-  "version": "7.0.0",
+  "name": "doi-resolver",
+  "version": "7.1.0",
   "description": "A browser extension to quickly resolve digital object identifiers to their web destinations",
   "private": true,
   "scripts": {
@@ -13,23 +13,22 @@
     "clean": "node build/clean.js",
     "release": "npm run lint && npm run clean && npm run build && npm run pkg"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mdmower/doi-resolver-chrome.git"
-  },
+  "repository": "github:mdmower/doi-resolver",
   "keywords": [
     "doi",
     "resolve",
     "resolver",
-    "chrome",
+    "qr",
+    "citation",
+    "addon",
     "extension"
   ],
   "author": "Matthew D. Mower <mdmower@cmphys.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/mdmower/doi-resolver-chrome/issues"
+    "url": "https://github.com/mdmower/doi-resolver/issues"
   },
-  "homepage": "https://github.com/mdmower/doi-resolver-chrome#readme",
+  "homepage": "https://github.com/mdmower/doi-resolver#readme",
   "dependencies": {
     "@jaames/iro": "^5.5.2",
     "bootstrap": "^5.3.3",

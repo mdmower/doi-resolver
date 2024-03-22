@@ -3,6 +3,7 @@
 A browser extension to resolve DOIs (digital object identifiers) to their web destinations. Available at:
 
 - [Chrome Web Store](https://chrome.google.com/webstore/detail/doi-resolver/goanbaknlbojfglcepjnankoobfakbpg) for Google Chrome
+- [Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/doi-resolver/blinbkglegdjgkpblpbgiemkbmkflgah) for Microsoft Edge
 - [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/doi-resolver/) for Firefox
 
 ## Features

@@ -1635,6 +1635,10 @@ class DoiOptions {
       if (extensionId === 'goanbaknlbojfglcepjnankoobfakbpg') {
         url = 'https://chrome.google.com/webstore/detail/quickip/goanbaknlbojfglcepjnankoobfakbpg';
         text = 'Chrome Web Store';
+      } else if (extensionId === 'blinbkglegdjgkpblpbgiemkbmkflgah') {
+        url =
+          'https://microsoftedge.microsoft.com/addons/detail/doi-resolver/blinbkglegdjgkpblpbgiemkbmkflgah';
+        text = 'Edge Add-ons';
       } else if (extensionId === '{7befad41-6117-42d0-a803-4fbae41bde5a}') {
         url = `https://addons.mozilla.org/firefox/addon/{7befad41-6117-42d0-a803-4fbae41bde5a}/`;
         text = 'Firefox Add-ons';

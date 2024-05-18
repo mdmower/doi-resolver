@@ -4,7 +4,7 @@
 
 const fse = require('fs-extra');
 const path = require('path');
-const htmlMinifier = require('html-minifier');
+const htmlMinifier = require('html-minifier-terser');
 const webpack = require('webpack');
 const minimist = require('minimist');
 const colors = require('colors/safe');
@@ -52,7 +52,7 @@ async function minifyHtml(debug, browser, distDirPath) {
     return Promise.all(
       htmlFiles.map(async (htmlFile) => {
         const html = await fse.readFile(htmlFile.inputPath, 'utf-8');
-        const minHtml = htmlMinifier.minify(html, {
+        const minHtml = await htmlMinifier.minify(html, {
           collapseBooleanAttributes: true,
           collapseWhitespace: true,
           conservativeCollapse: true,

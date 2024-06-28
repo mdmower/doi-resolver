@@ -1,25 +1,9 @@
 {
   "env": {
-    "es2020": true,
+    "serviceworker": false,
     "node": true
   },
   "parserOptions": {
-    "sourceType": "script"
-  },
-  "plugins": ["jsdoc", "prettier"],
-  "extends": ["eslint:recommended", "prettier", "plugin:jsdoc/recommended"],
-  "rules": {
-    "prettier/prettier": ["error"],
-    "no-undef": "error",
-    "no-var": "error",
-    "jsdoc/check-syntax": 1,
-    "jsdoc/newline-after-description": 0,
-    "jsdoc/require-returns-description": 0
-  },
-  "settings": {
-    "jsdoc": {
-      "mode": "typescript"
-    }
-  },
-  "root": true
+    "project": "build/tsconfig.json"
+  }
 }

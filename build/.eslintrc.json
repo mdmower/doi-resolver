@@ -1,9 +1,0 @@
-{
-  "env": {
-    "serviceworker": false,
-    "node": true
-  },
-  "parserOptions": {
-    "project": "build/tsconfig.json"
-  }
-}

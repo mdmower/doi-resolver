@@ -11,13 +11,13 @@ import webpack, {Configuration} from 'webpack';
 const common: Configuration = {
   mode: 'production',
   entry: {
-    autolink: path.resolve(dirRef.root, 'src/content_scripts/autolink.ts'),
-    bubble: path.resolve(dirRef.root, 'src/pages/bubble.ts'),
-    citation: path.resolve(dirRef.root, 'src/pages/citation.ts'),
-    context_match: path.resolve(dirRef.root, 'src/content_scripts/context_match.ts'),
-    notification: path.resolve(dirRef.root, 'src/pages/notification.ts'),
-    options: path.resolve(dirRef.root, 'src/pages/options.ts'),
-    qr: path.resolve(dirRef.root, 'src/pages/qr.ts'),
+    autolink: path.resolve(dirRef.root, 'src/autolink.ts'),
+    bubble: path.resolve(dirRef.root, 'src/bubble.ts'),
+    citation: path.resolve(dirRef.root, 'src/citation.ts'),
+    context_match: path.resolve(dirRef.root, 'src/context_match.ts'),
+    notification: path.resolve(dirRef.root, 'src/notification.ts'),
+    options: path.resolve(dirRef.root, 'src/options.ts'),
+    qr: path.resolve(dirRef.root, 'src/qr.ts'),
   },
   module: {
     rules: [
@@ -38,7 +38,7 @@ const common: Configuration = {
                 plugins: [
                   // ESM type definitions are incorrect for default purgecss import
                   (purgecss as unknown as typeof purgecss.default)({
-                    content: ['html/*.html', 'src/pages/*.ts', 'src/css/*.scss'],
+                    content: ['src/*.html', 'src/*.ts', 'src/css/*.scss'],
                     safelist: [/^modal-/],
                   }),
                 ],
@@ -56,14 +56,14 @@ const common: Configuration = {
   output: {
     filename: '[name].js',
     chunkFilename: '[name].chunk.js',
-    path: path.resolve(dirRef.dist),
+    path: dirRef.dist,
   },
 };
 
 const chrome = merge(common, {
   entry: {
     sw: path.resolve(dirRef.root, 'src/sw.ts'),
-    offscreen: path.resolve(dirRef.root, 'src/pages/offscreen.ts'),
+    offscreen: path.resolve(dirRef.root, 'src/offscreen.ts'),
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -75,7 +75,7 @@ const chrome = merge(common, {
 const edge = merge(common, {
   entry: {
     sw: path.resolve(dirRef.root, 'src/sw.ts'),
-    offscreen: path.resolve(dirRef.root, 'src/pages/offscreen.ts'),
+    offscreen: path.resolve(dirRef.root, 'src/offscreen.ts'),
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -86,7 +86,7 @@ const edge = merge(common, {
 
 const firefox = merge(common, {
   entry: {
-    background: path.resolve(dirRef.root, 'src/pages/background.ts'),
+    background: path.resolve(dirRef.root, 'src/background.ts'),
   },
   plugins: [
     new webpack.DefinePlugin({

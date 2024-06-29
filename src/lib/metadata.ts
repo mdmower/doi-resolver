@@ -12,7 +12,7 @@ import {
   sendInternalMessageAsync,
 } from './messaging';
 import {logError, logInfo} from './logger';
-import {parseTitles} from './pages/utils';
+import {parseTitles} from '../utils';
 
 /**
  * Fetch the unsanitized title associated with a DOI

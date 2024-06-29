@@ -2,9 +2,9 @@
  * @license Apache-2.0
  */
 
-import {logInfo} from '../logger';
-import {ContextMenuToggleMessage, MessageCmd, sendInternalMessage} from '../messaging';
-import {debounce, findDoiInString} from '../utils';
+import {logInfo} from './lib/logger';
+import {ContextMenuToggleMessage, MessageCmd, sendInternalMessage} from './lib/messaging';
+import {debounce, findDoiInString} from './lib/utils';
 
 (function () {
   const selectHandler = debounce(() => {

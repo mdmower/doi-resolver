@@ -2,18 +2,18 @@
  * @license Apache-2.0
  */
 
-import {autolinkHandler} from './autolink';
-import {addContextMenu, resetContextMenu} from './background';
-import {contextMenuHandler, contextMenuMatchHandler} from './context_menu';
-import {logError, logInfo} from './logger';
-import {runtimeMessageHandler} from './messaging';
-import {omniHandler} from './omnibox';
+import {autolinkHandler} from './lib/autolink';
+import {addContextMenu, resetContextMenu} from './lib/background';
+import {contextMenuHandler, contextMenuMatchHandler} from './lib/context_menu';
+import {logError, logInfo} from './lib/logger';
+import {runtimeMessageHandler} from './lib/messaging';
+import {omniHandler} from './lib/omnibox';
 import {
   checkForNewOptions,
   removeDeprecatedOptions,
   storageChangeHandler,
   verifySyncState,
-} from './storage';
+} from './lib/storage';
 
 // Reference: https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle
 // TODO: W3C is discussing new listeners (names subject to change): onEnabled, onExtensionLoaded

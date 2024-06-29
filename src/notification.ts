@@ -2,26 +2,66 @@
  * @license Apache-2.0
  */
 
-import {logError} from './logger';
+import './css/notification.scss';
+import {logError} from './lib/logger';
+import {applyTheme} from './utils';
 
-/**
- * Open a minimal popup window to display a notification.
- * @param title Title
- * @param message Message
- */
-export function showNotification(title: string, message: string): void {
-  const encodedTitle = encodeURIComponent(title);
-  const encodedMessage = encodeURIComponent(message);
-
-  chrome.windows
-    .create({
-      url: `notification.html?title=${encodedTitle}&message=${encodedMessage}`,
-      focused: true,
-      height: 250,
-      width: 500,
-      type: 'popup',
-    })
-    .catch((error) => {
-      logError('Failed to open notification window\n', error);
+document.addEventListener(
+  'DOMContentLoaded',
+  function () {
+    new DoiNotification().init().catch((error) => {
+      logError('Init failed', error);
     });
+  },
+  false
+);
+
+class DoiNotification {
+  private elements_: {
+    titleH: HTMLHeadingElement;
+    messageP: HTMLParagraphElement;
+    closeBtn: HTMLButtonElement;
+  };
+
+  constructor() {
+    const elementMissing = (selector: string) => {
+      throw new Error(`Required element is missing from the page: ${selector}`);
+    };
+    this.elements_ = {
+      closeBtn:
+        document.querySelector<HTMLButtonElement>('button#close') || elementMissing('button#close'),
+      titleH: document.querySelector<HTMLHeadingElement>('h5#title') || elementMissing('h5#title'),
+      messageP:
+        document.querySelector<HTMLParagraphElement>('p#message') || elementMissing('p#message'),
+    };
+  }
+
+  /**
+   * Initialize notification.
+   */
+  public async init() {
+    this.renderNotification();
+    await applyTheme(window);
+    this.startListeners();
+  }
+
+  /**
+   * Attach window/element listeners.
+   */
+  private startListeners(): void {
+    this.elements_.closeBtn.addEventListener('click', close.bind(window));
+  }
+
+  /**
+   * Render a notification
+   */
+  private renderNotification(): void {
+    const url = new URL(location.href);
+    const title = url.searchParams.get('title');
+    const message = url.searchParams.get('message');
+
+    this.elements_.titleH.textContent = title;
+    this.elements_.messageP.textContent = message;
+    this.elements_.closeBtn.focus();
+  }
 }

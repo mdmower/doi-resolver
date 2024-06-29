@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import '../css/qr.scss';
+import './css/qr.scss';
 import 'bootstrap/js/dist/modal';
 import {
   HistoryDoi,
@@ -12,8 +12,8 @@ import {
   isQrImageType,
   getOptions,
   setOptions,
-} from '../options';
-import {requestMetaPermissions} from '../permissions';
+} from './lib/options';
+import {requestMetaPermissions} from './lib/permissions';
 import {
   debounce,
   filterSelectByText,
@@ -21,13 +21,13 @@ import {
   isValidDoi,
   sortHistoryEntries,
   trimDoi,
-} from '../utils';
+} from './lib/utils';
 import iro from '@jaames/iro';
 import {ColorPickerProps, IroColorPicker} from '@jaames/iro/dist/ColorPicker';
-import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from '../messaging';
-import {getSavedDoiTitle, recordDoi, queueRecordDoi} from '../history';
-import {fetchDoiTitle} from '../metadata';
-import {logError, logInfo} from '../logger';
+import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './lib/messaging';
+import {getSavedDoiTitle, recordDoi, queueRecordDoi} from './lib/history';
+import {fetchDoiTitle} from './lib/metadata';
+import {logError, logInfo} from './lib/logger';
 import {applyTheme} from './utils';
 
 interface CreateQrParams {
@@ -849,7 +849,7 @@ class DoiQr {
    * @param qrParams QR image creation parameters
    */
   private toSvg(
-    qr: import('../qrcodegen/qrcodegen').qrcodegen.QrCode,
+    qr: import('./qrcodegen/qrcodegen').qrcodegen.QrCode,
     qrParams: CreateQrParams
   ): SVGElement {
     const border = qrParams.border;
@@ -898,7 +898,7 @@ class DoiQr {
    * @param qrParms QR image creation parameters
    */
   private async createQrImage(qrParms: CreateQrParams): Promise<void> {
-    const {QrCode} = (await import('../qrcodegen/qrcodegen')).qrcodegen;
+    const {QrCode} = (await import('./qrcodegen/qrcodegen')).qrcodegen;
     const ecl = QrCode.Ecc.MEDIUM;
     const qr = QrCode.encodeText(qrParms.text, ecl);
     const svg = this.toSvg(qr, qrParms);

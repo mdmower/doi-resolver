@@ -2,15 +2,15 @@
  * @license Apache-2.0
  */
 
-import '../css/citation.scss';
+import './css/citation.scss';
 import 'bootstrap/js/dist/modal';
-import {HistoryDoi, getDefaultOptions, getOptions, setOptions, StorageOptions} from '../options';
-import {requestCitationPermissions} from '../permissions';
-import {filterSelectByText, isRecord, isValidDoi, sortHistoryEntries, trimDoi} from '../utils';
+import {HistoryDoi, getDefaultOptions, getOptions, setOptions, StorageOptions} from './lib/options';
+import {requestCitationPermissions} from './lib/permissions';
+import {filterSelectByText, isRecord, isValidDoi, sortHistoryEntries, trimDoi} from './lib/utils';
 import {CiteProcSys} from 'citeproc';
-import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from '../messaging';
-import {queueRecordDoi} from '../history';
-import {logDebug, logError, logInfo} from '../logger';
+import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './lib/messaging';
+import {queueRecordDoi} from './lib/history';
+import {logDebug, logError, logInfo} from './lib/logger';
 import {applyTheme} from './utils';
 
 interface CitationResources {
@@ -127,10 +127,10 @@ class DoiCitation {
     // The issue still exists as of webpack 5.84.1.
 
     // const {default: cslStyles} = await import('../csl/styles/styles.json');
-    const cslStyles = (await import('../csl/styles/styles.json')).default;
+    const cslStyles = (await import('./csl/styles/styles.json')).default;
     this.cslStyles_ = cslStyles;
     // const {default: cslLocales} = await import('../csl/locales/locales.json');
-    const cslLocales = (await import('../csl/locales/locales.json')).default;
+    const cslLocales = (await import('./csl/locales/locales.json')).default;
     this.cslLocales_ = cslLocales;
   }
 

@@ -1,7 +1,6 @@
 {
   "env": {
-    "es2022": true,
-    "serviceworker": true
+    "es2022": true
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -44,6 +43,29 @@
   "globals": {
     "chrome": "readonly"
   },
+  "overrides": [
+    {
+      "files": "src/[!sw]*.ts",
+      "env": {
+        "browser": true
+      }
+    },
+    {
+      "files": ["src/sw.ts", "src/lib/*.ts"],
+      "env": {
+        "serviceworker": true
+      }
+    },
+    {
+      "files": "build/*.ts",
+      "env": {
+        "node": true
+      },
+      "parserOptions": {
+        "project": "build/tsconfig.json"
+      }
+    }
+  ],
   "settings": {
     "jsdoc": {
       "mode": "typescript"

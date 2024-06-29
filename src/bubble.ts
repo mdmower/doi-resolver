@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import '../css/bubble.scss';
+import './css/bubble.scss';
 import {
   CustomResolverSelection,
   HistoryDoi,
@@ -10,12 +10,12 @@ import {
   getOptions,
   isCustomResolverSelection,
   setOptions,
-} from '../options';
-import {requestMetaPermissions} from '../permissions';
-import {filterSelectByText, isValidDoi, sortHistoryEntries, trimDoi} from '../utils';
-import {queueRecordDoi} from '../history';
-import {resolveDoi} from '../resolve';
-import {logError, logInfo} from '../logger';
+} from './lib/options';
+import {requestMetaPermissions} from './lib/permissions';
+import {filterSelectByText, isValidDoi, sortHistoryEntries, trimDoi} from './lib/utils';
+import {queueRecordDoi} from './lib/history';
+import {resolveDoi} from './lib/resolve';
+import {logError, logInfo} from './lib/logger';
 import {applyTheme} from './utils';
 
 document.addEventListener(

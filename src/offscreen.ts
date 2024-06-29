@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import {OffscreenAction, isOffscreenDocMessage, MessageCmd} from '../messaging';
+import {OffscreenAction, isOffscreenDocMessage, MessageCmd} from './lib/messaging';
 import {parseTitles} from './utils';
 
 document.addEventListener(

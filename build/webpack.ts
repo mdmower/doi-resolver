@@ -38,7 +38,15 @@ const common: Configuration = {
                 plugins: [
                   // ESM type definitions are incorrect for default purgecss import
                   (purgecss as unknown as typeof purgecss.default)({
-                    content: ['src/*.html', 'src/*.ts', 'src/css/*.scss'],
+                    contentFunction: (sourceFile) => {
+                      const name = path.basename(sourceFile).split('.')[0];
+                      return [
+                        `src/${name}.html`,
+                        `src/${name}.ts`,
+                        `src/utils.ts`,
+                        `src/css/${name}.scss`,
+                      ];
+                    },
                     safelist: [/^modal-/],
                   }),
                 ],

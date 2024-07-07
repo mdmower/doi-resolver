@@ -15,7 +15,7 @@ import {filterSelectByText, isValidDoi, sortHistoryEntries, trimDoi} from './lib
 import {queueRecordDoi} from './lib/history';
 import {resolveDoi} from './lib/resolve';
 import {logError, logInfo} from './lib/logger';
-import {applyTheme} from './utils';
+import {applyTheme, getMessageNodes} from './utils';
 
 document.addEventListener(
   'DOMContentLoaded',
@@ -196,17 +196,17 @@ class DoiBubble {
    * Clear message space
    */
   private resetMessageSpace(): void {
-    this.elements_.messageOutput.innerHTML = '';
     this.elements_.messageDiv.hidden = true;
+    this.elements_.messageOutput.replaceChildren();
   }
 
   /**
    * Print a notification
-   * @param message Message
+   * @param messageNodes Message nodes
    */
-  private bubbleMessage(message: string): void {
+  private bubbleMessage(messageNodes: Node[]): void {
     this.resetMessageSpace();
-    this.elements_.messageOutput.innerHTML = message;
+    this.elements_.messageOutput.append(...messageNodes);
     this.elements_.messageDiv.hidden = false;
   }
 
@@ -260,7 +260,7 @@ class DoiBubble {
           await queueRecordDoi(doiInput);
           await this.resolveDoi(doiInput);
         } else {
-          this.bubbleMessage(chrome.i18n.getMessage('invalidDoiAlert'));
+          this.bubbleMessage(getMessageNodes('invalidDoiAlert'));
         }
         break;
       case BubbleAction.Options:
@@ -433,13 +433,18 @@ class DoiBubble {
   getLocalMessages(): void {
     const nestedMessageIds = ['citeSubmit', 'optionsSubmit', 'qrSubmit'];
 
-    nestedMessageIds.forEach((messageId) => {
-      const message = chrome.i18n.getMessage(messageId);
-      const element = document.getElementById(messageId + 'Text');
+    for (const messageId of nestedMessageIds) {
+      const message = getMessageNodes(messageId);
+      const elementId = `${messageId}Text`;
+      const element = document.getElementById(elementId);
       if (element) {
-        element.innerHTML = message;
+        element.append(...message);
+      } else if (!message) {
+        logInfo(`Unable to insert message ${messageId} because it is not defined.`);
+      } else {
+        logInfo(`Message for #${elementId} not inserted because element not found.`);
       }
-    });
+    }
 
     const messageIds = [
       'optionCrCustom',
@@ -448,14 +453,16 @@ class DoiBubble {
       'resolveSubmit',
     ];
 
-    messageIds.forEach((messageId) => {
-      const message = chrome.i18n.getMessage(messageId);
+    for (const messageId of messageIds) {
+      const message = getMessageNodes(messageId);
       const element = document.getElementById(messageId);
       if (element) {
-        element.innerHTML = message;
+        element.append(...message);
+      } else if (!message) {
+        logInfo(`Unable to insert message ${messageId} because it is not defined.`);
       } else {
         logInfo(`Message for #${messageId} not inserted because element not found.`);
       }
-    });
+    }
   }
 }

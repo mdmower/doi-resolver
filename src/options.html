@@ -84,7 +84,7 @@
               >
                 <use xlink:href="#icon-settings"></use>
               </svg>
-              <span class="d-inline-block align-middle ms-1">Options</span>
+              <span id="optionsTabSettings" class="d-inline-block align-middle ms-1"></span>
             </button>
           </li>
           <li title="History" class="nav-item" role="presentation">
@@ -102,7 +102,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-history" fill="currentColor">
                 <use xlink:href="#icon-history"></use>
               </svg>
-              <span class="d-inline-block align-middle ms-1">History</span>
+              <span id="optionsTabHistory" class="d-inline-block align-middle ms-1"></span>
             </button>
           </li>
           <li title="About" class="nav-item" role="presentation">
@@ -120,7 +120,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-about" fill="currentColor">
                 <use xlink:href="#icon-about"></use>
               </svg>
-              <span class="d-inline-block align-middle ms-1">About</span>
+              <span id="optionsTabAbout" class="d-inline-block align-middle ms-1"></span>
             </button>
           </li>
         </ul>
@@ -244,8 +244,7 @@
                   href="#"
                   data-bs-toggle="modal"
                   data-bs-target="#infoModal"
-                  data-modal-title="optionContextMenuModalTitle"
-                  data-modal-body="optionContextMenuModalBody"
+                  data-modal-id="optionContextMenuModal"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -269,8 +268,7 @@
                     href="#"
                     data-bs-toggle="modal"
                     data-bs-target="#infoModal"
-                    data-modal-title="optionContextMatchModalTitle"
-                    data-modal-body="optionContextMatchModalBody"
+                    data-modal-id="optionContextMatchModal"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -296,8 +294,7 @@
                   href="#"
                   data-bs-toggle="modal"
                   data-bs-target="#infoModal"
-                  data-modal-title="optionMetaButtonsModalTitle"
-                  data-modal-body="optionMetaButtonsModalBody"
+                  data-modal-id="optionMetaButtonsModal"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -466,8 +463,7 @@
                   href="#"
                   data-bs-toggle="modal"
                   data-bs-target="#infoModal"
-                  data-modal-title="optionAutolinkModalTitle"
-                  data-modal-body="optionAutolinkModalBody"
+                  data-modal-id="optionAutolinkModal"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -498,8 +494,7 @@
                     href="#"
                     data-bs-toggle="modal"
                     data-bs-target="#infoModal"
-                    data-modal-title="optionAutolinkExclusionsModalTitle"
-                    data-modal-body="optionAutolinkExclusionsModalBody"
+                    data-modal-id="optionAutolinkExclusionsModal"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -539,8 +534,7 @@
                   href="#"
                   data-bs-toggle="modal"
                   data-bs-target="#infoModal"
-                  data-modal-title="optionSyncDataModalTitle"
-                  data-modal-body="optionSyncDataModalBody"
+                  data-modal-id="optionSyncDataModal"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -603,8 +597,7 @@
                   href="#"
                   data-bs-toggle="modal"
                   data-bs-target="#infoModal"
-                  data-modal-title="historySaveModalTitle"
-                  data-modal-body="historySaveModalBody"
+                  data-modal-id="historySaveModal"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

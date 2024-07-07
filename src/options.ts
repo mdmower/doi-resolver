@@ -25,7 +25,7 @@ import {testAutolinkExclusion} from './lib/autolink';
 import {ContextMenuId, updateContextMenu} from './lib/context_menu';
 import {fetchDoiTitles} from './lib/metadata';
 import {logError, logInfo, logWarn} from './lib/logger';
-import {applyTheme} from './utils';
+import {applyTheme, getMessageNodes} from './utils';
 import {recordDois} from './lib/history';
 
 enum UrlHashPage {
@@ -437,7 +437,7 @@ class DoiOptions {
 
     // Bootstrap types are incomplete. Event types not available.
     const infoModal = this.elements_.infoModal;
-    infoModal.addEventListener('show.bs.modal', function (event: unknown) {
+    infoModal.addEventListener('show.bs.modal', (event: unknown) => {
       if (!isRecord(event)) {
         return;
       }
@@ -447,34 +447,12 @@ class DoiOptions {
         return;
       }
 
-      const titleElm = infoModal.querySelector('.modal-title');
-      const bodyElm = infoModal.querySelector('.modal-body');
-      if (!titleElm || !bodyElm) {
-        logWarn('Unable to update modal because elements are missing');
-        return;
-      }
-
-      const title = chrome.i18n.getMessage(trigger.dataset.modalTitle || '');
-      const body = chrome.i18n.getMessage(trigger.dataset.modalBody || '');
-      if (!title || !body) {
-        logWarn('Unable to update modal because message not defined');
-        return;
-      }
-
-      titleElm.innerHTML = title;
-      bodyElm.innerHTML = body;
+      const modalId = trigger.dataset.modalId ?? null;
+      this.setInfoModalContents(modalId);
     });
 
-    infoModal.addEventListener('hidden.bs.modal', function () {
-      const titleElm = infoModal.querySelector('.modal-title');
-      const bodyElm = infoModal.querySelector('.modal-body');
-      if (!titleElm || !bodyElm) {
-        logWarn('Unable to update modal because elements are missing');
-        return;
-      }
-
-      titleElm.innerHTML = 'Info';
-      bodyElm.innerHTML = '';
+    infoModal.addEventListener('hidden.bs.modal', () => {
+      this.setInfoModalContents(null);
     });
 
     const historyImportModal = this.elements_.historyImportModal;
@@ -976,16 +954,16 @@ class DoiOptions {
     if (drInput.length <= 10) {
       drPreview = drInput + '10.1000/182';
     } else {
-      drPreview = '&hellip;' + drInput.slice(-10, drInput.length) + '10.1000/182';
+      drPreview = '…' + drInput.slice(-10, drInput.length) + '10.1000/182';
     }
     if (srInput.length <= 10) {
       srPreview = srInput + 'dws9sz';
     } else {
-      srPreview = '&hellip;' + srInput.slice(-10, srInput.length) + 'dws9sz';
+      srPreview = '…' + srInput.slice(-10, srInput.length) + 'dws9sz';
     }
 
-    this.elements_.doiResolverOutput.innerHTML = drPreview;
-    this.elements_.shortDoiResolverOutput.innerHTML = srPreview;
+    this.elements_.doiResolverOutput.textContent = drPreview;
+    this.elements_.shortDoiResolverOutput.textContent = srPreview;
   }
 
   /**
@@ -993,17 +971,16 @@ class DoiOptions {
    */
   async outputAutolinkExclusionTestResults(): Promise<void> {
     const autolinkTestExclusionResult = this.elements_.autolinkTestExclusionResult;
-
     autolinkTestExclusionResult.classList.remove('match', 'nomatch');
 
     const testUrl = this.elements_.autolinkTestExclusion.value;
     if (!testUrl) {
-      autolinkTestExclusionResult.innerHTML = '';
+      autolinkTestExclusionResult.replaceChildren();
       return;
     }
     if (!/https?:\/\//i.test(testUrl)) {
-      autolinkTestExclusionResult.innerHTML = chrome.i18n.getMessage(
-        'autolinkExclusionsInvalidUrl'
+      autolinkTestExclusionResult.replaceChildren(
+        ...getMessageNodes('autolinkExclusionsInvalidUrl')
       );
       return;
     }
@@ -1012,10 +989,10 @@ class DoiOptions {
     const matched = await testAutolinkExclusion(testUrl, exclusions);
 
     if (matched) {
-      autolinkTestExclusionResult.innerHTML = chrome.i18n.getMessage('autolinkExclusionsMatch');
+      autolinkTestExclusionResult.replaceChildren(...getMessageNodes('autolinkExclusionsMatch'));
       autolinkTestExclusionResult.classList.add('match');
     } else {
-      autolinkTestExclusionResult.innerHTML = chrome.i18n.getMessage('autolinkExclusionsNoMatch');
+      autolinkTestExclusionResult.replaceChildren(...getMessageNodes('autolinkExclusionsNoMatch'));
       autolinkTestExclusionResult.classList.add('nomatch');
     }
   }
@@ -1515,11 +1492,58 @@ class DoiOptions {
   }
 
   /**
+   * Set info modal title and body
+   * @param modalId Modal ID
+   */
+  setInfoModalContents(modalId: string | null) {
+    const infoModal = this.elements_.infoModal;
+    const titleElm = infoModal.querySelector('.modal-title');
+    const bodyElm = infoModal.querySelector('.modal-body');
+    if (!titleElm || !bodyElm) {
+      logWarn('Unable to update modal because elements are missing');
+      return;
+    }
+
+    const titleChildren: Node[] = [];
+    const bodyChildren: Node[] = [];
+
+    if (modalId === 'optionContextMenuModal' || modalId == 'optionMetaButtonsModal') {
+      const titleId = `${modalId}Title`;
+      titleChildren.push(...getMessageNodes(titleId));
+
+      const bodyId = `${modalId}Body`;
+      const description = document.createElement('p');
+      description.append(...getMessageNodes(bodyId));
+      const imgContainer = document.createElement('div');
+      imgContainer.classList.add('text-center');
+      const img = document.createElement('img');
+      img.classList.add('img-fluid');
+      // TODO: Use internationalization to identify locale specific images
+      if (modalId === 'optionContextMenuModal') {
+        img.src = 'img/context_menu.png';
+      } else if (modalId == 'optionMetaButtonsModal') {
+        img.src = 'img/bubble_meta.png';
+      }
+      imgContainer.appendChild(img);
+      bodyChildren.push(description, imgContainer);
+    } else if (modalId) {
+      const titleId = `${modalId}Title`;
+      titleChildren.push(...getMessageNodes(titleId));
+
+      const bodyId = `${modalId}Body`;
+      bodyChildren.push(...getMessageNodes(bodyId));
+    }
+
+    titleElm.replaceChildren(...titleChildren);
+    bodyElm.replaceChildren(...bodyChildren);
+  }
+
+  /**
    * Get localization strings and populate their corresponding elements' HTML.
    */
   getLocalMessages() {
-    const title = chrome.i18n.getMessage('optionsTitle');
-    document.title = title;
+    const headingTitle = chrome.i18n.getMessage('optionsTitle');
+    document.title = headingTitle;
 
     const messageIds = [
       'headingAutolink',
@@ -1571,6 +1595,9 @@ class DoiOptions {
       'optionThemeDark',
       'optionThemeLight',
       'optionThemeSystem',
+      'optionsTabAbout',
+      'optionsTabHistory',
+      'optionsTabSettings',
       'syncDataWipeButton',
       'syncDataWipeDescription',
       'tableHeadingDelete',
@@ -1580,51 +1607,34 @@ class DoiOptions {
       'textShortDoiResolverInput',
     ];
 
-    messageIds.forEach((messageId) => {
-      const message = chrome.i18n.getMessage(messageId);
+    for (const messageId of messageIds) {
+      const message = getMessageNodes(messageId);
       const element = document.getElementById(messageId);
-      if (!element) {
+      if (message && element) {
+        element.append(...message);
+      } else if (!message) {
+        logInfo(`Unable to insert message ${messageId} because it is not defined.`);
+      } else {
         logInfo(`Message for #${messageId} not inserted because element not found.`);
-        return;
       }
-      element.innerHTML = message;
-    });
+    }
 
     const messageClasses = ['optionCrCustom', 'optionCrDefault', 'optionCrSelectable'];
-
-    messageClasses.forEach((messageClass) => {
-      const message = chrome.i18n.getMessage(messageClass);
-      Array.from(document.getElementsByClassName(messageClass)).forEach((element) => {
-        element.innerHTML = message;
-      });
-    });
-
-    const doiResetMessage = chrome.i18n.getMessage('resetButton');
-    this.elements_.doiResolverInputReset.innerHTML = doiResetMessage;
-    this.elements_.shortDoiResolverInputReset.innerHTML = doiResetMessage;
-    const urlExampleMessage = chrome.i18n.getMessage('doiOutputUrlExample');
-    this.elements_.doiOutputUrlExample.innerHTML = urlExampleMessage;
-    this.elements_.shortDoiOutputUrlExample.innerHTML = urlExampleMessage;
-
-    let icon: HTMLElement | null;
-    icon = document.querySelector('#icon-copy title');
-    if (icon) {
-      icon.innerHTML = chrome.i18n.getMessage('svgIconCopy');
-    }
-    icon = document.querySelector('#icon-history title');
-    if (icon) {
-      icon.innerHTML = chrome.i18n.getMessage('svgIconHistory');
-    }
-    icon = document.querySelector('#icon-cog title');
-    if (icon) {
-      icon.innerHTML = chrome.i18n.getMessage('svgIconCog');
-    }
-    icon = document.querySelector('#icon-info title');
-    if (icon) {
-      icon.innerHTML = chrome.i18n.getMessage('svgIconInfo');
+    for (const messageClass of messageClasses) {
+      const message = getMessageNodes(messageClass);
+      for (const element of Array.from(document.getElementsByClassName(messageClass))) {
+        element.append(...message);
+      }
     }
 
-    this.elements_.extensionVersion.innerHTML = chrome.runtime.getManifest().version;
+    const doiResetMessage = getMessageNodes('resetButton');
+    this.elements_.doiResolverInputReset.append(...doiResetMessage);
+    this.elements_.shortDoiResolverInputReset.append(...doiResetMessage);
+    const urlExampleMessage = getMessageNodes('doiOutputUrlExample');
+    this.elements_.doiOutputUrlExample.append(...urlExampleMessage);
+    this.elements_.shortDoiOutputUrlExample.append(...urlExampleMessage);
+
+    this.elements_.extensionVersion.textContent = chrome.runtime.getManifest().version;
   }
 
   /**

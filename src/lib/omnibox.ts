@@ -34,7 +34,7 @@ async function omniHandlerAsync(
 ) {
   const doiInput = encodeURI(trimDoi(text));
   if (!isValidDoi(doiInput)) {
-    const notificationTitle = 'Invalid DOI';
+    const notificationTitle = chrome.i18n.getMessage('invalidDoiTitle');
     const notificationMessage = chrome.i18n.getMessage('invalidDoiAlert');
     showNotification(notificationTitle, notificationMessage);
     return;

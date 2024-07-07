@@ -4,6 +4,7 @@
 import {logError} from './lib/logger';
 import {DisplayTheme, getDefaultOptions, getOptions} from './lib/options';
 import {isRecord} from './lib/utils';
+import DOMPurify from 'dompurify';
 
 /**
  * Apply theme to page
@@ -42,7 +43,7 @@ export function parseTitles(val?: unknown): Record<string, string | undefined> |
     if (typeof rawTitle === 'string') {
       try {
         const container = document.createElement('div');
-        container.innerHTML = rawTitle;
+        container.innerHTML = DOMPurify.sanitize(rawTitle);
         let firstChild = container.firstElementChild;
         while (firstChild) {
           if (firstChild.tagName === 'SUBTITLE' && firstChild.textContent) {
@@ -67,4 +68,138 @@ export function parseTitles(val?: unknown): Record<string, string | undefined> |
     titles[doi] = title;
     return titles;
   }, {});
+}
+
+interface HtmlSub {
+  search: string | RegExp;
+  node: (text?: string) => HTMLElement;
+}
+const htmlSubs: HtmlSub[] = [
+  {
+    search: 'HTML_SUB_BR',
+    node: () => document.createElement('br'),
+  },
+  {
+    search: 'HTML_SUB_A_CSL_LOCALES',
+    node: () => {
+      const element = document.createElement('a');
+      element.href = 'https://github.com/citation-style-language/locales';
+      element.textContent = 'GitHub';
+      element.target = '_blank';
+      return element;
+    },
+  },
+  {
+    search: 'HTML_SUB_A_CSL_STYLES',
+    node: () => {
+      const element = document.createElement('a');
+      element.href = 'https://github.com/citation-style-language/styles';
+      element.textContent = 'GitHub';
+      element.target = '_blank';
+      return element;
+    },
+  },
+  {
+    search: /HTML_SUB_SPAN_UL\(([^)]+)\)/,
+    node: (text) => {
+      const element = document.createElement('span');
+      element.style.textDecoration = 'underline';
+      element.textContent = text ?? '';
+      return element;
+    },
+  },
+  {
+    search: /HTML_SUB_STRONG\(([^)]+)\)/,
+    node: (text) => {
+      const element = document.createElement('strong');
+      element.textContent = text ?? '';
+      return element;
+    },
+  },
+  {
+    search: /HTML_SUB_EM\(([^)]+)\)/,
+    node: (text) => {
+      const element = document.createElement('em');
+      element.textContent = text ?? '';
+      return element;
+    },
+  },
+  {
+    search: /HTML_SUB_CODE\(([^)]+)\)/,
+    node: (text) => {
+      const element = document.createElement('code');
+      element.textContent = text ?? '';
+      return element;
+    },
+  },
+  {
+    search: /HTML_SUB_ULIST\(([^)]+)\)/,
+    node: (text) => {
+      const element = document.createElement('ul');
+      const children = (text ?? '').split(',').map((item) => {
+        const li = document.createElement('li');
+        li.textContent = item.trim();
+        return li;
+      });
+      element.append(...children);
+      return element;
+    },
+  },
+];
+
+interface HtmlSubResult {
+  idx: number;
+  len: number;
+  node: HTMLElement;
+}
+
+/**
+ * Print a notification
+ * @param i18nId Message ID
+ * @param i18nSubstitutions Substitutions
+ */
+export function getMessageNodes(i18nId: string, i18nSubstitutions?: string[]): Node[] {
+  const message = chrome.i18n.getMessage(i18nId, i18nSubstitutions);
+
+  const nodes: Node[] = [];
+  for (let pos = 0; pos < message.length; ) {
+    const subs = htmlSubs
+      .map<HtmlSubResult | undefined>((htmlSub) => {
+        if (htmlSub.search instanceof RegExp) {
+          const match = htmlSub.search.exec(message.slice(pos));
+          if (match) {
+            return {
+              idx: pos + match.index,
+              len: match[0].length,
+              node: htmlSub.node(match[1]),
+            };
+          }
+        } else {
+          const idx = message.indexOf(htmlSub.search, pos);
+          if (idx >= 0) {
+            return {
+              idx,
+              len: htmlSub.search.length,
+              node: htmlSub.node(),
+            };
+          }
+        }
+      })
+      .filter((sub) => !!sub)
+      .sort((subA, subB) => subA.idx - subB.idx);
+
+    if (!subs.length) {
+      nodes.push(document.createTextNode(message.slice(pos)));
+      break;
+    }
+
+    const {idx, len, node} = subs[0];
+    if (idx > pos) {
+      nodes.push(document.createTextNode(message.slice(pos, idx)));
+    }
+    nodes.push(node);
+    pos = idx + len;
+  }
+
+  return nodes;
 }

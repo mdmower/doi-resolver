@@ -12,7 +12,8 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "prettier",
-    "plugin:jsdoc/recommended"
+    "plugin:jsdoc/recommended",
+    "plugin:no-unsanitized/DOM"
   ],
   "ignorePatterns": ["dist/**/*", "src/csl/**/*", "src/qrcodegen/**/*"],
   "rules": {
@@ -38,7 +39,19 @@
     "jsdoc/require-returns": 0,
     "jsdoc/require-returns-type": 0,
     "jsdoc/require-returns-description": 0,
-    "jsdoc/require-param-type": 0
+    "jsdoc/require-param-type": 0,
+    "no-unsanitized/method": [
+      "error",
+      {
+        "escape": {"methods": ["DOMPurify.sanitize"]}
+      }
+    ],
+    "no-unsanitized/property": [
+      "error",
+      {
+        "escape": {"methods": ["DOMPurify.sanitize"]}
+      }
+    ]
   },
   "globals": {
     "chrome": "readonly"

@@ -26,7 +26,7 @@ import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './lib/mes
 import {getSavedDoiTitle, recordDoi, queueRecordDoi} from './lib/history';
 import {fetchDoiTitle} from './lib/metadata';
 import {logError, logInfo} from './lib/logger';
-import {applyTheme} from './utils';
+import {applyTheme, getMessageNodes} from './utils';
 
 interface CreateQrParams {
   size: number;
@@ -499,10 +499,7 @@ class DoiQr {
 
     const selectBox = this.elements_.doiHistory;
     selectBox.selectedIndex = -1;
-    while (selectBox.firstChild) {
-      selectBox.removeChild(selectBox.firstChild);
-    }
-    optionElements.forEach((optionElement) => selectBox.appendChild(optionElement));
+    selectBox.replaceChildren(...optionElements);
   }
 
   /**
@@ -683,19 +680,19 @@ class DoiQr {
    */
   private resetSpace(): void {
     this.elements_.notifyDiv.classList.remove('advanced');
-    this.elements_.notifyDiv.innerHTML = '';
     this.elements_.notifyDiv.hidden = true;
-    this.elements_.qrDiv.innerHTML = '';
+    this.elements_.notifyDiv.replaceChildren();
     this.elements_.qrDiv.hidden = true;
+    this.elements_.qrDiv.replaceChildren();
   }
 
   /**
    * Print a simple notification
-   * @param message Message
+   * @param messageNodes Message nodes
    */
-  private simpleNotification(message: string): void {
+  private simpleNotification(messageNodes: Node[]): void {
     this.resetSpace();
-    this.elements_.notifyDiv.innerHTML = message;
+    this.elements_.notifyDiv.append(...messageNodes);
     this.elements_.notifyDiv.hidden = false;
   }
 
@@ -719,7 +716,7 @@ class DoiQr {
 
     const doiInput = encodeURI(trimDoi(this.elements_.doiInput.value));
     if (!isValidDoi(doiInput)) {
-      this.simpleNotification(chrome.i18n.getMessage('invalidDoiAlert'));
+      this.simpleNotification(getMessageNodes('invalidDoiAlert'));
       return;
     }
 
@@ -755,7 +752,7 @@ class DoiQr {
     };
 
     this.insertQr(doiInput, qrParms).catch((error) => {
-      this.simpleNotification(chrome.i18n.getMessage('qrGenerationFailed'));
+      this.simpleNotification(getMessageNodes('qrGenerationFailed'));
       logError('Failed to insert QR', error);
     });
   }
@@ -776,7 +773,7 @@ class DoiQr {
       messageToEncode += doi;
     }
 
-    this.simpleNotification('Loading...');
+    this.simpleNotification(getMessageNodes('loading'));
 
     if (this.elements_.qrFetchTitle.checked) {
       // These permissions will be cleaned when last QR/Citation tab is closed
@@ -930,18 +927,18 @@ class DoiQr {
    * @param titleRetrieval Status of title retrieval
    */
   private updateMessage(message: string, titleRetrieval: TitleRetrievalStatus): void {
-    let titleNotice = '';
+    let titleNotice: Node[];
 
     switch (titleRetrieval) {
       case TitleRetrievalStatus.Found:
-        titleNotice = chrome.i18n.getMessage('qrTitleSuccess');
+        titleNotice = getMessageNodes('qrTitleSuccess');
         break;
       case TitleRetrievalStatus.Missing:
-        titleNotice = chrome.i18n.getMessage('qrTitleFailure');
+        titleNotice = getMessageNodes('qrTitleFailure');
         break;
       case TitleRetrievalStatus.Disabled:
       default:
-        titleNotice = chrome.i18n.getMessage('qrDisabled');
+        titleNotice = getMessageNodes('qrDisabled');
         break;
     }
 
@@ -951,10 +948,10 @@ class DoiQr {
     const headings = clone.querySelectorAll('.notifyHeading');
     const contents = clone.querySelectorAll('.notifyContent');
 
-    headings[0].innerHTML = chrome.i18n.getMessage('qrTitleStatus');
-    contents[0].innerHTML = titleNotice;
-    headings[1].innerHTML = chrome.i18n.getMessage('qrMessageEncoded');
-    contents[1].innerHTML = message;
+    headings[0].append(...getMessageNodes('qrTitleStatus'));
+    contents[0].append(...titleNotice);
+    headings[1].append(...getMessageNodes('qrMessageEncoded'));
+    contents[1].textContent = message;
 
     this.advancedNotification(clone);
   }
@@ -987,8 +984,8 @@ class DoiQr {
    * Get localization strings and populate their corresponding elements' HTML.
    */
   private getLocalMessages(): void {
-    const message = chrome.i18n.getMessage('qrHeading');
-    document.title = message;
+    const headingTitle = chrome.i18n.getMessage('qrHeading');
+    document.title = headingTitle;
 
     const messageIds = [
       'doiInputLabel',
@@ -1006,29 +1003,52 @@ class DoiQr {
       'submitButton',
     ];
 
-    messageIds.forEach((messageId) => {
-      const message = chrome.i18n.getMessage(messageId);
+    for (const messageId of messageIds) {
+      const message = getMessageNodes(messageId);
       const element = document.getElementById(messageId);
       if (element) {
-        element.innerHTML = message;
+        element.append(...message);
+      } else if (!message) {
+        logInfo(`Unable to insert message ${messageId} because it is not defined.`);
       } else {
         logInfo(`Message for #${messageId} not inserted because element not found.`);
       }
-    });
+    }
 
     const openHistory = document.getElementById('openHistory');
     if (openHistory) {
-      openHistory.title = chrome.i18n.getMessage('headingHistory');
+      const message = chrome.i18n.getMessage('headingHistory');
+      if (message) {
+        openHistory.title = message;
+      } else {
+        logInfo(`Unable to insert message headingHistory because it is not defined.`);
+      }
+    } else {
+      logInfo(`Message for #openHistory not inserted because element not found.`);
     }
 
-    const filterHistory = document.querySelector<HTMLInputElement>('input#filterHistory');
+    const filterHistory = document.querySelector<HTMLInputElement>('#filterHistory');
     if (filterHistory) {
-      filterHistory.placeholder = chrome.i18n.getMessage('filterHistoryLabel');
+      const message = chrome.i18n.getMessage('filterHistoryLabel');
+      if (message) {
+        filterHistory.placeholder = message;
+      } else {
+        logInfo(`Unable to insert message filterHistoryLabel because it is not defined.`);
+      }
+    } else {
+      logInfo(`Message for #filterHistory not inserted because element not found.`);
     }
 
     const modalLabel = document.getElementById('modalLabel');
     if (modalLabel) {
-      modalLabel.innerHTML = chrome.i18n.getMessage('headingHistory');
+      const message = chrome.i18n.getMessage('headingHistory');
+      if (message) {
+        modalLabel.textContent = message;
+      } else {
+        logInfo(`Unable to insert message headingHistory because it is not defined.`);
+      }
+    } else {
+      logInfo(`Message for #modalLabel not inserted because element not found.`);
     }
   }
 }

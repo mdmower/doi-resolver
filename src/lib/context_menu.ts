@@ -99,7 +99,7 @@ async function contextMenuHandlerAsync(info: chrome.contextMenus.OnClickData): P
 
   const doi = findDoiInString(info.selectionText || '');
   if (!doi) {
-    const notificationTitle = 'Invalid DOI';
+    const notificationTitle = chrome.i18n.getMessage('invalidDoiTitle');
     const notificationMessage = chrome.i18n.getMessage('invalidDoiAlert');
     showNotification(notificationTitle, notificationMessage);
     return;

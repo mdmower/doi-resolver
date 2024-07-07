@@ -9,7 +9,8 @@ import {CiteProcSys} from 'citeproc';
 import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './lib/messaging';
 import {queueRecordDoi} from './lib/history';
 import {logDebug, logError, logInfo} from './lib/logger';
-import {applyTheme} from './utils';
+import {applyTheme, getMessageNodes} from './utils';
+import DOMPurify from 'dompurify';
 
 interface CitationResources {
   citeProcJson: Record<string, unknown>;
@@ -316,13 +317,13 @@ class DoiCitation {
 
     const doiInput = encodeURI(trimDoi(this.elements_.doiInput.value));
     if (!isValidDoi(doiInput)) {
-      this.simpleNotification(chrome.i18n.getMessage('invalidDoiAlert'));
+      this.simpleNotification(getMessageNodes('invalidDoiAlert'));
       return;
     }
 
     const selectedStyle = this.elements_.styleList.value;
     if (!selectedStyle) {
-      this.simpleNotification(chrome.i18n.getMessage('citeStyleNotSelected'));
+      this.simpleNotification(getMessageNodes('citeStyleNotSelected'));
       return;
     }
 
@@ -343,7 +344,7 @@ class DoiCitation {
       selectedLocale,
       defaultLocaleForStyle
     ).catch((error) => {
-      this.simpleNotification(chrome.i18n.getMessage('noCitationFound'));
+      this.simpleNotification(getMessageNodes('noCitationFound'));
       logError('Failed to handle form submission', error);
     });
   }
@@ -366,7 +367,7 @@ class DoiCitation {
     // in the background, so no need to also request meta permissions.
     const granted = await requestCitationPermissions();
     if (!granted) {
-      this.simpleNotification(chrome.i18n.getMessage('needCitationPerm'));
+      this.simpleNotification(getMessageNodes('needCitationPerm'));
       return;
     }
 
@@ -396,19 +397,19 @@ class DoiCitation {
    * Clear message and citation spaces
    */
   private resetSpace(): void {
-    this.elements_.notifyDiv.innerHTML = '';
     this.elements_.notifyDiv.hidden = true;
-    this.elements_.citeDiv.innerHTML = '';
+    this.elements_.notifyDiv.replaceChildren();
     this.elements_.citeDiv.hidden = true;
+    this.elements_.citeDiv.replaceChildren();
   }
 
   /**
    * Print a notification
-   * @param message Message
+   * @param messageNodes Message nodes
    */
-  private simpleNotification(message: string): void {
+  private simpleNotification(messageNodes: Node[]): void {
     this.resetSpace();
-    this.elements_.notifyDiv.innerHTML = message;
+    this.elements_.notifyDiv.append(...messageNodes);
     this.elements_.notifyDiv.hidden = false;
   }
 
@@ -418,7 +419,7 @@ class DoiCitation {
    */
   private outputCitation(citation: string): void {
     this.resetSpace();
-    this.elements_.citeDiv.innerHTML = citation;
+    this.elements_.citeDiv.innerHTML = DOMPurify.sanitize(citation);
     this.elements_.citeDiv.hidden = false;
   }
 
@@ -433,7 +434,7 @@ class DoiCitation {
     style: string,
     locale: string
   ): Promise<CitationResources | undefined> {
-    this.simpleNotification(chrome.i18n.getMessage('loading'));
+    this.simpleNotification(getMessageNodes('loading'));
 
     const citeProcJsonPromise = this.getCiteProcJson(doi);
     const styleXmlPromise = this.getStyleXml(style);
@@ -443,19 +444,19 @@ class DoiCitation {
 
     if (!citeProcJson) {
       logError('Invalid CiteProc JSON');
-      this.simpleNotification(chrome.i18n.getMessage('noCitationFound'));
+      this.simpleNotification(getMessageNodes('noCitationFound'));
       return;
     }
 
     if (!styleXml) {
       logError('Invalid style XML');
-      this.simpleNotification(chrome.i18n.getMessage('citeStyleLoadFail', [style]));
+      this.simpleNotification(getMessageNodes('citeStyleLoadFail', [style]));
       return;
     }
 
     if (!localeXml) {
       logError('Invalid locale XML');
-      this.simpleNotification(chrome.i18n.getMessage('citeLocaleLoadFail', [locale]));
+      this.simpleNotification(getMessageNodes('citeLocaleLoadFail', [locale]));
       return;
     }
 
@@ -580,7 +581,7 @@ class DoiCitation {
     if (bibResult) {
       this.outputCitation(bibResult[1].join('\n'));
     } else {
-      this.simpleNotification(chrome.i18n.getMessage('citeStyleGenFail'));
+      this.simpleNotification(getMessageNodes('citeStyleGenFail'));
     }
   }
 
@@ -636,18 +637,15 @@ class DoiCitation {
 
     const selectBox = this.elements_.doiHistory;
     selectBox.selectedIndex = -1;
-    while (selectBox.firstChild) {
-      selectBox.removeChild(selectBox.firstChild);
-    }
-    optionElements.forEach((optionElement) => selectBox.appendChild(optionElement));
+    selectBox.replaceChildren(...optionElements);
   }
 
   /**
    * Get localization strings and populate their corresponding elements' HTML.
    */
   private getLocalMessages(): void {
-    const message = chrome.i18n.getMessage('citeHeading');
-    document.title = message;
+    const headingTitle = chrome.i18n.getMessage('citeHeading');
+    document.title = headingTitle;
 
     const messageIds = [
       'citeHeading',
@@ -658,29 +656,52 @@ class DoiCitation {
       'submitButton',
     ];
 
-    messageIds.forEach((messageId) => {
-      const message = chrome.i18n.getMessage(messageId);
+    for (const messageId of messageIds) {
+      const message = getMessageNodes(messageId);
       const element = document.getElementById(messageId);
       if (element) {
-        element.innerHTML = message;
+        element.append(...message);
+      } else if (!message) {
+        logInfo(`Unable to insert message ${messageId} because it is not defined.`);
       } else {
         logInfo(`Message for #${messageId} not inserted because element not found.`);
       }
-    });
+    }
 
     const openHistory = document.getElementById('openHistory');
     if (openHistory) {
-      openHistory.title = chrome.i18n.getMessage('headingHistory');
+      const message = chrome.i18n.getMessage('headingHistory');
+      if (message) {
+        openHistory.title = message;
+      } else {
+        logInfo(`Unable to insert message headingHistory because it is not defined.`);
+      }
+    } else {
+      logInfo(`Message for #openHistory not inserted because element not found.`);
     }
 
-    const filterHistory = document.querySelector<HTMLInputElement>('input#filterHistory');
+    const filterHistory = document.querySelector<HTMLInputElement>('#filterHistory');
     if (filterHistory) {
-      filterHistory.placeholder = chrome.i18n.getMessage('filterHistoryLabel');
+      const message = chrome.i18n.getMessage('filterHistoryLabel');
+      if (message) {
+        filterHistory.placeholder = message;
+      } else {
+        logInfo(`Unable to insert message filterHistoryLabel because it is not defined.`);
+      }
+    } else {
+      logInfo(`Message for #filterHistory not inserted because element not found.`);
     }
 
     const modalLabel = document.getElementById('modalLabel');
     if (modalLabel) {
-      modalLabel.innerHTML = chrome.i18n.getMessage('headingHistory');
+      const message = chrome.i18n.getMessage('headingHistory');
+      if (message) {
+        modalLabel.textContent = message;
+      } else {
+        logInfo(`Unable to insert message headingHistory because it is not defined.`);
+      }
+    } else {
+      logInfo(`Message for #modalLabel not inserted because element not found.`);
     }
   }
 }

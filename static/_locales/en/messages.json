@@ -28,8 +28,8 @@
     "message": "Locale"
   },
   "citeLocaleLoadFail": {
-    "description": "Failure message when locale.xml retrieval fails",
-    "message": "Could not load locales-$locale$.xml from <a href=\"https://github.com/citation-style-language/locales\">GitHub</a>",
+    "description": "Failure message when locale.xml retrieval fails (HTML anchor to github.com/citation-style-language/locales will be inserted at runtime)",
+    "message": "Could not load locales-$locale$.xml from HTML_SUB_A_CSL_LOCALES(GitHub)",
     "placeholders": {
       "locale": {
         "content": "$1"
@@ -49,8 +49,8 @@
     "message": "Citation generation failed"
   },
   "citeStyleLoadFail": {
-    "description": "Failure message when style.csl retrieval fails",
-    "message": "Could not load style $style$.csl from <a href=\"https://github.com/citation-style-language/styles\">GitHub</a>",
+    "description": "Failure message when style.csl retrieval fails (HTML anchor to github.com/citation-style-language/styles will be inserted at runtime)",
+    "message": "Could not load style $style$.csl from HTML_SUB_A_CSL_STYLES(GitHub)",
     "placeholders": {
       "style": {
         "content": "$1"
@@ -213,6 +213,10 @@
     "description": "A warning presented to user if the DOI code is not valid",
     "message": "Not a valid DOI"
   },
+  "invalidDoiTitle": {
+    "description": "The heading to display when a DOI code is not valid",
+    "message": "Invalid DOI"
+  },
   "invalidQrSizeAlert": {
     "description": "A warning presented to user if the QR image size entered is too large or too small",
     "message": "Not a valid size"
@@ -239,7 +243,7 @@
   },
   "optionAutolinkExclusionsModalBody": {
     "description": "The message body to display in an info modal for the autolink exclusion feature",
-    "message": "List websites &ndash; one per line &ndash; that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.<br><br><span style=\"text-decoration: underline;\">Normal matching</span>: Websites will be matched based on whether the string matches the URL, <em>beginning</em> with the hostname. Wildcards are not supported.<br>Example: <strong>example.com/abc</strong> will match http://example.com/abc/def but will not match http://www.example.com/abc/def.<br><br><span style=\"text-decoration: underline;\">Regex matching</span>: Surround an entry by forward slashes (/) to perform a regex match on an entire URL, beginning with the hostname.<br>Example: <strong>/example\\.com\\/abc.*/</strong> will match both http://example.com/abc/def and http://www.example.com/abc/def."
+    "message": "List websites – one per line – that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.HTML_SUB_BRHTML_SUB_BRHTML_SUB_SPAN_UL(Normal matching): Websites will be matched based on whether the string matches the URL, HTML_SUB_EM(beginning) with the hostname. Wildcards are not supported.HTML_SUB_BRExample: HTML_SUB_CODE(example.com/abc) will match HTML_SUB_CODE(http://example.com/abc/def) but will not match HTML_SUB_CODE(http://www.example.com/abc/def).HTML_SUB_BRHTML_SUB_BRHTML_SUB_SPAN_UL(Regex matching): Surround an entry by forward slashes (HTML_SUB_CODE(/)) to perform a regex match on an entire URL, beginning with the hostname.HTML_SUB_BRExample: HTML_SUB_CODE(/example\\.com\\/abc.*/) will match both HTML_SUB_CODE(http://example.com/abc/def) and HTML_SUB_CODE(http://www.example.com/abc/def)."
   },
   "optionAutolinkExclusionsModalTitle": {
     "description": "The heading to display in an info modal for the autolink exclusion feature",
@@ -278,8 +282,8 @@
     "message": "Enable right-click context menu for selected text"
   },
   "optionContextMenuModalBody": {
-    "description": "The message body to display in an info modal for the context menu feature",
-    "message": "<p>This feature adds a 'Resolve DOI' entry in the context menu for selected text.</p><div class='text-center'><img class='img-fluid' src='img/context_menu.png'></div>"
+    "description": "The message body text to display in an info modal for the context menu feature",
+    "message": "This feature adds a 'Resolve DOI' entry in the context menu for selected text."
   },
   "optionContextMenuModalTitle": {
     "description": "The heading to display in an info modal for the context menu feature",
@@ -335,7 +339,7 @@
   },
   "optionHistoryLength": {
     "description": "Label for history option to retain up to N history entries",
-    "message": "Number of history entries to retain (1 &le; N &le; 5000)"
+    "message": "Number of history entries to retain (1 ≤ N ≤ 5000)"
   },
   "optionHistoryShowSave": {
     "description": "Label for history option to only show saved items in text box drop-downs",
@@ -350,8 +354,8 @@
     "message": "Enable additional features in the browser action bubble"
   },
   "optionMetaButtonsModalBody": {
-    "description": "The message body to display in an info modal for the meta buttons feature",
-    "message": "<p>This feature will add buttons to access Options, the Citation Generator, and the QR Code Generator to the browser action bubble.</p><div class='text-center'><img class='img-fluid' src='img/bubble_meta.png'></div>"
+    "description": "The message body text to display in an info modal for the meta buttons feature",
+    "message": "This feature will add buttons to access Options, the Citation Generator, and the QR Code Generator to the browser action bubble."
   },
   "optionMetaButtonsModalTitle": {
     "description": "The heading to display in an info modal for the meta buttons feature",
@@ -377,6 +381,14 @@
     "description": "Label for data sync feature",
     "message": "Synchronize this extension's settings with your profile"
   },
+  "optionSyncDataModalBody": {
+    "description": "The message body to display in an info modal for the sync feature",
+    "message": "You must be logged into your browser and have settings synchronization enabled for this feature to work. This option needs to be enabled on each browser installation where you would like sync to occur. Cross-browser sync (e.g. from Chrome to Firefox) is not yet supported.HTML_SUB_BRHTML_SUB_BRThe following options are not included in sync because they require permissions to be accepted before they can be enabled: HTML_SUB_ULIST(Autolink,QR: Include title of reference in QR code,History: Automatically fetch title when a new DOI is recorded)"
+  },
+  "optionSyncDataModalTitle": {
+    "description": "The heading to display in an info modal for the sync feature",
+    "message": "Sync"
+  },
   "optionTheme": {
     "description": "Label for selectable option to choose a dark or light theme",
     "message": "Color theme for pages:"
@@ -393,16 +405,20 @@
     "description": "Label for default theme (follow system)",
     "message": "System"
   },
-  "optionSyncDataModalBody": {
-    "description": "The message body to display in an info modal for the sync feature",
-    "message": "You must be logged into your browser and have settings synchronization enabled for this feature to work. This option needs to be enabled on each browser installation where you would like sync to occur. Cross-browser sync (e.g. Chrome to Firefox/Edge) is not yet supported.<br><br>The following options are not included in sync because they require permissions to be accepted by the user before enabling: <ul><li>Autolink</li><li>QR: Include title of reference in QR code</li><li>History: Automatically fetch title when a new DOI is recorded</li></ul>"
-  },
-  "optionSyncDataModalTitle": {
-    "description": "The heading to display in an info modal for the sync feature",
-    "message": "Sync"
-  },
   "optionsSubmit": {
     "description": "The text that appears on the button to open the Options page",
+    "message": "Options"
+  },
+  "optionsTabAbout": {
+    "description": "Title for about tab on options page",
+    "message": "About"
+  },
+  "optionsTabHistory": {
+    "description": "Title for history tab on options page",
+    "message": "History"
+  },
+  "optionsTabSettings": {
+    "description": "Title for settings tab on options page",
     "message": "Options"
   },
   "optionsTitle": {
@@ -496,22 +512,6 @@
   "submitButton": {
     "description": "The text that appears on the button to submit a form",
     "message": "Submit"
-  },
-  "svgIconCog": {
-    "description": "Default title for SVG icon-cog",
-    "message": "Options"
-  },
-  "svgIconCopy": {
-    "description": "Default title for SVG icon-copy",
-    "message": "Copy"
-  },
-  "svgIconHistory": {
-    "description": "Default title for SVG icon-history",
-    "message": "History"
-  },
-  "svgIconInfo": {
-    "description": "Default title for SVG icon-info",
-    "message": "About"
   },
   "syncDataWipeButton": {
     "description": "Text for sync wipe button",

@@ -27,13 +27,14 @@
     "description": "A label next to the locale chooser for formatted citations",
     "message": "Locale"
   },
-  "citeLocaleLoadFailP1": {
-    "description": "Failure message when locale.xml retrieval fails (first part)",
-    "message": "Could not load locales-"
-  },
-  "citeLocaleLoadFailP2": {
-    "description": "Failure message when locale.xml retrieval fails (second part)",
-    "message": ".xml from <a href=\"https://github.com/citation-style-language/locales\">GitHub</a>"
+  "citeLocaleLoadFail": {
+    "description": "Failure message when locale.xml retrieval fails",
+    "message": "Could not load locales-$locale$.xml from <a href=\"https://github.com/citation-style-language/locales\">GitHub</a>",
+    "placeholders": {
+      "locale": {
+        "content": "$1"
+      }
+    }
   },
   "citeStyle": {
     "description": "A label next to the style chooser for formatted citations",
@@ -47,13 +48,14 @@
     "description": "General failure message for citation generation",
     "message": "Citation generation failed"
   },
-  "citeStyleLoadFailP1": {
-    "description": "Failure message when style.csl retrieval fails (first part)",
-    "message": "Could not load style "
-  },
-  "citeStyleLoadFailP2": {
-    "description": "Failure message when style.csl retrieval fails (second part)",
-    "message": ".csl from <a href=\"https://github.com/citation-style-language/styles\">GitHub</a>"
+  "citeStyleLoadFail": {
+    "description": "Failure message when style.csl retrieval fails",
+    "message": "Could not load style $style$.csl from <a href=\"https://github.com/citation-style-language/styles\">GitHub</a>",
+    "placeholders": {
+      "style": {
+        "content": "$1"
+      }
+    }
   },
   "citeStyleNotSelected": {
     "description": "Failure message when user has not selected a CSL style",

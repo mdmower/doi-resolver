@@ -449,21 +449,13 @@ class DoiCitation {
 
     if (!styleXml) {
       logError('Invalid style XML');
-      this.simpleNotification(
-        chrome.i18n.getMessage('citeStyleLoadFailP1') +
-          style +
-          chrome.i18n.getMessage('citeStyleLoadFailP2')
-      );
+      this.simpleNotification(chrome.i18n.getMessage('citeStyleLoadFail', [style]));
       return;
     }
 
     if (!localeXml) {
       logError('Invalid locale XML');
-      this.simpleNotification(
-        chrome.i18n.getMessage('citeLocaleLoadFailP1') +
-          locale +
-          chrome.i18n.getMessage('citeLocaleLoadFailP2')
-      );
+      this.simpleNotification(chrome.i18n.getMessage('citeLocaleLoadFail', [locale]));
       return;
     }
 

@@ -108,3 +108,7 @@ dist
 pkg
 csl-styles
 local.manifest.json
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

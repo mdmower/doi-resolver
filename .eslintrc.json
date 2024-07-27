@@ -64,6 +64,20 @@
       "parserOptions": {
         "project": "build/tsconfig.json"
       }
+    },
+    {
+      "files": ["playwright.config.ts", "tests/**/*.ts"],
+      "env": {
+        "node": true,
+        "browser": true
+      },
+      "parserOptions": {
+        "project": "tests/tsconfig.json"
+      },
+      "extends": ["plugin:playwright/recommended"],
+      "rules": {
+        "jsdoc/require-jsdoc": "off"
+      }
     }
   ],
   "settings": {

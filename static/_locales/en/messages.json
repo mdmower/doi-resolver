@@ -69,6 +69,10 @@
     "description": "The text that appears on the button to start the citation generator",
     "message": "Citation"
   },
+  "closeButton": {
+    "description": "The text for a close button",
+    "message": "Close"
+  },
   "contextText": {
     "description": "When a user highlights a DOI on a webpage and right clicks on the highlighted text, this entry appears in the context menu to resolve the DOI",
     "message": "Resolve DOI"
@@ -424,6 +428,15 @@
   "optionsTitle": {
     "description": "The title of options page",
     "message": "DOI Resolver Options"
+  },
+  "optionsVersion": {
+    "description": "The version of the application",
+    "message": "Version $version$",
+    "placeholders": {
+      "version": {
+        "content": "$1"
+      }
+    }
   },
   "qrBgColorInputLabel": {
     "description": "The label for the background color text box on the QR page",

@@ -431,6 +431,8 @@ class DoiBubble {
    * Get localization strings and populate their corresponding elements' HTML.
    */
   getLocalMessages(): void {
+    document.title = chrome.i18n.getMessage('appName');
+
     const nestedMessageIds = ['citeSubmit', 'optionsSubmit', 'qrSubmit'];
 
     for (const messageId of nestedMessageIds) {

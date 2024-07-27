@@ -52,12 +52,12 @@ body {
   color: $gray-600;
 }
 
-.history_entry_save,
-.history_entry_delete {
+.historyEntrySave,
+.historyEntryDelete {
   width: 6rem;
 }
 
-.history_entry_title {
+.historyEntryTitle {
   cursor: default;
 }
 
@@ -75,11 +75,11 @@ body {
   }
 }
 
-th.history_entry_doi {
+th.historyEntryDoi {
   position: relative;
 }
 
-@keyframes history_spinner {
+@keyframes history-spinner {
   to {
     transform: rotate(360deg);
   }
@@ -93,7 +93,7 @@ th.history_entry_doi {
   top: calc(50% - 0.5em);
   right: $table-cell-padding-x;
 
-  &.show_spinner::before {
+  &.show-spinner::before {
     content: '';
     box-sizing: border-box;
     position: absolute;
@@ -106,12 +106,12 @@ th.history_entry_doi {
     border-radius: 50%;
     border: 2px solid $body-color;
     border-top-color: transparent;
-    animation: history_spinner 0.8s linear infinite;
+    animation: history-spinner 0.8s linear infinite;
   }
 }
 
 @include color-mode(dark) {
-  #historySpinner.show_spinner::before {
+  #historySpinner.show-spinner::before {
     border-color: $body-color-dark;
     border-top-color: transparent;
   }

@@ -984,8 +984,7 @@ class DoiQr {
    * Get localization strings and populate their corresponding elements' HTML.
    */
   private getLocalMessages(): void {
-    const headingTitle = chrome.i18n.getMessage('qrHeading');
-    document.title = headingTitle;
+    document.title = chrome.i18n.getMessage('qrHeading');
 
     const messageIds = [
       'doiInputLabel',
@@ -1049,6 +1048,13 @@ class DoiQr {
       }
     } else {
       logInfo(`Message for #modalLabel not inserted because element not found.`);
+    }
+
+    const closeMessage = chrome.i18n.getMessage('closeButton');
+    for (const element of Array.from(
+      document.querySelectorAll<HTMLButtonElement>('.modal button.btn-close')
+    )) {
+      element.ariaLabel = closeMessage;
     }
   }
 }

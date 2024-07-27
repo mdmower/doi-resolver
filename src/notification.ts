@@ -3,7 +3,7 @@
  */
 
 import {logError} from './lib/logger';
-import {applyTheme} from './utils';
+import {applyTheme, getMessageNodes} from './utils';
 
 document.addEventListener(
   'DOMContentLoaded',
@@ -17,9 +17,9 @@ document.addEventListener(
 
 class DoiNotification {
   private elements_: {
-    titleH: HTMLHeadingElement;
-    messageP: HTMLParagraphElement;
-    closeBtn: HTMLButtonElement;
+    title: HTMLHeadingElement;
+    message: HTMLParagraphElement;
+    close: HTMLButtonElement;
   };
 
   constructor() {
@@ -27,10 +27,10 @@ class DoiNotification {
       throw new Error(`Required element is missing from the page: ${selector}`);
     };
     this.elements_ = {
-      closeBtn:
+      close:
         document.querySelector<HTMLButtonElement>('button#close') || elementMissing('button#close'),
-      titleH: document.querySelector<HTMLHeadingElement>('h5#title') || elementMissing('h5#title'),
-      messageP:
+      title: document.querySelector<HTMLHeadingElement>('h5#title') || elementMissing('h5#title'),
+      message:
         document.querySelector<HTMLParagraphElement>('p#message') || elementMissing('p#message'),
     };
   }
@@ -48,7 +48,7 @@ class DoiNotification {
    * Attach window/element listeners.
    */
   private startListeners(): void {
-    this.elements_.closeBtn.addEventListener('click', close.bind(window));
+    this.elements_.close.addEventListener('click', close.bind(window));
   }
 
   /**
@@ -56,11 +56,14 @@ class DoiNotification {
    */
   private renderNotification(): void {
     const url = new URL(location.href);
-    const title = url.searchParams.get('title');
-    const message = url.searchParams.get('message');
+    const title = url.searchParams.get('title') ?? '';
+    const message = url.searchParams.get('message') ?? '';
 
-    this.elements_.titleH.textContent = title;
-    this.elements_.messageP.textContent = message;
-    this.elements_.closeBtn.focus();
+    document.title = title;
+    this.elements_.close.append(...getMessageNodes('closeButton'));
+
+    this.elements_.title.textContent = title;
+    this.elements_.message.textContent = message;
+    this.elements_.close.focus();
   }
 }

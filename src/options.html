@@ -3,7 +3,7 @@
 
 <html>
   <head>
-    <title>DOI Resolver Options</title>
+    <title></title>
     <meta charset="utf-8" />
     <link href="./css/options.scss" rel="stylesheet" />
     <script src="bootstrap/js/dist/tab.js"></script>
@@ -60,7 +60,7 @@
       </defs>
     </svg>
 
-    <h1 class="page-title text-center mb-3">DOI Resolver</h1>
+    <h1 class="page-title text-center mb-3"></h1>
 
     <div class="page-content mx-auto">
       <div class="container-fluid mb-3">
@@ -145,7 +145,7 @@
                     type="selection"
                     id="theme"
                     class="form-select"
-                    aria-label="Select light or dark theme"
+                    aria-labelledby="optionTheme"
                   >
                     <option id="optionThemeSystem" value="system"></option>
                     <option id="optionThemeLight" value="light"></option>
@@ -168,7 +168,7 @@
                     type="selection"
                     id="omniboxOpento"
                     class="form-select"
-                    aria-label="Omnibox open-to target"
+                    aria-labelledby="optionOmniboxOpento"
                   >
                     <option id="optionOmniboxOpentoCurtab" value="curtab"></option>
                     <option id="optionOmniboxOpentoNewForetab" value="newfgtab"></option>
@@ -590,7 +590,7 @@
           </div>
           <table id="historyList" class="table">
             <tr id="historyHeading">
-              <th class="history_entry_save" scope="col">
+              <th class="historyEntrySave" scope="col">
                 <span id="tableHeadingSave"></span>
                 <a
                   class="ms-1 d-inline-block align-middle"
@@ -608,10 +608,10 @@
                   </svg>
                 </a>
               </th>
-              <th class="history_entry_delete" scope="col">
+              <th class="historyEntryDelete" scope="col">
                 <span id="tableHeadingDelete"></span>
               </th>
-              <th class="history_entry_doi" scope="col">
+              <th class="historyEntryDoi" scope="col">
                 <span id="tableHeadingDoi"></span>
                 <span id="historySpinner"></span>
               </th>
@@ -636,7 +636,7 @@
               </svg>
             </div>
           </div>
-          <p id="optionsVersion">Version <span id="extensionVersion"></span></p>
+          <p id="optionsVersion"></p>
           <p id="optionsDisclaimer">
             DOI Resolver is open source software, licensed under the
             <a href="https://github.com/mdmower/doi-resolver/blob/main/LICENSE"
@@ -698,12 +698,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="infoModalLabel"></h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label=""></button>
           </div>
           <div class="modal-body"></div>
         </div>
@@ -722,12 +717,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="historyImportModalLabel"></h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label=""></button>
           </div>
           <div class="modal-body">
             <p id="historyImportDescription"></p>
@@ -757,13 +747,13 @@
     </div>
 
     <!-- Templates -->
-    <template id="history_entry_template">
-      <tr class="history_entry">
-        <td class="history_entry_save align-middle">
-          <input class="history_input_save form-check-input" type="checkbox" />
+    <template id="historyEntryTemplate">
+      <tr class="historyEntry">
+        <td class="historyEntrySave align-middle">
+          <input class="historyInputSave form-check-input" type="checkbox" />
         </td>
-        <td class="history_entry_delete align-middle">
-          <button class="history_input_delete btn btn-outline-secondary btn-sm">
+        <td class="historyEntryDelete align-middle">
+          <button class="historyInputDelete btn btn-outline-secondary btn-sm">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               class="icon icon-trash d-block"
@@ -773,9 +763,9 @@
             </svg>
           </button>
         </td>
-        <td class="history_entry_doi">
-          <a class="history_entry_link" target="_blank"></a>
-          <div class="history_entry_title"></div>
+        <td class="historyEntryDoi">
+          <a class="historyEntryLink" target="_blank"></a>
+          <div class="historyEntryTitle"></div>
         </td>
       </tr>
     </template>

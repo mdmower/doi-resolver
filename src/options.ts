@@ -78,12 +78,13 @@ class DoiOptions {
     doiResolverInput: HTMLInputElement;
     doiResolverInputReset: HTMLButtonElement;
     doiResolverOutput: HTMLSpanElement;
-    extensionVersion: HTMLSpanElement;
     history: HTMLInputElement;
     historyClear: HTMLButtonElement;
+    historyEntryTemplate: HTMLTemplateElement;
     historyFetchTitle: HTMLInputElement;
     historyImportFailure: HTMLAnchorElement;
     historyImportInput: HTMLTextAreaElement;
+    historyImportModal: HTMLDivElement;
     historyImportSubmit: HTMLButtonElement;
     historyLength: HTMLInputElement;
     historyNotice: HTMLDivElement;
@@ -95,12 +96,11 @@ class DoiOptions {
     historySubOptions: HTMLDivElement;
     historyTab: HTMLButtonElement;
     historyTitleRefresh: HTMLButtonElement;
-    history_entry_template: HTMLTemplateElement;
-    historyImportModal: HTMLDivElement;
     infoModal: HTMLDivElement;
     meta: HTMLInputElement;
     omniboxOpento: HTMLSelectElement;
     optionsTab: HTMLButtonElement;
+    optionsVersion: HTMLParagraphElement;
     shortDoiOutputUrlExample: HTMLSpanElement;
     shortDoiResolverInput: HTMLInputElement;
     shortDoiResolverInputReset: HTMLButtonElement;
@@ -255,15 +255,15 @@ class DoiOptions {
       doiResolverOutput:
         document.querySelector<HTMLSpanElement>('span#doiResolverOutput') ||
         elementMissing('span#doiResolverOutput'),
-      extensionVersion:
-        document.querySelector<HTMLSpanElement>('span#extensionVersion') ||
-        elementMissing('span#extensionVersion'),
       history:
         document.querySelector<HTMLInputElement>('input#history') ||
         elementMissing('input#history'),
       historyClear:
         document.querySelector<HTMLButtonElement>('button#historyClear') ||
         elementMissing('button#historyClear'),
+      historyEntryTemplate:
+        document.querySelector<HTMLTemplateElement>('template#historyEntryTemplate') ||
+        elementMissing('template#historyEntryTemplate'),
       historyFetchTitle:
         document.querySelector<HTMLInputElement>('input#historyFetchTitle') ||
         elementMissing('input#historyFetchTitle'),
@@ -273,6 +273,9 @@ class DoiOptions {
       historyImportInput:
         document.querySelector<HTMLTextAreaElement>('textarea#historyImportInput') ||
         elementMissing('textarea#historyImportInput'),
+      historyImportModal:
+        document.querySelector<HTMLDivElement>('div#historyImportModal') ||
+        elementMissing('div#historyImportModal'),
       historyImportSubmit:
         document.querySelector<HTMLButtonElement>('button#historyImportSubmit') ||
         elementMissing('button#historyImportSubmit'),
@@ -306,12 +309,6 @@ class DoiOptions {
       historyTitleRefresh:
         document.querySelector<HTMLButtonElement>('button#historyTitleRefresh') ||
         elementMissing('button#historyTitleRefresh'),
-      history_entry_template:
-        document.querySelector<HTMLTemplateElement>('template#history_entry_template') ||
-        elementMissing('template#history_entry_template'),
-      historyImportModal:
-        document.querySelector<HTMLDivElement>('div#historyImportModal') ||
-        elementMissing('div#historyImportModal'),
       infoModal:
         document.querySelector<HTMLDivElement>('div#infoModal') || elementMissing('div#infoModal'),
       meta: document.querySelector<HTMLInputElement>('input#meta') || elementMissing('input#meta'),
@@ -321,6 +318,9 @@ class DoiOptions {
       optionsTab:
         document.querySelector<HTMLButtonElement>('button#pills-options-tab') ||
         elementMissing('button#pills-options-tab'),
+      optionsVersion:
+        document.querySelector<HTMLParagraphElement>('p#optionsVersion') ||
+        elementMissing('p#optionsVersion'),
       shortDoiOutputUrlExample:
         document.querySelector<HTMLSpanElement>('span#shortDoiOutputUrlExample') ||
         elementMissing('span#shortDoiOutputUrlExample'),
@@ -655,10 +655,10 @@ class DoiOptions {
    * Start listening for history changes
    */
   startHistoryChangeListeners() {
-    Array.from(document.getElementsByClassName('history_input_save')).forEach((element) => {
+    Array.from(document.getElementsByClassName('historyInputSave')).forEach((element) => {
       element.addEventListener('change', this.handlers_.saveHistoryEntry);
     });
-    Array.from(document.getElementsByClassName('history_input_delete')).forEach((element) => {
+    Array.from(document.getElementsByClassName('historyInputDelete')).forEach((element) => {
       element.addEventListener('click', this.handlers_.deleteHistoryEntry);
     });
   }
@@ -667,10 +667,10 @@ class DoiOptions {
    * Stop listening for history changes
    */
   haltHistoryChangeListeners() {
-    Array.from(document.getElementsByClassName('history_input_save')).forEach((element) => {
+    Array.from(document.getElementsByClassName('historyInputSave')).forEach((element) => {
       element.removeEventListener('change', this.handlers_.saveHistoryEntry);
     });
-    Array.from(document.getElementsByClassName('history_input_delete')).forEach((element) => {
+    Array.from(document.getElementsByClassName('historyInputDelete')).forEach((element) => {
       element.removeEventListener('click', this.handlers_.deleteHistoryEntry);
     });
   }
@@ -1175,35 +1175,35 @@ class DoiOptions {
    * @param recordedDoi History record
    */
   generateHistoryEntry(recordedDoi: HistoryDoi): DocumentFragment | null {
-    const template = this.elements_.history_entry_template;
+    const template = this.elements_.historyEntryTemplate;
 
     const clone = document.importNode(template.content, true);
-    const history_entry = clone.querySelector<HTMLTableRowElement>('tr.history_entry');
-    const history_input_save = clone.querySelector<HTMLInputElement>('input.history_input_save');
-    const history_entry_link = clone.querySelector<HTMLAnchorElement>('a.history_entry_link');
-    const history_entry_title = clone.querySelector<HTMLDivElement>('div.history_entry_title');
+    const historyEntry = clone.querySelector<HTMLTableRowElement>('tr.historyEntry');
+    const historyInputSave = clone.querySelector<HTMLInputElement>('input.historyInputSave');
+    const historyEntryLink = clone.querySelector<HTMLAnchorElement>('a.historyEntryLink');
+    const historyEntryTitle = clone.querySelector<HTMLDivElement>('div.historyEntryTitle');
 
-    if (!history_entry || !history_input_save || !history_entry_link || !history_entry_title) {
+    if (!historyEntry || !historyInputSave || !historyEntryLink || !historyEntryTitle) {
       return null;
     }
 
-    history_entry.setAttribute('data-doi', recordedDoi.doi);
-    history_input_save.checked = recordedDoi.save;
-    history_entry_link.href = this.getHistoryUrl(recordedDoi.doi);
-    history_entry_link.textContent = recordedDoi.doi;
-    history_entry_title.title = chrome.i18n.getMessage('historyCopyTitle');
-    history_entry_title.textContent = recordedDoi.title;
+    historyEntry.setAttribute('data-doi', recordedDoi.doi);
+    historyInputSave.checked = recordedDoi.save;
+    historyEntryLink.href = this.getHistoryUrl(recordedDoi.doi);
+    historyEntryLink.textContent = recordedDoi.doi;
+    historyEntryTitle.title = chrome.i18n.getMessage('historyCopyTitle');
+    historyEntryTitle.textContent = recordedDoi.title;
 
     const delta = 6;
     let startX = 0;
     let startY = 0;
 
-    history_entry_title.addEventListener('mousedown', function (event) {
+    historyEntryTitle.addEventListener('mousedown', function (event) {
       startX = event.pageX;
       startY = event.pageY;
     });
 
-    history_entry_title.addEventListener('mouseup', function (event) {
+    historyEntryTitle.addEventListener('mouseup', function (event) {
       if (Math.abs(event.pageX - startX) < delta && Math.abs(event.pageY - startY) < delta) {
         if (!navigator.clipboard?.writeText) {
           return;
@@ -1215,7 +1215,7 @@ class DoiOptions {
       }
     });
 
-    // history_entry_title.addEventListener('click', function () {
+    // historyEntryTitle.addEventListener('click', function () {
     //   if (!navigator.clipboard?.writeText) {
     //     return;
     //   }
@@ -1234,9 +1234,9 @@ class DoiOptions {
    */
   toggleHistorySpinner(enable: boolean): void {
     if (enable) {
-      this.elements_.historySpinner.classList.add('show_spinner');
+      this.elements_.historySpinner.classList.add('show-spinner');
     } else {
-      this.elements_.historySpinner.classList.remove('show_spinner');
+      this.elements_.historySpinner.classList.remove('show-spinner');
     }
   }
 
@@ -1435,7 +1435,7 @@ class DoiOptions {
    * Remove all history entries from display
    */
   removeAllHistoryEntries() {
-    const historyEntries = document.getElementsByClassName('history_entry');
+    const historyEntries = document.getElementsByClassName('historyEntry');
     if (historyEntries.length) {
       const parentNode = historyEntries[0].parentNode;
       if (!parentNode) {
@@ -1542,8 +1542,12 @@ class DoiOptions {
    * Get localization strings and populate their corresponding elements' HTML.
    */
   getLocalMessages() {
-    const headingTitle = chrome.i18n.getMessage('optionsTitle');
-    document.title = headingTitle;
+    document.title = chrome.i18n.getMessage('optionsTitle');
+
+    const pageTitle = document.querySelector('h1.page-title');
+    if (pageTitle) {
+      pageTitle.textContent = chrome.i18n.getMessage('appName');
+    }
 
     const messageIds = [
       'headingAutolink',
@@ -1627,6 +1631,13 @@ class DoiOptions {
       }
     }
 
+    const closeMessage = chrome.i18n.getMessage('closeButton');
+    for (const element of Array.from(
+      document.querySelectorAll<HTMLButtonElement>('.modal button.btn-close')
+    )) {
+      element.ariaLabel = closeMessage;
+    }
+
     const doiResetMessage = getMessageNodes('resetButton');
     this.elements_.doiResolverInputReset.append(...doiResetMessage);
     this.elements_.shortDoiResolverInputReset.append(...doiResetMessage);
@@ -1634,7 +1645,9 @@ class DoiOptions {
     this.elements_.doiOutputUrlExample.append(...urlExampleMessage);
     this.elements_.shortDoiOutputUrlExample.append(...urlExampleMessage);
 
-    this.elements_.extensionVersion.textContent = chrome.runtime.getManifest().version;
+    this.elements_.optionsVersion.append(
+      ...getMessageNodes('optionsVersion', [chrome.runtime.getManifest().version])
+    );
   }
 
   /**

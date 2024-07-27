@@ -1483,7 +1483,7 @@ class DoiOptions {
    */
   async importDois(): Promise<void> {
     const input = this.elements_.historyImportInput.value;
-    const dois = input
+    let dois = input
       .split(/\n|,|;|\|/)
       .map((str) => str.trim())
       .filter((str) => isValidDoi(str));
@@ -1491,6 +1491,13 @@ class DoiOptions {
     if (!dois.length) {
       this.elements_.historyImportInput.value = '';
       return;
+    }
+
+    const stg = await getOptions('local', ['history_length', 'recorded_dois']);
+    const savedDois = (stg.recorded_dois ?? []).filter((recordDoi) => recordDoi.save).length;
+    const maxDois = (stg.history_length ?? getDefaultOptions().history_length) - savedDois;
+    if (dois.length > maxDois) {
+      dois = dois.slice(-maxDois);
     }
 
     this.toggleHistorySpinner(true);

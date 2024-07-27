@@ -122,8 +122,8 @@
     "message": "Theme"
   },
   "historyClear": {
-    "description": "Text for a button that clears all DOI history",
-    "message": "Clear History"
+    "description": "Text for a button that clears all DOIs from history that are not marked Save",
+    "message": "Clear Unsaved History"
   },
   "historyCopyTitle": {
     "description": "Hover text for history title to inform user about copy to clipboard feature",

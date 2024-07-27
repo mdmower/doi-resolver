@@ -1452,7 +1452,9 @@ class DoiOptions {
    * Delete DOI history from storage
    */
   async deleteHistory(): Promise<void> {
-    await this.saveIndividualOptions({recorded_dois: []});
+    const stg = await getOptions('local', ['recorded_dois']);
+    const recordedDois = (stg.recorded_dois ?? []).filter((recordedDoi) => recordedDoi.save);
+    await this.saveIndividualOptions({recorded_dois: recordedDois});
   }
 
   /**

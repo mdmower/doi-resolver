@@ -2,6 +2,7 @@
  * @license Apache-2.0
  */
 
+import 'bootstrap/js/dist/modal.js';
 import {
   HistoryDoi,
   QrImageType,

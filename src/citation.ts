@@ -2,6 +2,7 @@
  * @license Apache-2.0
  */
 
+import 'bootstrap/js/dist/modal.js';
 import {HistoryDoi, getDefaultOptions, getOptions, setOptions, StorageOptions} from './lib/options';
 import {requestCitationPermissions} from './lib/permissions';
 import {filterSelectByText, isRecord, isValidDoi, sortHistoryEntries, trimDoi} from './lib/utils';

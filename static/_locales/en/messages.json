@@ -367,7 +367,7 @@
   },
   "optionMetaButtonsModalTitle": {
     "description": "The heading to display in an info modal for the meta buttons feature",
-    "message": "Meta buttons"
+    "message": "Additional buttons"
   },
   "optionOmniboxOpento": {
     "description": "Label for selectable option to open omnibox queries in current or new tab",

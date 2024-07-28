@@ -10,7 +10,7 @@
   "plugins": ["@typescript-eslint", "jsdoc", "prettier"],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
     "prettier",
     "plugin:jsdoc/recommended",
     "plugin:no-unsanitized/DOM"

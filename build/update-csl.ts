@@ -85,7 +85,10 @@ async function updateCslStyles() {
   await writeFile(path.join(dirRef.csl, 'styles/styles.json'), JSON.stringify(cslStyles));
 }
 
-(async function () {
+/**
+ * Update CSL styles and locales
+ */
+async function update() {
   try {
     console.log(`${bold.green('[Update]')} Updating CSL locales...`);
     await updateCslLocales();
@@ -96,4 +99,6 @@ async function updateCslStyles() {
     console.error(`${bold.red('[Update error]')} Unexpected error during update\n`, ex);
     process.exit(1);
   }
-})();
+}
+
+void update();

@@ -38,7 +38,10 @@ async function runPackaging(browser: Browser): Promise<void> {
   await archive.finalize();
 }
 
-(async function () {
+/**
+ * Package the build
+ */
+async function pkg() {
   try {
     const argv = minimist(process.argv.slice(2));
     const cmdlineBrowsers = argv._.filter((s): s is Browser =>
@@ -61,4 +64,6 @@ async function runPackaging(browser: Browser): Promise<void> {
     }
     process.exit(1);
   }
-})();
+}
+
+void pkg();

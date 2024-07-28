@@ -77,8 +77,10 @@ async function runWebpack(debug: boolean, browser: Browser): Promise<void> {
   }
 }
 
-// Build all the things
-(async function () {
+/**
+ * Build all the things
+ */
+async function build() {
   let debug = false;
   const filteredBrowsers: Browser[] = [];
 
@@ -125,4 +127,6 @@ async function runWebpack(debug: boolean, browser: Browser): Promise<void> {
   } catch (ex) {
     process.exit(1);
   }
-})();
+}
+
+void build();

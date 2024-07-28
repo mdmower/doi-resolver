@@ -52,7 +52,7 @@ export async function testAutolinkExclusion(
 
     const urlNoProtocol = url.replace(/^https?:\/\//i, '').toLowerCase();
     return exclusions.some((exclusion) => {
-      if (exclusion.charAt(0) === '/' && exclusion.slice(-1) === '/') {
+      if (exclusion.startsWith('/') && exclusion.endsWith('/')) {
         try {
           const re = new RegExp(exclusion.slice(1, -1), 'i');
           return re.test(urlNoProtocol);

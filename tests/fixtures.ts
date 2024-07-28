@@ -28,12 +28,7 @@ export const test = base.extend<{
 
     let ready = false;
     for (let i = 0; i < 10; i++) {
-      ready = await worker.evaluate(
-        () =>
-          typeof chrome !== 'undefined' &&
-          typeof chrome.storage !== 'undefined' &&
-          typeof chrome.storage.local !== 'undefined'
-      );
+      ready = await worker.evaluate(() => typeof chrome !== 'undefined' && !!chrome.storage?.local);
       if (!ready) {
         await new Promise((resolve) => setTimeout(resolve, 25));
       } else {

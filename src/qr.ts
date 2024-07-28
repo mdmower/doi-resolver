@@ -461,7 +461,7 @@ class DoiQr {
     ]);
 
     const showHideTarget = this.elements_.openHistory.parentElement ?? this.elements_.openHistory;
-    if (!stg.history || !stg.recorded_dois || !stg.recorded_dois.length) {
+    if (!stg.history || !stg.recorded_dois?.length) {
       showHideTarget.hidden = true;
       return;
     }
@@ -768,7 +768,7 @@ class DoiQr {
     this.resetSpace();
 
     let messageToEncode = this.defaultDoiResolver_;
-    if (/^10\//.test(doi)) {
+    if (doi.startsWith('10/')) {
       messageToEncode += doi.replace(/^10\//, '');
     } else {
       messageToEncode += doi;

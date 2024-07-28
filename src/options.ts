@@ -1131,7 +1131,7 @@ class DoiOptions {
 
     let doiUrl;
     if (useCustomResolver) {
-      if (/^10\//.test(doi)) {
+      if (doi.startsWith('10/')) {
         doiUrl = this.elements_.shortDoiResolverInput.value;
         doiUrl += doi.replace(/^10\//, '');
       } else {
@@ -1139,7 +1139,7 @@ class DoiOptions {
         doiUrl += doi;
       }
     } else {
-      if (/^10\//.test(doi)) {
+      if (doi.startsWith('10/')) {
         doiUrl = this.defaultDoiResolver_ + doi.replace(/^10\//, '');
       } else {
         doiUrl = this.defaultDoiResolver_ + doi;

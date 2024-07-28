@@ -11,6 +11,7 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended-type-checked",
+    "plugin:@typescript-eslint/stylistic-type-checked",
     "prettier",
     "plugin:jsdoc/recommended",
     "plugin:no-unsanitized/DOM"
@@ -26,6 +27,8 @@
     "@typescript-eslint/no-unsafe-assignment": "warn",
     "@typescript-eslint/explicit-module-boundary-types": "warn",
     "@typescript-eslint/no-unsafe-enum-comparison": "off",
+    "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "@typescript-eslint/dot-notation": "off",
     "jsdoc/require-jsdoc": [
       "error",
       {

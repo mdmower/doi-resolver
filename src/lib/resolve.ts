@@ -21,7 +21,7 @@ export async function resolveDoi(
 
   let doiUrl: string;
   if (useCustomResolver) {
-    if (/^10\//.test(doi)) {
+    if (doi.startsWith('10/')) {
       const shortDoiResolver = stg.shortdoi_resolver || defaultResolver;
       doiUrl = shortDoiResolver + doi.replace(/^10\//, '');
     } else {
@@ -29,7 +29,7 @@ export async function resolveDoi(
       doiUrl = doiResolver + doi;
     }
   } else {
-    if (/^10\//.test(doi)) {
+    if (doi.startsWith('10/')) {
       doiUrl = defaultResolver + doi.replace(/^10\//, '');
     } else {
       doiUrl = defaultResolver + doi;

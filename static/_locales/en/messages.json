@@ -129,6 +129,10 @@
     "description": "Hover text for history title to inform user about copy to clipboard feature",
     "message": "Click title to copy to clipboard"
   },
+  "historyExport": {
+    "description": "Text for button that exports DOIs to CSV",
+    "message": "Export"
+  },
   "historyFetchTitleLabel": {
     "description": "Text for checkbox that enables title fetch when DOI is recorded",
     "message": "Automatically fetch title when a new DOI is recorded"

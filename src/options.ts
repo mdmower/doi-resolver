@@ -2,6 +2,10 @@
  * @license Apache-2.0
  */
 
+import '@popperjs/core';
+import 'bootstrap/js/dist/tab';
+import 'bootstrap/js/dist/modal';
+import 'bootstrap/js/dist/dropdown';
 import {
   HistoryDoi,
   StorageOptions,
@@ -81,6 +85,7 @@ class DoiOptions {
     history: HTMLInputElement;
     historyClear: HTMLButtonElement;
     historyEntryTemplate: HTMLTemplateElement;
+    historyExport: HTMLButtonElement;
     historyFetchTitle: HTMLInputElement;
     historyImportFailure: HTMLAnchorElement;
     historyImportInput: HTMLTextAreaElement;
@@ -264,6 +269,9 @@ class DoiOptions {
       historyEntryTemplate:
         document.querySelector<HTMLTemplateElement>('template#historyEntryTemplate') ||
         elementMissing('template#historyEntryTemplate'),
+      historyExport:
+        document.querySelector<HTMLButtonElement>('button#historyExport') ||
+        elementMissing('button#historyExport'),
       historyFetchTitle:
         document.querySelector<HTMLInputElement>('input#historyFetchTitle') ||
         elementMissing('input#historyFetchTitle'),
@@ -432,6 +440,12 @@ class DoiOptions {
     this.elements_.historyImportSubmit.addEventListener('click', () => {
       this.importDois().catch((error) => {
         logError('Failed to import DOIs into history', error);
+      });
+    });
+
+    this.elements_.historyExport.addEventListener('click', () => {
+      this.exportDois().catch((error) => {
+        logError('Failed to export DOIs', error);
       });
     });
 
@@ -1494,6 +1508,34 @@ class DoiOptions {
   }
 
   /**
+   * Export history DOIs to a CSV download
+   */
+  async exportDois(): Promise<void> {
+    const {stringify} = await import('csv-stringify/browser/esm');
+    const stg = await getOptions('local', ['recorded_dois']);
+    const recordedDois = stg.recorded_dois ?? [];
+    const rows: [string, string][] = [
+      ['doi', 'title'],
+      ...recordedDois.map<[string, string]>(({doi, title}) => [doi, title]),
+    ];
+    const result = await new Promise<string>((resolve, reject) => {
+      stringify(rows, (error, output) => (error ? reject(error) : resolve(output)));
+    });
+
+    const file = new File([result], 'dois.csv', {type: 'text/csv'});
+    const url = URL.createObjectURL(file);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = file.name;
+    document.body.appendChild(anchor);
+    anchor.click();
+    setTimeout(() => {
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+    }, 0);
+  }
+
+  /**
    * Set info modal title and body
    * @param modalId Modal ID
    */
@@ -1561,6 +1603,7 @@ class DoiOptions {
       'headingSync',
       'headingTheme',
       'historyClear',
+      'historyExport',
       'historyFetchTitleLabel',
       'historyImport',
       'historyImportDescription',

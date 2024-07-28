@@ -6,8 +6,6 @@
     <title></title>
     <meta charset="utf-8" />
     <link href="./css/options.scss" rel="stylesheet" />
-    <script src="bootstrap/js/dist/tab.js"></script>
-    <script src="bootstrap/js/dist/modal.js"></script>
     <script src="./options.ts"></script>
   </head>
 
@@ -577,14 +575,28 @@
                 </select>
               </div>
               <div class="col text-end">
-                <button id="historyClear" class="btn btn-outline-secondary"></button>
-                <button
-                  id="historyImport"
-                  class="btn btn-outline-secondary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#historyImportModal"
-                ></button>
-                <button id="historyTitleRefresh" class="btn btn-outline-secondary"></button>
+                <div class="dropdown">
+                  <button
+                    class="btn dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Tools
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <button type="button" id="historyTitleRefresh" class="dropdown-item"></button>
+                    <button type="button" id="historyClear" class="dropdown-item"></button>
+                    <button
+                      id="historyImport"
+                      class="dropdown-item"
+                      type="button"
+                      data-bs-toggle="modal"
+                      data-bs-target="#historyImportModal"
+                    ></button>
+                    <button type="button" id="historyExport" class="dropdown-item"></button>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

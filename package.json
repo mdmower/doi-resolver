@@ -34,13 +34,16 @@
   "homepage": "https://github.com/mdmower/doi-resolver#readme",
   "dependencies": {
     "@jaames/iro": "^5.5.2",
+    "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
-    "citeproc": "^2.4.63"
+    "citeproc": "^2.4.63",
+    "csv-stringify": "^6.5.1"
   },
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^6.0.0",
     "@playwright/test": "^1.45.3",
     "@types/archiver": "^6.0.2",
+    "@types/bootstrap": "^5.2.10",
     "@types/chrome": "^0.0.269",
     "@types/dompurify": "^3.0.5",
     "@types/minimist": "^1.2.5",

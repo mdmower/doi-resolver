@@ -971,9 +971,9 @@ class DoiOptions {
       drPreview = '…' + drInput.slice(-10, drInput.length) + '10.1000/182';
     }
     if (srInput.length <= 10) {
-      srPreview = srInput + 'dws9sz';
+      srPreview = srInput + 'aabbd';
     } else {
-      srPreview = '…' + srInput.slice(-10, srInput.length) + 'dws9sz';
+      srPreview = '…' + srInput.slice(-10, srInput.length) + 'aabbd';
     }
 
     this.elements_.doiResolverOutput.textContent = drPreview;

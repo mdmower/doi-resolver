@@ -1,3 +1,5 @@
+export const handbookDoi = '10.1000/182';
+
 export const extensionPages = [
   'bubble',
   'citation',

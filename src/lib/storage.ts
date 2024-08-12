@@ -99,6 +99,18 @@ export async function checkForNewOptions(): Promise<void> {
     }
   });
 
+  // Decimal history lengths were allowed to be saved in earlier versions of the extension. This fixes those values.
+  if (stg.history_length !== undefined) {
+    const floor = Math.floor(stg.history_length);
+    if (isNaN(floor)) {
+      newOptions.history_length = defaultOptions.history_length;
+      updateSettings = true;
+    } else if (stg.history_length !== floor) {
+      newOptions.history_length = floor;
+      updateSettings = true;
+    }
+  }
+
   if (updateSettings) {
     await setOptions('local', newOptions);
   }

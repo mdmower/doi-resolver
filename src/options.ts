@@ -1417,8 +1417,12 @@ class DoiOptions {
    * Update history entries max length
    */
   async updateHistoryLength(): Promise<void> {
-    const historyLength = Number(this.elements_.historyLength.value);
-    if (Number.isNaN(historyLength) || historyLength < 1) {
+    const historyLength = parseInt(this.elements_.historyLength.value);
+    if (isNaN(historyLength)) {
+      this.elements_.historyLength.value = getDefaultOptions().history_length.toString();
+    } else if (historyLength.toString() !== this.elements_.historyLength.value) {
+      this.elements_.historyLength.value = historyLength.toString();
+    } else if (historyLength < 1) {
       this.elements_.historyLength.value = '1';
     } else if (historyLength > 5000) {
       this.elements_.historyLength.value = '5000';

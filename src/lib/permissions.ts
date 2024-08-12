@@ -3,6 +3,7 @@
  */
 
 import {doiBrowser} from './global';
+import {log, LogLevel} from './logger';
 
 /**
  * Get the permissions request object for meta
@@ -59,63 +60,90 @@ function getContentScriptPermissionsReq(): chrome.permissions.Permissions {
  * Request meta permissions.
  */
 export function requestMetaPermissions(): Promise<boolean> {
-  return chrome.permissions.request(getMetaPermissionsReq());
+  return chrome.permissions.request(getMetaPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
  * Check whether meta permissions are allowed.
  */
 export function checkMetaPermissions(): Promise<boolean> {
-  return chrome.permissions.contains(getMetaPermissionsReq());
+  return chrome.permissions.contains(getMetaPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
  * Remove meta permissions.
  */
 export function removeMetaPermissions(): Promise<boolean> {
-  return chrome.permissions.remove(getMetaPermissionsReq());
+  return chrome.permissions.remove(getMetaPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
  * Request citation permissions.
  */
 export function requestCitationPermissions(): Promise<boolean> {
-  return chrome.permissions.request(getCitationPermissionsReq());
+  return chrome.permissions.request(getCitationPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
  * Check whether citation permissions are allowed.
  */
 export function checkCitationPermissions(): Promise<boolean> {
-  return chrome.permissions.contains(getCitationPermissionsReq());
+  return chrome.permissions.contains(getCitationPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
  * Remove citation permissions.
  */
 export function removeCitationPermissions(): Promise<boolean> {
-  return chrome.permissions.remove(getCitationPermissionsReq());
+  return chrome.permissions.remove(getCitationPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
  * Request content script permissions.
  */
 export function requestContentScriptPermissions(): Promise<boolean> {
-  return chrome.permissions.request(getContentScriptPermissionsReq());
+  return chrome.permissions.request(getContentScriptPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
  * Check whether content script permissions are allowed.
  */
 export function checkContentScriptPermissions(): Promise<boolean> {
-  return chrome.permissions.contains(getContentScriptPermissionsReq());
+  return chrome.permissions.contains(getContentScriptPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
  * Remove content script permissions.
  */
 export function removeContentScriptPermissions(): Promise<boolean> {
-  return chrome.permissions.remove(getContentScriptPermissionsReq());
+  return chrome.permissions.remove(getContentScriptPermissionsReq()).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }
 
 /**
@@ -137,5 +165,8 @@ export function cleanupOriginPermissions(removeWildcardOrigins: boolean): Promis
     origins.push('https://*/*');
   }
 
-  return chrome.permissions.remove({origins});
+  return chrome.permissions.remove({origins}).catch((error) => {
+    log(LogLevel.Error, error);
+    return false;
+  });
 }

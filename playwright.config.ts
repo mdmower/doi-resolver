@@ -11,8 +11,18 @@ export default defineConfig({
   },
   projects: [
     {
+      name: 'modify manifest',
+      testMatch: /global\.setup\.ts/,
+    },
+    {
       name: 'chromium',
       use: {...devices['Desktop Chrome']},
+      dependencies: ['modify manifest'],
+    },
+    {
+      name: 'restore manifest',
+      testMatch: /global\.teardown\.ts/,
+      dependencies: ['chromium'],
     },
   ],
 });

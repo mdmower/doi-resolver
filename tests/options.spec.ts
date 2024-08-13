@@ -232,4 +232,84 @@ test.describe('Options', () => {
       await expect.poll(() => getStorageValue(page, key)).toBe(CustomResolverSelection.Selectable);
     }
   });
+
+  test('toggle autolink', async ({page}) => {
+    const checkbox = page.getByLabel('Automatically turn DOI codes on web pages into links');
+    await checkbox.click();
+    await expect.poll(() => getStorageValue(page, 'auto_link')).toBe(true);
+    await expect(checkbox).toBeChecked();
+    await checkbox.click();
+    await expect.poll(() => getStorageValue(page, 'auto_link')).toBe(false);
+    await expect(checkbox).not.toBeChecked();
+  });
+
+  test('toggle autolink changes suboption visibility', async ({page}) => {
+    const suboptionsContainer = page.locator('#autolinkSubOptions');
+    const checkbox = page.getByLabel('Automatically turn DOI codes on web pages into links');
+    await checkbox.click();
+    await expect(suboptionsContainer).toBeVisible();
+    await checkbox.click();
+    await expect(suboptionsContainer).toBeHidden();
+  });
+
+  test('toggle autolink rewrite', async ({page}) => {
+    await page.getByLabel('Automatically turn DOI codes on web pages into links').click();
+    const checkbox = page.getByLabel(
+      'Rewrite existing doi.org and dx.doi.org links to use the Custom DOI Resolver'
+    );
+    await expect(checkbox).toBeHidden();
+    await page.getByLabel('Use a custom DOI resolver').click();
+    await expect(checkbox).toBeVisible();
+    await checkbox.click();
+    await expect.poll(() => getStorageValue(page, 'auto_link_rewrite')).toBe(true);
+    await expect(checkbox).toBeChecked();
+    await checkbox.click();
+    await expect.poll(() => getStorageValue(page, 'auto_link_rewrite')).toBe(false);
+    await expect(checkbox).not.toBeChecked();
+    await page.getByLabel('Use a custom DOI resolver').click();
+    await expect(checkbox).toBeHidden();
+  });
+
+  test('toggle autolink exclusions', async ({page}) => {
+    await page.getByLabel('Automatically turn DOI codes on web pages into links').click();
+    const textarea = page.getByLabel('Exclude URLs and URL patterns from autolink');
+    const testInput = page.getByLabel('Test a URL for exclusion:');
+    const rules = `
+      abc.example.com
+      /def\\.example\\.com/
+      rst.example.com/rst/
+      /xyz\\.example\\.com\\/xyz\\//
+      http://abc.example.com
+    `;
+    await textarea.fill(rules);
+    await expect
+      .poll(() => getStorageValue(page, 'autolink_exclusions'))
+      .toEqual([
+        'abc.example.com',
+        '/def\\.example\\.com/',
+        'rst.example.com/rst/',
+        '/xyz\\.example\\.com\\/xyz\\//',
+        'abc.example.com',
+      ]);
+    const result = page.locator('#autolinkTestExclusionResult');
+    await expect(result).toHaveText('');
+    await testInput.fill('example.com');
+    await expect(result).toContainText('Invalid URL');
+    await testInput.fill('http://example.com/');
+    await expect(result).toHaveText('No exclusion matched');
+    await testInput.fill('http://abc.example.com/');
+    await expect(result).toHaveText('Exclusion matched');
+    await testInput.fill('http://x.abc.example.com/');
+    await expect(result).toHaveText('No exclusion matched');
+    await testInput.fill('http://x.def.example.com/');
+    await expect(result).toHaveText('Exclusion matched');
+    await testInput.fill('http://rst.example.com/');
+    await expect(result).toHaveText('No exclusion matched');
+    await testInput.fill('http://rst.example.com/rst/x');
+    await expect(result).toHaveText('Exclusion matched');
+    await testInput.fill('http://xyz.example.com/');
+    await expect(result).toHaveText('No exclusion matched');
+    await testInput.fill('http://xyz.example.com/xyz/x');
+    await expect(result).toHaveText('Exclusion matched');
+  });
 });

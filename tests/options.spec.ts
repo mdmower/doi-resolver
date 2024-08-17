@@ -1,6 +1,18 @@
 import {test, expect} from './fixtures';
-import {DisplayTheme, OmniboxTab, CustomResolverSelection} from '../src/lib/options';
-import {getStorageValue, handbookDoi, handbookShortDoi} from './utils';
+import {
+  DisplayTheme,
+  OmniboxTab,
+  CustomResolverSelection,
+  getDefaultOptions,
+  getSyncExclusionNames,
+} from '../src/lib/options';
+import {
+  getCustomizedOptions,
+  getStorageValue,
+  handbookDoi,
+  handbookShortDoi,
+  optionLabels,
+} from './utils';
 
 test.describe('Options', () => {
   test.beforeEach(async ({page, extension}) => {
@@ -19,9 +31,10 @@ test.describe('Options', () => {
     }
   });
 
+  // TODO: citation, qr, and notification pages should apply theme
   test('set display theme', async ({page}) => {
     const themes = Object.values(DisplayTheme);
-    const select = page.getByLabel('Color theme for pages:');
+    const select = page.getByLabel(optionLabels.theme);
     const options = await select.getByRole('option').all();
     expect(options).toHaveLength(themes.length);
     for (const theme of themes.reverse()) {
@@ -31,10 +44,10 @@ test.describe('Options', () => {
     }
   });
 
-  // TODO: omnibox.spec.ts to test open behavior
+  // TODO: omnibox.spec.ts to test doi capture and open behavior
   test('set omnibox open behavior', async ({page}) => {
     const tabs = Object.values(OmniboxTab);
-    const select = page.getByLabel('Omnibox entry should by default open result in:');
+    const select = page.getByLabel(optionLabels.omnibox_tab);
     const options = await select.getByRole('option').all();
     expect(options).toHaveLength(tabs.length);
     for (const tab of tabs.reverse()) {
@@ -44,8 +57,9 @@ test.describe('Options', () => {
     }
   });
 
+  // TODO: history page should show notice when not enabled
   test('toggle history', async ({page}) => {
-    const checkbox = page.getByLabel('Retain history of DOIs');
+    const checkbox = page.getByLabel(optionLabels.history);
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'history')).toBe(true);
     await expect(checkbox).toBeChecked();
@@ -56,7 +70,7 @@ test.describe('Options', () => {
 
   test('toggle history changes suboption visibility', async ({page}) => {
     const suboptionsContainer = page.locator('#historySubOptions');
-    const checkbox = page.getByLabel('Retain history of DOIs');
+    const checkbox = page.getByLabel(optionLabels.history);
     await checkbox.click();
     await expect(suboptionsContainer).toBeVisible();
     await checkbox.click();
@@ -64,8 +78,8 @@ test.describe('Options', () => {
   });
 
   test('toggle history saved entries dropdown behavior', async ({page}) => {
-    await page.getByLabel('Retain history of DOIs').click();
-    const checkbox = page.getByLabel('Only show saved entries in text input box drop-downs');
+    await page.getByLabel(optionLabels.history).click();
+    const checkbox = page.getByLabel(optionLabels.history_showsave);
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'history_showsave')).toBe(true);
     await expect(checkbox).toBeChecked();
@@ -75,8 +89,8 @@ test.describe('Options', () => {
   });
 
   test('toggle history show titles behavior', async ({page}) => {
-    await page.getByLabel('Retain history of DOIs').click();
-    const checkbox = page.getByLabel('Show titles instead of DOIs in text input box drop-downs');
+    await page.getByLabel(optionLabels.history).click();
+    const checkbox = page.getByLabel(optionLabels.history_showtitles);
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'history_showtitles')).toBe(true);
     await expect(checkbox).toBeChecked();
@@ -87,7 +101,7 @@ test.describe('Options', () => {
 
   // TODO: Revise test for optional permissions handling
   test('toggle history title auto-fetch behavior', async ({page}) => {
-    await page.getByLabel('Retain history of DOIs').click();
+    await page.getByLabel(optionLabels.history).click();
     const checkbox = page.getByLabel('Automatically fetch title when a new DOI is recorded');
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'history_fetch_title')).toBe(true);
@@ -106,8 +120,8 @@ test.describe('Options', () => {
       await expect(input).toHaveValue(expectValue.toString());
     };
 
-    await page.getByLabel('Retain history of DOIs').click();
-    const input = page.getByLabel('Number of history entries to retain (1 ≤ N ≤ 5000)');
+    await page.getByLabel(optionLabels.history).click();
+    const input = page.getByLabel(optionLabels.history_length);
     await testLength(1, 1);
     await testLength(0, 1);
     await testLength(-1, 1);
@@ -118,7 +132,7 @@ test.describe('Options', () => {
   });
 
   test('toggle context menu', async ({page}) => {
-    const checkbox = page.getByLabel('Enable right-click context menu for selected text');
+    const checkbox = page.getByLabel(optionLabels.context_menu);
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'context_menu')).toBe(false);
     await expect(checkbox).not.toBeChecked();
@@ -128,7 +142,7 @@ test.describe('Options', () => {
   });
 
   test('toggle context menu selection awareness', async ({page}) => {
-    const checkbox = page.getByLabel('Only show context menu entry if a DOI is selected');
+    const checkbox = page.getByLabel(optionLabels.context_menu_match);
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'context_menu_match')).toBe(true);
     await expect(checkbox).toBeChecked();
@@ -138,9 +152,9 @@ test.describe('Options', () => {
   });
 
   test('toggling context menu affects selection awareness', async ({page}) => {
-    const cmmCheckbox = page.getByLabel('Only show context menu entry if a DOI is selected');
+    const cmmCheckbox = page.getByLabel(optionLabels.context_menu_match);
     await cmmCheckbox.click();
-    const cmCheckbox = page.getByLabel('Enable right-click context menu for selected text');
+    const cmCheckbox = page.getByLabel(optionLabels.context_menu);
     await cmCheckbox.click();
     await expect.poll(() => getStorageValue(page, 'context_menu')).toBe(false);
     await expect.poll(() => getStorageValue(page, 'context_menu_match')).toBe(false);
@@ -156,7 +170,7 @@ test.describe('Options', () => {
   });
 
   test('toggle QR and citation buttons', async ({page}) => {
-    const checkbox = page.getByLabel('Enable additional features in the browser action bubble');
+    const checkbox = page.getByLabel(optionLabels.meta_buttons);
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'meta_buttons')).toBe(false);
     await expect(checkbox).not.toBeChecked();
@@ -166,7 +180,7 @@ test.describe('Options', () => {
   });
 
   test('toggle custom resolver', async ({page}) => {
-    const checkbox = page.getByLabel('Use a custom DOI resolver');
+    const checkbox = page.getByLabel(optionLabels.custom_resolver);
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'custom_resolver')).toBe(true);
     await expect(checkbox).toBeChecked();
@@ -177,7 +191,7 @@ test.describe('Options', () => {
 
   test('toggle custom resolver changes suboption visibility', async ({page}) => {
     const suboptionsContainer = page.locator('#customResolverSubOptions');
-    const checkbox = page.getByLabel('Use a custom DOI resolver');
+    const checkbox = page.getByLabel(optionLabels.custom_resolver);
     await checkbox.click();
     await expect(suboptionsContainer).toBeVisible();
     await checkbox.click();
@@ -185,8 +199,8 @@ test.describe('Options', () => {
   });
 
   test('set custom DOI resolver', async ({page}) => {
-    await page.getByLabel('Use a custom DOI resolver').click();
-    const input = page.getByLabel('URL for DOI resolver');
+    await page.getByLabel(optionLabels.custom_resolver).click();
+    const input = page.getByLabel(optionLabels.doi_resolver);
     await input.fill('https://mydoi/');
     await expect.poll(() => getStorageValue(page, 'doi_resolver')).toBe('https://mydoi/');
     const preview = page.locator('#doiResolverOutput');
@@ -194,8 +208,8 @@ test.describe('Options', () => {
   });
 
   test('set custom ShortDOI resolver', async ({page}) => {
-    await page.getByLabel('Use a custom DOI resolver').click();
-    const input = page.getByLabel('URL for ShortDOI resolver');
+    await page.getByLabel(optionLabels.custom_resolver).click();
+    const input = page.getByLabel(optionLabels.shortdoi_resolver);
     await input.fill('https://mydoi/');
     await expect.poll(() => getStorageValue(page, 'shortdoi_resolver')).toBe('https://mydoi/');
     const preview = page.locator('#shortDoiResolverOutput');
@@ -203,15 +217,10 @@ test.describe('Options', () => {
   });
 
   test('set custom resolver choices (non-selectable)', async ({page}) => {
-    await page.getByLabel('Use a custom DOI resolver').click();
+    await page.getByLabel(optionLabels.custom_resolver).click();
     const container = page.locator('#customResolverSubOptions');
-    for (const [label, key] of [
-      ['Autolink', 'cr_autolink'],
-      ['Context Menu', 'cr_context'],
-      ['Omnibox', 'cr_omnibox'],
-      ['History Page', 'cr_history'],
-    ]) {
-      const select = container.getByLabel(label);
+    for (const key of ['cr_autolink', 'cr_context', 'cr_omnibox', 'cr_history'] as const) {
+      const select = container.getByLabel(optionLabels[key]);
       await select.selectOption(CustomResolverSelection.Default);
       await expect.poll(() => getStorageValue(page, key)).toBe(CustomResolverSelection.Default);
       await select.selectOption(CustomResolverSelection.Custom);
@@ -220,10 +229,10 @@ test.describe('Options', () => {
   });
 
   test('set custom resolver choices (selectable)', async ({page}) => {
-    await page.getByLabel('Use a custom DOI resolver').click();
+    await page.getByLabel(optionLabels.custom_resolver).click();
     const container = page.locator('#customResolverSubOptions');
-    for (const [label, key] of [['Popup', 'cr_bubble']]) {
-      const select = container.getByLabel(label);
+    for (const key of ['cr_bubble'] as const) {
+      const select = container.getByLabel(optionLabels[key]);
       await select.selectOption(CustomResolverSelection.Default);
       await expect.poll(() => getStorageValue(page, key)).toBe(CustomResolverSelection.Default);
       await select.selectOption(CustomResolverSelection.Custom);
@@ -234,7 +243,7 @@ test.describe('Options', () => {
   });
 
   test('toggle autolink', async ({page}) => {
-    const checkbox = page.getByLabel('Automatically turn DOI codes on web pages into links');
+    const checkbox = page.getByLabel(optionLabels.auto_link);
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'auto_link')).toBe(true);
     await expect(checkbox).toBeChecked();
@@ -245,7 +254,7 @@ test.describe('Options', () => {
 
   test('toggle autolink changes suboption visibility', async ({page}) => {
     const suboptionsContainer = page.locator('#autolinkSubOptions');
-    const checkbox = page.getByLabel('Automatically turn DOI codes on web pages into links');
+    const checkbox = page.getByLabel(optionLabels.auto_link);
     await checkbox.click();
     await expect(suboptionsContainer).toBeVisible();
     await checkbox.click();
@@ -253,12 +262,10 @@ test.describe('Options', () => {
   });
 
   test('toggle autolink rewrite', async ({page}) => {
-    await page.getByLabel('Automatically turn DOI codes on web pages into links').click();
-    const checkbox = page.getByLabel(
-      'Rewrite existing doi.org and dx.doi.org links to use the Custom DOI Resolver'
-    );
+    await page.getByLabel(optionLabels.auto_link).click();
+    const checkbox = page.getByLabel(optionLabels.auto_link_rewrite);
     await expect(checkbox).toBeHidden();
-    await page.getByLabel('Use a custom DOI resolver').click();
+    await page.getByLabel(optionLabels.custom_resolver).click();
     await expect(checkbox).toBeVisible();
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'auto_link_rewrite')).toBe(true);
@@ -266,13 +273,13 @@ test.describe('Options', () => {
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'auto_link_rewrite')).toBe(false);
     await expect(checkbox).not.toBeChecked();
-    await page.getByLabel('Use a custom DOI resolver').click();
+    await page.getByLabel(optionLabels.custom_resolver).click();
     await expect(checkbox).toBeHidden();
   });
 
   test('toggle autolink exclusions', async ({page}) => {
-    await page.getByLabel('Automatically turn DOI codes on web pages into links').click();
-    const textarea = page.getByLabel('Exclude URLs and URL patterns from autolink');
+    await page.getByLabel(optionLabels.auto_link).click();
+    const textarea = page.getByLabel(optionLabels.autolink_exclusions);
     const testInput = page.getByLabel('Test a URL for exclusion:');
     const rules = `
       abc.example.com
@@ -311,5 +318,264 @@ test.describe('Options', () => {
     await expect(result).toHaveText('No exclusion matched');
     await testInput.fill('http://xyz.example.com/xyz/x');
     await expect(result).toHaveText('Exclusion matched');
+  });
+
+  test('toggle sync with no cloud settings', async ({page}) => {
+    const localStg = getCustomizedOptions() as Record<string, unknown>;
+    await page.evaluate((stg) => chrome.storage.local.set(stg), localStg);
+    const syncStg = await page.evaluate(() => chrome.storage.sync.get());
+    expect(syncStg).toEqual({});
+
+    const nonSyncKeys = getSyncExclusionNames() as string[];
+    const expectedSyncStg = Object.keys(localStg).reduce(
+      (stg, key) => (nonSyncKeys.includes(key) ? stg : {...stg, [key]: localStg[key]}),
+      {} as Record<string, unknown>
+    );
+    const checkbox = page.getByLabel(optionLabels.sync_data);
+    await checkbox.click();
+    await expect.poll(() => getStorageValue(page, 'sync_data')).toBe(true);
+    await expect
+      .poll(() => page.evaluate(() => chrome.storage.sync.get()))
+      .toEqual(expectedSyncStg);
+    await checkbox.click();
+    await expect.poll(() => getStorageValue(page, 'sync_data')).toBe(false);
+    await expect
+      .poll(() => page.evaluate(() => chrome.storage.sync.get()))
+      .toEqual(expectedSyncStg);
+  });
+
+  test('toggle sync with cloud settings', async ({page}) => {
+    const nonSyncKeys = getSyncExclusionNames() as string[];
+    const customOptions = getCustomizedOptions() as Record<string, unknown>;
+    const syncStg = Object.keys(customOptions).reduce(
+      (stg, key) => (nonSyncKeys.includes(key) ? stg : {...stg, [key]: customOptions[key]}),
+      {} as Record<string, unknown>
+    );
+    await page.evaluate((stg) => chrome.storage.sync.set(stg), syncStg);
+    const localStg = await page.evaluate(() => chrome.storage.local.get());
+    expect(localStg).toEqual(getDefaultOptions());
+
+    const expectedLocalStg = Object.keys(localStg).reduce(
+      (stg, key) =>
+        nonSyncKeys.includes(key)
+          ? {...stg, [key]: localStg[key] as unknown}
+          : {...stg, [key]: syncStg[key]},
+      {} as Record<string, unknown>
+    );
+    const checkbox = page.getByLabel(optionLabels.sync_data);
+    await checkbox.click();
+    await expect
+      .poll(() => page.evaluate(() => chrome.storage.local.get()))
+      .toEqual({...expectedLocalStg, sync_data: true});
+    await expect.poll(() => page.evaluate(() => chrome.storage.sync.get())).toEqual(syncStg);
+    await checkbox.click();
+    await expect
+      .poll(() => page.evaluate(() => chrome.storage.local.get()))
+      .toEqual({...expectedLocalStg, sync_data: false});
+    await expect.poll(() => page.evaluate(() => chrome.storage.sync.get())).toEqual(syncStg);
+  });
+
+  test('synchronize changed settings when sync enabled', async ({page}) => {
+    await page.getByLabel(optionLabels.sync_data).click();
+    await expect.poll(() => getStorageValue(page, 'sync_data')).toBe(true);
+
+    await page.getByLabel(optionLabels.history).click();
+    await page.getByLabel(optionLabels.history_length).fill('75');
+    await page.getByLabel(optionLabels.meta_buttons).click();
+    const localStg = {
+      ...getDefaultOptions(),
+      history: true,
+      history_length: 75,
+      meta_buttons: false,
+    } as Record<string, unknown>;
+    const nonSyncKeys = getSyncExclusionNames() as string[];
+    const expectedSyncStg = Object.keys(localStg).reduce(
+      (stg, key) => (nonSyncKeys.includes(key) ? stg : {...stg, [key]: localStg[key]}),
+      {} as Record<string, unknown>
+    );
+    await expect
+      .poll(() => page.evaluate(() => chrome.storage.sync.get()))
+      .toEqual(expectedSyncStg);
+  });
+
+  test('ignore changed settings when sync disabled', async ({page}) => {
+    await page.getByLabel(optionLabels.theme).selectOption('light');
+    const syncStg = {
+      theme: 'dark',
+      history: true,
+      history_length: 75,
+      meta_buttons: false,
+    };
+    await page.evaluate((stg) => chrome.storage.sync.set(stg), syncStg);
+    await expect.poll(() => page.evaluate(() => chrome.storage.sync.get())).toEqual(syncStg);
+    await expect.poll(() => getStorageValue(page, 'theme')).toBe('light');
+    await expect.poll(() => getStorageValue(page, 'history')).toBe(false);
+    await expect.poll(() => getStorageValue(page, 'history_length')).toBe(50);
+    await expect.poll(() => getStorageValue(page, 'meta_buttons')).toBe(true);
+  });
+
+  test('reset sync', async ({page}) => {
+    await page.getByLabel(optionLabels.sync_data).click();
+    await expect.poll(() => getStorageValue(page, 'sync_data')).toBe(true);
+
+    await page.getByLabel(optionLabels.history).click();
+    const localStg = {...getDefaultOptions(), history: true} as Record<string, unknown>;
+    const nonSyncKeys = getSyncExclusionNames() as string[];
+    const expectedSyncStg = Object.keys(localStg).reduce(
+      (stg, key) => (nonSyncKeys.includes(key) ? stg : {...stg, [key]: localStg[key]}),
+      {} as Record<string, unknown>
+    );
+    await expect
+      .poll(() => page.evaluate(() => chrome.storage.sync.get()))
+      .toEqual(expectedSyncStg);
+    await page.getByRole('button', {name: 'Reset Sync'}).click();
+    await expect.poll(() => page.evaluate(() => chrome.storage.sync.get())).toEqual({});
+    await expect(page.getByLabel(optionLabels.sync_data)).not.toBeChecked();
+    await expect.poll(() => page.evaluate(() => chrome.storage.local.get())).toEqual(localStg);
+  });
+
+  test('load settings', async ({page}) => {
+    const localStg = getCustomizedOptions();
+    await page.evaluate((stg) => chrome.storage.local.set(stg), localStg);
+    // This test is about restoring options on page load, so even though a page reload isn't necessary (because the
+    // storage change listener is active), it is intentional.
+    await page.reload({waitUntil: 'load'});
+
+    await expect(page.getByLabel(optionLabels.theme)).toHaveValue(localStg.theme);
+    await expect(page.getByLabel(optionLabels.omnibox_tab)).toHaveValue(localStg.omnibox_tab);
+    await expect(page.getByLabel(optionLabels.history)).toBeChecked({checked: localStg.history});
+    await expect(page.getByLabel(optionLabels.history_showsave)).toBeChecked({
+      checked: localStg.history_showsave,
+    });
+    await expect(page.getByLabel(optionLabels.history_showtitles)).toBeChecked({
+      checked: localStg.history_showtitles,
+    });
+    await expect(page.getByLabel(optionLabels.history_fetch_title)).toBeChecked({
+      checked: localStg.history_fetch_title,
+    });
+    await expect(page.getByLabel(optionLabels.history_length)).toHaveValue(
+      localStg.history_length.toString()
+    );
+    await expect(page.getByLabel(optionLabels.context_menu)).toBeChecked({
+      checked: localStg.context_menu,
+    });
+    await expect(page.getByLabel(optionLabels.context_menu_match)).toBeChecked({
+      checked: localStg.context_menu_match,
+    });
+    await expect(page.getByLabel(optionLabels.meta_buttons)).toBeChecked({
+      checked: localStg.meta_buttons,
+    });
+    await expect(page.getByLabel(optionLabels.custom_resolver)).toBeChecked({
+      checked: localStg.custom_resolver,
+    });
+    await expect(page.getByLabel(optionLabels.doi_resolver)).toHaveValue(localStg.doi_resolver);
+    await expect(page.getByLabel(optionLabels.shortdoi_resolver)).toHaveValue(
+      localStg.shortdoi_resolver
+    );
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_autolink)
+    ).toHaveValue(localStg.cr_autolink);
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_bubble)
+    ).toHaveValue(localStg.cr_bubble);
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_context)
+    ).toHaveValue(localStg.cr_context);
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_omnibox)
+    ).toHaveValue(localStg.cr_omnibox);
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_history)
+    ).toHaveValue(localStg.cr_history);
+    await expect(page.getByLabel(optionLabels.auto_link)).toBeChecked({
+      checked: localStg.auto_link,
+    });
+    await expect(page.getByLabel(optionLabels.auto_link_rewrite)).toBeChecked({
+      checked: localStg.auto_link_rewrite,
+    });
+    await expect(page.getByLabel(optionLabels.autolink_exclusions)).toHaveValue(
+      localStg.autolink_exclusions.join('\n')
+    );
+    await expect(page.getByLabel(optionLabels.sync_data)).toBeChecked({
+      checked: localStg.sync_data,
+    });
+  });
+
+  test('dynamically update UI with sync changes', async ({page}) => {
+    await page.getByLabel(optionLabels.sync_data).click();
+    await expect.poll(() => getStorageValue(page, 'sync_data')).toBe(true);
+
+    const nonSyncKeys = getSyncExclusionNames() as string[];
+    const updatedStg = getCustomizedOptions() as Record<string, unknown>;
+    const syncStg = Object.keys(updatedStg).reduce(
+      (stg, key) => (nonSyncKeys.includes(key) ? stg : {...stg, [key]: updatedStg[key]}),
+      {} as Record<string, unknown>
+    );
+
+    await page.evaluate((stg) => chrome.storage.sync.set(stg), syncStg);
+    const localStg = {
+      ...getDefaultOptions(),
+      ...syncStg,
+      sync_data: true,
+    };
+
+    await expect(page.getByLabel(optionLabels.theme)).toHaveValue(localStg.theme);
+    await expect(page.getByLabel(optionLabels.omnibox_tab)).toHaveValue(localStg.omnibox_tab);
+    await expect(page.getByLabel(optionLabels.history)).toBeChecked({checked: localStg.history});
+    await expect(page.getByLabel(optionLabels.history_showsave)).toBeChecked({
+      checked: localStg.history_showsave,
+    });
+    await expect(page.getByLabel(optionLabels.history_showtitles)).toBeChecked({
+      checked: localStg.history_showtitles,
+    });
+    await expect(page.getByLabel(optionLabels.history_fetch_title)).toBeChecked({
+      checked: localStg.history_fetch_title,
+    });
+    await expect(page.getByLabel(optionLabels.history_length)).toHaveValue(
+      localStg.history_length.toString()
+    );
+    await expect(page.getByLabel(optionLabels.context_menu)).toBeChecked({
+      checked: localStg.context_menu,
+    });
+    await expect(page.getByLabel(optionLabels.context_menu_match)).toBeChecked({
+      checked: localStg.context_menu_match,
+    });
+    await expect(page.getByLabel(optionLabels.meta_buttons)).toBeChecked({
+      checked: localStg.meta_buttons,
+    });
+    await expect(page.getByLabel(optionLabels.custom_resolver)).toBeChecked({
+      checked: localStg.custom_resolver,
+    });
+    await expect(page.getByLabel(optionLabels.doi_resolver)).toHaveValue(localStg.doi_resolver);
+    await expect(page.getByLabel(optionLabels.shortdoi_resolver)).toHaveValue(
+      localStg.shortdoi_resolver
+    );
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_autolink)
+    ).toHaveValue(localStg.cr_autolink);
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_bubble)
+    ).toHaveValue(localStg.cr_bubble);
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_context)
+    ).toHaveValue(localStg.cr_context);
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_omnibox)
+    ).toHaveValue(localStg.cr_omnibox);
+    await expect(
+      page.locator('#customResolverSubOptions').getByLabel(optionLabels.cr_history)
+    ).toHaveValue(localStg.cr_history);
+    await expect(page.getByLabel(optionLabels.auto_link)).toBeChecked({
+      checked: localStg.auto_link,
+    });
+    await expect(page.getByLabel(optionLabels.auto_link_rewrite)).toBeChecked({
+      checked: localStg.auto_link_rewrite,
+    });
+    await expect(page.getByLabel(optionLabels.autolink_exclusions)).toHaveValue(
+      localStg.autolink_exclusions.join('\n')
+    );
+    await expect(page.getByLabel(optionLabels.sync_data)).toBeChecked({
+      checked: localStg.sync_data,
+    });
   });
 });

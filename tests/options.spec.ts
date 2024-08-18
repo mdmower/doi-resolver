@@ -169,6 +169,26 @@ test.describe('Options', () => {
     await expect(cmmCheckbox).toBeVisible();
   });
 
+  test('context menu help modal', async ({page}) => {
+    const modalTrigger = page.getByLabel('Open context menu information modal');
+    await modalTrigger.click();
+    const modal = page.locator('#infoModal');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.modal-title')).toHaveText('Context menu');
+    await modal.getByLabel('Close').click();
+    await expect(modal).toBeHidden();
+  });
+
+  test('context menu match permissions modal', async ({page}) => {
+    const modalTrigger = page.getByLabel('Open context menu selected text permissions notice');
+    await modalTrigger.click();
+    const modal = page.locator('#infoModal');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.modal-title')).toHaveText('Context menu permissions');
+    await modal.getByLabel('Close').click();
+    await expect(modal).toBeHidden();
+  });
+
   test('toggle QR and citation buttons', async ({page}) => {
     const checkbox = page.getByLabel(optionLabels.meta_buttons);
     await checkbox.click();
@@ -177,6 +197,16 @@ test.describe('Options', () => {
     await checkbox.click();
     await expect.poll(() => getStorageValue(page, 'meta_buttons')).toBe(true);
     await expect(checkbox).toBeChecked();
+  });
+
+  test('QR and citation buttons help modal', async ({page}) => {
+    const modalTrigger = page.getByLabel('Open QR and citation features information modal');
+    await modalTrigger.click();
+    const modal = page.locator('#infoModal');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.modal-title')).toHaveText('Additional buttons');
+    await modal.getByLabel('Close').click();
+    await expect(modal).toBeHidden();
   });
 
   test('toggle custom resolver', async ({page}) => {
@@ -320,6 +350,27 @@ test.describe('Options', () => {
     await expect(result).toHaveText('Exclusion matched');
   });
 
+  test('autolink permissions modal', async ({page}) => {
+    const modalTrigger = page.getByLabel('Open autolink permissions notice');
+    await modalTrigger.click();
+    const modal = page.locator('#infoModal');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.modal-title')).toHaveText('Autolink permissions');
+    await modal.getByLabel('Close').click();
+    await expect(modal).toBeHidden();
+  });
+
+  test('autolink exclusions help modal', async ({page}) => {
+    await page.getByLabel(optionLabels.auto_link).click();
+    const modalTrigger = page.getByLabel('Open autolink exclusions information modal');
+    await modalTrigger.click();
+    const modal = page.locator('#infoModal');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.modal-title')).toHaveText('Autolink exclusions');
+    await modal.getByLabel('Close').click();
+    await expect(modal).toBeHidden();
+  });
+
   test('toggle sync with no cloud settings', async ({page}) => {
     const localStg = getCustomizedOptions() as Record<string, unknown>;
     await page.evaluate((stg) => chrome.storage.local.set(stg), localStg);
@@ -432,6 +483,16 @@ test.describe('Options', () => {
     await expect.poll(() => page.evaluate(() => chrome.storage.sync.get())).toEqual({});
     await expect(page.getByLabel(optionLabels.sync_data)).not.toBeChecked();
     await expect.poll(() => page.evaluate(() => chrome.storage.local.get())).toEqual(localStg);
+  });
+
+  test('sync help modal', async ({page}) => {
+    const modalTrigger = page.getByLabel('Open sync information modal');
+    await modalTrigger.click();
+    const modal = page.locator('#infoModal');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('.modal-title')).toHaveText('Sync');
+    await modal.getByLabel('Close').click();
+    await expect(modal).toBeHidden();
   });
 
   test('load settings', async ({page}) => {

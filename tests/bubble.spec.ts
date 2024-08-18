@@ -1,6 +1,6 @@
 import {test, expect} from './fixtures';
 import {DisplayTheme, HistoryDoi, HistorySort} from '../src/lib/options';
-import {handbookDoi} from './utils';
+import {getStorageValue, handbookDoi, handbookShortDoi} from './utils';
 
 test.describe('Bubble', () => {
   test.beforeEach(async ({page, extension}) => {
@@ -21,6 +21,15 @@ test.describe('Bubble', () => {
 
   test('navigation to DOI', async ({page, context}) => {
     await page.getByPlaceholder('DOI').fill(handbookDoi);
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
+  });
+
+  test('navigation to ShortDOI', async ({page, context}) => {
+    await page.getByPlaceholder('DOI').fill(handbookShortDoi);
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
@@ -62,6 +71,182 @@ test.describe('Bubble', () => {
     await expect(options2).toHaveCount(0);
     await expect(citation2).toHaveCount(0);
     await expect(qr2).toHaveCount(0);
+  });
+
+  test('custom DOI resolver (default)', async ({context, page}) => {
+    await expect(page.getByPlaceholder('DOI')).toBeVisible();
+    await expect(page.locator('#crRadios')).toBeHidden();
+
+    await page.evaluate((s) => chrome.storage.local.set(s), {
+      custom_resolver: true,
+      cr_bubble: 'default',
+      doi_resolver: 'https://example.com/',
+    });
+    await page.reload({waitUntil: 'load'});
+
+    await page.getByPlaceholder('DOI').fill(handbookDoi);
+    await expect(page.locator('#crRadios')).toBeHidden();
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
+  });
+
+  test('custom DOI resolver (custom)', async ({context, page}) => {
+    await expect(page.getByPlaceholder('DOI')).toBeVisible();
+    await expect(page.locator('#crRadios')).toBeHidden();
+
+    await page.evaluate((s) => chrome.storage.local.set(s), {
+      custom_resolver: true,
+      cr_bubble: 'custom',
+      doi_resolver: 'https://example.com/',
+    });
+    await page.reload({waitUntil: 'load'});
+
+    await page.getByPlaceholder('DOI').fill(handbookDoi);
+    await expect(page.locator('#crRadios')).toBeHidden();
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL(`https://example.com/${handbookDoi}`);
+  });
+
+  test('custom DOI resolver (selectable: default)', async ({context, page, serviceWorker}) => {
+    await expect(page.getByPlaceholder('DOI')).toBeVisible();
+    await expect(page.locator('#crRadios')).toBeHidden();
+
+    await page.evaluate((s) => chrome.storage.local.set(s), {
+      custom_resolver: true,
+      cr_bubble: 'selectable',
+      cr_bubble_last: 'custom',
+      doi_resolver: 'https://example.com/',
+    });
+    await page.reload({waitUntil: 'load'});
+
+    await page.getByPlaceholder('DOI').fill(handbookDoi);
+    await expect(page.locator('#crRadios')).toBeVisible();
+    await expect(page.locator('#crRadios').getByLabel('Custom')).toBeChecked();
+    await page.locator('#crRadios').getByLabel('Default').click();
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
+    expect(await getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('default');
+  });
+
+  test('custom DOI resolver (selectable: custom)', async ({context, page, serviceWorker}) => {
+    await expect(page.getByPlaceholder('DOI')).toBeVisible();
+    await expect(page.locator('#crRadios')).toBeHidden();
+
+    await page.evaluate((s) => chrome.storage.local.set(s), {
+      custom_resolver: true,
+      cr_bubble: 'selectable',
+      cr_bubble_last: 'default',
+      doi_resolver: 'https://example.com/',
+    });
+    await page.reload({waitUntil: 'load'});
+
+    await page.getByPlaceholder('DOI').fill(handbookDoi);
+    await expect(page.locator('#crRadios')).toBeVisible();
+    await expect(page.locator('#crRadios').getByLabel('Default')).toBeChecked();
+    await page.locator('#crRadios').getByLabel('Custom').click();
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL(`https://example.com/${handbookDoi}`);
+    expect(await getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('custom');
+  });
+
+  test('custom ShortDOI resolver (default)', async ({context, page}) => {
+    await expect(page.getByPlaceholder('DOI')).toBeVisible();
+    await expect(page.locator('#crRadios')).toBeHidden();
+
+    await page.evaluate((s) => chrome.storage.local.set(s), {
+      custom_resolver: true,
+      cr_bubble: 'default',
+      shortdoi_resolver: 'https://example.com/',
+    });
+    await page.reload({waitUntil: 'load'});
+
+    await page.getByPlaceholder('DOI').fill(handbookShortDoi);
+    await expect(page.locator('#crRadios')).toBeHidden();
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
+  });
+
+  test('custom ShortDOI resolver (custom)', async ({context, page}) => {
+    await expect(page.getByPlaceholder('DOI')).toBeVisible();
+    await expect(page.locator('#crRadios')).toBeHidden();
+
+    await page.evaluate((s) => chrome.storage.local.set(s), {
+      custom_resolver: true,
+      cr_bubble: 'custom',
+      shortdoi_resolver: 'https://example.com/',
+    });
+    await page.reload({waitUntil: 'load'});
+
+    await page.getByPlaceholder('DOI').fill(handbookShortDoi);
+    await expect(page.locator('#crRadios')).toBeHidden();
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL(`https://example.com/${handbookShortDoi.replace('10/', '')}`);
+  });
+
+  test('custom ShortDOI resolver (selectable: default)', async ({context, page, serviceWorker}) => {
+    await expect(page.getByPlaceholder('DOI')).toBeVisible();
+    await expect(page.locator('#crRadios')).toBeHidden();
+
+    await page.evaluate((s) => chrome.storage.local.set(s), {
+      custom_resolver: true,
+      cr_bubble: 'selectable',
+      cr_bubble_last: 'custom',
+      shortdoi_resolver: 'https://example.com/',
+    });
+    await page.reload({waitUntil: 'load'});
+
+    await page.getByPlaceholder('DOI').fill(handbookShortDoi);
+    await expect(page.locator('#crRadios')).toBeVisible();
+    await expect(page.locator('#crRadios').getByLabel('Custom')).toBeChecked();
+    await page.locator('#crRadios').getByLabel('Default').click();
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
+    expect(await getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('default');
+  });
+
+  test('custom ShortDOI resolver (selectable: custom)', async ({context, page, serviceWorker}) => {
+    await expect(page.getByPlaceholder('DOI')).toBeVisible();
+    await expect(page.locator('#crRadios')).toBeHidden();
+
+    await page.evaluate((s) => chrome.storage.local.set(s), {
+      custom_resolver: true,
+      cr_bubble: 'selectable',
+      cr_bubble_last: 'default',
+      shortdoi_resolver: 'https://example.com/',
+    });
+    await page.reload({waitUntil: 'load'});
+
+    await page.getByPlaceholder('DOI').fill(handbookShortDoi);
+    await expect(page.locator('#crRadios')).toBeVisible();
+    await expect(page.locator('#crRadios').getByLabel('Default')).toBeChecked();
+    await page.locator('#crRadios').getByLabel('Custom').click();
+    const newPagePromise = context.waitForEvent('page');
+    await page.getByRole('button', {name: 'Go'}).click();
+    const newPage = await newPagePromise;
+    expect(page.isClosed()).toBe(true);
+    await expect(newPage).toHaveURL(`https://example.com/${handbookShortDoi.replace('10/', '')}`);
+    expect(await getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('custom');
   });
 
   test('open options page', async ({page, context, extension}) => {
@@ -137,45 +322,22 @@ test.describe('Bubble', () => {
   });
 
   test.describe('History', () => {
-    const waitForRecordedDoi = ({requireTitle}: {requireTitle: boolean}) =>
-      new Promise<HistoryDoi>((resolve, reject) => {
-        const changeHandler = (changes: Record<string, chrome.storage.StorageChange>) => {
-          const recordedDois = changes.recorded_dois?.newValue as HistoryDoi[] | undefined;
-          if (!recordedDois?.length) {
-            return;
-          }
-
-          const recordedDoi = requireTitle
-            ? recordedDois[0].title
-              ? recordedDois[0]
-              : undefined
-            : recordedDois[0];
-          if (recordedDoi) {
-            clearTimeout(timeout);
-            chrome.storage.onChanged.removeListener(changeHandler);
-            resolve(recordedDoi);
-          }
-        };
-
-        const timeout = setTimeout(() => {
-          chrome.storage.onChanged.removeListener(changeHandler);
-          reject();
-        }, 5000);
-
-        chrome.storage.onChanged.addListener(changeHandler);
-      });
-
     test('record DOI on navigation', async ({page, serviceWorker}) => {
       await page.evaluate((s) => chrome.storage.local.set(s), {history: true});
       await page.getByPlaceholder('DOI').fill('10.1045/january99-bearman');
-      const recordDoiPromise = serviceWorker.evaluate(waitForRecordedDoi, {requireTitle: false});
       await page.getByRole('button', {name: 'Go'}).click();
-      const recordedDoi = await recordDoiPromise;
-      expect(recordedDoi).toEqual({
-        title: '',
-        doi: '10.1045/january99-bearman',
-        save: false,
-      });
+      await expect
+        .poll(() => getStorageValue(serviceWorker, 'recorded_dois'))
+        .toEqual([{doi: '10.1045/january99-bearman', title: '', save: false}]);
+    });
+
+    test('record ShortDOI on navigation', async ({page, serviceWorker}) => {
+      await page.evaluate((s) => chrome.storage.local.set(s), {history: true});
+      await page.getByPlaceholder('DOI').fill('10/cg7cd4');
+      await page.getByRole('button', {name: 'Go'}).click();
+      await expect
+        .poll(() => getStorageValue(serviceWorker, 'recorded_dois'))
+        .toEqual([{doi: '10/cg7cd4', title: '', save: false}]);
     });
 
     test('record DOI with title on navigation', async ({page, serviceWorker}) => {
@@ -184,14 +346,76 @@ test.describe('Bubble', () => {
         history_fetch_title: true,
       });
       await page.getByPlaceholder('DOI').fill('10.1045/january99-bearman');
-      const recordDoiPromise = serviceWorker.evaluate(waitForRecordedDoi, {requireTitle: true});
       await page.getByRole('button', {name: 'Go'}).click();
-      const recordedDoi = await recordDoiPromise;
-      expect(recordedDoi).toEqual({
-        title: 'A Common Model to Support Interoperable Metadata',
-        doi: '10.1045/january99-bearman',
-        save: false,
+      await expect
+        .poll(() => getStorageValue(serviceWorker, 'recorded_dois'))
+        .toEqual([
+          {
+            title: 'A Common Model to Support Interoperable Metadata',
+            doi: '10.1045/january99-bearman',
+            save: false,
+          },
+        ]);
+    });
+
+    test('record ShortDOI with title on navigation', async ({page, serviceWorker}) => {
+      await page.evaluate((s) => chrome.storage.local.set(s), {
+        history: true,
+        history_fetch_title: true,
       });
+      await page.getByPlaceholder('DOI').fill('10/cg7cd4');
+      await page.getByRole('button', {name: 'Go'}).click();
+      await expect
+        .poll(() => getStorageValue(serviceWorker, 'recorded_dois'))
+        .toEqual([
+          {
+            title: 'A Common Model to Support Interoperable Metadata',
+            doi: '10/cg7cd4',
+            save: false,
+          },
+        ]);
+    });
+
+    test('exceed history length on navigation (none saved)', async ({page, serviceWorker}) => {
+      await page.evaluate((s) => chrome.storage.local.set(s), {
+        history: true,
+        history_length: 3,
+        recorded_dois: [
+          {doi: '10.1000/1', title: '', save: false},
+          {doi: '10.1000/2', title: '', save: false},
+          {doi: '10/3', title: '', save: false},
+        ],
+      });
+      await page.getByPlaceholder('DOI').fill('10.1045/january99-bearman');
+      await page.getByRole('button', {name: 'Go'}).click();
+      await expect
+        .poll(() => getStorageValue(serviceWorker, 'recorded_dois'))
+        .toEqual([
+          {doi: '10.1000/2', title: '', save: false},
+          {doi: '10/3', title: '', save: false},
+          {doi: '10.1045/january99-bearman', title: '', save: false},
+        ]);
+    });
+
+    test('exceed history length on navigation (some saved)', async ({page, serviceWorker}) => {
+      await page.evaluate((s) => chrome.storage.local.set(s), {
+        history: true,
+        history_length: 3,
+        recorded_dois: [
+          {doi: '10.1000/1', title: '', save: true},
+          {doi: '10.1000/2', title: '', save: false},
+          {doi: '10/3', title: '', save: false},
+        ],
+      });
+      await page.getByPlaceholder('DOI').fill('10.1045/january99-bearman');
+      await page.getByRole('button', {name: 'Go'}).click();
+      await expect
+        .poll(() => getStorageValue(serviceWorker, 'recorded_dois'))
+        .toEqual([
+          {doi: '10.1000/1', title: '', save: true},
+          {doi: '10/3', title: '', save: false},
+          {doi: '10.1045/january99-bearman', title: '', save: false},
+        ]);
     });
 
     test('show DOIs in history selection', async ({page}) => {
@@ -201,7 +425,7 @@ test.describe('Bubble', () => {
       const recorded_dois: HistoryDoi[] = [
         {doi: '10.1000/1', title: '', save: false},
         {doi: '10.1000/2', title: '', save: true},
-        {doi: '10.1000/3', title: '', save: false},
+        {doi: '10/3', title: '', save: false},
       ];
       await page.evaluate((s) => chrome.storage.local.set(s), {
         history: true,
@@ -219,7 +443,7 @@ test.describe('Bubble', () => {
       expect(optionsData).toEqual([
         {text: '10.1000/2', divider: false},
         {text: '', divider: true},
-        {text: '10.1000/3', divider: false},
+        {text: '10/3', divider: false},
         {text: '10.1000/1', divider: false},
       ]);
     });
@@ -228,7 +452,7 @@ test.describe('Bubble', () => {
       const recorded_dois: HistoryDoi[] = [
         {doi: '10.1000/1', title: 'Some title 1', save: false},
         {doi: '10.1000/2', title: 'Another title 2', save: true},
-        {doi: '10.1000/3', title: '3. Title', save: false},
+        {doi: '10/3', title: '3. Title', save: false},
       ];
       await page.evaluate((s) => chrome.storage.local.set(s), {
         history: true,
@@ -319,7 +543,4 @@ test.describe('Bubble', () => {
       expect(doisBySave).toEqual(['10.1000/4', '10.1000/5', '10.1000/3', '10.1000/1', '10.1000/2']);
     });
   });
-
-  // TODO: Test custom resolver
-  // TODO: Test cr_bubble_last updates when custom resolver choice changes
 });

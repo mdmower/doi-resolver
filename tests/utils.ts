@@ -1,4 +1,4 @@
-import {Page} from '@playwright/test';
+import {Page, Worker} from '@playwright/test';
 import {
   CustomResolverSelection,
   DisplayTheme,
@@ -66,8 +66,8 @@ export const optionLabels: Record<
   theme: 'Color theme for pages',
 };
 
-export function getStorageValue(page: Page, key: string): Promise<unknown> {
-  return page.evaluate(async (key) => {
+export function getStorageValue(handler: Page | Worker, key: string): Promise<unknown> {
+  return handler.evaluate(async (key) => {
     const stg = await chrome.storage.local.get(key);
     return stg[key] as unknown;
   }, key);

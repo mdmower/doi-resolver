@@ -672,7 +672,7 @@ class DoiOptions {
     Array.from(document.getElementsByClassName('historyInputSave')).forEach((element) => {
       element.addEventListener('change', this.handlers_.saveHistoryEntry);
     });
-    Array.from(document.getElementsByClassName('historyInputDelete')).forEach((element) => {
+    Array.from(document.getElementsByClassName('historyButtonDelete')).forEach((element) => {
       element.addEventListener('click', this.handlers_.deleteHistoryEntry);
     });
   }
@@ -684,7 +684,7 @@ class DoiOptions {
     Array.from(document.getElementsByClassName('historyInputSave')).forEach((element) => {
       element.removeEventListener('change', this.handlers_.saveHistoryEntry);
     });
-    Array.from(document.getElementsByClassName('historyInputDelete')).forEach((element) => {
+    Array.from(document.getElementsByClassName('historyButtonDelete')).forEach((element) => {
       element.removeEventListener('click', this.handlers_.deleteHistoryEntry);
     });
   }
@@ -1194,15 +1194,26 @@ class DoiOptions {
     const clone = document.importNode(template.content, true);
     const historyEntry = clone.querySelector<HTMLTableRowElement>('tr.historyEntry');
     const historyInputSave = clone.querySelector<HTMLInputElement>('input.historyInputSave');
+    const historyButtonDelete = clone.querySelector<HTMLButtonElement>(
+      'button.historyButtonDelete'
+    );
     const historyEntryLink = clone.querySelector<HTMLAnchorElement>('a.historyEntryLink');
     const historyEntryTitle = clone.querySelector<HTMLDivElement>('div.historyEntryTitle');
 
-    if (!historyEntry || !historyInputSave || !historyEntryLink || !historyEntryTitle) {
+    if (
+      !historyEntry ||
+      !historyInputSave ||
+      !historyButtonDelete ||
+      !historyEntryLink ||
+      !historyEntryTitle
+    ) {
       return null;
     }
 
     historyEntry.setAttribute('data-doi', recordedDoi.doi);
+    historyInputSave.ariaLabel = chrome.i18n.getMessage('tableEntrySaveCheckbox');
     historyInputSave.checked = recordedDoi.save;
+    historyButtonDelete.ariaLabel = chrome.i18n.getMessage('tableEntryDeleteButton');
     historyEntryLink.href = this.getHistoryUrl(recordedDoi.doi);
     historyEntryLink.textContent = recordedDoi.doi;
     historyEntryTitle.title = chrome.i18n.getMessage('historyCopyTitle');
@@ -1669,6 +1680,28 @@ class DoiOptions {
         logInfo(`Unable to insert message ${messageId} because it is not defined.`);
       } else {
         logInfo(`Message for #${messageId} not inserted because element not found.`);
+      }
+    }
+
+    const ariaLabelMessageIds = [
+      'optionContextMenuHelpIcon',
+      'optionContextMatchPermissionsIcon',
+      'optionMetaButtonsHelpIcon',
+      'optionAutolinkPermissionsIcon',
+      'optionAutolinkExclusionsHelpIcon',
+      'optionSyncDataHelpIcon',
+      'tableHeadingSaveHelpIcon',
+    ];
+
+    for (const messageId of ariaLabelMessageIds) {
+      const message = chrome.i18n.getMessage(messageId);
+      const element = document.getElementById(messageId);
+      if (message && element) {
+        element.ariaLabel = message;
+      } else if (!message) {
+        logInfo(`Unable to insert message ${messageId} because it is not defined.`);
+      } else {
+        logInfo(`aria-label for #${messageId} not inserted because element not found.`);
       }
     }
 

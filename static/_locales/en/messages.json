@@ -249,6 +249,10 @@
     "description": "Label for textbox area to enter exclusions for the autolink feature",
     "message": "Exclude URLs and URL patterns from autolink"
   },
+  "optionAutolinkExclusionsHelpIcon": {
+    "description": "The aria-label to apply to the help icon for the autolink exclusions feature",
+    "message": "Open autolink exclusions information modal"
+  },
   "optionAutolinkExclusionsModalBody": {
     "description": "The message body to display in an info modal for the autolink exclusion feature",
     "message": "List websites – one per line – that should not be parsed by the autolink feature. All matching tests are case-insensitive. Do not specify the protocol; http and https will be assumed.HTML_SUB_BRHTML_SUB_BRHTML_SUB_SPAN_UL(Normal matching): Websites will be matched based on whether the string matches the URL, HTML_SUB_EM(beginning) with the hostname. Wildcards are not supported.HTML_SUB_BRExample: HTML_SUB_CODE(example.com/abc) will match HTML_SUB_CODE(http://example.com/abc/def) but will not match HTML_SUB_CODE(http://www.example.com/abc/def).HTML_SUB_BRHTML_SUB_BRHTML_SUB_SPAN_UL(Regex matching): Surround an entry by forward slashes (HTML_SUB_CODE(/)) to perform a regex match on an entire URL, beginning with the hostname.HTML_SUB_BRExample: HTML_SUB_CODE(/example\\.com\\/abc.*/) will match both HTML_SUB_CODE(http://example.com/abc/def) and HTML_SUB_CODE(http://www.example.com/abc/def)."
@@ -264,6 +268,10 @@
   "optionAutolinkModalTitle": {
     "description": "The heading to display in an info modal for the autolink feature",
     "message": "Autolink permissions"
+  },
+  "optionAutolinkPermissionsIcon": {
+    "description": "The aria-label to apply to the permissions icon for the autolink feature",
+    "message": "Open autolink permissions notice"
   },
   "optionAutolinkRewrite": {
     "description": "A setting to enable the extension to scan every page visited by the user and rewite doi.org and dx.doi.org links to be handled by the custom DOI resolver instead.",
@@ -285,9 +293,17 @@
     "description": "The heading to display in an info modal for the context menu match feature",
     "message": "Context menu permissions"
   },
+  "optionContextMatchPermissionsIcon": {
+    "description": "The aria-label to apply to the permissions icon for the context menu match feature",
+    "message": "Open context menu selected text permissions notice"
+  },
   "optionContextMenu": {
     "description": "A setting to enable a feature where a user can highlight a DOI on a webpage, and then right click the selected text to see a 'Resolve DOI' in the context menu",
     "message": "Enable right-click context menu for selected text"
+  },
+  "optionContextMenuHelpIcon": {
+    "description": "The aria-label to apply to the help icon for the context menu feature",
+    "message": "Open context menu information modal"
   },
   "optionContextMenuModalBody": {
     "description": "The message body text to display in an info modal for the context menu feature",
@@ -361,6 +377,10 @@
     "description": "A setting to enable additional buttons in the browser action bubble",
     "message": "Enable additional features in the browser action bubble"
   },
+  "optionMetaButtonsHelpIcon": {
+    "description": "The aria-label to apply to the help icon for the additional buttons in the browser action bubble",
+    "message": "Open QR and citation features information modal"
+  },
   "optionMetaButtonsModalBody": {
     "description": "The message body text to display in an info modal for the meta buttons feature",
     "message": "This feature will add buttons to access Options, the Citation Generator, and the QR Code Generator to the browser action bubble."
@@ -388,6 +408,10 @@
   "optionSyncData": {
     "description": "Label for data sync feature",
     "message": "Synchronize this extension's settings with your profile"
+  },
+  "optionSyncDataHelpIcon": {
+    "description": "The aria-label to apply to the help icon for the sync feature",
+    "message": "Open sync information modal"
   },
   "optionSyncDataModalBody": {
     "description": "The message body to display in an info modal for the sync feature",
@@ -538,6 +562,14 @@
     "description": "Description for sync wipe button",
     "message": "Wipe all synced data and disable Sync"
   },
+  "tableEntryDeleteButton": {
+    "description": "The aria-label to apply to the delete button in history table rows",
+    "message": "Delete history entry"
+  },
+  "tableEntrySaveCheckbox": {
+    "description": "The aria-label to apply to the save checkbox in history table rows",
+    "message": "Save history entry"
+  },
   "tableHeadingDelete": {
     "description": "Heading on history page for Delete column",
     "message": "Delete"
@@ -549,6 +581,10 @@
   "tableHeadingSave": {
     "description": "Heading on history page for Save column",
     "message": "Save"
+  },
+  "tableHeadingSaveHelpIcon": {
+    "description": "The aria-label to apply to the help icon for the history save feature",
+    "message": "Open history save feature information modal"
   },
   "textDoiResolverInput": {
     "description": "Label for text box where a URL will be entered for DOIs",

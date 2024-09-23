@@ -50,27 +50,17 @@ test.describe('Bubble', () => {
   });
 
   test('additional button display', async ({page}) => {
-    const getButtons = () =>
-      Promise.all([
-        page.getByRole('button', {name: 'Go'}),
-        page.getByRole('button', {name: 'Options'}),
-        page.getByRole('button', {name: 'Citation'}),
-        page.getByRole('button', {name: 'QR'}),
-      ]);
-
-    const [go1, options1, citation1, qr1] = await getButtons();
-    await expect(go1).toHaveCount(1);
-    await expect(options1).toHaveCount(1);
-    await expect(citation1).toHaveCount(1);
-    await expect(qr1).toHaveCount(1);
+    await expect(page.getByRole('button', {name: 'Go'})).toHaveCount(1);
+    await expect(page.getByRole('button', {name: 'Options'})).toHaveCount(1);
+    await expect(page.getByRole('button', {name: 'Citation'})).toHaveCount(1);
+    await expect(page.getByRole('button', {name: 'QR'})).toHaveCount(1);
 
     await page.evaluate((s) => chrome.storage.local.set(s), {meta_buttons: false});
     await page.reload({waitUntil: 'load'});
-    const [go2, options2, citation2, qr2] = await getButtons();
-    await expect(go2).toHaveCount(1);
-    await expect(options2).toHaveCount(0);
-    await expect(citation2).toHaveCount(0);
-    await expect(qr2).toHaveCount(0);
+    await expect(page.getByRole('button', {name: 'Go'})).toHaveCount(1);
+    await expect(page.getByRole('button', {name: 'Options'})).toHaveCount(0);
+    await expect(page.getByRole('button', {name: 'Citation'})).toHaveCount(0);
+    await expect(page.getByRole('button', {name: 'QR'})).toHaveCount(0);
   });
 
   test('custom DOI resolver (default)', async ({context, page}) => {
@@ -419,8 +409,7 @@ test.describe('Bubble', () => {
     });
 
     test('show DOIs in history selection', async ({page}) => {
-      let options = await page.getByRole('option').all();
-      expect(options).toHaveLength(0);
+      await expect(page.getByRole('option')).toHaveCount(0);
 
       const recorded_dois: HistoryDoi[] = [
         {doi: '10.1000/1', title: '', save: false},
@@ -433,19 +422,16 @@ test.describe('Bubble', () => {
       });
       await page.reload({waitUntil: 'load'});
 
-      options = await page.getByRole('option').all();
-      const optionsData = await Promise.all(
-        options.map(async (option) => ({
-          text: await option.textContent(),
-          divider: await option.isDisabled(),
-        }))
-      );
-      expect(optionsData).toEqual([
+      const expected = [
         {text: '10.1000/2', divider: false},
         {text: '', divider: true},
         {text: '10/3', divider: false},
         {text: '10.1000/1', divider: false},
-      ]);
+      ];
+      for (let i = 0; i < expected.length; i++) {
+        await expect(page.getByRole('option').nth(i)).toHaveText(expected[i].text);
+        await expect(page.getByRole('option').nth(i)).toBeEnabled({enabled: !expected[i].divider});
+      }
     });
 
     test('show DOI titles in history selection', async ({page}) => {
@@ -461,19 +447,16 @@ test.describe('Bubble', () => {
       });
       await page.reload({waitUntil: 'load'});
 
-      const options = await page.getByRole('option').all();
-      const optionsData = await Promise.all(
-        options.map(async (option) => ({
-          text: await option.textContent(),
-          divider: await option.isDisabled(),
-        }))
-      );
-      expect(optionsData).toEqual([
+      const expected = [
         {text: 'Another title 2', divider: false},
         {text: '', divider: true},
         {text: '3. Title', divider: false},
         {text: 'Some title 1', divider: false},
-      ]);
+      ];
+      for (let i = 0; i < expected.length; i++) {
+        await expect(page.getByRole('option').nth(i)).toHaveText(expected[i].text);
+        await expect(page.getByRole('option').nth(i)).toBeEnabled({enabled: !expected[i].divider});
+      }
     });
 
     test('select a DOI in history selection', async ({page}) => {
@@ -514,22 +497,29 @@ test.describe('Bubble', () => {
         recorded_dois,
       });
 
-      const getOrderedDois = async (sortBy: HistorySort) => {
+      const updateSortAndGetLocator = async (sortBy: HistorySort) => {
         await page.evaluate((s) => chrome.storage.local.set(s), {history_sortby: sortBy});
         await page.reload({waitUntil: 'load'});
-
-        const options = await page.getByRole('option', {disabled: false}).all();
-        return await Promise.all(options.map((option) => option.textContent()));
+        return page.getByRole('option', {disabled: false});
       };
 
-      const doisByDate = await getOrderedDois(HistorySort.Date);
-      expect(doisByDate).toEqual(['10.1000/3', '10.1000/1', '10.1000/2']);
+      const expectedByDate = ['10.1000/3', '10.1000/1', '10.1000/2'];
+      const optionsByDate = await updateSortAndGetLocator(HistorySort.Date);
+      for (let i = 0; i < expectedByDate.length; i++) {
+        await expect(optionsByDate.nth(i)).toHaveText(expectedByDate[i]);
+      }
 
-      const doisByDoi = await getOrderedDois(HistorySort.Doi);
-      expect(doisByDoi).toEqual(['10.1000/1', '10.1000/2', '10.1000/3']);
+      const expectedByDoi = ['10.1000/1', '10.1000/2', '10.1000/3'];
+      const optionsByDoi = await updateSortAndGetLocator(HistorySort.Doi);
+      for (let i = 0; i < expectedByDoi.length; i++) {
+        await expect(optionsByDoi.nth(i)).toHaveText(expectedByDoi[i]);
+      }
 
-      const doisByTitle = await getOrderedDois(HistorySort.Title);
-      expect(doisByTitle).toEqual(['10.1000/2', '10.1000/1', '10.1000/3']);
+      const expectedByTitle = ['10.1000/2', '10.1000/1', '10.1000/3'];
+      const optionsByTitle = await updateSortAndGetLocator(HistorySort.Title);
+      for (let i = 0; i < expectedByTitle.length; i++) {
+        await expect(optionsByTitle.nth(i)).toHaveText(expectedByTitle[i]);
+      }
 
       await page.evaluate((s) => chrome.storage.local.set(s), {
         recorded_dois: [
@@ -539,8 +529,11 @@ test.describe('Bubble', () => {
         ],
       });
 
-      const doisBySave = await getOrderedDois(HistorySort.Save);
-      expect(doisBySave).toEqual(['10.1000/4', '10.1000/5', '10.1000/3', '10.1000/1', '10.1000/2']);
+      const expectedBySave = ['10.1000/4', '10.1000/5', '10.1000/3', '10.1000/1', '10.1000/2'];
+      const optionsBySave = await updateSortAndGetLocator(HistorySort.Save);
+      for (let i = 0; i < expectedBySave.length; i++) {
+        await expect(optionsBySave.nth(i)).toHaveText(expectedBySave[i]);
+      }
     });
   });
 });

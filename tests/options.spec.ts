@@ -60,8 +60,7 @@ test.describe('Options', () => {
     test('set display theme', async ({page}) => {
       const themes = Object.values(DisplayTheme);
       const select = page.getByLabel(optionLabels.theme);
-      const options = await select.getByRole('option').all();
-      expect(options).toHaveLength(themes.length);
+      await expect(select.getByRole('option')).toHaveCount(themes.length);
       for (const theme of themes.reverse()) {
         await select.selectOption(theme);
         await expect.poll(() => getStorageValue(page, 'theme')).toBe(theme);
@@ -74,8 +73,7 @@ test.describe('Options', () => {
     test('set omnibox open behavior', async ({page}) => {
       const tabs = Object.values(OmniboxTab);
       const select = page.getByLabel(optionLabels.omnibox_tab);
-      const options = await select.getByRole('option').all();
-      expect(options).toHaveLength(tabs.length);
+      await expect(select.getByRole('option')).toHaveCount(tabs.length);
       for (const tab of tabs.reverse()) {
         await select.selectOption(tab);
         await expect.poll(() => getStorageValue(page, 'omnibox_tab')).toBe(tab);
@@ -799,33 +797,33 @@ test.describe('Options', () => {
       {
         await page.getByLabel('Sort by').selectOption('Title');
         const dois = ['10.1000/6', '10.1000/1', '10.1000/4', '10.1000/2', '10.1000/3', '10/5'];
-        const trs = await page.locator('tr.historyEntry').all();
         for (let i = 0; i < dois.length; i++) {
-          await expect(trs[i].getByRole('link', {name: dois[i]})).toBeVisible();
+          const tr = page.locator('tr.historyEntry').nth(i);
+          await expect(tr.getByRole('link', {name: dois[i]})).toBeVisible();
         }
       }
       {
         await page.getByLabel('Sort by').selectOption('DOI');
         const dois = ['10.1000/1', '10.1000/2', '10.1000/3', '10.1000/4', '10.1000/6', '10/5'];
-        const trs = await page.locator('tr.historyEntry').all();
         for (let i = 0; i < dois.length; i++) {
-          await expect(trs[i].getByRole('link', {name: dois[i]})).toBeVisible();
+          const tr = page.locator('tr.historyEntry').nth(i);
+          await expect(tr.getByRole('link', {name: dois[i]})).toBeVisible();
         }
       }
       {
         await page.getByLabel('Sort by').selectOption('Save Status');
         const dois = ['10/5', '10.1000/3', '10.1000/6', '10.1000/4', '10.1000/2', '10.1000/1'];
-        const trs = await page.locator('tr.historyEntry').all();
         for (let i = 0; i < dois.length; i++) {
-          await expect(trs[i].getByRole('link', {name: dois[i]})).toBeVisible();
+          const tr = page.locator('tr.historyEntry').nth(i);
+          await expect(tr.getByRole('link', {name: dois[i]})).toBeVisible();
         }
       }
       {
         await page.getByLabel('Sort by').selectOption('Date Added');
         const dois = ['10.1000/6', '10/5', '10.1000/4', '10.1000/3', '10.1000/2', '10.1000/1'];
-        const trs = await page.locator('tr.historyEntry').all();
         for (let i = 0; i < dois.length; i++) {
-          await expect(trs[i].getByRole('link', {name: dois[i]})).toBeVisible();
+          const tr = page.locator('tr.historyEntry').nth(i);
+          await expect(tr.getByRole('link', {name: dois[i]})).toBeVisible();
         }
       }
     });

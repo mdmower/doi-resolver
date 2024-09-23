@@ -169,19 +169,17 @@ test.describe('Citation', () => {
       await page.getByRole('link', {name: 'History'}).click();
       const modal = page.locator('#historyModal');
       await expect(modal).toBeVisible();
-      const options = await modal.getByRole('option').all();
-      const optionsData = await Promise.all(
-        options.map(async (option) => ({
-          text: await option.textContent(),
-          divider: await option.isDisabled(),
-        }))
-      );
-      expect(optionsData).toEqual([
+
+      const expected = [
         {text: '10.1000/2', divider: false},
         {text: '↑ Saved / Unsaved ↓', divider: true},
         {text: '10/3', divider: false},
         {text: '10.1000/1', divider: false},
-      ]);
+      ];
+      for (let i = 0; i < expected.length; i++) {
+        await expect(modal.getByRole('option').nth(i)).toHaveText(expected[i].text);
+        await expect(modal.getByRole('option').nth(i)).toBeEnabled({enabled: !expected[i].divider});
+      }
     });
 
     test('show DOI titles in history modal', async ({page}) => {
@@ -200,19 +198,17 @@ test.describe('Citation', () => {
       await page.getByRole('link', {name: 'History'}).click();
       const modal = page.locator('#historyModal');
       await expect(modal).toBeVisible();
-      const options = await modal.getByRole('option').all();
-      const optionsData = await Promise.all(
-        options.map(async (option) => ({
-          text: await option.textContent(),
-          divider: await option.isDisabled(),
-        }))
-      );
-      expect(optionsData).toEqual([
+
+      const expected = [
         {text: 'Another title 2', divider: false},
         {text: '↑ Saved / Unsaved ↓', divider: true},
         {text: '3. Title', divider: false},
         {text: 'Some title 1', divider: false},
-      ]);
+      ];
+      for (let i = 0; i < expected.length; i++) {
+        await expect(modal.getByRole('option').nth(i)).toHaveText(expected[i].text);
+        await expect(modal.getByRole('option').nth(i)).toBeEnabled({enabled: !expected[i].divider});
+      }
     });
 
     test('select a DOI in history modal', async ({page}) => {
@@ -257,25 +253,33 @@ test.describe('Citation', () => {
         recorded_dois,
       });
 
-      const getOrderedDois = async (sortBy: HistorySort) => {
+      const updateSortAndGetLocator = async (sortBy: HistorySort) => {
         await page.evaluate((s) => chrome.storage.local.set(s), {history_sortby: sortBy});
         await page.reload({waitUntil: 'load'});
 
         await page.getByRole('link', {name: 'History'}).click();
         const modal = page.locator('#historyModal');
         await expect(modal).toBeVisible();
-        const options = await modal.getByRole('option', {disabled: false}).all();
-        return await Promise.all(options.map((option) => option.textContent()));
+        return modal.getByRole('option', {disabled: false});
       };
 
-      const doisByDate = await getOrderedDois(HistorySort.Date);
-      expect(doisByDate).toEqual(['10.1000/3', '10.1000/1', '10.1000/2']);
+      const expectedByDate = ['10.1000/3', '10.1000/1', '10.1000/2'];
+      const optionsByDate = await updateSortAndGetLocator(HistorySort.Date);
+      for (let i = 0; i < expectedByDate.length; i++) {
+        await expect(optionsByDate.nth(i)).toHaveText(expectedByDate[i]);
+      }
 
-      const doisByDoi = await getOrderedDois(HistorySort.Doi);
-      expect(doisByDoi).toEqual(['10.1000/1', '10.1000/2', '10.1000/3']);
+      const expectedByDoi = ['10.1000/1', '10.1000/2', '10.1000/3'];
+      const optionsByDoi = await updateSortAndGetLocator(HistorySort.Doi);
+      for (let i = 0; i < expectedByDoi.length; i++) {
+        await expect(optionsByDoi.nth(i)).toHaveText(expectedByDoi[i]);
+      }
 
-      const doisByTitle = await getOrderedDois(HistorySort.Title);
-      expect(doisByTitle).toEqual(['10.1000/2', '10.1000/1', '10.1000/3']);
+      const expectedByTitle = ['10.1000/2', '10.1000/1', '10.1000/3'];
+      const optionsByTitle = await updateSortAndGetLocator(HistorySort.Title);
+      for (let i = 0; i < expectedByTitle.length; i++) {
+        await expect(optionsByTitle.nth(i)).toHaveText(expectedByTitle[i]);
+      }
 
       await page.evaluate((s) => chrome.storage.local.set(s), {
         recorded_dois: [
@@ -285,8 +289,11 @@ test.describe('Citation', () => {
         ],
       });
 
-      const doisBySave = await getOrderedDois(HistorySort.Save);
-      expect(doisBySave).toEqual(['10.1000/4', '10.1000/5', '10.1000/3', '10.1000/1', '10.1000/2']);
+      const expectedBySave = ['10.1000/4', '10.1000/5', '10.1000/3', '10.1000/1', '10.1000/2'];
+      const optionsBySave = await updateSortAndGetLocator(HistorySort.Save);
+      for (let i = 0; i < expectedBySave.length; i++) {
+        await expect(optionsBySave.nth(i)).toHaveText(expectedBySave[i]);
+      }
     });
   });
 });

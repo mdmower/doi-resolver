@@ -1707,9 +1707,8 @@ class DoiOptions {
 
     const messageClasses = ['optionCrCustom', 'optionCrDefault', 'optionCrSelectable'];
     for (const messageClass of messageClasses) {
-      const message = getMessageNodes(messageClass);
       for (const element of Array.from(document.getElementsByClassName(messageClass))) {
-        element.append(...message);
+        element.append(...getMessageNodes(messageClass));
       }
     }
 
@@ -1720,12 +1719,10 @@ class DoiOptions {
       element.ariaLabel = closeMessage;
     }
 
-    const doiResetMessage = getMessageNodes('resetButton');
-    this.elements_.doiResolverInputReset.append(...doiResetMessage);
-    this.elements_.shortDoiResolverInputReset.append(...doiResetMessage);
-    const urlExampleMessage = getMessageNodes('doiOutputUrlExample');
-    this.elements_.doiOutputUrlExample.append(...urlExampleMessage);
-    this.elements_.shortDoiOutputUrlExample.append(...urlExampleMessage);
+    this.elements_.doiResolverInputReset.append(...getMessageNodes('resetButton'));
+    this.elements_.shortDoiResolverInputReset.append(...getMessageNodes('resetButton'));
+    this.elements_.doiOutputUrlExample.append(...getMessageNodes('doiOutputUrlExample'));
+    this.elements_.shortDoiOutputUrlExample.append(...getMessageNodes('doiOutputUrlExample'));
 
     this.elements_.optionsVersion.append(
       ...getMessageNodes('optionsVersion', [chrome.runtime.getManifest().version])

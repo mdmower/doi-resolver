@@ -303,22 +303,40 @@ test.describe('Options', () => {
       await expect(suboptionsContainer).toBeHidden();
     });
 
-    test('set custom DOI resolver', async ({page}) => {
+    test('set and reset custom DOI resolver', async ({page}) => {
       await page.getByLabel(optionLabels.custom_resolver).click();
-      const input = page.getByLabel(optionLabels.doi_resolver);
+
+      const container = page.getByTestId('custom-doi-resolver-container');
+      const input = container.getByLabel(optionLabels.doi_resolver);
       await input.fill('https://mydoi/');
       await expect.poll(() => getStorageValue(page, 'doi_resolver')).toBe('https://mydoi/');
-      const preview = page.locator('#doiResolverOutput');
-      await expect(preview).toContainText(`/mydoi/${handbookDoi}`);
+      await expect(container.locator('#doiResolverOutput')).toContainText(`/mydoi/${handbookDoi}`);
+
+      await container.getByRole('button', {name: 'Reset', exact: true}).click();
+      await expect(input).toHaveValue('https://doi.org/');
+      await expect.poll(() => getStorageValue(page, 'doi_resolver')).toBe('https://doi.org/');
+      await expect(container.locator('#doiResolverOutput')).toContainText(
+        `/doi.org/${handbookDoi}`
+      );
     });
 
-    test('set custom ShortDOI resolver', async ({page}) => {
+    test('set and reset custom ShortDOI resolver', async ({page}) => {
       await page.getByLabel(optionLabels.custom_resolver).click();
-      const input = page.getByLabel(optionLabels.shortdoi_resolver);
+
+      const container = page.getByTestId('custom-shortdoi-resolver-container');
+      const input = container.getByLabel(optionLabels.shortdoi_resolver);
       await input.fill('https://mydoi/');
       await expect.poll(() => getStorageValue(page, 'shortdoi_resolver')).toBe('https://mydoi/');
-      const preview = page.locator('#shortDoiResolverOutput');
-      await expect(preview).toContainText(`/mydoi/${handbookShortDoi.replace('10/', '')}`);
+      await expect(container.locator('#shortDoiResolverOutput')).toContainText(
+        `/mydoi/${handbookShortDoi.replace('10/', '')}`
+      );
+
+      await container.getByRole('button', {name: 'Reset', exact: true}).click();
+      await expect(input).toHaveValue('https://doi.org/');
+      await expect.poll(() => getStorageValue(page, 'shortdoi_resolver')).toBe('https://doi.org/');
+      await expect(container.locator('#shortDoiResolverOutput')).toContainText(
+        `/doi.org/${handbookShortDoi.replace('10/', '')}`
+      );
     });
 
     test('set custom resolver choices (non-selectable)', async ({page}) => {

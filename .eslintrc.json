@@ -14,7 +14,7 @@
     "plugin:@typescript-eslint/stylistic-type-checked",
     "prettier",
     "plugin:jsdoc/recommended",
-    "plugin:no-unsanitized/DOM"
+    "plugin:no-unsanitized/recommended-legacy"
   ],
   "ignorePatterns": ["dist/**/*", "src/csl/**/*", "src/qrcodegen/**/*"],
   "rules": {

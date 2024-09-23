@@ -38,7 +38,7 @@ async function updateCslLocales() {
   }
 
   const readme = await readmeResponse.text();
-  const locales = (await localesResponse.json()) as unknown;
+  const locales = await localesResponse.json();
   await writeFile(path.join(dirRef.csl, 'locales/README.md'), readme);
   await writeFile(path.join(dirRef.csl, 'locales/locales.json'), JSON.stringify(locales));
 }
@@ -66,21 +66,29 @@ async function updateCslStyles() {
   const cslStyles: CslStyles = {cite_styles: []};
   const files = await readdir(cloneDir);
   const cslFiles = files.filter((file) => path.extname(file).toLocaleLowerCase() === '.csl');
+  const domParser = new DOMParser();
 
   for (const file of cslFiles) {
-    const text = await readFile(path.join(cloneDir, file), 'utf-8');
-    const doc = new DOMParser().parseFromString(text);
-    const styleElements = doc.getElementsByTagNameNS('http://purl.org/net/xbiblio/csl', 'style');
-    const default_locale = styleElements.length
-      ? styleElements[0].getAttributeNS(null, 'default-locale') || ''
-      : '';
-    const titleElements = doc.getElementsByTagNameNS('http://purl.org/net/xbiblio/csl', 'title');
-    const title = titleElements.length ? titleElements[0].textContent || '' : '';
-    cslStyles.cite_styles.push({
-      code: file.replace(/\.csl$/i, ''),
-      title,
-      default_locale,
-    });
+    try {
+      const text = await readFile(path.join(cloneDir, file), 'utf-8');
+      const doc = domParser.parseFromString(text, 'application/xml');
+      const styleElements = doc.getElementsByTagNameNS('http://purl.org/net/xbiblio/csl', 'style');
+      const default_locale = styleElements.length
+        ? styleElements[0].getAttributeNS(null, 'default-locale') || ''
+        : '';
+      const titleElements = doc.getElementsByTagNameNS('http://purl.org/net/xbiblio/csl', 'title');
+      const title = titleElements.length ? titleElements[0].textContent || '' : '';
+      if (!title) {
+        throw new Error('Title not available');
+      }
+      cslStyles.cite_styles.push({
+        code: file.replace(/\.csl$/i, ''),
+        title,
+        default_locale,
+      });
+    } catch (ex) {
+      console.warn(`Skipping ${file} because it could not be parsed`);
+    }
   }
   await writeFile(path.join(dirRef.csl, 'styles/styles.json'), JSON.stringify(cslStyles));
 }

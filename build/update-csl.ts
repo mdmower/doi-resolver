@@ -86,7 +86,7 @@ async function updateCslStyles() {
         title,
         default_locale,
       });
-    } catch (ex) {
+    } catch {
       console.warn(`Skipping ${file} because it could not be parsed`);
     }
   }

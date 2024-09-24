@@ -30,7 +30,7 @@ async function writeManifest(debug: boolean, browser: Browser): Promise<void> {
     if (ex) {
       console.error(ex);
     }
-    return Promise.reject();
+    throw ex instanceof Error ? ex : new Error(ex?.toString());
   }
 }
 
@@ -52,10 +52,10 @@ async function runWebpack(debug: boolean, browser: Browser): Promise<void> {
           } else {
             console.error(err.stack || err);
           }
-          return reject();
+          return reject(err);
         }
         if (!stats) {
-          return reject();
+          return reject(new Error('Stats unavailable'));
         }
 
         console.log(
@@ -65,7 +65,7 @@ async function runWebpack(debug: boolean, browser: Browser): Promise<void> {
           })
         );
 
-        return stats.hasErrors() ? reject() : resolve();
+        return stats.hasErrors() ? reject(new Error('Stats includes errors')) : resolve();
       });
     });
   } catch (ex) {
@@ -73,7 +73,7 @@ async function runWebpack(debug: boolean, browser: Browser): Promise<void> {
     if (ex) {
       console.error(ex);
     }
-    return Promise.reject();
+    throw ex instanceof Error ? ex : new Error(ex?.toString());
   }
 }
 
@@ -115,7 +115,6 @@ async function build() {
     process.exit(1);
   }
 
-  // Error output is handled within each method, no need to re-output here.
   try {
     for (const browser of filteredBrowsers) {
       console.log(`\n${bold.cyan('Building for ' + browser)}`);
@@ -124,7 +123,8 @@ async function build() {
 
       console.log(`\n${bold.green('[Build successful]')} ${browser}`);
     }
-  } catch (ex) {
+  } catch {
+    // Error output is handled within each method, no need to re-output here.
     process.exit(1);
   }
 }

@@ -1515,7 +1515,7 @@ class DoiOptions {
       // spinner to indicate that title fetch is still ongoing (if enabled).
       await recordDois(dois.map((doi) => ({doi, title: '', save: false})));
       this.elements_.historyImportInput.value = '';
-    } catch (ex) {
+    } catch {
       this.elements_.historyImportFailure.click();
     } finally {
       this.toggleHistorySpinner(false);

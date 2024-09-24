@@ -42,7 +42,7 @@ export async function sendInternalMessageAsync<T extends InternalMessage<unknown
     if (
       isRecord(error) &&
       typeof error.message === 'string' &&
-      /Receiving end does not exist\./.test(error.message)
+      error.message.includes('Receiving end does not exist.')
     ) {
       return;
     }

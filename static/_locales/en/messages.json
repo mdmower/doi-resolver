@@ -111,7 +111,7 @@
   },
   "headingOmnibox": {
     "description": "Heading on options page for Omnibox",
-    "message": "Omnibox"
+    "message": "Address Bar"
   },
   "headingSync": {
     "description": "Heading on options page for Sync",
@@ -241,6 +241,10 @@
     "description": "A notice to the user that a citation could not be found",
     "message": "No citation found"
   },
+  "omniboxUsage": {
+    "description": "Brief usage instructions for the omnibox feature",
+    "message": "Type keyword HTML_SUB_CODE(doi) followed by a space in the address bar. Then, you can paste a DOI and navigate directly to its web destination."
+  },
   "optionAutolink": {
     "description": "A setting to enable the extension to scan every page visited by the user and convert DOI codes into clickable links.",
     "message": "Automatically turn DOI codes on web pages into links"
@@ -343,7 +347,7 @@
   },
   "optionCrOmnibox": {
     "description": "Label to choose whether custom resolver is enabled for omnibox",
-    "message": "Omnibox"
+    "message": "Address Bar"
   },
   "optionCrSelectable": {
     "description": "Label for selectable resolver",
@@ -391,7 +395,7 @@
   },
   "optionOmniboxOpento": {
     "description": "Label for selectable option to open omnibox queries in current or new tab",
-    "message": "Omnibox entry should by default open result in:"
+    "message": "Address bar entry should by default open result in:"
   },
   "optionOmniboxOpentoCurtab": {
     "description": "Label for current tab",

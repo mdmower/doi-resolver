@@ -1632,6 +1632,7 @@ class DoiOptions {
       'historySortByTitle',
       'historyTitleRefresh',
       'infoModalLabel',
+      'omniboxUsage',
       'optionAutolink',
       'optionAutolinkExclusions',
       'optionAutolinkRewrite',

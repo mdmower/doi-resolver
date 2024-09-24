@@ -40,7 +40,7 @@ export const optionLabels: Record<
   // cr_bubble_last
   cr_context: 'Context Menu',
   cr_history: 'History',
-  cr_omnibox: 'Omnibox',
+  cr_omnibox: 'Address Bar',
   custom_resolver: 'Use a custom DOI resolver',
   doi_resolver: 'URL for DOI resolver',
   history: 'Retain history of DOIs',
@@ -51,7 +51,7 @@ export const optionLabels: Record<
   history_showtitles: 'Show titles instead of DOIs in text input box drop-downs',
   history_sortby: 'Sort by',
   meta_buttons: 'Enable additional features in the browser action bubble',
-  omnibox_tab: 'Omnibox entry should by default open result in:',
+  omnibox_tab: 'Address bar entry should by default open result in:',
   qr_bgcolor: 'Background color',
   qr_bgtrans: 'Transparent background',
   qr_border: 'Border',

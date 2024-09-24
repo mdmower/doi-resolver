@@ -20,7 +20,7 @@ async function clean() {
     console.log(`${bold.green('[Clean successful]')} ${dirRef.dist}`);
   } catch (ex) {
     console.error(`${bold.red('[Clean error]')} Unexpected error during cleanup\n`, ex);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 

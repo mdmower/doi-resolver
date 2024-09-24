@@ -105,7 +105,7 @@ async function update() {
     console.log(`${bold.green('[Update]')} Done`);
   } catch (ex) {
     console.error(`${bold.red('[Update error]')} Unexpected error during update\n`, ex);
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 

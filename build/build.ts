@@ -112,7 +112,8 @@ async function build() {
     if (ex) {
       console.error(ex);
     }
-    process.exit(1);
+    process.exitCode = 1;
+    return;
   }
 
   try {
@@ -125,7 +126,7 @@ async function build() {
     }
   } catch {
     // Error output is handled within each method, no need to re-output here.
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
 

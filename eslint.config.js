@@ -46,13 +46,12 @@ export default tseslint.config(
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
     },
   },
-  jsdoc.configs['flat/recommended-typescript'],
   {
     files: ['**/*.ts'],
-    plugins: {jsdoc},
-    settings: {
-      jsdoc: {mode: 'typescript'},
-    },
+    ...jsdoc.configs['flat/recommended-typescript'],
+  },
+  {
+    files: ['**/*.ts'],
     rules: {
       'jsdoc/require-jsdoc': [
         'error',
@@ -75,7 +74,10 @@ export default tseslint.config(
       'jsdoc/require-jsdoc': 'off',
     },
   },
-  ...noUnsanitized.configs.recommended,
+  {
+    files: ['**/*.ts'],
+    ...noUnsanitized.configs.recommended,
+  },
   {
     files: ['src/**/*.ts'],
     rules: {
@@ -119,8 +121,8 @@ export default tseslint.config(
     },
   },
   {
-    ...playwright.configs['flat/recommended'],
     files: ['playwright.config.ts', 'tests/**/*.ts'],
+    ...playwright.configs['flat/recommended'],
   },
   {
     files: ['playwright.config.ts', 'tests/**/*.ts'],

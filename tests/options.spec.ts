@@ -68,7 +68,7 @@ test.describe('Options', () => {
       }
     });
 
-    // Note: Not able to test omnibox.
+    // Note: Playwright developers refuse to support typing in the address bar, so omnibox feature cannot be tested.
     // https://github.com/microsoft/playwright/issues/32754
     test('set omnibox open behavior', async ({page}) => {
       const tabs = Object.values(OmniboxTab);
@@ -122,8 +122,6 @@ test.describe('Options', () => {
       await expect(checkbox).not.toBeChecked();
     });
 
-    // Note: Not able to test optional permissions.
-    // https://github.com/microsoft/playwright/issues/32755
     test('toggle history title auto-fetch behavior', async ({page}) => {
       await page.getByLabel(optionLabels.history).click();
       const checkbox = page.getByLabel('Automatically fetch title when a new DOI is recorded');

@@ -2,6 +2,9 @@ import {test, expect} from './fixtures';
 import {DisplayTheme, HistoryDoi, HistorySort} from '../src/lib/options';
 import {getStorageValue, handbookDoi, handbookShortDoi} from './utils';
 
+// Playwright is not able to capture the initial request when a tab is opened via
+// chrome.tabs.create(). Many of these tests perform real navigations that cannot be mocked.
+// https://github.com/microsoft/playwright/issues/32865
 test.describe('Bubble', () => {
   test.beforeEach(async ({page, extension}) => {
     await page.goto(extension.urls.bubble);

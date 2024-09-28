@@ -21,6 +21,11 @@ export const test = base.extend<{
       ],
     });
 
+    // Playwright is not able to capture the initial request when a tab is opened via
+    // chrome.tabs.create(). There isn't enough incentive to mock responses until this is fixed.
+    // https://github.com/microsoft/playwright/issues/32865
+    // await context.route(/^https?:\/\//, (route, request) => {...});
+
     await use(context);
     await context.close();
   },
@@ -32,11 +37,13 @@ export const test = base.extend<{
 
     for (let i = 0; i < 10; i++) {
       const ready = await worker.evaluate(
-        () =>
+        async () =>
+          typeof self !== 'undefined' &&
+          self instanceof ServiceWorkerGlobalScope &&
+          self.serviceWorker.state === 'activated' &&
           typeof chrome !== 'undefined' &&
           !!chrome.storage?.local &&
-          self instanceof ServiceWorker &&
-          self.state == 'activated'
+          Object.keys((await chrome.storage.local.get()) ?? {}).length > 0
       );
       if (!ready) {
         await new Promise((resolve) => setTimeout(resolve, 25));

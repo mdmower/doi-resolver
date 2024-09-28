@@ -3,6 +3,9 @@ import {fileURLToPath} from 'node:url';
 import {copyFile, readFile, writeFile} from 'node:fs/promises';
 import path from 'node:path';
 
+// Playwright developers refuse to support optional permissions, so all permissions must be required.
+// https://github.com/microsoft/playwright/issues/32755
+
 /**
  * Make all optional permissions in manifest.json required and save a copy of the original manifest with .bak extension
  * @param path Path to manifest.json

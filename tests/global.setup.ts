@@ -8,10 +8,14 @@ import path from 'node:path';
  * @param path Path to manifest.json
  */
 async function patchManifest(path: string) {
-  await copyFile(path, path + '.bak');
   const originalManifest = await readFile(path, 'utf8');
   const manifest = JSON.parse(originalManifest) as chrome.runtime.ManifestV3;
   const {permissions, optional_permissions, host_permissions, optional_host_permissions} = manifest;
+  if (!optional_permissions && !optional_host_permissions) {
+    return;
+  }
+
+  await copyFile(path, path + '.bak');
   manifest.permissions = [...(permissions ?? []), ...(optional_permissions ?? [])];
   manifest.host_permissions = [...(host_permissions ?? []), ...(optional_host_permissions ?? [])];
   delete manifest.optional_permissions;

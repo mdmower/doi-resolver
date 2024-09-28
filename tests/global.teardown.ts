@@ -1,6 +1,7 @@
 import {test as teardown} from '@playwright/test';
 import {fileURLToPath} from 'node:url';
 import {rename} from 'node:fs/promises';
+import {existsSync} from 'node:fs';
 import path from 'node:path';
 
 /**
@@ -8,6 +9,9 @@ import path from 'node:path';
  * @param path Path to manifest.json
  */
 async function restoreManifest(path: string) {
+  if (!existsSync(path + '.bak')) {
+    return;
+  }
   await rename(path + '.bak', path);
 }
 

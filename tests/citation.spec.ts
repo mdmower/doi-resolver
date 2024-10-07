@@ -71,6 +71,7 @@ test.describe('Citation', () => {
     await expect(page.getByLabel('DOI')).toHaveValue(doi);
     await page.locator('#styleList').selectOption('American Physical Society');
     await page.getByRole('button', {name: 'Submit'}).click();
+    await expect.poll(() => getStorageValue(page, 'cite_style')).toBe('american-physics-society');
     await expect(
       page.getByText('D. Bearman, E. Miller, G. Rust, J. Trant, and S. Weibel')
     ).toBeVisible();
@@ -81,6 +82,8 @@ test.describe('Citation', () => {
     await page.locator('#styleList').selectOption('American Physical Society');
     await page.getByLabel('Locale').selectOption('German (Germany)');
     await page.getByRole('button', {name: 'Submit'}).click();
+    await expect.poll(() => getStorageValue(page, 'cite_style')).toBe('american-physics-society');
+    await expect.poll(() => getStorageValue(page, 'cite_locale')).toBe('de-DE');
     await expect(
       page.getByText('D. Bearman, E. Miller, G. Rust, J. Trant, und S. Weibel')
     ).toBeVisible();

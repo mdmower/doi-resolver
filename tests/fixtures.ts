@@ -13,7 +13,7 @@ export const test = base.extend<{
   context: async ({}, use) => {
     const pathToExtension = fileURLToPath(import.meta.resolve('../dist/chrome'));
     const context = await chromium.launchPersistentContext('', {
-      headless: false,
+      headless: true,
       args: [
         '--headless=new',
         `--disable-extensions-except=${pathToExtension}`,
@@ -46,7 +46,7 @@ export const test = base.extend<{
           Object.keys((await chrome.storage.local.get()) ?? {}).length > 0
       );
       if (!ready) {
-        await new Promise((resolve) => setTimeout(resolve, 25));
+        await new Promise((resolve) => setTimeout(resolve, 50));
       } else {
         break;
       }

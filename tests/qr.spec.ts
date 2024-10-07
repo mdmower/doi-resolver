@@ -21,7 +21,7 @@ test.describe('QR', () => {
         throw new Error('Canvas 2D context not available');
       }
       return {
-        fg: toHex(ctx.getImageData(0, 0, 1, 1)),
+        fg: toHex(ctx.getImageData(5, 5, 1, 1)),
         bg: toHex(ctx.getImageData(15, 15, 1, 1)),
       };
     });
@@ -133,6 +133,7 @@ test.describe('QR', () => {
 
   test('download SVG', async ({page}) => {
     await page.getByLabel('SVG').click();
+    await expect.poll(() => getStorageValue(page, 'qr_imgtype')).toBe('svg');
     await page.getByRole('button', {name: 'Submit'}).click();
     const downloadPromise = page.waitForEvent('download');
     await page.locator('a[download="qrImage.svg"]').click();
@@ -150,6 +151,7 @@ test.describe('QR', () => {
 
   test('QR generation with custom size', async ({page}) => {
     await page.getByLabel('Size').fill('500');
+    await expect.poll(() => getStorageValue(page, 'qr_size')).toBe(500);
     await page.getByRole('button', {name: 'Submit'}).click();
 
     const qr = page.locator('canvas');
@@ -159,6 +161,7 @@ test.describe('QR', () => {
 
   test('QR generation with border', async ({page}) => {
     await page.getByLabel('Border').fill('1');
+    await expect.poll(() => getStorageValue(page, 'qr_border')).toBe(1);
     await page.getByRole('button', {name: 'Submit'}).click();
 
     const qr = page.locator('canvas');
@@ -175,7 +178,9 @@ test.describe('QR', () => {
 
   test('QR generation with custom colors', async ({page}) => {
     await page.getByLabel('Foreground color').fill('#000222');
+    await expect.poll(() => getStorageValue(page, 'qr_fgcolor')).toBe('#000222');
     await page.getByLabel('Background color').fill('#fff222');
+    await expect.poll(() => getStorageValue(page, 'qr_bgcolor')).toBe('#fff222');
     await page.getByRole('button', {name: 'Submit'}).click();
 
     const qr = page.locator('canvas');
@@ -191,8 +196,11 @@ test.describe('QR', () => {
 
   test('QR generation with transparent background', async ({page}) => {
     await page.getByLabel('Foreground color').fill('#000222');
+    await expect.poll(() => getStorageValue(page, 'qr_fgcolor')).toBe('#000222');
     await page.getByLabel('Background color').fill('#fff222');
+    await expect.poll(() => getStorageValue(page, 'qr_bgcolor')).toBe('#fff222');
     await page.getByLabel('Transparent background').click();
+    await expect.poll(() => getStorageValue(page, 'qr_bgtrans')).toBe(true);
     await expect(page.getByLabel('Background color')).toBeDisabled();
     await page.getByRole('button', {name: 'Submit'}).click();
 
@@ -210,6 +218,7 @@ test.describe('QR', () => {
   test('QR generation with custom message', async ({page}) => {
     const message = 'my custom message';
     await page.getByLabel('Include message in QR code').click();
+    await expect.poll(() => getStorageValue(page, 'qr_message')).toBe(true);
     await expect(page.getByLabel('Message', {exact: true})).toBeVisible();
     await expect(page.getByLabel('Include title of reference in QR code')).toBeDisabled();
     await page.getByLabel('Message', {exact: true}).fill(message);
@@ -222,6 +231,7 @@ test.describe('QR', () => {
 
   test('QR generation with title retrieval', async ({page}) => {
     await page.getByLabel('Include title of reference in QR code').click();
+    await expect.poll(() => getStorageValue(page, 'qr_title')).toBe(true);
     await expect(page.getByLabel('Include message in QR code')).toBeDisabled();
     await page.getByRole('button', {name: 'Submit'}).click();
 
@@ -232,11 +242,17 @@ test.describe('QR', () => {
 
   test('fully customized SVG QR', async ({page}) => {
     await page.getByLabel('Size').fill('500');
+    await expect.poll(() => getStorageValue(page, 'qr_size')).toBe(500);
     await page.getByLabel('Border').fill('2');
+    await expect.poll(() => getStorageValue(page, 'qr_border')).toBe(2);
     await page.getByLabel('SVG').click();
+    await expect.poll(() => getStorageValue(page, 'qr_imgtype')).toBe('svg');
     await page.getByLabel('Include title of reference in QR code').click();
+    await expect.poll(() => getStorageValue(page, 'qr_title')).toBe(true);
     await page.getByLabel('Transparent background').click();
+    await expect.poll(() => getStorageValue(page, 'qr_bgtrans')).toBe(true);
     await page.getByLabel('Foreground color').fill('#000222');
+    await expect.poll(() => getStorageValue(page, 'qr_fgcolor')).toBe('#000222');
     await page.getByRole('button', {name: 'Submit'}).click();
 
     const notifyContainer = page.locator('#notifyDiv');

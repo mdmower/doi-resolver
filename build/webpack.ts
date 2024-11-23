@@ -3,7 +3,7 @@
  */
 
 import path from 'node:path';
-import purgecss from '@fullhuman/postcss-purgecss';
+import {purgeCSSPlugin as purgecss} from '@fullhuman/postcss-purgecss';
 import {Browser, dirRef} from './utils.js';
 import {Configuration} from 'webpack';
 import {EsbuildPlugin} from 'esbuild-loader';
@@ -58,7 +58,7 @@ export function getWebpackConfig(debug: boolean, browser: Browser): Configuratio
                 postcssOptions: {
                   plugins: [
                     // ESM type definitions are incorrect for default purgecss import
-                    (purgecss as unknown as typeof purgecss.default)({
+                    purgecss({
                       contentFunction: (sourceFile) => {
                         const name = path.basename(sourceFile).split('.')[0];
                         const sources = [
@@ -81,7 +81,18 @@ export function getWebpackConfig(debug: boolean, browser: Browser): Configuratio
                 },
               },
             },
-            'sass-loader',
+            {
+              loader: 'sass-loader',
+              options: {
+                // https://github.com/webpack-contrib/sass-loader#sassoptions
+                sassOptions: {
+                  // If set to true, Sass won’t print warnings that are caused by dependencies (like bootstrap):
+                  // https://sass-lang.com/documentation/js-api/interfaces/options/#quietDeps
+                  quietDeps: true,
+                  silenceDeprecations: ['import'],
+                },
+              },
+            },
           ],
         },
         {

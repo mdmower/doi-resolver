@@ -6,7 +6,7 @@ import path from 'node:path';
 import {existsSync} from 'node:fs';
 import {readFile} from 'node:fs/promises';
 import deepmerge from 'deepmerge';
-import {version} from '../package.json';
+import packageJson from '../package.json' with {type: 'json'};
 import {Browser, dirRef} from './utils.js';
 
 /**
@@ -48,7 +48,7 @@ export async function getManifest(
       keyword: 'doi',
     },
     permissions: ['contextMenus', 'clipboardWrite', 'storage'],
-    version,
+    version: packageJson.version,
   };
 
   // If local.manifest.json exists and this is a debug build, merge into manifest.

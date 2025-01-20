@@ -5,11 +5,12 @@
 import {mkdirSync, createWriteStream} from 'node:fs';
 import path from 'node:path';
 import archiver from 'archiver';
-import {name, version} from '../package.json';
+import packageJson from '../package.json' with {type: 'json'};
 import minimist from 'minimist';
 import colors from 'colors';
 import {Browser, browsers, dirRef} from './utils.js';
 
+const {name, version} = packageJson;
 const {bold} = colors;
 
 /**

@@ -71,10 +71,14 @@ export function updateContextMenu(id: ContextMenuId, visible: boolean, doi?: str
   }
 
   const resolveDoiText = chrome.i18n.getMessage('contextText');
-  chrome.contextMenus.update(id, {
-    title: doi ? `${resolveDoiText} "${doi}"` : resolveDoiText,
-    visible,
-  });
+  chrome.contextMenus
+    .update(id, {
+      title: doi ? `${resolveDoiText} "${doi}"` : resolveDoiText,
+      visible,
+    })
+    .catch((error) => {
+      logError('Failed to update context menus', error);
+    });
 }
 
 /**

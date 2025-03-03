@@ -32,7 +32,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         sourceType: 'module',
-        project: true,
+        projectService: true,
       },
     },
     rules: {
@@ -131,9 +131,7 @@ export default tseslint.config(
         ...globals.node,
         ...globals.browser,
       },
-      parserOptions: {
-        project: 'tests/tsconfig.json',
-      },
+      parserOptions: {projectService: true},
     },
   },
   prettierConfigRecommended

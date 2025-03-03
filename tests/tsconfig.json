@@ -3,6 +3,6 @@
     "lib": ["ES2022", "DOM", "WebWorker"]
   },
   "extends": "../tsconfig.json",
-  "include": ["**/*", "../playwright.config.ts", "../src/lib/options.ts"],
+  "include": ["**/*", "../src/lib/options.ts"],
   "exclude": ["node_modules"]
 }

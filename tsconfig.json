@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["ES2022", "DOM", "WebWorker"],
+    "lib": ["ES2023", "DOM", "WebWorker"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "target": "ES2022",

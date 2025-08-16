@@ -6,17 +6,21 @@ import 'bootstrap/js/dist/modal.js';
 import {HistoryDoi, getDefaultOptions, getOptions, setOptions, StorageOptions} from './lib/options';
 import {requestCitationPermissions} from './lib/permissions';
 import {filterSelectByText, isRecord, isValidDoi, sortHistoryEntries, trimDoi} from './lib/utils';
-import {CiteProcSys} from 'citeproc';
+import {Cite, plugins} from '@citation-js/core';
+import '@citation-js/plugin-csl';
 import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './lib/messaging';
 import {queueRecordDoi} from './lib/history';
 import {logDebug, logError, logInfo} from './lib/logger';
 import {applyTheme, getMessageNodes} from './utils';
 import DOMPurify from 'dompurify';
 
-interface CitationResources {
-  citeProcJson: Record<string, unknown>;
-  styleXml: string;
-  localeXml: string;
+// Prefer downloading the latest style and locale XML rather than using outdated pre-packaged versions.
+const cslConfig = plugins.config.get('@csl');
+for (const template of cslConfig.templates.list()) {
+  cslConfig.templates.delete(template);
+}
+for (const locale of cslConfig.locales.list()) {
+  cslConfig.locales.delete(locale);
 }
 
 interface CslStyles {
@@ -385,13 +389,13 @@ class DoiCitation {
       forceLocale = false;
     }
 
-    const citationResources = await this.getCitationResources(doi, style, locale);
-    if (!citationResources) {
+    const citeProcJson = await this.getCitationResources(doi, style, locale);
+    if (!citeProcJson) {
       // Message has already been displayed to end user
       return;
     }
 
-    await this.renderCitation(citationResources, locale, forceLocale);
+    this.renderCitation(citeProcJson, style, locale, forceLocale);
   }
 
   /**
@@ -434,14 +438,17 @@ class DoiCitation {
     doi: string,
     style: string,
     locale: string
-  ): Promise<CitationResources | undefined> {
+  ): Promise<Record<string, unknown> | undefined> {
     this.simpleNotification(getMessageNodes('loading'));
 
     const citeProcJsonPromise = this.getCiteProcJson(doi);
-    const styleXmlPromise = this.getStyleXml(style);
-    const localeXmlPromise = this.getLocaleXml(locale);
-    const responses = await Promise.all([citeProcJsonPromise, styleXmlPromise, localeXmlPromise]);
-    const [citeProcJson, styleXml, localeXml] = responses;
+    const styleLoadedPromise = this.getStyleXml(style);
+    const localeLoadedPromise = this.getLocaleXml(locale);
+    const [citeProcJson, styleLoaded, localeLoaded] = await Promise.all([
+      citeProcJsonPromise,
+      styleLoadedPromise,
+      localeLoadedPromise,
+    ]);
 
     if (!citeProcJson) {
       logError('Invalid CiteProc JSON');
@@ -449,19 +456,19 @@ class DoiCitation {
       return;
     }
 
-    if (!styleXml) {
-      logError('Invalid style XML');
+    if (!styleLoaded) {
+      logError('Failed to load style XML');
       this.simpleNotification(getMessageNodes('citeStyleLoadFail', [style]));
       return;
     }
 
-    if (!localeXml) {
-      logError('Invalid locale XML');
+    if (!localeLoaded) {
+      logError('Failed to load locale XML');
       this.simpleNotification(getMessageNodes('citeLocaleLoadFail', [locale]));
       return;
     }
 
-    return {citeProcJson, styleXml, localeXml};
+    return citeProcJson;
   }
 
   /**
@@ -501,10 +508,12 @@ class DoiCitation {
    * Download the CSL style XML
    * @param style CSL style
    */
-  private async getStyleXml(style: string): Promise<string> {
-    let text = '';
+  private async getStyleXml(style: string): Promise<boolean> {
+    if (cslConfig.templates.has(style)) {
+      return true;
+    }
+
     logDebug('Downloading style XML');
-    // console.time('Style XML download');
     try {
       const response = await fetch(
         `https://raw.githubusercontent.com/citation-style-language/styles/master/${style}.csl`,
@@ -513,22 +522,26 @@ class DoiCitation {
       if (!response.ok) {
         throw new Error(`Bad status code: ${response.status}`);
       }
-      text = await response.text();
+      const text = await response.text();
+      cslConfig.templates.add(style, text);
+      return true;
     } catch (ex) {
       logError('Unable to download style XML', ex);
     }
-    // console.timeEnd('Style XML download');
-    return text;
+
+    return false;
   }
 
   /**
    * Download the CSL locale XML
    * @param locale CSL locale
    */
-  private async getLocaleXml(locale: string): Promise<string> {
-    let text = '';
+  private async getLocaleXml(locale: string): Promise<boolean> {
+    if (cslConfig.locales.has(locale)) {
+      return true;
+    }
+
     logDebug('Downloading locale XML');
-    // console.time('Locale XML download');
     try {
       const response = await fetch(
         `https://raw.githubusercontent.com/citation-style-language/locales/master/locales-${locale}.xml`,
@@ -537,50 +550,39 @@ class DoiCitation {
       if (!response.ok) {
         throw new Error(`Bad status code: ${response.status}`);
       }
-      text = await response.text();
+      const text = await response.text();
+      cslConfig.locales.add(locale, text);
+      return true;
     } catch (ex) {
       logError('Unable to download locale XML', ex);
     }
-    // console.timeEnd('Locale XML download');
-    return text;
+
+    return false;
   }
 
   /**
    * Render the citation
-   * @param citationResources Downloaded resources to generate citation
+   * @param citeProcJson Downloaded citation
+   * @param style CSL style
    * @param locale CSL locale
    * @param forceLocale Whether to use the provided locale or
    * to determine the appropriate locale automatically
    */
-  private async renderCitation(
-    citationResources: CitationResources,
+  private renderCitation(
+    citeProcJson: Record<string, unknown>,
+    style: string,
     locale: string,
     forceLocale: boolean
-  ): Promise<void> {
-    const {default: CSL} = await import('citeproc');
-    const {citeProcJson, styleXml, localeXml} = citationResources;
+  ): void {
+    const cite = new Cite(citeProcJson);
+    const bibResult = cite.format('bibliography', {
+      format: 'html',
+      template: style,
+      lang: forceLocale ? locale : undefined,
+    });
 
-    citeProcJson.id = 'Item-1';
-    const citations: Record<string, unknown> = {'Item-1': citeProcJson};
-
-    const citeprocSys: CiteProcSys = {
-      retrieveLocale: function () {
-        return localeXml;
-      },
-      retrieveItem: function (id: string) {
-        return citations[id];
-      },
-    };
-
-    const citeproc = forceLocale
-      ? new CSL.Engine(citeprocSys, styleXml, locale, forceLocale)
-      : new CSL.Engine(citeprocSys, styleXml);
-
-    citeproc.updateItems(Object.keys(citations));
-
-    const bibResult = citeproc.makeBibliography();
     if (bibResult) {
-      this.outputCitation(bibResult[1].join('\n'));
+      this.outputCitation(bibResult);
     } else {
       this.simpleNotification(getMessageNodes('citeStyleGenFail'));
     }

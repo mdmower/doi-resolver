@@ -33,10 +33,11 @@
   },
   "homepage": "https://github.com/mdmower/doi-resolver#readme",
   "dependencies": {
+    "@citation-js/core": "^0.7.18",
+    "@citation-js/plugin-csl": "^0.7.18",
     "@jaames/iro": "^5.5.2",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.7",
-    "citeproc": "^2.4.63",
     "csv-stringify": "^6.6.0"
   },
   "devDependencies": {

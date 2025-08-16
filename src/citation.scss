@@ -59,6 +59,7 @@ body {
 /* citeproc-js styles */
 /* https://github.com/Juris-M/citeproc-js/blob/master/demo/local.css */
 
+/*! purgecss start ignore */
 #citeDiv {
   li {
     margin-bottom: 0.5em;
@@ -139,8 +140,7 @@ body {
   }
 
   .csl-bib-body {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-    margin-bottom: 1em;
+    padding: 0.5em 0;
   }
 }
+/*! purgecss end ignore */

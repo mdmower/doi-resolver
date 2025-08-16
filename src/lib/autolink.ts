@@ -82,7 +82,7 @@ export async function testAutolinkExclusion(
  */
 export function autolinkHandler(
   tabId: number,
-  changeInfo: chrome.tabs.TabChangeInfo,
+  changeInfo: chrome.tabs.OnUpdatedInfo,
   tab: chrome.tabs.Tab
 ): void {
   autolinkHandlerAsync(tabId, changeInfo, tab).catch((error) => {
@@ -98,7 +98,7 @@ export function autolinkHandler(
  */
 async function autolinkHandlerAsync(
   tabId: number,
-  changeInfo: chrome.tabs.TabChangeInfo,
+  changeInfo: chrome.tabs.OnUpdatedInfo,
   tab: chrome.tabs.Tab
 ): Promise<void> {
   if (changeInfo.status !== 'complete') {

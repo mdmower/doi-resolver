@@ -43,6 +43,9 @@ async function runWebpack(debug: boolean, browser: Browser): Promise<void> {
   try {
     const config = getWebpackConfig(debug, browser);
     const compiler = webpack(config);
+    if (!compiler) {
+      throw new Error('Failed to prepare webpack compiler');
+    }
     await new Promise<void>((resolve, reject) => {
       compiler.run((err, stats) => {
         if (err) {

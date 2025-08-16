@@ -129,7 +129,7 @@ async function contextMenuHandlerAsync(info: chrome.contextMenus.OnClickData): P
  */
 export function contextMenuMatchHandler(
   tabId: number,
-  changeInfo: chrome.tabs.TabChangeInfo,
+  changeInfo: chrome.tabs.OnUpdatedInfo,
   tab: chrome.tabs.Tab
 ): void {
   contextMenuMatchHandlerAsync(tabId, changeInfo, tab).catch((error) => {
@@ -145,7 +145,7 @@ export function contextMenuMatchHandler(
  */
 async function contextMenuMatchHandlerAsync(
   tabId: number,
-  changeInfo: chrome.tabs.TabChangeInfo,
+  changeInfo: chrome.tabs.OnUpdatedInfo,
   tab: chrome.tabs.Tab
 ): Promise<void> {
   if (changeInfo.status !== 'complete') {

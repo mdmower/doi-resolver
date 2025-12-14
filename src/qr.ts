@@ -217,7 +217,9 @@ class DoiQr {
     const doiInput = this.elements_.doiInput;
     const historyModalClose = this.elements_.historyModalClose;
     doiHistory.addEventListener('change', function () {
-      doiInput.value = this.value;
+      const value = this.value;
+      if (!value) return;
+      doiInput.value = value;
       this.selectedIndex = -1;
       historyModalClose.click();
     });

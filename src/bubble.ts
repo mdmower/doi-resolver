@@ -419,8 +419,10 @@ class DoiBubble {
     const resetMessageSpace = this.resetMessageSpace.bind(this);
     textInput.addEventListener('input', filterInput);
     selectBox.addEventListener('change', function () {
+      const value = this.value;
+      if (!value) return;
       textInput.removeEventListener('input', filterInput);
-      textInput.value = this.value;
+      textInput.value = value;
       textInput.addEventListener('input', filterInput);
       this.selectedIndex = -1;
       resetMessageSpace();

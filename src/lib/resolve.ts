@@ -2,7 +2,7 @@
  * @license Apache-2.0
  */
 
-import {TargetTab} from './custom_types';
+import {TargetTab} from '../types/chrome';
 import {getOptions, getDefaultOptions} from './options';
 
 /**

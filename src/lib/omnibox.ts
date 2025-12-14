@@ -8,16 +8,14 @@ import {isValidDoi, trimDoi} from './utils';
 import {logError} from './logger';
 import {showNotification} from './notification';
 import {queueRecordDoi} from './history';
+import {TargetTab} from '../types/chrome';
 
 /**
  * Handle omnibox input entered events
  * @param text Text from omnibox
  * @param disposition Default tab where action should occur
  */
-export function omniHandler(
-  text: string,
-  disposition: chrome.omnibox.OnInputEnteredDisposition
-): void {
+export function omniHandler(text: string, disposition: TargetTab): void {
   omniHandlerAsync(text, disposition).catch((error) =>
     logError('Failed to handle omnibox input', error)
   );
@@ -28,10 +26,7 @@ export function omniHandler(
  * @param text Text from omnibox
  * @param disposition Default tab where action should occur
  */
-async function omniHandlerAsync(
-  text: string,
-  disposition: chrome.omnibox.OnInputEnteredDisposition
-) {
+async function omniHandlerAsync(text: string, disposition: TargetTab) {
   const doiInput = encodeURI(trimDoi(text));
   if (!isValidDoi(doiInput)) {
     const notificationTitle = chrome.i18n.getMessage('invalidDoiTitle');
@@ -47,7 +42,7 @@ async function omniHandlerAsync(
   await queueRecordDoi(doiInput);
 
   const stg = await getOptions('local', ['omnibox_tab', 'custom_resolver', 'cr_omnibox']);
-  let tab: chrome.omnibox.OnInputEnteredDisposition;
+  let tab: TargetTab;
   switch (stg.omnibox_tab) {
     case OmniboxTab.NewForegroundTab:
       tab = 'newForegroundTab';

@@ -69,7 +69,7 @@ export const optionLabels: Record<
 export function getStorageValue(handler: Page | Worker, key: string): Promise<unknown> {
   return handler.evaluate(async (key) => {
     const stg = await chrome.storage.local.get(key);
-    return stg[key] as unknown;
+    return stg[key];
   }, key);
 }
 

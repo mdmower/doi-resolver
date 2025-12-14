@@ -500,7 +500,7 @@ test.describe('Options', () => {
       const expectedLocalStg = Object.keys(localStg).reduce(
         (stg, key) =>
           nonSyncKeys.includes(key)
-            ? {...stg, [key]: localStg[key] as unknown}
+            ? {...stg, [key]: localStg[key]}
             : {...stg, [key]: syncStg[key]},
         {} as Record<string, unknown>
       );

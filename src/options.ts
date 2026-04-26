@@ -1381,7 +1381,9 @@ class DoiOptions {
     const index = stg.recorded_dois.findIndex((item) => item.doi === doi);
     if (index < 0) {
       logError('Unable to save history entry because it is missing from storage');
+      return;
     }
+
     stg.recorded_dois[index].save = save;
     await this.saveIndividualOptions(stg);
   }
@@ -1413,7 +1415,9 @@ class DoiOptions {
     const index = stg.recorded_dois.findIndex((item) => item.doi === doi);
     if (index < 0) {
       logError('Unable to delete history entry because it is missing from storage');
+      return;
     }
+
     stg.recorded_dois.splice(index, 1);
 
     row.classList.add('fadeOut');

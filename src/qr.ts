@@ -364,23 +364,17 @@ class DoiQr {
    */
   private saveQrDimensions(): void {
     const qrSizeElm = this.elements_.qrSizeInput;
-    let qrSize = parseInt(qrSizeElm.value);
+    const qrSize = parseInt(qrSizeElm.value);
     if (isNaN(qrSize)) {
-      qrSize = 300;
-      qrSizeElm.value = `${qrSize}`;
+      qrSizeElm.value = '300';
     } else if (qrSize < 80) {
-      qrSize = 80;
-      qrSizeElm.value = `${qrSize}`;
+      qrSizeElm.value = '80';
     }
 
     const qrBorderElm = this.elements_.qrBorderInput;
-    let qrBorder = parseInt(qrBorderElm.value);
-    if (isNaN(qrBorder)) {
+    const qrBorder = parseInt(qrBorderElm.value);
+    if (isNaN(qrBorder) || qrBorder < 0) {
       qrBorderElm.value = '0';
-      qrBorder = 0;
-    } else if (qrSize < 0) {
-      qrBorderElm.value = '0';
-      qrBorder = 0;
     }
 
     this.saveOptions();

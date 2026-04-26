@@ -26,6 +26,8 @@ async function patchManifest(path: string) {
   await writeFile(path, JSON.stringify(manifest, undefined, 2));
 }
 
+// TODO: Remove eslint-disable when setup/teardown is updated to not use test functions
+// eslint-disable-next-line playwright/expect-expect
 setup('patch manifest', async ({}) => {
   const pathToExtension = fileURLToPath(import.meta.resolve('../dist/chrome'));
   const pathToManifest = path.join(pathToExtension, 'manifest.json');

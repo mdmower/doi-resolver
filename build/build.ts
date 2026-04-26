@@ -84,7 +84,7 @@ async function runWebpack(debug: boolean, browser: Browser): Promise<void> {
  * Build all the things
  */
 async function build() {
-  let debug = false;
+  let debug: boolean;
   const filteredBrowsers: Browser[] = [];
 
   try {

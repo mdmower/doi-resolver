@@ -15,6 +15,8 @@ async function restoreManifest(path: string) {
   await rename(path + '.bak', path);
 }
 
+// TODO: Remove eslint-disable when setup/teardown is updated to not use test functions
+// eslint-disable-next-line playwright/expect-expect
 teardown('restore manifest', async ({}) => {
   const pathToExtension = fileURLToPath(import.meta.resolve('../dist/chrome'));
   const pathToManifest = path.join(pathToExtension, 'manifest.json');

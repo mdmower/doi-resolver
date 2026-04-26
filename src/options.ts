@@ -962,8 +962,8 @@ class DoiOptions {
   setCrPreviews() {
     const drInput = this.elements_.doiResolverInput.value;
     const srInput = this.elements_.shortDoiResolverInput.value;
-    let drPreview = '';
-    let srPreview = '';
+    let drPreview: string;
+    let srPreview: string;
 
     if (drInput.length <= 10) {
       drPreview = drInput + '10.1000/182';

@@ -1,5 +1,4 @@
-// @ts-check
-
+import {defineConfig} from 'eslint/config';
 import eslint from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
@@ -8,7 +7,7 @@ import playwright from 'eslint-plugin-playwright';
 import prettierConfigRecommended from 'eslint-plugin-prettier/recommended';
 import noUnsanitized from 'eslint-plugin-no-unsanitized';
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: ['dist/', 'pkg/', 'src/csl/', 'src/qrcodegen/'],
   },
@@ -23,10 +22,6 @@ export default tseslint.config(
   },
   ...tseslint.configs.recommendedTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
-  {
-    files: ['eslint.config.js'],
-    ...tseslint.configs.disableTypeChecked,
-  },
   {
     files: ['**/*.ts'],
     languageOptions: {

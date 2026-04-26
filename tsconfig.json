@@ -13,6 +13,11 @@
     "importHelpers": true,
     "types": ["node", "chrome"]
   },
-  "include": ["src/**/*", "playwright.config.ts"],
+  "include": [
+    "eslint-plugin-no-unsanitized.d.ts",
+    "eslint.config.ts",
+    "playwright.config.ts",
+    "src/**/*"
+  ],
   "exclude": ["node_modules"]
 }

@@ -46,7 +46,12 @@ export async function testAutolinkExclusion(
   autolinkExclusions?: string[]
 ): Promise<boolean> {
   const testExclusion = (exclusions: string[]): boolean => {
-    if (!/^https?:\/\//i.test(url) || /^https:?\/\/chrome\.google\.com\/webstore[/$]/i.test(url)) {
+    if (
+      !/^https?:\/\//i.test(url) ||
+      /^https?:\/\/chrome\.google\.com\/webstore(?:\/|$)/i.test(url) ||
+      /^https?:\/\/addons\.mozilla\.org(?:\/|$)/i.test(url) ||
+      /^https?:\/\/microsoftedge\.microsoft\.com\/addons(?:\/|$)/i.test(url)
+    ) {
       return true;
     }
 

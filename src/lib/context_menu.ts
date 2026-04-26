@@ -168,9 +168,12 @@ async function contextMenuMatchHandlerAsync(
 
   // tab.url requires optional tabs permission, so this needs to come after the check for
   // content script permissions.
+  const tabUrl = tab.url || '';
   if (
-    !/^https?:\/\//i.test(tab.url || '') ||
-    /^https:?\/\/chrome\.google\.com\/webstore[/$]/i.test(tab.url || '')
+    !/^https?:\/\//i.test(tabUrl) ||
+    /^https?:\/\/chrome\.google\.com\/webstore(?:\/|$)/i.test(tabUrl) ||
+    /^https?:\/\/addons\.mozilla\.org(?:\/|$)/i.test(tabUrl) ||
+    /^https?:\/\/microsoftedge\.microsoft\.com\/addons(?:\/|$)/i.test(tabUrl)
   ) {
     return;
   }
@@ -182,6 +185,6 @@ async function contextMenuMatchHandlerAsync(
   });
 
   if (chrome.runtime.lastError || injectionResults === undefined) {
-    logInfo(`Context menu match listener failed to run on ${tab.url || ''}`);
+    logInfo(`Context menu match listener failed to run on ${tabUrl}`);
   }
 }

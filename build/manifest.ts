@@ -76,13 +76,8 @@ export async function getManifest(
           strict_min_version: '115.0',
         },
       },
-      // optional_host_permissions is not yet recognized by firefox: https://bugzil.la/1766026
-      optional_permissions: [
-        'scripting',
-        'tabs',
-        'https://*/*',
-        'http://*/*',
-      ] as chrome.runtime.ManifestOptionalPermission[],
+      optional_permissions: ['scripting', 'tabs'],
+      optional_host_permissions: ['https://*/*', 'http://*/*'],
       options_ui: {
         page: 'options.html',
         open_in_tab: true,

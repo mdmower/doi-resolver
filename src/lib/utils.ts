@@ -29,12 +29,11 @@ export function getTypedKeys<T extends object>(obj: T): (keyof T)[] {
 }
 
 /**
- * Remove spaces punctuation from beginning and end of DOI input.
- * Also removes "doi:" prefix.
+ * Remove "doi:" prefix if it exists and trim.
  * @param doiStr DOI string
  */
 export function trimDoi(doiStr: string): string {
-  return doiStr.replace(/^\s*doi:?|\s+|[^A-Z0-9)>]+$/gi, '');
+  return doiStr.replace(/^\s*doi:?/i, '').trim();
 }
 
 /**

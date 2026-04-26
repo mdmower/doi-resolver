@@ -1,5 +1,5 @@
 import {test as base, chromium, Worker, type BrowserContext} from '@playwright/test';
-import {fileURLToPath} from 'node:url';
+import {pathToTestExtension} from './global.setup';
 import {ExtensionPage, extensionPages} from './utils';
 
 export const test = base.extend<{
@@ -11,12 +11,11 @@ export const test = base.extend<{
   };
 }>({
   context: async ({}, use) => {
-    const pathToExtension = fileURLToPath(import.meta.resolve('../dist/chrome'));
     const context = await chromium.launchPersistentContext('', {
       headless: true,
       args: [
-        `--disable-extensions-except=${pathToExtension}`,
-        `--load-extension=${pathToExtension}`,
+        `--disable-extensions-except=${pathToTestExtension}`,
+        `--load-extension=${pathToTestExtension}`,
       ],
     });
 

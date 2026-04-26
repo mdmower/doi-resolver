@@ -9,20 +9,11 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
   },
+  globalSetup: './tests/global.setup.ts',
   projects: [
-    {
-      name: 'modify manifest',
-      testMatch: /global\.setup\.ts/,
-    },
     {
       name: 'chromium',
       use: {...devices['Desktop Chrome'], channel: 'chromium'},
-      dependencies: ['modify manifest'],
-    },
-    {
-      name: 'restore manifest',
-      testMatch: /global\.teardown\.ts/,
-      dependencies: ['chromium'],
     },
   ],
 });

@@ -18,7 +18,7 @@ export async function getManifest(
   debug: boolean,
   browser: Browser
 ): Promise<chrome.runtime.ManifestV3> {
-  let manifest: chrome.runtime.ManifestV3 = {
+  let manifest = {
     action: {
       default_icon: {
         16: 'icons/icon16.png',
@@ -49,7 +49,7 @@ export async function getManifest(
     },
     permissions: ['contextMenus', 'clipboardWrite', 'storage'],
     version: packageJson.version,
-  };
+  } satisfies chrome.runtime.ManifestV3;
 
   // If local.manifest.json exists and this is a debug build, merge into manifest.
   if (debug) {
@@ -66,9 +66,10 @@ export async function getManifest(
 
   if (browser === 'firefox') {
     return deepmerge(manifest, {
+      // Firefox still uses background script in ManifestV3
       background: {
         scripts: ['background.js'],
-      },
+      } as unknown as chrome.runtime.ManifestV3['background'],
       browser_specific_settings: {
         gecko: {
           id: '{7befad41-6117-42d0-a803-4fbae41bde5a}',
@@ -76,12 +77,17 @@ export async function getManifest(
         },
       },
       // optional_host_permissions is not yet recognized by firefox: https://bugzil.la/1766026
-      optional_permissions: ['scripting', 'tabs', 'https://*/*', 'http://*/*'],
+      optional_permissions: [
+        'scripting',
+        'tabs',
+        'https://*/*',
+        'http://*/*',
+      ] as chrome.runtime.ManifestOptionalPermission[],
       options_ui: {
         page: 'options.html',
         open_in_tab: true,
       },
-    });
+    } satisfies Partial<chrome.runtime.ManifestV3>);
   }
 
   return deepmerge(manifest, {
@@ -91,5 +97,5 @@ export async function getManifest(
     options_page: 'options.html',
     optional_host_permissions: ['https://*/*', 'http://*/*'],
     optional_permissions: ['offscreen', 'scripting', 'tabs'],
-  });
+  } satisfies Partial<chrome.runtime.ManifestV3>);
 }

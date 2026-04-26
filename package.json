@@ -74,7 +74,7 @@
     "sass": "^1.96.0",
     "sass-loader": "^16.0.6",
     "tsx": "^4.21.0",
-    "typescript": "~5.9.3",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.0",
     "webpack": "^5.103.0"
   }

@@ -3,7 +3,7 @@
  */
 
 import path from 'node:path';
-import {purgeCSSPlugin as purgecss} from '@fullhuman/postcss-purgecss';
+import purgecss from '@fullhuman/postcss-purgecss';
 import {Browser, dirRef} from './utils.js';
 import {Configuration} from 'webpack';
 import {EsbuildPlugin} from 'esbuild-loader';
@@ -58,7 +58,7 @@ export function getWebpackConfig(debug: boolean, browser: Browser): Configuratio
                 postcssOptions: {
                   plugins: [
                     // ESM type definitions are incorrect for default purgecss import
-                    purgecss({
+                    (purgecss as unknown as typeof purgecss.default)({
                       contentFunction: (sourceFile) => {
                         const name = path.basename(sourceFile).split('.')[0];
                         const sources = [

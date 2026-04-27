@@ -83,7 +83,7 @@
   },
   "doiOutputUrlExample": {
     "description": "Label for the currently set resolver URL",
-    "message": "Preview URL tail:"
+    "message": "Sample"
   },
   "filterHistoryLabel": {
     "description": "Label for a history filter input",

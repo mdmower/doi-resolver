@@ -78,10 +78,10 @@ class DoiOptions {
     crOmnibox: HTMLSelectElement;
     customResolver: HTMLInputElement;
     customResolverSubOptions: HTMLDivElement;
-    doiOutputUrlExample: HTMLSpanElement;
+    doiOutputUrlExample: HTMLDivElement;
     doiResolverInput: HTMLInputElement;
     doiResolverInputReset: HTMLButtonElement;
-    doiResolverOutput: HTMLSpanElement;
+    doiResolverOutput: HTMLDivElement;
     history: HTMLInputElement;
     historyClear: HTMLButtonElement;
     historyEntryTemplate: HTMLTemplateElement;
@@ -106,10 +106,10 @@ class DoiOptions {
     omniboxOpento: HTMLSelectElement;
     optionsTab: HTMLButtonElement;
     optionsVersion: HTMLParagraphElement;
-    shortDoiOutputUrlExample: HTMLSpanElement;
+    shortDoiOutputUrlExample: HTMLDivElement;
     shortDoiResolverInput: HTMLInputElement;
     shortDoiResolverInputReset: HTMLButtonElement;
-    shortDoiResolverOutput: HTMLSpanElement;
+    shortDoiResolverOutput: HTMLDivElement;
     syncData: HTMLInputElement;
     syncDataWipeButton: HTMLButtonElement;
     theme: HTMLSelectElement;
@@ -249,8 +249,8 @@ class DoiOptions {
         document.querySelector<HTMLDivElement>('div#customResolverSubOptions') ||
         elementMissing('div#customResolverSubOptions'),
       doiOutputUrlExample:
-        document.querySelector<HTMLSpanElement>('span#doiOutputUrlExample') ||
-        elementMissing('span#doiOutputUrlExample'),
+        document.querySelector<HTMLDivElement>('div#doiOutputUrlExample') ||
+        elementMissing('div#doiOutputUrlExample'),
       doiResolverInput:
         document.querySelector<HTMLInputElement>('input#doiResolverInput') ||
         elementMissing('input#doiResolverInput'),
@@ -258,8 +258,8 @@ class DoiOptions {
         document.querySelector<HTMLButtonElement>('button#doiResolverInputReset') ||
         elementMissing('button#doiResolverInputReset'),
       doiResolverOutput:
-        document.querySelector<HTMLSpanElement>('span#doiResolverOutput') ||
-        elementMissing('span#doiResolverOutput'),
+        document.querySelector<HTMLDivElement>('div#doiResolverOutput') ||
+        elementMissing('div#doiResolverOutput'),
       history:
         document.querySelector<HTMLInputElement>('input#history') ||
         elementMissing('input#history'),
@@ -330,8 +330,8 @@ class DoiOptions {
         document.querySelector<HTMLParagraphElement>('p#optionsVersion') ||
         elementMissing('p#optionsVersion'),
       shortDoiOutputUrlExample:
-        document.querySelector<HTMLSpanElement>('span#shortDoiOutputUrlExample') ||
-        elementMissing('span#shortDoiOutputUrlExample'),
+        document.querySelector<HTMLDivElement>('div#shortDoiOutputUrlExample') ||
+        elementMissing('div#shortDoiOutputUrlExample'),
       shortDoiResolverInput:
         document.querySelector<HTMLInputElement>('input#shortDoiResolverInput') ||
         elementMissing('input#shortDoiResolverInput'),
@@ -339,8 +339,8 @@ class DoiOptions {
         document.querySelector<HTMLButtonElement>('button#shortDoiResolverInputReset') ||
         elementMissing('button#shortDoiResolverInputReset'),
       shortDoiResolverOutput:
-        document.querySelector<HTMLSpanElement>('span#shortDoiResolverOutput') ||
-        elementMissing('span#shortDoiResolverOutput'),
+        document.querySelector<HTMLDivElement>('div#shortDoiResolverOutput') ||
+        elementMissing('div#shortDoiResolverOutput'),
       syncData:
         document.querySelector<HTMLInputElement>('input#syncData') ||
         elementMissing('input#syncData'),
@@ -962,19 +962,8 @@ class DoiOptions {
   setCrPreviews() {
     const drInput = this.elements_.doiResolverInput.value;
     const srInput = this.elements_.shortDoiResolverInput.value;
-    let drPreview: string;
-    let srPreview: string;
-
-    if (drInput.length <= 10) {
-      drPreview = drInput + '10.1000/182';
-    } else {
-      drPreview = '…' + drInput.slice(-10, drInput.length) + '10.1000/182';
-    }
-    if (srInput.length <= 10) {
-      srPreview = srInput + 'aabbd';
-    } else {
-      srPreview = '…' + srInput.slice(-10, srInput.length) + 'aabbd';
-    }
+    const drPreview = drInput + '10.1000/182';
+    const srPreview = srInput + 'aabbd';
 
     this.elements_.doiResolverOutput.textContent = drPreview;
     this.elements_.shortDoiResolverOutput.textContent = srPreview;

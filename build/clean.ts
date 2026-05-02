@@ -9,19 +9,12 @@ import {dirRef} from './utils.js';
 
 const {bold} = colors;
 
-/**
- * Clean dist dir
- */
-async function clean() {
-  try {
-    const items = await readdir(dirRef.dist);
-    const rmPromises = items.map((item) => rm(path.join(dirRef.dist, item), {recursive: true}));
-    await Promise.all(rmPromises);
-    console.log(`${bold.green('[Clean successful]')} ${dirRef.dist}`);
-  } catch (ex) {
-    console.error(`${bold.red('[Clean error]')} Unexpected error during cleanup\n`, ex);
-    process.exitCode = 1;
-  }
+try {
+  const items = await readdir(dirRef.dist);
+  const rmPromises = items.map((item) => rm(path.join(dirRef.dist, item), {recursive: true}));
+  await Promise.all(rmPromises);
+  console.log(`${bold.green('[Clean successful]')} ${dirRef.dist}`);
+} catch (ex) {
+  console.error(`${bold.red('[Clean error]')} Unexpected error during cleanup\n`, ex);
+  process.exitCode = 1;
 }
-
-void clean();

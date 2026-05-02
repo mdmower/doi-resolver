@@ -4,7 +4,7 @@
 
 export type DoiBrowser = 'chrome' | 'edge' | 'firefox';
 
-// From webpack defines
+// From Vite defines
 declare const G_DOI_BROWSER: DoiBrowser;
 
 export const doiBrowser = G_DOI_BROWSER;

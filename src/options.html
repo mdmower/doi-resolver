@@ -592,14 +592,20 @@
                 <label id="historySortByLabel" for="historySortBy"></label>
               </div>
               <div class="col-auto">
-                <select id="historySortBy" class="form-select">
+                <select id="historySortBy" class="form-select form-select-sm">
                   <option id="historySortByDate" value="date"></option>
                   <option id="historySortByTitle" value="title"></option>
                   <option id="historySortByDoi" value="doi"></option>
                   <option id="historySortBySave" value="save"></option>
                 </select>
               </div>
-              <div class="col text-end">
+              <div class="col-auto">
+                <label id="historyFilterLabel" for="historyFilter"></label>
+              </div>
+              <div class="col">
+                <input type="text" id="historyFilter" class="form-control form-control-sm w-100" />
+              </div>
+              <div class="col-auto">
                 <div class="dropdown">
                   <button
                     class="btn dropdown-toggle"

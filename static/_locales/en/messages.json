@@ -137,6 +137,10 @@
     "description": "Text for checkbox that enables title fetch when DOI is recorded",
     "message": "Automatically fetch title when a new DOI is recorded"
   },
+  "historyFilterLabel": {
+    "description": "A label for the history filter text input",
+    "message": "Filter"
+  },
   "historyImport": {
     "description": "Text for button that records a list of DOIs to history",
     "message": "Import"

@@ -87,6 +87,7 @@ class DoiOptions {
     historyEntryTemplate: HTMLTemplateElement;
     historyExport: HTMLButtonElement;
     historyFetchTitle: HTMLInputElement;
+    historyFilter: HTMLInputElement;
     historyImportFailure: HTMLAnchorElement;
     historyImportInput: HTMLTextAreaElement;
     historyImportModal: HTMLDivElement;
@@ -127,6 +128,7 @@ class DoiOptions {
     setContextMenuMatch: () => void;
     setCrPreviews: () => void;
     updateHistoryTitlePermissions: () => void;
+    filterHistory: () => void;
   };
 
   constructor() {
@@ -185,6 +187,7 @@ class DoiOptions {
           logError('Failed to update history title permissions', error);
         });
       },
+      filterHistory: this.filterHistory.bind(this),
     };
 
     const elementMissing = (selector: string) => {
@@ -275,6 +278,9 @@ class DoiOptions {
       historyFetchTitle:
         document.querySelector<HTMLInputElement>('input#historyFetchTitle') ||
         elementMissing('input#historyFetchTitle'),
+      historyFilter:
+        document.querySelector<HTMLInputElement>('input#historyFilter') ||
+        elementMissing('input#historyFilter'),
       historyImportFailure:
         document.querySelector<HTMLAnchorElement>('a#historyImportFailure') ||
         elementMissing('a#historyImportFailure'),
@@ -524,6 +530,11 @@ class DoiOptions {
         element: this.elements_.historySortBy,
         handler: this.handlers_.saveOptions,
         events: ['change'],
+      },
+      {
+        element: this.elements_.historyFilter,
+        handler: this.handlers_.filterHistory,
+        events: ['input', 'change'],
       },
       {
         element: this.elements_.historyLength,
@@ -1170,7 +1181,26 @@ class DoiOptions {
       });
     }
 
+    this.filterHistory();
     this.startHistoryChangeListeners();
+  }
+
+  /**
+   * Visually show/hide history entries based on the text filter
+   */
+  filterHistory(): void {
+    const filter = this.elements_.historyFilter.value.trim().toLowerCase();
+    Array.from(document.querySelectorAll<HTMLTableRowElement>('tr.historyEntry')).forEach((tr) => {
+      if (filter) {
+        const td = tr.querySelector<HTMLTableCellElement>('td.historyEntryDoi');
+        if (!td?.textContent.toLowerCase().includes(filter)) {
+          tr.classList.add('d-none');
+          return;
+        }
+      }
+
+      tr.classList.remove('d-none');
+    });
   }
 
   /**
@@ -1614,6 +1644,7 @@ class DoiOptions {
       'historyClear',
       'historyExport',
       'historyFetchTitleLabel',
+      'historyFilterLabel',
       'historyImport',
       'historyImportDescription',
       'historyImportModalLabel',

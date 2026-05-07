@@ -22,9 +22,10 @@ async function createArchive(browser: Browser): Promise<void> {
 
   const archive = archiver('zip');
   archive.directory(path.join(dirRef.dist, browser), false);
-  void archive.finalize();
 
+  const finalize = archive.finalize();
   await pipeline(archive, createWriteStream(pkgPath, {flags: 'w'}));
+  await finalize;
 
   // Opting for SI unit kB rather than base 2 unit KB
   const kb = Math.round(archive.pointer() / 100) / 10;
@@ -40,12 +41,8 @@ try {
     (browser) => !cmdlineBrowsers.length || cmdlineBrowsers.includes(browser)
   );
 
-  // Prepare output directory
   await mkdir(dirRef.pkg, {recursive: true});
-
-  for (const browser of filteredBrowsers) {
-    await createArchive(browser);
-  }
+  await Promise.all(filteredBrowsers.map(createArchive));
 } catch (ex) {
   console.error(`${red('[Pkg error]')} Unexpected error during packaging\n`, ex);
   process.exitCode = 1;

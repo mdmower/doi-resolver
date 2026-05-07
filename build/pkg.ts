@@ -6,9 +6,9 @@ import {createWriteStream} from 'node:fs';
 import {pipeline} from 'node:stream/promises';
 import {mkdir} from 'node:fs/promises';
 import path from 'node:path';
+import {parseArgs} from 'node:util';
 import archiver from 'archiver';
 import packageJson from '../package.json' with {type: 'json'};
-import minimist from 'minimist';
 import {Browser, browsers, dirRef, green, red} from './utils.js';
 
 const {name, version} = packageJson;
@@ -32,8 +32,8 @@ async function createArchive(browser: Browser): Promise<void> {
 }
 
 try {
-  const argv = minimist(process.argv.slice(2));
-  const cmdlineBrowsers = argv._.filter((s): s is Browser =>
+  const {positionals} = parseArgs({allowPositionals: true});
+  const cmdlineBrowsers = positionals.filter((s): s is Browser =>
     (browsers as readonly string[]).includes(s)
   );
   const filteredBrowsers = browsers.filter(

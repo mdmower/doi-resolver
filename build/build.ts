@@ -4,22 +4,26 @@
 
 import path from 'node:path';
 import {cp, mkdir, writeFile} from 'node:fs/promises';
+import {parseArgs} from 'node:util';
 import {build} from 'vite';
-import minimist from 'minimist';
 import {getViteConfigs} from './vite.js';
 import {getManifest} from './manifest.js';
 import {Browser, browsers, cyan, dirRef, green, red, yellow} from './utils.js';
 
 try {
-  const {debug, ...argv} = minimist<{debug: boolean}>(process.argv.slice(2), {
-    boolean: ['debug'],
+  const {
+    values: {debug},
+    positionals,
+  } = parseArgs({
+    options: {debug: {type: 'boolean', default: false}},
+    allowPositionals: true,
   });
 
   if (debug) {
     console.warn(yellow('Debug mode enabled'));
   }
 
-  const cmdlineBrowsers = argv._.filter((s): s is Browser =>
+  const cmdlineBrowsers = positionals.filter((s): s is Browser =>
     (browsers as readonly string[]).includes(s)
   );
   const filteredBrowsers = browsers.filter(

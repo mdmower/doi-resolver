@@ -5,13 +5,11 @@
 import {existsSync} from 'node:fs';
 import {readFile, readdir, writeFile} from 'node:fs/promises';
 import path from 'node:path';
-import colors from 'colors';
 import util from 'node:util';
 import {exec} from 'node:child_process';
 import {DOMParser} from '@xmldom/xmldom';
-import {dirRef} from './utils.js';
+import {dirRef, green, red} from './utils.js';
 
-const {bold} = colors;
 const execAsync = util.promisify(exec);
 
 interface CslStyles {
@@ -94,12 +92,12 @@ async function updateCslStyles() {
 }
 
 try {
-  console.log(`${bold.green('[Update]')} Updating CSL locales...`);
+  console.log(`${green('[Update]')} Updating CSL locales...`);
   await updateCslLocales();
-  console.log(`${bold.green('[Update]')} Updating CSL styles...`);
+  console.log(`${green('[Update]')} Updating CSL styles...`);
   await updateCslStyles();
-  console.log(`${bold.green('[Update]')} Done`);
+  console.log(`${green('[Update]')} Done`);
 } catch (ex) {
-  console.error(`${bold.red('[Update error]')} Unexpected error during update\n`, ex);
+  console.error(`${red('[Update error]')} Unexpected error during update\n`, ex);
   process.exitCode = 1;
 }

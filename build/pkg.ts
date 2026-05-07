@@ -9,11 +9,9 @@ import path from 'node:path';
 import archiver from 'archiver';
 import packageJson from '../package.json' with {type: 'json'};
 import minimist from 'minimist';
-import colors from 'colors';
-import {Browser, browsers, dirRef} from './utils.js';
+import {Browser, browsers, dirRef, green, red} from './utils.js';
 
 const {name, version} = packageJson;
-const {bold} = colors;
 
 /**
  * Package for target browser
@@ -30,7 +28,7 @@ async function createArchive(browser: Browser): Promise<void> {
 
   // Opting for SI unit kB rather than base 2 unit KB
   const kb = Math.round(archive.pointer() / 100) / 10;
-  console.log(`${bold.green('[Pkg successful]')} Zip (${kb} kB): ${pkgPath}`);
+  console.log(`${green('[Pkg successful]')} Zip (${kb} kB): ${pkgPath}`);
 }
 
 try {
@@ -49,6 +47,6 @@ try {
     await createArchive(browser);
   }
 } catch (ex) {
-  console.error(`${bold.red('[Pkg error]')} Unexpected error during packaging\n`, ex);
+  console.error(`${red('[Pkg error]')} Unexpected error during packaging\n`, ex);
   process.exitCode = 1;
 }

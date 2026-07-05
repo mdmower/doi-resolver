@@ -32,6 +32,10 @@
     "url": "https://github.com/mdmower/doi-resolver/issues"
   },
   "homepage": "https://github.com/mdmower/doi-resolver#readme",
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "esbuild": true
+  },
   "dependencies": {
     "@citation-js/core": "^0.7.21",
     "@citation-js/plugin-csl": "^0.7.22",

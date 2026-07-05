@@ -10,8 +10,12 @@ import DOMPurify from 'dompurify';
  * Apply theme to page
  * @param win Window
  * @param theme Theme to apply
+ * @returns The resolved theme that was applied (Dark or Light)
  */
-export async function applyTheme(win: Window, theme?: DisplayTheme): Promise<void> {
+export async function applyTheme(
+  win: Window,
+  theme?: DisplayTheme
+): Promise<DisplayTheme.Dark | DisplayTheme.Light> {
   if (theme === undefined) {
     const stg = await getOptions('local', ['theme']);
     theme = stg.theme ?? getDefaultOptions()['theme'];
@@ -22,8 +26,10 @@ export async function applyTheme(win: Window, theme?: DisplayTheme): Promise<voi
     (theme === DisplayTheme.System && win.matchMedia('(prefers-color-scheme: dark)').matches)
   ) {
     win.document.documentElement.setAttribute('data-bs-theme', DisplayTheme.Dark);
+    return DisplayTheme.Dark;
   } else {
     win.document.documentElement.setAttribute('data-bs-theme', DisplayTheme.Light);
+    return DisplayTheme.Light;
   }
 }
 

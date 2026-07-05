@@ -17,10 +17,10 @@ Matthew D. Mower (https://github.com/mdmower).
 
 Portions of this software depend on
 
-  iro.js:
-  https://iro.js.org/
-  Mozilla Public License 2.0
-  https://github.com/jaames/iro.js/blob/master/LICENSE.txt
+  alwan:
+  https://sefianecho.github.io/alwan/
+  MIT license
+  https://github.com/sefianecho/alwan/blob/main/LICENSE
 
   QR Code generator library:
   https://www.nayuki.io/page/qr-code-generator-library

@@ -4,6 +4,7 @@
 
 import 'bootstrap/js/dist/modal.js';
 import {
+  DisplayTheme,
   HistoryDoi,
   QrImageType,
   StorageOptions,
@@ -21,8 +22,7 @@ import {
   sortHistoryEntries,
   trimDoi,
 } from './lib/utils';
-import iro from '@jaames/iro';
-import {ColorPickerProps, IroColorPicker} from '@jaames/iro/dist/ColorPicker';
+import Alwan from 'alwan';
 import {isInternalMessage, isSettingsUpdatedMessage, MessageCmd} from './lib/messaging';
 import {getSavedDoiTitle, recordDoi, queueRecordDoi} from './lib/history';
 import {fetchDoiTitle} from './lib/metadata';
@@ -57,16 +57,14 @@ document.addEventListener(
 class DoiQr {
   private defaultDoiResolver_: string;
   private needsHistoryMetaPermissions_: boolean;
-  private savedBgInputColorStyle_?: string;
-  private fgColorPicker_?: IroColorPicker;
-  private bgColorPicker_?: IroColorPicker;
+  private theme_?: DisplayTheme.Dark | DisplayTheme.Light;
+  private fgColorPicker_?: Alwan;
+  private bgColorPicker_?: Alwan;
 
   private saveOptionsDebounced_: () => void;
   private saveQrDimensionsDebounced_: () => void;
   private qrFetchTitleChangeHandler_?: (event: Event) => void;
   private qrManualMessageChangeHandler_?: (event: Event) => void;
-  private iroFgColorChangeHandler_?: (color: iro.Color) => void;
-  private iroBgColorChangeHandler_?: (color: iro.Color) => void;
 
   private elements_: {
     doiForm: HTMLFormElement;
@@ -74,17 +72,17 @@ class DoiQr {
     doiInput: HTMLInputElement;
     filterHistory: HTMLInputElement;
     historyModalClose: HTMLButtonElement;
-    mainForm: HTMLDivElement;
     notify_template: HTMLTemplateElement;
     notifyDiv: HTMLDivElement;
     openHistory: HTMLAnchorElement;
-    qrBgColorInput: HTMLInputElement;
-    qrBgColorPicker: HTMLDivElement;
+    qrBgColorInputLabel: HTMLLabelElement;
+    qrBgColorPicker: HTMLButtonElement;
     qrBgTrans: HTMLInputElement;
     qrBorderInput: HTMLInputElement;
     qrDiv: HTMLDivElement;
     qrFetchTitle: HTMLInputElement;
-    qrFgColorInput: HTMLInputElement;
+    qrFgColorInputLabel: HTMLLabelElement;
+    qrFgColorPicker: HTMLButtonElement;
     qrImageTypePng: HTMLInputElement;
     qrImageTypeSvg: HTMLInputElement;
     qrManualMessage: HTMLInputElement;
@@ -118,8 +116,6 @@ class DoiQr {
       historyModalClose:
         document.querySelector<HTMLButtonElement>('button#historyModalClose') ||
         elementMissing('button#historyModalClose'),
-      mainForm:
-        document.querySelector<HTMLDivElement>('div#mainForm') || elementMissing('div#mainForm'),
       notify_template:
         document.querySelector<HTMLTemplateElement>('template#notifyTemplate') ||
         elementMissing('template#notifyTemplate'),
@@ -128,12 +124,12 @@ class DoiQr {
       openHistory:
         document.querySelector<HTMLAnchorElement>('a#openHistory') ||
         elementMissing('a#openHistory'),
-      qrBgColorInput:
-        document.querySelector<HTMLInputElement>('input#qrBgColorInput') ||
-        elementMissing('input#qrBgColorInput'),
+      qrBgColorInputLabel:
+        document.querySelector<HTMLLabelElement>('label#qrBgColorInputLabel') ||
+        elementMissing('label#qrBgColorInputLabel'),
       qrBgColorPicker:
-        document.querySelector<HTMLDivElement>('div#qrBgColorPicker') ||
-        elementMissing('div#qrBgColorPicker'),
+        document.querySelector<HTMLButtonElement>('button#qrBgColorPicker') ||
+        elementMissing('button#qrBgColorPicker'),
       qrBgTrans:
         document.querySelector<HTMLInputElement>('input#qrBgTrans') ||
         elementMissing('input#qrBgTrans'),
@@ -144,9 +140,12 @@ class DoiQr {
       qrFetchTitle:
         document.querySelector<HTMLInputElement>('input#qrFetchTitle') ||
         elementMissing('input#qrFetchTitle'),
-      qrFgColorInput:
-        document.querySelector<HTMLInputElement>('input#qrFgColorInput') ||
-        elementMissing('input#qrFgColorInput'),
+      qrFgColorInputLabel:
+        document.querySelector<HTMLLabelElement>('label#qrFgColorInputLabel') ||
+        elementMissing('label#qrFgColorInputLabel'),
+      qrFgColorPicker:
+        document.querySelector<HTMLButtonElement>('button#qrFgColorPicker') ||
+        elementMissing('button#qrFgColorPicker'),
       qrImageTypePng:
         document.querySelector<HTMLInputElement>('input#qrImageTypePng') ||
         elementMissing('input#qrImageTypePng'),
@@ -176,7 +175,7 @@ class DoiQr {
    */
   public async init(): Promise<void> {
     this.getLocalMessages();
-    await applyTheme(window);
+    this.theme_ = await applyTheme(window);
     this.initializeDoiInput();
     await this.restoreOptions();
     await this.prepareColorPickers();
@@ -200,13 +199,6 @@ class DoiQr {
     this.elements_.qrSizeInput.addEventListener('input', saveQrDimensionsDebounced);
     this.elements_.qrBorderInput.addEventListener('input', saveQrDimensionsDebounced);
     this.toggleTitleMessageListeners(true);
-
-    // We want the color changes made in the text input to update Iro as soon as
-    // possible. A debounced version of saveOptions is used inside the handler to
-    // prevent excessive saves.
-    const manualColorChangeHandler = this.manualColorChangeHandler.bind(this);
-    this.elements_.qrFgColorInput.addEventListener('input', manualColorChangeHandler);
-    this.elements_.qrBgColorInput.addEventListener('input', manualColorChangeHandler);
 
     const doiHistory = this.elements_.doiHistory;
     const textInput = this.elements_.filterHistory;
@@ -306,56 +298,21 @@ class DoiQr {
       transparent = this.elements_.qrBgTrans.checked;
     }
 
-    const qrBgColorInput = this.elements_.qrBgColorInput;
-    qrBgColorInput.disabled = transparent;
-    this.elements_.qrBgColorPicker.style.pointerEvents = transparent ? 'none' : 'auto';
-
+    const {qrBgColorPicker} = this.elements_;
+    qrBgColorPicker.disabled = transparent;
+    // Alwan stores the color of the button swatch as CSS variable --color in the style attribute of
+    // the button, for example: style="--color: rgb(200, 200, 200);".
     if (transparent) {
-      this.savedBgInputColorStyle_ = qrBgColorInput.getAttribute('style') || '';
-      qrBgColorInput.removeAttribute('style');
-      qrBgColorInput.classList.add('transparentInput');
-    } else {
-      qrBgColorInput.classList.remove('transparentInput');
-      if (this.savedBgInputColorStyle_) {
-        qrBgColorInput.setAttribute('style', this.savedBgInputColorStyle_);
+      this.bgColorPicker_?.close();
+      // In the event that toggleBgColor is called multiple times as part of some refresh process,
+      // avoid overwriting the saved color with the transparent color.
+      if (!qrBgColorPicker.dataset.doiLastBg) {
+        qrBgColorPicker.dataset.doiLastBg = qrBgColorPicker.style.getPropertyValue('--color');
       }
-    }
-  }
-
-  /**
-   * Handle color change from manual text input
-   * @param event Input event
-   */
-  private manualColorChangeHandler(event: Event): void {
-    if (!(event.target instanceof HTMLInputElement)) {
-      return;
-    }
-
-    const inputElement = event.target;
-    if (isHexColor(inputElement.value)) {
-      inputElement.classList.remove('badColor');
-      if (inputElement.id === 'qrFgColorInput' && this.fgColorPicker_) {
-        if (this.iroFgColorChangeHandler_) {
-          this.fgColorPicker_.off('color:change', this.iroFgColorChangeHandler_);
-        }
-        this.fgColorPicker_.color.hexString = inputElement.value;
-        inputElement.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${inputElement.value} 50%)`;
-        if (this.iroFgColorChangeHandler_) {
-          this.fgColorPicker_.on('color:change', this.iroFgColorChangeHandler_);
-        }
-      } else if (inputElement.id === 'qrBgColorInput' && this.bgColorPicker_) {
-        if (this.iroBgColorChangeHandler_) {
-          this.bgColorPicker_.off('color:change', this.iroBgColorChangeHandler_);
-        }
-        this.bgColorPicker_.color.hexString = inputElement.value;
-        inputElement.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${inputElement.value} 50%)`;
-        if (this.iroBgColorChangeHandler_) {
-          this.bgColorPicker_.on('color:change', this.iroBgColorChangeHandler_);
-        }
-      }
-      this.saveOptionsDebounced_();
-    } else {
-      inputElement.classList.add('badColor');
+      qrBgColorPicker.style.setProperty('--color', 'rgba(0, 0, 0, 0)');
+    } else if (qrBgColorPicker.dataset.doiLastBg) {
+      qrBgColorPicker.style.setProperty('--color', qrBgColorPicker.dataset.doiLastBg);
+      delete qrBgColorPicker.dataset.doiLastBg;
     }
   }
 
@@ -500,10 +457,10 @@ class DoiQr {
   }
 
   /**
-   * Prepare Iro color pickers
+   * Prepare Alwan color pickers
    */
   private async prepareColorPickers(): Promise<void> {
-    const stg = await getOptions('local', ['qr_fgcolor', 'qr_bgcolor', 'qr_bgtrans']);
+    const stg = await getOptions('local', ['qr_fgcolor', 'qr_bgcolor']);
 
     let qrFgColor = stg.qr_fgcolor;
     if (!qrFgColor || !isHexColor(qrFgColor)) {
@@ -517,46 +474,40 @@ class DoiQr {
       await setOptions('local', {qr_bgcolor: qrBgColor});
     }
 
-    const qrFgColorInput = this.elements_.qrFgColorInput;
-    qrFgColorInput.value = qrFgColor;
-    qrFgColorInput.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${qrFgColor} 50%)`;
-
-    const qrBgColorInput = this.elements_.qrBgColorInput;
-    qrBgColorInput.value = qrBgColor;
-    qrBgColorInput.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${qrBgColor} 50%)`;
-
-    if (stg.qr_bgtrans) {
-      this.toggleBgColor(true);
-    }
-
-    const {width} = qrFgColorInput.getBoundingClientRect();
-    const colorPickerProps = (color: string): Partial<ColorPickerProps> => ({
-      padding: 4,
-      sliderMargin: 12,
-      width: width,
-      height: width,
+    const pickerOptions = (color: string): NonNullable<ConstructorParameters<typeof Alwan>[1]> => ({
+      theme: this.theme_ === DisplayTheme.Dark ? 'dark' : 'light',
       color,
+      format: 'hex',
+      opacity: false,
+      inputs: {hex: true},
     });
 
-    const saveOptionsDebounced = this.saveOptionsDebounced_;
-    const iroColorChangeHandler = function (this: HTMLInputElement, color: iro.Color): void {
-      this.value = color.hexString;
-      this.style.background = `linear-gradient(90deg, var(--bs-body-bg) 50%, ${color.hexString} 50%)`;
-      saveOptionsDebounced();
-    };
+    this.fgColorPicker_ = new Alwan(this.elements_.qrFgColorPicker, pickerOptions(qrFgColor));
+    this.fgColorPicker_.on('change', () => this.saveOptionsDebounced_());
+    this.fgColorPicker_.on('open', () => this.bgColorPicker_?.close());
 
-    // TODO: Documentation says to use 'new iro.ColorPicker()':
-    // https://iro.js.org/guide.html
-    // Test whether omission of 'new' causes problems when there are two pickers:
-    // https://github.com/jaames/iro.js/issues/109
+    this.bgColorPicker_ = new Alwan(this.elements_.qrBgColorPicker, pickerOptions(qrBgColor));
+    this.bgColorPicker_.on('change', () => this.saveOptionsDebounced_());
+    this.bgColorPicker_.on('open', () => this.fgColorPicker_?.close());
 
-    this.fgColorPicker_ = iro.ColorPicker('#qrFgColorPicker', colorPickerProps(qrFgColor));
-    this.iroFgColorChangeHandler_ = iroColorChangeHandler.bind(qrFgColorInput);
-    this.fgColorPicker_.on('color:change', this.iroFgColorChangeHandler_);
+    document.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter') {
+        return;
+      }
+      if (this.fgColorPicker_?.isOpen()) {
+        this.fgColorPicker_.close();
+      } else if (this.bgColorPicker_?.isOpen()) {
+        this.bgColorPicker_.close();
+      }
+    });
 
-    this.bgColorPicker_ = iro.ColorPicker('#qrBgColorPicker', colorPickerProps(qrBgColor));
-    this.iroBgColorChangeHandler_ = iroColorChangeHandler.bind(qrBgColorInput);
-    this.bgColorPicker_.on('color:change', this.iroBgColorChangeHandler_);
+    // Alwan replaces the original elements
+    this.elements_.qrFgColorPicker =
+      document.querySelector<HTMLButtonElement>('button#qrFgColorPicker')!;
+    this.elements_.qrBgColorPicker =
+      document.querySelector<HTMLButtonElement>('button#qrBgColorPicker')!;
+
+    this.toggleBgColor();
   }
 
   /**
@@ -567,8 +518,8 @@ class DoiQr {
       qr_bgtrans: this.elements_.qrBgTrans.checked,
       qr_size: parseInt(this.elements_.qrSizeInput.value),
       qr_border: parseInt(this.elements_.qrBorderInput.value),
-      qr_fgcolor: this.elements_.qrFgColorInput.value,
-      qr_bgcolor: this.elements_.qrBgColorInput.value,
+      qr_fgcolor: this.fgColorPicker_?.getColor().hex ?? '#000000',
+      qr_bgcolor: this.bgColorPicker_?.getColor().hex ?? '#ffffff',
       qr_message: this.elements_.qrManualMessage.checked,
       qr_title: this.elements_.qrFetchTitle.checked,
     };
@@ -719,8 +670,10 @@ class DoiQr {
 
     let qrSize = parseInt(this.elements_.qrSizeInput.value);
     let qrBorder = parseInt(this.elements_.qrBorderInput.value);
-    const fgColor = this.elements_.qrFgColorInput.value;
-    const bgColor = this.elements_.qrBgTrans.checked ? null : this.elements_.qrBgColorInput.value;
+    const fgColor = this.fgColorPicker_?.getColor().hex ?? '#000000';
+    const bgColor = this.elements_.qrBgTrans.checked
+      ? null
+      : (this.bgColorPicker_?.getColor().hex ?? '#ffffff');
     const qrImageTypeValue = document.querySelector<HTMLInputElement>(
       'input[name="qrImageType"]:checked'
     )?.value;

@@ -76,7 +76,10 @@ export function getViteConfigs(debug: boolean, browser: Browser): InlineConfig[]
               }
               return sources;
             },
-            safelist: [/^modal-/],
+            safelist: {
+              standard: [/^modal-/],
+              greedy: [/^alwan/],
+            },
           }),
         ],
       },

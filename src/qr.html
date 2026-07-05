@@ -27,197 +27,145 @@
     <div class="page-content mx-auto">
       <div class="container-fluid mb-3">
         <form name="doiForm" id="doiForm" class="my-3">
-          <div class="row">
-            <div class="col-6">
-              <div id="mainForm">
-                <div class="row align-items-center gx-3">
-                  <div class="col-auto">
-                    <label for="doiInput" id="doiInputLabel"></label>
-                  </div>
-                  <div class="col">
-                    <input
-                      type="text"
-                      id="doiInput"
-                      value=""
-                      autofocus
-                      list="doiHistory"
-                      class="form-control"
-                    />
-                  </div>
-                  <div class="col-auto">
-                    <a
-                      id="openHistory"
-                      class="d-flex"
-                      href="#"
-                      data-bs-toggle="modal"
-                      data-bs-target="#historyModal"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="icon icon-history bigger"
-                        fill="currentColor"
-                      >
-                        <use xlink:href="#icon-history"></use>
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-                <div class="row align-items-center gx-3 mt-3">
-                  <div class="col-auto">
-                    <label for="qrSizeInput" id="qrSizeInputLabel"></label>
-                  </div>
-                  <div class="col">
-                    <div class="row align-items-center gx-1">
-                      <div class="col-3">
-                        <input type="number" id="qrSizeInput" min="80" class="form-control" />
-                      </div>
-                      <div class="col-auto">
-                        <span>px</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row align-items-center gx-3 mt-3">
-                  <div class="col-auto">
-                    <label for="qrBorderInput" id="qrBorderInputLabel"></label>
-                  </div>
-                  <div class="col">
-                    <div class="row align-items-center gx-1">
-                      <div class="col-3">
-                        <input type="number" id="qrBorderInput" min="0" class="form-control" />
-                      </div>
-                      <div class="col-auto">
-                        <span>module(s)</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="row gx-3 mt-3">
-                  <div class="col-auto">
-                    <span id="qrImageTypeLabel"></span>
-                  </div>
-                  <div class="col">
-                    <div class="form-check form-check-inline">
-                      <input
-                        type="radio"
-                        id="qrImageTypePng"
-                        name="qrImageType"
-                        class="form-check-input"
-                        value="png"
-                      />
-                      <label for="qrImageTypePng" id="qrImageTypePngLabel" class="form-check-label"
-                        >PNG</label
-                      >
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input
-                        type="radio"
-                        id="qrImageTypeSvg"
-                        name="qrImageType"
-                        class="form-check-input"
-                        value="svg"
-                      />
-                      <label for="qrImageTypeSvg" id="qrImageTypeSvgLabel" class="form-check-label"
-                        >SVG</label
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="row gx-3 mt-1">
-                  <div class="col">
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" id="qrBgTrans" class="form-check-input" />
-                      <label id="qrBgTransLabel" for="qrBgTrans" class="form-check-label"></label>
-                    </div>
-                  </div>
-                </div>
-                <div class="row gx-3 mt-1">
-                  <div class="col">
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" id="qrManualMessage" class="form-check-input" />
-                      <label
-                        id="qrManualMessageLabel"
-                        for="qrManualMessage"
-                        class="form-check-label"
-                      ></label>
-                    </div>
-                  </div>
-                </div>
-                <div
-                  id="qrManualMessageTextDiv"
-                  hidden
-                  class="row align-items-center gx-3 mt-1 ms-3"
+          <div class="row align-items-center gx-3">
+            <div class="col-auto">
+              <label for="doiInput" id="doiInputLabel"></label>
+            </div>
+            <div class="col">
+              <input
+                type="text"
+                id="doiInput"
+                value=""
+                autofocus
+                list="doiHistory"
+                class="form-control"
+              />
+            </div>
+            <div class="col-auto">
+              <a
+                id="openHistory"
+                class="d-flex"
+                href="#"
+                data-bs-toggle="modal"
+                data-bs-target="#historyModal"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="icon icon-history bigger"
+                  fill="currentColor"
                 >
-                  <div class="col-auto">
-                    <label id="qrManualMessageTextLabel" for="qrManualMessageText"></label>
-                  </div>
-                  <div class="col">
-                    <input type="text" id="qrManualMessageText" class="form-control" />
+                  <use xlink:href="#icon-history"></use>
+                </svg>
+              </a>
+            </div>
+          </div>
+          <div class="row gx-0 mt-3">
+            <div class="col-6">
+              <div class="row align-items-center gx-3">
+                <div class="col-auto">
+                  <label for="qrSizeInput" id="qrSizeInputLabel"></label>
+                </div>
+                <div class="col">
+                  <div class="row align-items-center gx-1">
+                    <div class="col-3">
+                      <input type="number" id="qrSizeInput" min="80" class="form-control" />
+                    </div>
+                    <div class="col-auto">
+                      <span>px</span>
+                    </div>
                   </div>
                 </div>
-                <div class="row gx-3 mt-1">
-                  <div class="col">
-                    <div class="form-check form-check-inline">
-                      <input type="checkbox" id="qrFetchTitle" class="form-check-input" />
-                      <label
-                        id="qrFetchTitleLabel"
-                        for="qrFetchTitle"
-                        class="form-check-label"
-                      ></label>
+              </div>
+              <div class="row align-items-center gx-3 mt-3">
+                <div class="col-auto">
+                  <label for="qrBorderInput" id="qrBorderInputLabel"></label>
+                </div>
+                <div class="col">
+                  <div class="row align-items-center gx-1">
+                    <div class="col-3">
+                      <input type="number" id="qrBorderInput" min="0" class="form-control" />
+                    </div>
+                    <div class="col-auto">
+                      <span>module(s)</span>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="row gx-3 mt-3">
+                <div class="col-auto">
+                  <span id="qrImageTypeLabel"></span>
+                </div>
                 <div class="col">
-                  <button id="submitButton" class="btn btn-primary"></button>
+                  <div class="form-check form-check-inline">
+                    <input
+                      type="radio"
+                      id="qrImageTypePng"
+                      name="qrImageType"
+                      class="form-check-input"
+                      value="png"
+                    />
+                    <label for="qrImageTypePng" id="qrImageTypePngLabel" class="form-check-label"
+                      >PNG</label
+                    >
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      type="radio"
+                      id="qrImageTypeSvg"
+                      name="qrImageType"
+                      class="form-check-input"
+                      value="svg"
+                    />
+                    <label for="qrImageTypeSvg" id="qrImageTypeSvgLabel" class="form-check-label"
+                      >SVG</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="row align-items-center gx-3 mt-3">
+                <div class="col-auto">
+                  <label for="qrFgColorPicker" id="qrFgColorInputLabel"></label>
+                </div>
+                <div class="col-auto">
+                  <button id="qrFgColorPicker" type="button"></button>
+                </div>
+              </div>
+              <div class="row align-items-center gx-3 mt-3">
+                <div class="col-auto">
+                  <label for="qrBgColorPicker" id="qrBgColorInputLabel"></label>
+                </div>
+                <div class="col-auto">
+                  <button id="qrBgColorPicker" type="button"></button>
                 </div>
               </div>
             </div>
-            <div class="col-6">
-              <div class="row">
-                <div class="col-6">
-                  <div class="row">
-                    <div class="col">
-                      <label for="qrFgColorInput" id="qrFgColorInputLabel"></label>
-                    </div>
-                    <div class="row">
-                      <div class="col">
-                        <input
-                          type="text"
-                          id="qrFgColorInput"
-                          class="form-control font-monospace"
-                        />
-                      </div>
-                    </div>
-                    <div class="row mt-3">
-                      <div class="col">
-                        <div id="qrFgColorPicker"></div>
-                      </div>
-                    </div>
-                  </div>
+            <div class="col-6 d-flex flex-column">
+              <div class="form-check">
+                <input type="checkbox" id="qrBgTrans" class="form-check-input" />
+                <label id="qrBgTransLabel" for="qrBgTrans" class="form-check-label"></label>
+              </div>
+              <div class="form-check mt-2">
+                <input type="checkbox" id="qrManualMessage" class="form-check-input" />
+                <label
+                  id="qrManualMessageLabel"
+                  for="qrManualMessage"
+                  class="form-check-label"
+                ></label>
+              </div>
+              <div id="qrManualMessageTextDiv" hidden class="row align-items-center gx-3 mt-1 ms-3">
+                <div class="col-auto">
+                  <label id="qrManualMessageTextLabel" for="qrManualMessageText"></label>
                 </div>
-                <div class="col-6">
-                  <div class="row">
-                    <div class="col">
-                      <label for="qrBgColorInput" id="qrBgColorInputLabel"></label>
-                    </div>
-                    <div class="row">
-                      <div class="col">
-                        <input
-                          type="text"
-                          id="qrBgColorInput"
-                          class="form-control font-monospace"
-                        />
-                      </div>
-                    </div>
-                    <div class="row mt-3">
-                      <div class="col">
-                        <div id="qrBgColorPicker"></div>
-                      </div>
-                    </div>
-                  </div>
+                <div class="col">
+                  <input type="text" id="qrManualMessageText" class="form-control" />
                 </div>
+              </div>
+              <div class="form-check mt-2">
+                <input type="checkbox" id="qrFetchTitle" class="form-check-input" />
+                <label id="qrFetchTitleLabel" for="qrFetchTitle" class="form-check-label"></label>
+              </div>
+              <div class="mt-auto text-end pt-3">
+                <button id="submitButton" class="btn btn-primary"></button>
               </div>
             </div>
           </div>

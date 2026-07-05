@@ -1,7 +1,7 @@
 import {test, expect} from './fixtures';
 import {DisplayTheme, HistoryDoi, HistorySort} from '../src/lib/options';
 import {getStorageValue} from './utils';
-import {Locator} from '@playwright/test';
+import {Locator, Page} from '@playwright/test';
 
 test.describe('QR', () => {
   const title = 'A Common Model to Support Interoperable Metadata';
@@ -27,6 +27,12 @@ test.describe('QR', () => {
     });
 
     return {width, height, fg, bg};
+  };
+
+  const setColorInput = async (page: Page, label: string, color: string) => {
+    await page.getByLabel(label).click();
+    await page.getByRole('textbox', {name: 'hex'}).fill(color);
+    await page.keyboard.press('Escape');
   };
 
   test.beforeEach(async ({page, extension}) => {
@@ -58,8 +64,8 @@ test.describe('QR', () => {
     await expect(page.getByLabel('Include title of reference in QR code')).toBeChecked({
       checked: false,
     });
-    await expect(page.getByLabel('Foreground color')).toHaveValue('#000000');
-    await expect(page.getByLabel('Background color')).toHaveValue('#ffffff');
+    await expect(page.getByLabel('Foreground color')).toHaveCSS('--color', 'rgb(0, 0, 0)');
+    await expect(page.getByLabel('Background color')).toHaveCSS('--color', 'rgb(255, 255, 255)');
 
     const notifyContainer = page.locator('#notifyDiv');
     const qrContainer = page.locator('#qrDiv');
@@ -177,9 +183,9 @@ test.describe('QR', () => {
   });
 
   test('QR generation with custom colors', async ({page}) => {
-    await page.getByLabel('Foreground color').fill('#000222');
+    await setColorInput(page, 'Foreground color', '#000222');
     await expect.poll(() => getStorageValue(page, 'qr_fgcolor')).toBe('#000222');
-    await page.getByLabel('Background color').fill('#fff222');
+    await setColorInput(page, 'Background color', '#fff222');
     await expect.poll(() => getStorageValue(page, 'qr_bgcolor')).toBe('#fff222');
     await page.getByRole('button', {name: 'Submit'}).click();
 
@@ -195,9 +201,9 @@ test.describe('QR', () => {
   });
 
   test('QR generation with transparent background', async ({page}) => {
-    await page.getByLabel('Foreground color').fill('#000222');
+    await setColorInput(page, 'Foreground color', '#000222');
     await expect.poll(() => getStorageValue(page, 'qr_fgcolor')).toBe('#000222');
-    await page.getByLabel('Background color').fill('#fff222');
+    await setColorInput(page, 'Background color', '#fff222');
     await expect.poll(() => getStorageValue(page, 'qr_bgcolor')).toBe('#fff222');
     await page.getByLabel('Transparent background').click();
     await expect.poll(() => getStorageValue(page, 'qr_bgtrans')).toBe(true);
@@ -251,7 +257,7 @@ test.describe('QR', () => {
     await expect.poll(() => getStorageValue(page, 'qr_title')).toBe(true);
     await page.getByLabel('Transparent background').click();
     await expect.poll(() => getStorageValue(page, 'qr_bgtrans')).toBe(true);
-    await page.getByLabel('Foreground color').fill('#000222');
+    await setColorInput(page, 'Foreground color', '#000222');
     await expect.poll(() => getStorageValue(page, 'qr_fgcolor')).toBe('#000222');
     await page.getByRole('button', {name: 'Submit'}).click();
 

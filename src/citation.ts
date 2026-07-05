@@ -151,6 +151,7 @@ class DoiCitation {
       if (!value) return;
       doiInput.value = value;
       this.selectedIndex = -1;
+      this.blur();
       historyModalClose.click();
     });
 

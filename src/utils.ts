@@ -162,7 +162,7 @@ export function getMessageNodes(i18nId: string, i18nSubstitutions?: string[]): N
   const message = chrome.i18n.getMessage(i18nId, i18nSubstitutions);
 
   const nodes: Node[] = [];
-  for (let pos = 0; pos < message.length; ) {
+  for (let pos = 0; pos < message.length;) {
     const subs = htmlSubs
       .map<HtmlSubResult | undefined>((htmlSub) => {
         if (htmlSub.search instanceof RegExp) {

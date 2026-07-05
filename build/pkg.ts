@@ -7,7 +7,7 @@ import {pipeline} from 'node:stream/promises';
 import {mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {parseArgs} from 'node:util';
-import archiver from 'archiver';
+import {ZipArchive} from 'archiver';
 import packageJson from '../package.json' with {type: 'json'};
 import {Browser, browsers, dirRef, green, red} from './utils.js';
 
@@ -20,7 +20,7 @@ const {name, version} = packageJson;
 async function createArchive(browser: Browser): Promise<void> {
   const pkgPath = path.join(dirRef.pkg, `${name}-${version}.${browser}.zip`);
 
-  const archive = archiver('zip');
+  const archive = new ZipArchive();
   archive.directory(path.join(dirRef.dist, browser), false);
 
   const finalize = archive.finalize();

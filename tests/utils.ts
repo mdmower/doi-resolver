@@ -116,3 +116,9 @@ export function getCustomizedOptions(): Required<StorageOptions> {
     theme: DisplayTheme.Dark,
   };
 }
+
+export async function getPageBsTheme(page: Page): Promise<DisplayTheme | undefined> {
+  const htmlThemes: string[] = [DisplayTheme.Dark, DisplayTheme.Light];
+  const htmlTheme = await page.locator('html').evaluate((html) => html.dataset.bsTheme);
+  return htmlThemes.includes(htmlTheme ?? '') ? (htmlTheme as DisplayTheme) : undefined;
+}

@@ -1,0 +1,87 @@
+{
+  "indexed": {
+    "date-parts": [[2025, 10, 20]],
+    "date-time": "2025-10-20T16:42:05Z",
+    "timestamp": 1760978525191
+  },
+  "reference-count": 0,
+  "publisher": "CNRI Acct",
+  "issue": "1",
+  "content-domain": {"domain": [], "crossmark-restriction": false},
+  "DOI": "10.1045\/january99-bearman",
+  "type": "journal-article",
+  "created": {
+    "date-parts": [[2003, 2, 7]],
+    "date-time": "2003-02-07T18:30:48Z",
+    "timestamp": 1044642648000
+  },
+  "source": "Crossref",
+  "is-referenced-by-count": 25,
+  "title": "A Common Model to Support Interoperable Metadata",
+  "prefix": "10.1045",
+  "volume": "5",
+  "author": [
+    {
+      "given": "David",
+      "family": "Bearman",
+      "sequence": "first",
+      "affiliation": [],
+      "role": [{"role": "author", "vocabulary": "crossref"}]
+    },
+    {
+      "given": "Eric",
+      "family": "Miller",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [{"role": "author", "vocabulary": "crossref"}]
+    },
+    {
+      "given": "Godfrey",
+      "family": "Rust",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [{"role": "author", "vocabulary": "crossref"}]
+    },
+    {
+      "given": "Jennifer",
+      "family": "Trant",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [{"role": "author", "vocabulary": "crossref"}]
+    },
+    {
+      "given": "Stuart",
+      "family": "Weibel",
+      "sequence": "additional",
+      "affiliation": [],
+      "role": [{"role": "author", "vocabulary": "crossref"}]
+    }
+  ],
+  "member": "72",
+  "published-online": {"date-parts": [[1999, 1]]},
+  "container-title": "D-Lib Magazine",
+  "original-title": [],
+  "language": "en",
+  "deposited": {
+    "date-parts": [[2011, 5, 20]],
+    "date-time": "2011-05-20T09:39:09Z",
+    "timestamp": 1305884349000
+  },
+  "score": 1,
+  "resource": {
+    "primary": {"URL": "http:\/\/www.dlib.org\/dlib\/january99\/bearman\/01bearman.html"}
+  },
+  "subtitle": [
+    "Progress report on reconciling metadata requirements from the Dublin Core and INDECS\/DOI Communities"
+  ],
+  "short-title": [],
+  "issued": {"date-parts": [[1999, 1]]},
+  "references-count": 0,
+  "journal-issue": {"issue": "1", "published-online": {"date-parts": [[1999, 1]]}},
+  "URL": "http:\/\/dx.doi.org\/10.1045\/january99-bearman",
+  "relation": {},
+  "ISSN": ["1082-9873"],
+  "subject": [],
+  "container-title-short": "D-Lib Magazine",
+  "published": {"date-parts": [[1999, 1]]}
+}

@@ -9,6 +9,7 @@ import {
 } from '../src/lib/options';
 import {
   getCustomizedOptions,
+  getPageBsTheme,
   getStorageValue,
   handbookDoi,
   handbookShortDoi,
@@ -31,7 +32,7 @@ test.describe('Options', () => {
       for (const tab of tabs) {
         await page.getByRole('tab', {name: tab.name}).click();
         await expect(page.locator(tab.section)).toBeVisible();
-        expect(page.url()).toContain(tab.hash);
+        await expect(page).toHaveURL((url) => url.hash === tab.hash);
       }
     });
 
@@ -46,14 +47,15 @@ test.describe('Options', () => {
 
   test.describe('Options tab', () => {
     test('use display theme', async ({page}) => {
-      const htmlThemes: string[] = [DisplayTheme.Dark, DisplayTheme.Light];
       for (const theme of Object.values(DisplayTheme)) {
         await page.evaluate((s) => chrome.storage.local.set(s), {theme});
         await page.reload({waitUntil: 'load'});
-        const htmlTheme = await page.locator('html').evaluate((html) => html.dataset.bsTheme);
-        expect(
-          theme === DisplayTheme.System ? htmlThemes.includes(htmlTheme ?? '') : htmlTheme === theme
-        ).toBe(true);
+        await expect
+          .poll(async () => {
+            const pageTheme = await getPageBsTheme(page);
+            return theme === DisplayTheme.System ? !!pageTheme : pageTheme === theme;
+          })
+          .toBe(true);
       }
     });
 

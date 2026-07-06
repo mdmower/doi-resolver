@@ -1,6 +1,6 @@
 import {test, expect} from './fixtures';
 import {DisplayTheme, HistoryDoi, HistorySort} from '../src/lib/options';
-import {getStorageValue, handbookDoi, handbookShortDoi} from './utils';
+import {getPageBsTheme, getStorageValue, handbookDoi, handbookShortDoi} from './utils';
 
 // Playwright is not able to capture the initial request when a tab is opened via
 // chrome.tabs.create(). Many of these tests perform real navigations that cannot be mocked.
@@ -11,14 +11,15 @@ test.describe('Bubble', () => {
   });
 
   test('use display theme', async ({page}) => {
-    const htmlThemes: string[] = [DisplayTheme.Dark, DisplayTheme.Light];
     for (const theme of Object.values(DisplayTheme)) {
       await page.evaluate((s) => chrome.storage.local.set(s), {theme});
       await page.reload({waitUntil: 'load'});
-      const htmlTheme = await page.locator('html').evaluate((html) => html.dataset.bsTheme);
-      expect(
-        theme === DisplayTheme.System ? htmlThemes.includes(htmlTheme ?? '') : htmlTheme === theme
-      ).toBe(true);
+      await expect
+        .poll(async () => {
+          const pageTheme = await getPageBsTheme(page);
+          return theme === DisplayTheme.System ? !!pageTheme : pageTheme === theme;
+        })
+        .toBe(true);
     }
   });
 
@@ -27,7 +28,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
   });
 
@@ -36,7 +37,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
   });
 
@@ -49,7 +50,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
   });
 
   test('additional button display', async ({page}) => {
@@ -82,7 +83,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
   });
 
@@ -102,7 +103,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL(`https://example.com/${handbookDoi}`);
   });
 
@@ -125,9 +126,9 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
-    expect(await getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('default');
+    await expect.poll(() => getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('default');
   });
 
   test('custom DOI resolver (selectable: custom)', async ({context, page, serviceWorker}) => {
@@ -149,9 +150,9 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL(`https://example.com/${handbookDoi}`);
-    expect(await getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('custom');
+    await expect.poll(() => getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('custom');
   });
 
   test('custom ShortDOI resolver (default)', async ({context, page}) => {
@@ -170,7 +171,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
   });
 
@@ -190,7 +191,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL(`https://example.com/${handbookShortDoi.replace('10/', '')}`);
   });
 
@@ -213,9 +214,9 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL('https://www.doi.org/the-identifier/resources/handbook/');
-    expect(await getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('default');
+    await expect.poll(() => getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('default');
   });
 
   test('custom ShortDOI resolver (selectable: custom)', async ({context, page, serviceWorker}) => {
@@ -237,16 +238,16 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Go'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL(`https://example.com/${handbookShortDoi.replace('10/', '')}`);
-    expect(await getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('custom');
+    await expect.poll(() => getStorageValue(serviceWorker, 'cr_bubble_last')).toBe('custom');
   });
 
   test('open options page', async ({page, context, extension}) => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Options'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     await expect(newPage).toHaveURL(extension.urls.options);
   });
 
@@ -254,7 +255,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Citation'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     const url = new URL(extension.urls.citation);
     url.searchParams.append('doi', '');
     await expect(newPage).toHaveURL(extension.urls.citation + '?doi=');
@@ -265,7 +266,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Citation'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     const url = new URL(extension.urls.citation);
     url.searchParams.append('doi', handbookDoi);
     await expect(newPage).toHaveURL(url.href);
@@ -276,7 +277,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'Citation'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     const url = new URL(extension.urls.citation);
     url.searchParams.append('doi', `a${handbookDoi}`);
     await expect(newPage).toHaveURL(url.href);
@@ -286,7 +287,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'QR'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     const url = new URL(extension.urls.qr);
     url.searchParams.append('doi', '');
     await expect(newPage).toHaveURL(url.href);
@@ -297,7 +298,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'QR'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     const url = new URL(extension.urls.qr);
     url.searchParams.append('doi', handbookDoi);
     await expect(newPage).toHaveURL(url.href);
@@ -308,7 +309,7 @@ test.describe('Bubble', () => {
     const newPagePromise = context.waitForEvent('page');
     await page.getByRole('button', {name: 'QR'}).click();
     const newPage = await newPagePromise;
-    expect(page.isClosed()).toBe(true);
+    await expect.poll(() => page.isClosed()).toBe(true);
     const url = new URL(extension.urls.qr);
     url.searchParams.append('doi', `a${handbookDoi}`);
     await expect(newPage).toHaveURL(url.href);

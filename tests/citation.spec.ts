@@ -1,6 +1,6 @@
 import {test, expect} from './fixtures';
 import {DisplayTheme, HistoryDoi, HistorySort} from '../src/lib/options';
-import {getStorageValue} from './utils';
+import {getPageBsTheme, getStorageValue} from './utils';
 
 test.describe('Citation', () => {
   const doi = '10.1045/january99-bearman';
@@ -12,14 +12,15 @@ test.describe('Citation', () => {
   });
 
   test('use display theme', async ({page}) => {
-    const htmlThemes: string[] = [DisplayTheme.Dark, DisplayTheme.Light];
     for (const theme of Object.values(DisplayTheme)) {
       await page.evaluate((s) => chrome.storage.local.set(s), {theme});
       await page.reload({waitUntil: 'load'});
-      const htmlTheme = await page.locator('html').evaluate((html) => html.dataset.bsTheme);
-      expect(
-        theme === DisplayTheme.System ? htmlThemes.includes(htmlTheme ?? '') : htmlTheme === theme
-      ).toBe(true);
+      await expect
+        .poll(async () => {
+          const pageTheme = await getPageBsTheme(page);
+          return theme === DisplayTheme.System ? !!pageTheme : pageTheme === theme;
+        })
+        .toBe(true);
     }
   });
 

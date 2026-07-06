@@ -1,6 +1,7 @@
 import {test as base, chromium, Worker, type BrowserContext} from '@playwright/test';
 import {pathToTestExtension} from './global.setup';
 import {ExtensionPage, extensionPages} from './utils';
+import {routeCslAsset, routeDoiOrg} from './mocks/fixtures';
 
 export const test = base.extend<{
   context: BrowserContext;
@@ -20,9 +21,9 @@ export const test = base.extend<{
     });
 
     // Playwright is not able to capture the initial request when a tab is opened via
-    // chrome.tabs.create(). There isn't enough incentive to mock responses until this is fixed.
-    // https://github.com/microsoft/playwright/issues/32865
-    // await context.route(/^https?:\/\//, (route, request) => {...});
+    // chrome.tabs.create(), so only AJAX mocks are defined.
+    await context.route((url) => url.hostname === 'doi.org', routeDoiOrg);
+    await context.route((url) => url.hostname === 'raw.githubusercontent.com', routeCslAsset);
 
     await use(context);
     await context.close();

@@ -6,9 +6,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: 'line',
-  use: {
-    trace: 'on-first-retry',
-  },
+  use: {trace: 'on-first-retry'},
+  expect: {timeout: 15_000},
   globalSetup: './tests/global.setup.ts',
   projects: [
     {

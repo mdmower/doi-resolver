@@ -828,6 +828,38 @@ test.describe('Options', () => {
       }
     });
 
+    test('history text filter', async ({page}) => {
+      const filterInput = page.getByLabel('Filter', {exact: true});
+      const allDois = recorded_dois.map((recorded_doi) => recorded_doi.doi);
+
+      const expectVisibleDois = async (visibleDois: string[]) => {
+        const hiddenDois = allDois.filter((doi) => !visibleDois.includes(doi));
+        for (const doi of visibleDois) {
+          await expect(page.locator(`tr.historyEntry[data-doi="${doi}"]`)).toBeVisible();
+        }
+        for (const doi of hiddenDois) {
+          await expect(page.locator(`tr.historyEntry[data-doi="${doi}"]`)).toBeHidden();
+        }
+      };
+
+      await expectVisibleDois(allDois);
+
+      await filterInput.fill('saved');
+      await expectVisibleDois(['10.1000/3', '10/5']);
+
+      await filterInput.fill('SaVeD');
+      await expectVisibleDois(['10.1000/3', '10/5']);
+
+      await filterInput.fill('1000/4');
+      await expectVisibleDois(['10.1000/4']);
+
+      await filterInput.fill('no such entry');
+      await expectVisibleDois([]);
+
+      await filterInput.fill('');
+      await expectVisibleDois(allDois);
+    });
+
     test('custom resolver URLs', async ({page}) => {
       const shortDois = recorded_dois
         .filter((recorded_doi) => recorded_doi.doi.startsWith('10/'))

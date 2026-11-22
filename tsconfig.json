@@ -13,12 +13,6 @@
     "importHelpers": true,
     "types": ["node", "chrome"]
   },
-  "include": [
-    "eslint-plugin-no-unsanitized.d.ts",
-    "eslint.config.ts",
-    "oxfmt.config.ts",
-    "playwright.config.ts",
-    "src/**/*"
-  ],
+  "include": ["oxfmt.config.ts", "oxlint.config.ts", "playwright.config.ts", "src/**/*"],
   "exclude": ["node_modules"]
 }

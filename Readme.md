@@ -29,7 +29,7 @@ npm install
 
 Available npm scripts:
 
-- `npm run lint` - Lint source using eslint
+- `npm run lint` - Lint source using oxlint
 - `npm run format` - Format source using oxfmt
 - `npm run build [chrome|edge|firefox]` - Build the extension; output to `dist/<browser>/`
 - `npm run build-debug [chrome|edge|firefox]` - Build the extension without HTML/CSS minification and include source maps in transpiled JS; output to `dist/<browser>/`

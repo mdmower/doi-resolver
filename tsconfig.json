@@ -16,6 +16,7 @@
   "include": [
     "eslint-plugin-no-unsanitized.d.ts",
     "eslint.config.ts",
+    "oxfmt.config.ts",
     "playwright.config.ts",
     "src/**/*"
   ],

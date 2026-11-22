@@ -4,7 +4,6 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import jsdoc from 'eslint-plugin-jsdoc';
 import playwright from 'eslint-plugin-playwright';
-import prettierConfigRecommended from 'eslint-plugin-prettier/recommended';
 import noUnsanitized from 'eslint-plugin-no-unsanitized';
 
 export default defineConfig(
@@ -120,7 +119,7 @@ export default defineConfig(
     ...playwright.configs['flat/recommended'],
   },
   {
-    files: ['playwright.config.ts', 'tests/**/*.ts'],
+    files: ['oxfmt.config.ts', 'playwright.config.ts', 'tests/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -128,6 +127,5 @@ export default defineConfig(
       },
       parserOptions: {projectService: true},
     },
-  },
-  prettierConfigRecommended
+  }
 );

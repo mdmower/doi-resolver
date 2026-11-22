@@ -66,7 +66,10 @@ export const optionLabels: Record<
   theme: 'Color theme for pages',
 };
 
-export function getStorageValue(handler: Page | Worker, key: string): Promise<unknown> {
+export function getStorageValue(
+  handler: Pick<Page & Worker, 'evaluate'>,
+  key: string
+): Promise<unknown> {
   return handler.evaluate(async (key) => {
     const stg = await chrome.storage.local.get(key);
     return stg[key];

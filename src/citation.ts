@@ -16,8 +16,8 @@ import DOMPurify from 'dompurify';
 
 // Prefer downloading the latest style and locale XML rather than using outdated pre-packaged versions.
 const cslConfig = plugins.config.get('@csl');
-for (const template of cslConfig.templates.list()) {
-  cslConfig.templates.delete(template);
+for (const style of cslConfig.styles.list()) {
+  cslConfig.styles.delete(style);
 }
 for (const locale of cslConfig.locales.list()) {
   cslConfig.locales.delete(locale);
@@ -506,7 +506,7 @@ class DoiCitation {
    * @param style CSL style
    */
   private async getStyleXml(style: string): Promise<boolean> {
-    if (cslConfig.templates.has(style)) {
+    if (cslConfig.styles.has(style)) {
       return true;
     }
 
@@ -520,7 +520,7 @@ class DoiCitation {
         throw new Error(`Bad status code: ${response.status}`);
       }
       const text = await response.text();
-      cslConfig.templates.add(style, text);
+      cslConfig.styles.add(style, text);
       return true;
     } catch (ex) {
       logError('Unable to download style XML', ex);
@@ -574,7 +574,7 @@ class DoiCitation {
     const cite = new Cite(citeProcJson);
     const bibResult = cite.format('bibliography', {
       format: 'html',
-      template: style,
+      style,
       lang: forceLocale ? locale : undefined,
     });
 

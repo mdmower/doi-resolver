@@ -64,7 +64,7 @@
     "oxfmt": "^0.79.0",
     "oxlint": "^1.94.0",
     "oxlint-tsgolint": "^7.0.2008",
-    "sass": "^1.108.2",
+    "sass-embedded": "^1.108.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.8"
